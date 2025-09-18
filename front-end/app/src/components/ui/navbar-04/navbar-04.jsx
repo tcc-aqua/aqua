@@ -1,0 +1,41 @@
+import { Button } from "@/components/ui/button";
+import { Logo } from "./logo";
+import { NavMenu } from "./nav-menu";
+import { NavigationSheet } from "./navigation-sheet";
+import { ModeToggle } from "../DarkMode/DarkMode";
+
+const Navbar04Page = () => {
+  return (
+    <div className="min-h-screen bg-muted">
+      <nav
+        className="fixed top-6 inset-x-4 h-16 bg-background border dark:border-slate-700/70 max-w-(--breakpoint-xl) mx-auto rounded-full borde-black">
+        <div className="h-full flex items-center justify-between mx-auto px-4">
+          <Logo />
+
+          {/* Desktop Menu */}
+          <NavMenu className="hidden md:block" />
+
+
+          <div className="flex items-center gap-5">
+            {/* ModeToggle - visível apenas em telas médias pra cima */}
+            <div className="hidden md:block">
+              <ModeToggle />
+            </div>
+{/* 
+            <Button variant="outline" className="hidden sm:inline-flex rounded-full">
+              Sign In
+            </Button> */}
+            <Button className="rounded-full">LogIn</Button>
+
+            {/* Mobile Menu */}
+            <div className="md:hidden">
+              <NavigationSheet />
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+  );
+};
+
+export default Navbar04Page;
