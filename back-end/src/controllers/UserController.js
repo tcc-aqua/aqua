@@ -2,7 +2,7 @@ import User from "../models/User.js";
 
 export default class UserController {
 
-    static async getAll(reuqest, reply) {
+    static async getAll(request, reply) {
         try {
             const users = await User.findAll();
             return reply.status(200).send(users);
