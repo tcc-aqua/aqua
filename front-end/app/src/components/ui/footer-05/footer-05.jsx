@@ -60,7 +60,7 @@ const Footer05Page = () => {
             <ul className="mt-6 flex items-center gap-4 flex-wrap">
               {footerLinks.map(({ title, href }) => (
                 <li key={title}>
-                  <Link href={href} className="text-muted-foreground hover:text-foreground">
+                  <Link href={href} className="data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus-visible:ring-ring/50 [&amp;_svg:not([class*='text-'])]:text-muted-foreground flex flex-col gap-1 rounded-sm p-2 text-sm transition-all outline-none focus-visible:ring-[3px] focus-visible:outline-1 [&amp;_svg:not([class*='size-'])]:size-4">
                     {title}
                   </Link>
                 </li>
@@ -79,7 +79,7 @@ const Footer05Page = () => {
               . All rights reserved.
             </span>
 
-            <div className="flex items-center gap-5 text-muted-foreground">
+            <div className="flex items-center gap-5 text-accent">
               <Link href="#" target="_blank">
                 <TwitterIcon className="h-5 w-5" />
               </Link>

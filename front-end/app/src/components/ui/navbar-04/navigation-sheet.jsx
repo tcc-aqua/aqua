@@ -17,9 +17,9 @@ export const NavigationSheet = () => {
         <Logo />
         <NavMenu orientation="vertical" className="mt-6 [&>div]:h-full" />
         <div className="flex flex-col gap-4 mt-6">
-  
 
           {/* ModeToggle dentro do menu mobile */}
+          
           <ModeToggle />
         </div>
       </SheetContent>
