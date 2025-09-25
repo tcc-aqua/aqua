@@ -4,6 +4,7 @@ import { Menu } from "lucide-react";
 import { Logo } from "./logo";
 import { NavMenu } from "./nav-menu";
 import { ModeToggle } from "../DarkMode/DarkMode";
+import { Separator } from "@radix-ui/react-dropdown-menu";
 
 export const NavigationSheet = () => {
   return (
@@ -13,12 +14,14 @@ export const NavigationSheet = () => {
           <Menu />
         </Button>
       </SheetTrigger>
-      <SheetContent className="px-6 py-3">
+      <SheetContent className=" px-6 py-3 ">
         <Logo />
-        <NavMenu orientation="vertical" className="mt-6 [&>div]:h-full" />
+    
+ 
+       
+        <NavMenu orientation="vertical" className="mt-6 [&>div]:h-full ml-30 md:ml-0 boder shadow-accent-foreground " />
+             
         <div className="flex flex-col gap-4 mt-6">
-  
-
           {/* ModeToggle dentro do menu mobile */}
           <ModeToggle />
         </div>
