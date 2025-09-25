@@ -4,6 +4,7 @@ import {
   GithubIcon,
   TwitchIcon,
   TwitterIcon,
+  InstagramIcon
 } from "lucide-react";
 import Link from "next/link";
 
@@ -60,7 +61,7 @@ const Footer05Page = () => {
             <ul className="mt-6 flex items-center gap-4 flex-wrap">
               {footerLinks.map(({ title, href }) => (
                 <li key={title}>
-                  <Link href={href} className="text-muted-foreground hover:text-foreground">
+                  <Link href={href} className="text-muted-foreground hover:text-accent hover:scale-99 fl">
                     {title}
                   </Link>
                 </li>
@@ -79,15 +80,13 @@ const Footer05Page = () => {
               . All rights reserved.
             </span>
 
-            <div className="flex items-center gap-5 text-muted-foreground">
+            <div className="flex items-center gap-5 text-accent">
               <Link href="#" target="_blank">
                 <TwitterIcon className="h-5 w-5" />
               </Link>
+             
               <Link href="#" target="_blank">
-                <DribbbleIcon className="h-5 w-5" />
-              </Link>
-              <Link href="#" target="_blank">
-                <TwitchIcon className="h-5 w-5" />
+                <InstagramIcon className="h-5 w-5" />
               </Link>
               <Link href="#" target="_blank">
                 <GithubIcon className="h-5 w-5" />
