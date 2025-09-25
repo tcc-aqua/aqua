@@ -1,9 +1,9 @@
 import UserController from "../controllers/UserController.js";
 
 export default async function userRoutes(app) {
-    app.get("/users", UserController.getAll);
-    app.post("/users", UserController.create);
-    app.get('/users/:id', UserController.getUserByid)
-    app.put("/users/:id", UserController.update);
-    app.delete("/users/:id", UserController.delete);
+    app.get("/", UserController.getAll);
+    app.post("/", UserController.create);
+    app.get('/:id', UserController.getUserByid)
+    app.put("/:id", UserController.update);
+    app.delete("/:id", UserController.delete);
 }

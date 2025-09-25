@@ -39,7 +39,7 @@ Endereco.init({
         allowNull: false
     },
     user_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.CHAR(36),
         allowNull: false,
         references: {model: User, key: 'id'}
     }
