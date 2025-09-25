@@ -1,5 +1,4 @@
 import UserController from "../controllers/UserController.js";
-import User from "../models/User.js";
 
 export default async function userRoutes(app) {
     app.get("/users", UserController.getAll);
