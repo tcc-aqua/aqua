@@ -3,21 +3,34 @@ import { Main } from "./blocks/hero";
 import Navbar04Page from "@/components/navbar-04/navbar-04";
 import Features01Page from "@/components/features-01/features-01";
 import Stats01Page from "@/components/stats-01/stats-01";
+import Features04Page from "@/components/features-04/features-04";
 
 export default function Home() {
   return (
 
     <>
+      <div className="bg-gradient-to-b from-5% from-blue-100 to-40% to-white">
+        <header>
+          <Navbar04Page />
+        </header>
 
-      <header>
-        <Navbar04Page />
-      </header>
+        <main className="container  mx-auto">
+          <Main />
+        </main>
 
-      <div className="container bg-white mx-auto">
-        <Main />
+        <section>
+          <Features01Page />
+        </section>
+
+        <section className="mb-15">
+          <Stats01Page />
+        </section>
+
+        <section>
+          <Features04Page />
+        </section>
+
       </div>
-      <Features01Page />
-      <Stats01Page />
     </>
   );
 }

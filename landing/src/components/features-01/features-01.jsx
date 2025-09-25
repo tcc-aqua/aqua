@@ -11,53 +11,42 @@ import React from "react";
 const features = [
   {
     icon: Settings2,
-    title: "Customizable Layouts",
+    title: "Contas Altas Inexplicáveis",
     description:
-      "Design your space with drag-and-drop simplicity—create grids, lists, or galleries in seconds.",
+      "Moradores enfrentam aumentos de até 300% na conta de água sem saber o motivo",
   },
   {
     icon: Blocks,
-    title: "Interactive Widgets",
+    title: "Vazamentos Silenciosos",
     description:
-      "Embed polls, quizzes, or forms to keep your audience engaged.",
+      "Perda de água não detectada resulta em desperdício e prejuízo financeiro",
   },
   {
     icon: Bot,
-    title: "AI-Powered Tools",
+    title: "Falta de Controle",
     description:
-      "Generate summaries, auto-format content, or translate into multiple languages seamlessly.",
+      "Impossibilidade de monitorar o consumo real e identificar padrões",
   },
   {
     icon: Film,
-    title: "Media Integrations",
+    title: "Desperdício Financeiro",
     description:
-      "Connect with Spotify, Instagram, or your own media library for dynamic visuals and sound.",
+      "Familias gastam em média R$ 2.400 por ano a mais devido à falta de controle",
   },
-  {
-    icon: ChartPie,
-    title: "Advanced Analytics",
-    description:
-      "Track engagement, clicks, and user activity with intuitive charts and reports.",
-  },
-  {
-    icon: MessageCircle,
-    title: "Seamless Collaboration",
-    description:
-      "Comment, tag, and assign tasks directly within your documents.",
-  },
+  
 ];
 
 const Features01Page = () => {
   return (
-    <div className="min-h-screen flex bg-white items-center justify-center ">
+    <div className="mt-30 flex  items-center justify-center ">
       <div>
-        <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight text-center">
-          Unleash Your Creativity
-        </h2>
+        <h1 className="text-5xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-center">
+        O Problema é Real e <span className="text-[#0084d1]">Caro</span>
+        </h1>
         <div
-          className="mt-10 sm:mt-16 grid sm:grid-cols-2 lg:grid-cols-3  gap-6 max-w-(--breakpoint-lg) mx-auto px-6">
+          className="mt-10 sm:mt-16 grid sm:grid-cols-2 lg:grid-cols-2   gap-6 max-w-(--breakpoint-lg) mx-auto px-6">
           {features.map((feature) => (
-            <div key={feature.title} className="flex flex-col bg-[#eff6ff] border rounded-xl py-6 px-5">
+            <div key={feature.title} className="flex flex-col bg-[#eff6ff] border shadow-inner rounded-xl py-6 px-5">
               <div
                 className="mb-4 h-10 w-10 flex items-center justify-center bg-muted rounded-full">
                 <feature.icon className="size-5" />
