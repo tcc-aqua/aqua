@@ -1,5 +1,6 @@
 import fastify from 'fastify';
 import userRoutes from './routes/UserRoute.js';
+import enderecoRoutes from './routes/EnderecoRoute.js';
 const app = fastify({
     logger: {
         transport:{
@@ -13,4 +14,5 @@ app.get("/", (request, reply) => {
 })
 
 await userRoutes(app);
+await enderecoRoutes(app);
 export default app;
