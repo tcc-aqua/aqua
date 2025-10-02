@@ -59,28 +59,35 @@ function SheetContent({
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Content
-        data-slot="sheet-content"
+        // data-slot="sheet-content"
+        // className={cn(
+        //   "bg-background fixed z-50 flex flex-col gap-4 shadow-lg transition ease-in-out",
+
+        //   "max-md:inset-0 max-md:h-full max-md:w-full max-md:border-b",
+        //   "max-md:data-[state=open]:animate-in max-md:data-[state=open]:slide-in-from-top",
+        //   "max-md:data-[state=closed]:animate-out max-md:data-[state=closed]:slide-out-to-top",
+        //   side === "right" && [
+        //     "md:inset-y-0 md:right-0 md:h-full md:w-3/4 md:max-w-sm md:border-l",
+        //     "md:data-[state=open]:slide-in-from-right",
+        //     "md:data-[state=closed]:slide-out-to-right"
+        //   ],
+        //   side === "left" && [
+        //     "md:inset-y-0 md:left-0 md:h-full md:w-3/4 md:max-w-sm md:border-r",
+        //     "md:data-[state=open]:slide-in-from-left",
+        //     "md:data-[state=closed]:slide-out-to-left"
+        //   ],
+
+        //   className
+        // )}
         className={cn(
           "bg-background fixed z-50 flex flex-col gap-4 shadow-lg transition ease-in-out",
 
-          // Mobile (telas menores que md)
-          "max-md:inset-0 max-md:h-full max-md:w-full max-md:border-b",
-          "max-md:data-[state=open]:animate-in max-md:data-[state=open]:slide-in-from-top",
-          "max-md:data-[state=closed]:animate-out max-md:data-[state=closed]:slide-out-to-top",
-
-          // Desktop Right
-          side === "right" && [
-            "md:inset-y-0 md:right-0 md:h-full md:w-3/4 md:max-w-sm md:border-l",
-            "md:data-[state=open]:slide-in-from-right",
-            "md:data-[state=closed]:slide-out-to-right"
-          ],
-
-          // Desktop Left
-          side === "left" && [
-            "md:inset-y-0 md:left-0 md:h-full md:w-3/4 md:max-w-sm md:border-r",
-            "md:data-[state=open]:slide-in-from-left",
-            "md:data-[state=closed]:slide-out-to-left"
-          ],
+          // Sempre fixo à esquerda, em todas as telas
+          "inset-y-0 left-0 h-full w-3/4 max-w-sm border-r",
+          "transition-all duration-600 ease-in-out",
+          // Animação lateral (slide-in/out da esquerda)
+          "data-[state=open]:slide-in-from-left ",
+          "data-[state=closed]:slide-out-to-left",
 
           className
         )}
@@ -94,7 +101,7 @@ function SheetContent({
         </VisuallyHidden>
         {children}
         <SheetPrimitive.Close
-          className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
+          className="data-[state=open]:bg-secondary absolute top-5 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100et-2 disabled:pointer-events-none">
           <XIcon className="transition-transform duration-500 size-7 hover:rotate-90 hover:text-accent hover:scale-99" />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>
