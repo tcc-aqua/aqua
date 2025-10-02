@@ -10,19 +10,20 @@ export const NavigationSheet = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="rounded-full">
+        <Button variant="muted" size="icon" className="rounded-full">
           <Menu />
         </Button>
       </SheetTrigger>
-      <SheetContent className=" px-6 py-3 ">
+      <SheetContent className=" px-6 py-5">
+
         <Logo />
-    
- 
-       
+
+
+
         <NavMenu orientation="vertical" className="mt-6 [&>div]:h-full ml-30 md:ml-0 boder shadow-accent-foreground " />
-             
-        <div className="flex flex-col gap-4 mt-6">
-          {/* ModeToggle dentro do menu mobile */}
+
+        <div className="container mx-auto mt-8 border rounded-xl p-2 w-100 flex items-center justify-center gap-10">
+          <h1 className="font-bold whitespace-nowrap">Escolher modo</h1>
           <ModeToggle />
         </div>
       </SheetContent>
