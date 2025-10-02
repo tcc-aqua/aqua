@@ -9,7 +9,7 @@ import {
   Modal,
   FlatList,
   SafeAreaView,
-  TouchableWithoutFeedback, // Adicionado
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 
@@ -25,8 +25,8 @@ const mockNotifications = [
 const Header = ({
   appName = 'AquaMonitor',
   appLocation = 'Apto 1502 • Bloco A',
-  logoUri = 'https://via.placeholder.com/40/2196F3/FFFFFF?text=AM', // Logo com fundo azul
-  notificationsCount = mockNotifications.length, // Usando o tamanho do mock
+  logoUri = 'https://via.placeholder.com/40/2196F3/FFFFFF?text=AM',
+  notificationsCount = mockNotifications.length,
   onMenuPress,
 }) => {
   const [notificationsVisible, setNotificationsVisible] = useState(false);
@@ -93,7 +93,7 @@ const Header = ({
       {/* Modal de notificações Flutuante */}
       <Modal
         visible={notificationsVisible}
-        animationType="fade" // Alterado para fade
+        animationType="fade"
         transparent
         onRequestClose={toggleNotifications}
       >
@@ -138,18 +138,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: Platform.OS === 'ios' ? 14 : 12, // Mais padding no iOS
+    paddingVertical: Platform.OS === 'ios' ? 14 : 12,
     backgroundColor: '#fff',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee', // Borda mais clara
+    borderBottomColor: '#eee',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOpacity: 0.08, // Sombra mais sutil
+        shadowOpacity: 0.08,
         shadowRadius: 6,
         shadowOffset: { width: 0, height: 3 },
       },
-      android: { elevation: 4 }, // Elevação maior para Android
+      android: { elevation: 4 },
     }),
   },
   leftContent: {
@@ -158,11 +158,11 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   logo: {
-    width: 44, // Levemente maior
+    width: 44,
     height: 44,
-    borderRadius: 12, // Bordas mais suaves
+    borderRadius: 12,
     marginRight: 12,
-    backgroundColor: '#e0f7fa', // Cor de fundo mais fria
+    backgroundColor: '#e0f7fa',
   },
   textInfoWrapper: {
     flexShrink: 1,
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconButton: {
-    marginLeft: 20, // Mais espaço entre os ícones
+    marginLeft: 20,
     position: 'relative',
     padding: 4,
   },
@@ -192,35 +192,35 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -5,
     right: -5,
-    backgroundColor: '#FF3B30', // Vermelho padrão do iOS para notificações
+    backgroundColor: '#FF3B30',
     borderRadius: 10,
-    minWidth: 20, // Levemente maior
+    minWidth: 20,
     paddingHorizontal: 5,
     height: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1, // Adiciona uma borda sutil
-    borderColor: '#fff', // Cor da borda
+    borderWidth: 1,
+    borderColor: '#fff',
   },
   badgeText: {
     color: '#fff',
-    fontSize: 11, // Levemente maior
+    fontSize: 11,
     fontWeight: '700',
   },
 
   // --- Modal de Notificações ---
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)', // Fundo mais escuro
-    justifyContent: 'flex-start', // Começa do topo
-    paddingTop: Platform.OS === 'ios' ? 80 : 60, // Ajusta a posição do modal para ficar abaixo do header
-    alignItems: 'center', // Centraliza o modal horizontalmente
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-start',
+    paddingTop: Platform.OS === 'ios' ? 80 : 60,
+    alignItems: 'center',
   },
   modalContainer: {
     backgroundColor: '#fff',
-    borderRadius: 12, // Bordas arredondadas para o card do modal
-    width: '90%', // Ocupa a maior parte da largura
-    maxHeight: '70%', // Limita a altura
+    borderRadius: 12,
+    width: '90%',
+    maxHeight: '70%',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   closeButton: {
-    padding: 4, // Área de toque maior
+    padding: 4,
   },
   notificationListContent: {
     paddingHorizontal: 16,
@@ -254,12 +254,12 @@ const styles = StyleSheet.create({
   },
   notificationCard: {
     flexDirection: 'row',
-    alignItems: 'flex-start', // Alinha o ícone ao topo
+    alignItems: 'flex-start',
     paddingVertical: 14,
     paddingHorizontal: 12,
-    backgroundColor: '#f8f8f8', // Fundo levemente cinza para o card
+    backgroundColor: '#f8f8f8',
     borderRadius: 8,
-    marginBottom: 8, // Espaço entre os cards
+    marginBottom: 8,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#333',
-    lineHeight: 20, // Melhor leitura
+    lineHeight: 20,
   },
   notificationTime: {
     fontSize: 12,
@@ -286,9 +286,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   separator: {
-    height: 1, // Separador mais robusto
-    backgroundColor: '#f0f0f0', // Cor mais clara
-    marginVertical: 4, // Espaço vertical
+    height: 1,
+    backgroundColor: '#f0f0f0',
+    marginVertical: 4,
   },
   emptyNotifications: {
     flex: 1,
