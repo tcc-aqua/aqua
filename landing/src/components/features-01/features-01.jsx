@@ -46,7 +46,7 @@ const Features01Page = () => {
         <div
           className="mt-10 sm:mt-16 grid sm:grid-cols-2 lg:grid-cols-2   gap-6 max-w-(--breakpoint-lg) mx-auto px-6">
           {features.map((feature) => (
-            <div key={feature.title} className="flex flex-col bg-[#eff6ff] border shadow-inner rounded-xl py-6 px-5">
+            <div key={feature.title} className="flex flex-col bg-[#eff6ff] dark:bg-background border shadow-inner rounded-xl py-6 px-5">
               <div
                 className="mb-4 h-10 w-10 flex items-center justify-center bg-muted rounded-full">
                 <feature.icon className="size-5" />
