@@ -9,7 +9,7 @@ export default function Home() {
   return (
 
     <>
-      <div className="bg-gradient-to-b from-5% from-blue-100 to-40% to-white">
+      <div className="bg-gradient-to-b from-5% from-blue-200 to-30% to-white">
         <header>
           <Navbar04Page />
         </header>
