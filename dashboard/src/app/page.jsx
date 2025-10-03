@@ -5,14 +5,16 @@ import Header from "@/components/Layout/Header/Header";
 
 
 
+
 export default function Home() {
   return (
-  <>
-  <Header />
+    <main>
+      <header><Header /></header>
+
+      <footer><Footer /></footer>
+    </main>
 
 
-  <Footer />
 
-  </>
   );
 }

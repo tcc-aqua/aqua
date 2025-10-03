@@ -10,29 +10,29 @@ import Link from "next/link";
 
 const footerLinks = [
   {
-    title: "Overview",
+    title: "Sobre nós",
     href: "#",
   },
   {
-    title: "Features",
+    title: "Planos",
     href: "#",
   },
   {
-    title: "Pricing",
+    title: "Contato",
     href: "#",
   },
   {
-    title: "Careers",
+    title: "Ajuda",
     href: "#",
   },
-  {
-    title: "Help",
-    href: "#",
-  },
-  {
-    title: "Privacy",
-    href: "#",
-  },
+  // {
+  //   title: "",
+  //   href: "#",
+  // },
+  // {
+  //   title: "Privacy",
+  //   href: "#",
+  // },
 ];
 
 const Footer05Page = () => {
