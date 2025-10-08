@@ -1,35 +1,43 @@
+
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu";
+} from "../ui/navigation-menu";
 import Link from "next/link";
-
-export const NavMenu = (props) => (
+import { Separator } from "@/components/ui/separator";
+export const NavMenu = ({ orientation = "horizontal", ...props }) => (
   <NavigationMenu {...props}>
-    <NavigationMenuList
-      className="gap-3 space-x-0 data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-start data-[orientation=vertical]:justify-start">
-      <NavigationMenuItem>
-        <NavigationMenuLink asChild>
-          <Link href="#">Home</Link>
-        </NavigationMenuLink>
-      </NavigationMenuItem>
-      <NavigationMenuItem>
-        <NavigationMenuLink asChild>
-          <Link href="#">Blog</Link>
-        </NavigationMenuLink>
-      </NavigationMenuItem>
-      <NavigationMenuItem>
-        <NavigationMenuLink asChild>
-          <Link href="#">About</Link>
-        </NavigationMenuLink>
-      </NavigationMenuItem>
-      <NavigationMenuItem>
-        <NavigationMenuLink asChild>
-          <Link href="#">Contact Us</Link>
-        </NavigationMenuLink>
-      </NavigationMenuItem>
-    </NavigationMenuList>
+   <NavigationMenuList
+  className={`container mx-auto gap-5 space-x-0 ${
+    orientation === 'vertical' ? "flex flex-col items-start justify-start" : ""
+  }`}
+>
+  <NavigationMenuItem>
+    <NavigationMenuLink asChild>
+      <Link href="#">Home</Link>
+    </NavigationMenuLink>
+  </NavigationMenuItem>
+  {orientation === 'vertical' && <Separator className="block w-full md:w-60 sm:w-45" />}
+  <NavigationMenuItem>
+    <NavigationMenuLink asChild>
+      <Link href="#">Sobre nós</Link>
+    </NavigationMenuLink>
+  </NavigationMenuItem>
+  {orientation === 'vertical' && <Separator className="block w-full md:w-60"  />}
+  <NavigationMenuItem>
+    <NavigationMenuLink asChild>
+      <Link href="#">Planos</Link>
+    </NavigationMenuLink>
+  </NavigationMenuItem>
+  {orientation === 'vertical' && <Separator className="block w-full md:w-60" />}
+  <NavigationMenuItem>
+    <NavigationMenuLink asChild>
+      <Link href="#">Fale conosco</Link>
+    </NavigationMenuLink>
+  </NavigationMenuItem>
+   {orientation === 'vertical' && <Separator className="block w-full md:w-60" />}
+</NavigationMenuList>
   </NavigationMenu>
 );

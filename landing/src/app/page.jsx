@@ -6,8 +6,8 @@ import Stats01Page from "@/components/stats-01/stats-01";
 import Features04Page from "@/components/features-04/features-04";
 import AnimatedTabsDemo from "@/components/tabs-18";
 import Pricing04 from "./blocks/pricing/page";
-
 import Footer05Page from "@/components/footer-05/footer-05";
+
 
 export default function Home() {
   return (
@@ -45,7 +45,7 @@ export default function Home() {
         </section>
 
         <footer>
-          <Footer05Page />
+          <Footer05Page/>
         </footer>
 
       </div>
