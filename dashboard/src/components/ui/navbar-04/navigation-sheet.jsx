@@ -3,8 +3,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { Logo } from "./logo";
 import { NavMenu } from "./nav-menu";
-import { ModeToggle } from "../DarkMode/DarkMode";
-import { Separator } from "@radix-ui/react-dropdown-menu";
+import { ModeToggle } from "../../Layout/DarkMode/page";
 
 export const NavigationSheet = () => {
   return (

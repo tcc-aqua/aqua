@@ -16,7 +16,7 @@ export const NavMenu = ({ orientation = "horizontal", ...props }) => (
 >
   <NavigationMenuItem>
     <NavigationMenuLink asChild>
-      <Link href="#">Home</Link>
+      <Link href="/dashboard">Home</Link>
     </NavigationMenuLink>
   </NavigationMenuItem>
   {orientation === 'vertical' && <Separator className="block w-full md:w-60 sm:w-45" />}
