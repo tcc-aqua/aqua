@@ -1,9 +1,7 @@
-// App.jsx (ou sua tela principal, como HomeScreen.jsx)
-
-import React, { useState } from 'react'; // Importe useState para gerenciar o estado
+import React, { useState } from 'react';
 import { View, Text, SafeAreaView, Alert, StyleSheet } from 'react-native';
-import Header from './components/Header.jsx';
-import Footer from './components/Footer.jsx'; // Importe o componente Footer
+import Header from '../components/Header.jsx';
+import Footer from '../components/Footer.jsx'; // Importe o componente Footer
 
 export default function HomeScreen() {
   const [activeScreen, setActiveScreen] = useState('home'); // Estado para controlar a tela ativa do footer
