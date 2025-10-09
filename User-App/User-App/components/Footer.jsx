@@ -12,9 +12,9 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 // Dados dos itens do footer
 const footerItems = [
   { id: 'home', icon: 'home-outline', text: 'Início', activeIcon: 'home' },
-  { id: 'reports', icon: 'stats-chart-outline', text: 'Relatórios', activeIcon: 'stats-chart' },
-  { id: 'devices', icon: 'hardware-chip-outline', text: 'Dispositivos', activeIcon: 'hardware-chip' },
-  { id: 'settings', icon: 'settings-outline', text: 'Ajustes', activeIcon: 'settings' },
+  { id: 'reports', icon: 'bar-chart-outline', text: 'Relatórios', activeIcon: 'bar-chart' },
+  { id: 'devices', icon: 'trophy-outline', text: 'Metas', activeIcon: 'trophy' },
+  { id: 'profile', icon: 'person-outline', text: 'Perfil', activeIcon: 'person' },
 ];
 
 const Footer = ({ activeScreen, onNavigate }) => {
