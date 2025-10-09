@@ -18,25 +18,21 @@ export default function HomeScreen() {
     // Implemente sua lógica aqui, como abrir um drawer ou navegação lateral
   };
 
-  // Função para lidar com a navegação do footer
+ 
   const handleFooterNavigate = (screenId) => {
-    setActiveScreen(screenId); // Atualiza qual item do footer está ativo
-    // === Lógica de Navegação Real (Exemplo com Alert) ===
+    setActiveScreen(screenId);
+
     Alert.alert('Navegação', `Você foi para a tela: ${screenId.toUpperCase()}`);
-    // No futuro, aqui você usaria seu sistema de navegação (ex: React Navigation)
-    // Ex: navigation.navigate(screenId);
-    // ===================================================
+
   };
 
   return (
-    // O SafeAreaView garante que o conteúdo não se sobreponha à barra de status/notch
     <SafeAreaView style={styles.fullScreen}>
       <Header
         appName="AquaMonitor Pro"
         appLocation="Apto 1502 • Bloco A"
         logoUri="https://img.icons8.com/plasticine/100/water.png"
         notificationsCount={7}
-        // onNotificationsPress={handleNotificationsPress} // O Header agora gerencia seu próprio modal de notificações
         onMenuPress={handleMenuPress}
       />
 
@@ -47,7 +43,7 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      {/* Renderiza o Footer, passando a tela ativa e a função de navegação */}
+
       <Footer activeScreen={activeScreen} onNavigate={handleFooterNavigate} />
     </SafeAreaView>
   );
@@ -56,10 +52,10 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   fullScreen: {
     flex: 1,
-    backgroundColor: '#f5f5f5', // Um fundo claro para a tela
+    backgroundColor: '#f5f5f5', 
   },
   content: {
-    flex: 1, // Faz o conteúdo ocupar todo o espaço disponível entre Header e Footer
+    flex: 1, 
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
