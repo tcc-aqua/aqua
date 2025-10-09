@@ -1,18 +1,22 @@
+import Header from "@/components/layout/Header/page";
+import { Sidebar } from "@/components/modern-side-bar";
 
-import Footer from "@/components/Layout/Footer/Footer";
-import Header from "@/components/Layout/Header/Header";
+
 
 
 
 
 export default function Home() {
   return (
-  <>
-  <Header />
+    <main>
+      <header>
+        <Header></Header>
+      </header>
+      <div ><Sidebar></Sidebar></div>
+      
+    </main>
 
 
-  <Footer />
 
-  </>
   );
 }

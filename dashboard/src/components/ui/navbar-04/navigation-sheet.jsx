@@ -3,8 +3,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { Logo } from "./logo";
 import { NavMenu } from "./nav-menu";
-import { ModeToggle } from "../DarkMode/DarkMode";
-import { Separator } from "@radix-ui/react-dropdown-menu";
+import { ModeToggle } from "../../layout/DarkMode/page";
 
 export const NavigationSheet = () => {
   return (
@@ -14,16 +13,12 @@ export const NavigationSheet = () => {
           <Menu />
         </Button>
       </SheetTrigger>
-      <SheetContent className=" px-6 py-5">
-
+      <SheetContent className=" px-6 py-5 flex flex-col h-full ">
         <Logo />
+        <NavMenu orientation="vertical" className="container mx-auto grid grid-cols-1 [&>div]:h-full rounded-xl  p-7 max-h-[400px] "/>
 
-
-
-        <NavMenu orientation="vertical" className="mt-6 [&>div]:h-full ml-30 md:ml-0 boder shadow-accent-foreground " />
-
-        <div className="container mx-auto mt-8 border rounded-xl p-2 w-100 flex items-center justify-center gap-10">
-          <h1 className="font-bold whitespace-nowrap">Escolher modo</h1>
+        <div className="mt-auto container mx-auto shadow-md rounded-xl p-2 w-full gap-5 flex items-center justify-center dark:border-1 ">
+          <h1 className="font-bold whitespace-nowrap text-sm">Escolher modo</h1>
           <ModeToggle />
         </div>
       </SheetContent>
