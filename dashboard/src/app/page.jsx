@@ -1,6 +1,6 @@
+import Header from "@/components/layout/Header/page";
+import { Sidebar } from "@/components/modern-side-bar";
 
-import Footer from "@/components/Layout/Footer/page";
-import Header from "@/components/Layout/Header/page";
 
 
 
@@ -9,9 +9,11 @@ import Header from "@/components/Layout/Header/page";
 export default function Home() {
   return (
     <main>
-      <header><Header /></header>
-
-      <footer><Footer /></footer>
+      <header>
+        <Header></Header>
+      </header>
+      <div ><Sidebar></Sidebar></div>
+      
     </main>
 
 

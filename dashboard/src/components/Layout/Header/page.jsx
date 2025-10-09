@@ -1,8 +1,9 @@
-import Navbar04Page from "@/components/ui/navbar-04/navbar-04";
+
 
 export default function Header() {
     return (<>
-    <Navbar04Page />
+    <div className="mx-auto w-full h-20 bg-white fixed">
 
+    </div>
     </>);
 }
