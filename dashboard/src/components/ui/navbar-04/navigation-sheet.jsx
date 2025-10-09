@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { Logo } from "./logo";
 import { NavMenu } from "./nav-menu";
-import { ModeToggle } from "../../Layout/DarkMode/page";
+import { ModeToggle } from "../../layout/DarkMode/page";
 
 export const NavigationSheet = () => {
   return (
