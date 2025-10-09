@@ -1,8 +1,9 @@
 "use client";
 
+import { useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import {
   HomeIcon,
   BuildingIcon,
@@ -13,11 +14,9 @@ import {
   UsersIcon,
   ClockIcon,
   DollarSignIcon,
-  CheckCircleIcon,
 } from "lucide-react";
 
-
-
+// Dados dos benefícios
 const residenceBenefits = [
   {
     icon: TrendingDownIcon,
@@ -80,8 +79,7 @@ const companiesBenefits = [
   },
 ];
 
-
-
+// Animações
 const listVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -97,81 +95,98 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-
 const BenefitCard = ({ icon: Icon, title, description, color, bg }) => (
   <motion.div
     variants={itemVariants}
     transition={{ type: "tween", duration: 0.4 }}
-    className="h-full" 
+    className="h-full"
   >
     <Card className="h-full hover:shadow-lg transition-all duration-300 bg-white dark:bg-background border border-slate-200">
       <CardContent className="p-6">
         <div className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center mb-4`}>
           <Icon className={`w-6 h-6 ${color}`} />
         </div>
-        <h3 className="text-lg font-bold text-slate-900 mb-2">
-          {title}
-        </h3>
-        <p className="text-slate-600 text-sm leading-relaxed">
-          {description}
-        </p>
+        <h3 className="text-lg font-bold text-slate-900 mb-2">{title}</h3>
+        <p className="text-slate-600 text-sm leading-relaxed">{description}</p>
       </CardContent>
     </Card>
   </motion.div>
 );
 
+const BenefitList = ({ benefits }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, {
+    once: true,
+    amount: 0.2,
+  });
 
-const BenefitList = ({ benefits }) => (
-  <AnimatePresence mode="wait">
-    <motion.div
-      key={benefits[0].title} 
-      className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4"
-      initial="hidden"
-      animate="visible"
-      exit="hidden"
-      variants={listVariants}
-    >
-      {benefits.map((benefit, index) => (
-        <BenefitCard key={index} {...benefit} />
-      ))}
-    </motion.div>
-  </AnimatePresence>
-);
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={benefits[0].title}
+        ref={ref}
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4"
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+        exit="hidden"
+        variants={listVariants}
+      >
+        {benefits.map((benefit, index) => (
+          <BenefitCard key={index} {...benefit} />
+        ))}
+      </motion.div>
+    </AnimatePresence>
+  );
+};
 
 export default function AnimatedTabsDemo() {
-  return (
-    <div className="max-w-4xl w-full mx-auto p-4 sm:p-6">
-      <h2 className="text-5xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-center mb-15">
-        Nossos Benefícios
-      </h2>
-      <Tabs defaultValue="residences" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-4 bg-gray-100 dark:bg-background p-0 rounded-md ">
-          <TabsTrigger
-            value="residences"
-            className="flex items-center gap-2 py-2 data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm transition-all cursor-pointer"
-          >
-            <HomeIcon className="w-4 h-4" />
-            Para Residências
-          </TabsTrigger>
-          <TabsTrigger
-            value="companies"
-            className="flex items-center gap-2 py-2 data-[state=active]:bg-white  data-[state=active]:text-blue-700 data-[state=active]:shadow-sm transition-all cursor-pointer"
-          >
-            <BuildingIcon className="w-4 h-4" />
-            Para Empresas
-          </TabsTrigger>
-        </TabsList>
+  const sectionRef = useRef(null);
+  const sectionInView = useInView(sectionRef, {
+    once: true,
+    amount: 0.3,
+  });
 
-        <div className="mt-4 p-0">
-       
-          <TabsContent value="residences">
-            <BenefitList benefits={residenceBenefits} />
-          </TabsContent>
-          <TabsContent value="companies">
-            <BenefitList benefits={companiesBenefits} />
-          </TabsContent>
-        </div>
-      </Tabs>
-    </div>
+  return (
+    <motion.section
+      ref={sectionRef}
+      initial={{ opacity: 0, y: 20 }}
+      animate={sectionInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay: 0.2 }}
+      className="py-20 lg:py-12"
+    >
+      <div className="max-w-4xl w-full mx-auto p-4 sm:p-6">
+        <h2 className="text-5xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-center mb-15">
+          Nossos Benefícios
+        </h2>
+
+        <Tabs defaultValue="residences" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4 bg-gray-100 dark:bg-background p-0 rounded-md">
+            <TabsTrigger
+              value="residences"
+              className="flex items-center gap-2 py-2 data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm transition-all cursor-pointer"
+            >
+              <HomeIcon className="w-4 h-4" />
+              Para Residências
+            </TabsTrigger>
+            <TabsTrigger
+              value="companies"
+              className="flex items-center gap-2 py-2 data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm transition-all cursor-pointer"
+            >
+              <BuildingIcon className="w-4 h-4" />
+              Para Empresas
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="mt-4 p-0">
+            <TabsContent value="residences">
+              <BenefitList benefits={residenceBenefits} />
+            </TabsContent>
+            <TabsContent value="companies">
+              <BenefitList benefits={companiesBenefits} />
+            </TabsContent>
+          </div>
+        </Tabs>
+      </div>
+    </motion.section>
   );
 }
