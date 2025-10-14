@@ -32,22 +32,22 @@ export default function RootLayout({ children }) {
           disableTransitionOnChange
         >
 
-          <Header className="fixed top-0 left-0 w-full z-10" />
+          <Header className="fixed top-0 left-0 w-full z-100" />
 
-          <div className="flex min-h-screen "> 
-        
-            <div className="flex-shrink-0 z-20">
+          <div className="flex min-h-screen">
+
+            <div className="fixed left-0 top-0 h-screen w-64 z-200 ">
               <Sidebar />
             </div>
 
-  
-            <div className="container mx-auto flex-1 p-20">
+
+            <div className="flex-1 ml-64 p-20">
               <PageTransitionWrapper>
                 {children}
               </PageTransitionWrapper>
-              
             </div>
           </div>
+
         </ThemeProvider>
       </body>
     </html>
