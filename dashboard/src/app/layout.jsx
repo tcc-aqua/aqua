@@ -4,6 +4,7 @@ import { ThemeProvider } from "../components/layout/DarkMode/theme-provider";
 import Header from "../components/layout/Header/page";
 import { Sidebar } from "@/components/modern-side-bar";
 import PageTransitionWrapper from "@/components/layout/AnimationBetweenPages/page";
+import { Toaster } from "sonner"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,6 +50,8 @@ export default function RootLayout({ children }) {
           </div>
 
         </ThemeProvider>
+
+        <Toaster richColors position="top-right" theme="system" />
       </body>
     </html>
   );

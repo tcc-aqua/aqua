@@ -148,7 +148,7 @@ export function Sidebar({ className = "" }) {
                     )}
                   </Link>
 
-                  {/* Tooltip para colapsado */}
+             
                   {isCollapsed && (
                     <div className="fixed left-[4.5rem] px-2 py-1 bg-accent text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
                       {item.name}
@@ -209,7 +209,7 @@ export function Sidebar({ className = "" }) {
       </div>
 
       <div className={`transition-all duration-300 ease-in-out w-full ${isCollapsed ? "md:ml-20" : "md:ml-72"}`}>
-        {/* Conteúdo principal */}
+       
       </div>
     </>
   );
