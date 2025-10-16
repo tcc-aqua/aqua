@@ -64,7 +64,7 @@ const Stats01Page = () => {
   const [ref, inView] = useInView({ threshold: 0.4 });
 
   return (
-    <div className="flex items-center justify-center bg-[#eff6ff80] bg-background border shadow-inner container lg:w-250  rounded-3xl mx-auto mt-20">
+    <div className="flex items-center justify-center bg-[#eff6ff80] dark:bg-[#0a5280] border border-primary shadow-inner container lg:w-250  rounded-3xl mx-auto mt-20">
       <div ref={ref} className=" mx-auto py-12 text-center">
         <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter">
         Por que somos a melhor escolha?

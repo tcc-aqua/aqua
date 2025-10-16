@@ -17,7 +17,7 @@ const Contact02Page = () => (
     viewport={{ once: true, margin: "-100px" }}
     className="bg-background flex items-center justify-center py-16"
   >
-    <div className="w-full max-w-(--breakpoint-xl) mx-auto px-6 xl:px-0">
+    <div className="w-full max-w-screen-xl mx-auto px-6 xl:px-0">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -124,7 +124,7 @@ const Contact02Page = () => (
           transition={{ duration: 0.6, delay: 0.3 }}
           viewport={{ once: true }}
         >
-          <Card className="bg-blue-100 shadow-none py-0">
+          <Card className="bg-blue-100 dark:bg-[#0a5280] shadow-none py-0">
             <CardContent className="p-6 md:p-8">
               <form>
                 <div className="grid md:grid-cols-2 gap-x-8 gap-y-6">
@@ -139,7 +139,7 @@ const Contact02Page = () => (
                     <Input
                       placeholder="Seu nome"
                       id="firstName"
-                      className="mt-2 bg-white h-10 shadow-none" />
+                      className="mt-2 bg-white h-10 shadow-none placeholder-opacity-100" />
                   </motion.div>
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
@@ -152,7 +152,7 @@ const Contact02Page = () => (
                     <Input
                       placeholder="Seu sobrenome"
                       id="lastName"
-                      className="mt-2 bg-white h-10 shadow-none" />
+                      className="mt-2 bg-white h-10 shadow-none placeholder-opacity-100" />
                   </motion.div>
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -166,7 +166,7 @@ const Contact02Page = () => (
                       type="email"
                       placeholder="seuemail@exemplo.com"
                       id="email"
-                      className="mt-2 bg-white h-10 shadow-none" />
+                      className="mt-2 bg-white h-10 shadow-none placeholder-opacity-100" />
                   </motion.div>
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -179,7 +179,7 @@ const Contact02Page = () => (
                     <Textarea
                       id="message"
                       placeholder="Nos diga mais sobre sua residência ou condomínio. Nossa equipe entrará em contato."
-                      className="mt-2 bg-white shadow-none"
+                      className="mt-2 bg-white shadow-none placeholder-opacity-100"
                       rows={6} />
                   </motion.div>
                   <motion.div

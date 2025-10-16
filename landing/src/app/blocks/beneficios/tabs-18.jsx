@@ -16,70 +16,71 @@ import {
   DollarSignIcon,
 } from "lucide-react";
 
-// Dados dos benefícios
+// BENEFÍCIOS PARA RESIDÊNCIAS INDIVIDUAIS
 const residenceBenefits = [
   {
     icon: TrendingDownIcon,
-    title: "Economia Comprovada",
-    description: "Reduza sua conta de água em até 40% com monitoramento inteligente.",
+    title: "Economia Direta",
+    description: "Controle o consumo de água em tempo real e reduza gastos desnecessários em até 40%.",
     color: "text-emerald-600",
     bg: "bg-emerald-50",
   },
   {
     icon: AlertTriangleIcon,
-    title: "Alertas Instantâneos",
-    description: "Receba notificações imediatas sobre vazamentos ou consumo anômalo.",
+    title: "Detecção de Vazamentos",
+    description: "Receba alertas automáticos ao identificar picos de consumo ou possíveis vazamentos.",
     color: "text-blue-600",
     bg: "bg-blue-50",
   },
   {
     icon: BarChart3Icon,
-    title: "Controle Total",
-    description: "Acompanhe seu consumo em tempo real e defina metas personalizadas.",
+    title: "Consumo Sob Controle",
+    description: "Visualize seu histórico de consumo e crie metas personalizadas mês a mês.",
     color: "text-purple-600",
     bg: "bg-purple-50",
   },
   {
     icon: LeafIcon,
-    title: "Sustentabilidade",
-    description: "Contribua para preservação da água e reduza seu impacto ambiental.",
+    title: "Mais Sustentável",
+    description: "Reduza seu impacto ambiental com hábitos conscientes e medição automatizada.",
     color: "text-green-600",
     bg: "bg-green-50",
   },
 ];
 
-const companiesBenefits = [
+// BENEFÍCIOS PARA CONDOMÍNIOS (SÍNDICOS / ADMINISTRADORES)
+const condominiumBenefits = [
   {
     icon: UsersIcon,
-    title: "Gestão Escalável",
-    description: "Gerencie milhares de usuários com dashboard profissional e API completa.",
+    title: "Gestão Centralizada",
+    description: "Gerencie todas as unidades do condomínio com relatórios automatizados e visão unificada.",
     color: "text-blue-600",
     bg: "bg-blue-50",
   },
   {
     icon: BarChart3Icon,
-    title: "Analytics Avançado",
-    description: "Relatórios detalhados, filtragem por região e análise de sazonalidade.",
+    title: "Relatórios Inteligentes",
+    description: "Visualize o consumo por bloco ou unidade e facilite a divisão justa da conta coletiva.",
     color: "text-purple-600",
     bg: "bg-purple-50",
   },
   {
     icon: ClockIcon,
-    title: "Operação 24/7",
-    description: "Monitoramento contínuo com alertas automáticos para sua equipe.",
+    title: "Monitoramento Contínuo",
+    description: "Acompanhe o uso de água em tempo real com alertas automáticos para anomalias.",
     color: "text-emerald-600",
     bg: "bg-emerald-50",
   },
   {
     icon: DollarSignIcon,
-    title: "ROI Garantido",
-    description: "Reduza custos operacionais e aumente satisfação dos clientes.",
+    title: "Redução de Custos",
+    description: "Identifique desperdícios e otimize o uso coletivo de água para economizar recursos.",
     color: "text-orange-600",
     bg: "bg-orange-50",
   },
 ];
 
-// Animações
+// ANIMAÇÕES
 const listVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -95,24 +96,26 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+// COMPONENTE DE CARTÃO DE BENEFÍCIO
 const BenefitCard = ({ icon: Icon, title, description, color, bg }) => (
   <motion.div
     variants={itemVariants}
     transition={{ type: "tween", duration: 0.4 }}
     className="h-full"
   >
-    <Card className="h-full hover:shadow-lg transition-all duration-300 bg-white dark:bg-background border border-slate-200">
+    <Card className="h-full hover:shadow-lg transition-all duration-300 bg-white dark:bg-[#0a5280] border dark:border-primary">
       <CardContent className="p-6">
-        <div className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center mb-4`}>
-          <Icon className={`w-6 h-6 ${color}`} />
+        <div className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center mb-4 dark:bg-zinc-200`}>
+          <Icon className={`w-6 h-6 ${color} `} />
         </div>
-        <h3 className="text-lg font-bold text-slate-900 mb-2">{title}</h3>
-        <p className="text-slate-600 text-sm leading-relaxed">{description}</p>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{title}</h3>
+        <p className="text-slate-600 text-sm leading-relaxed dark:text-white">{description}</p>
       </CardContent>
     </Card>
   </motion.div>
 );
 
+// COMPONENTE DE LISTA DE BENEFÍCIOS
 const BenefitList = ({ benefits }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, {
@@ -139,6 +142,7 @@ const BenefitList = ({ benefits }) => {
   );
 };
 
+// COMPONENTE PRINCIPAL
 export default function AnimatedTabsDemo() {
   const sectionRef = useRef(null);
   const sectionInView = useInView(sectionRef, {
@@ -169,11 +173,11 @@ export default function AnimatedTabsDemo() {
               Para Residências
             </TabsTrigger>
             <TabsTrigger
-              value="companies"
+              value="condominiums"
               className="flex items-center gap-2 py-2 data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm transition-all cursor-pointer"
             >
               <BuildingIcon className="w-4 h-4" />
-              Para Empresas
+              Para Condomínios
             </TabsTrigger>
           </TabsList>
 
@@ -181,8 +185,8 @@ export default function AnimatedTabsDemo() {
             <TabsContent value="residences">
               <BenefitList benefits={residenceBenefits} />
             </TabsContent>
-            <TabsContent value="companies">
-              <BenefitList benefits={companiesBenefits} />
+            <TabsContent value="condominiums">
+              <BenefitList benefits={condominiumBenefits} />
             </TabsContent>
           </div>
         </Tabs>
