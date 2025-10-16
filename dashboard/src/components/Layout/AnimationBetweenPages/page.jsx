@@ -1,24 +1,30 @@
-import { BrowserRouter as Router, Route, Routes, useLoaderData, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
-import DashBoardAdmin from '@/app/dashboard/page';
+"use client";
 
-function AnimationBetweenPages() {
-    const location = useLocation();
+import { AnimatePresence, motion } from "framer-motion";
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 
-    return (
-        <AnimatePresence mode='wait' >
-            <Routes location={location} key={location.pathname}>
-                <Route path="/dashboard" element={<DashBoardAdmin />} />
-            </Routes>
-        </AnimatePresence>
-    );
-}
+export default function PageTransitionWrapper({ children }) {
+  const pathname = usePathname();
+  const [isClient, setIsClient] = useState(false);
 
+  useEffect(() => {
+    setIsClient(true); 
+  }, []);
 
-export default function AnimatedRoutes() {
-    return (
-        <Router>
-            <AnimationBetweenPages />
-        </Router>
-    );
+  if (!isClient) return <>{children}</>; 
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={pathname}
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 30 }}
+        transition={{ duration: 0.4 }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
 }
