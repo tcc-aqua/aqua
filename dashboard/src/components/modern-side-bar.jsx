@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Home,
   User,
@@ -30,7 +32,8 @@ const navigationItems = [
 export function Sidebar({ className = "" }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [activeItem, setActiveItem] = useState("dashboard");
+
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleResize = () => {
@@ -43,12 +46,6 @@ export function Sidebar({ className = "" }) {
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
-  const handleItemClick = (itemId) => {
-    setActiveItem(itemId);
-    if (window.innerWidth < 768) {
-      setIsOpen(false);
-    }
-  };
 
   return (
     <>
@@ -73,12 +70,11 @@ export function Sidebar({ className = "" }) {
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           ${isCollapsed ? "w-28" : "w-78"}
           md:translate-x-0 md:static md:z-auto
-
           overflow-hidden
           ${className}
         `}
       >
-        <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/60">
+        <div className="flex items-center justify-between p-3.5 border-b border-slate-200 bg-slate-50/60">
           {!isCollapsed ? (
             <div className="flex items-center space-x-2.5">
               <div className="w-9 h-9 bg-accent rounded-lg flex items-center justify-center shadow-sm">
@@ -90,7 +86,7 @@ export function Sidebar({ className = "" }) {
               </div>
             </div>
           ) : (
-            <div className="w-9 h-9 bg-accent rounded-lg flex items-center justify-center mx-auto shadow-sm">
+            <div className="w-9 h-10 bg-accent rounded-lg flex items-center justify-center mx-auto shadow-sm">
               <span className="text-white font-bold text-base">A</span>
             </div>
           )}
@@ -121,20 +117,23 @@ export function Sidebar({ className = "" }) {
           <ul className="space-y-0.5">
             {navigationItems.map((item) => {
               const Icon = item.icon;
-              const isActive = activeItem === item.id;
+              const isActive = pathname === item.href;
 
               return (
                 <li key={item.id} className="relative">
-                  <button
-                    onClick={() => handleItemClick(item.id)}
+                  <Link
+                    href={item.href}
                     className={`w-full flex items-center transition-all duration-200 group text-foreground dark:text-secondary dark:focus:text-accent-foreground hover:scale-99
                       ${isCollapsed ? "justify-center px-2 py-2.5" : "space-x-2.5 px-3 py-2.5"}
-                      ${isActive ? "focus:bg-accent focus:text-accent-foreground" : "hover:text-accent"}
+                      ${isActive ? "focus:bg-muted focus:border-r-accent focus:border-r-5 focus:text-accent-foreground" : "hover:text-accent"}
                       rounded-md text-left`}
                     title={isCollapsed ? item.name : undefined}
+                    onClick={() => {
+                      if (window.innerWidth < 768) setIsOpen(false);
+                    }}
                   >
                     <div className="flex items-center justify-center min-w-[24px]">
-                      <Icon className={`h-5 w-5 ${isActive ? "text-muted" : "text-slate-500 group-hover:text-accent "}`} />
+                      <Icon className={`h-5 w-5 ${isActive ? "text-foregraund" : "text-slate-500 group-hover:text-accent "}`} />
                     </div>
 
                     {!isCollapsed && (
@@ -147,9 +146,9 @@ export function Sidebar({ className = "" }) {
                         )}
                       </div>
                     )}
-                  </button>
+                  </Link>
 
-                  {/* Tooltip para colapsado */}
+             
                   {isCollapsed && (
                     <div className="fixed left-[4.5rem] px-2 py-1 bg-accent text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
                       {item.name}
@@ -164,11 +163,6 @@ export function Sidebar({ className = "" }) {
             })}
           </ul>
         </nav>
-        {/* 
-        <div className="mt-auto container mx-auto shadow-md rounded-xl p-2 w-full gap-5 flex items-center justify-center dark:border-1">
-          <h1 className="font-bold whitespace-nowrap text-sm">Escolher modo</h1>
-          <ModeToggle />
-        </div> */}
 
         <div className="mt-auto border-t border-slate-200">
           <div className={`border-b border-slate-200 bg-slate-50/30 ${isCollapsed ? 'py-3 px-2' : 'p-3'}`}>
@@ -196,17 +190,13 @@ export function Sidebar({ className = "" }) {
           </div>
 
           <div className="p-3">
-            <button
-              onClick={() => handleItemClick("logout")}
-              className={`w-full flex items-center rounded-md text-left transition-all duration-200 group text-red-600 hover:bg-red-50 hover:text-red-700 ${isCollapsed ? "justify-center p-2.5" : "space-x-2.5 px-3 py-2.5"
-                }`}
-              title={isCollapsed ? "Sair" : undefined}
+            <Link
+              href="/logout"
+              className={`w-full flex items-center rounded-md text-left transition-all duration-200 group text-red-600 hover:bg-red-50 hover:text-red-700 ${isCollapsed ? "justify-center p-2.5" : "space-x-2.5 px-3 py-2.5"}`}
             >
-              <div className="flex items-center justify-center min-w-[24px]">
-                <LogOut className="h-5 w-5 flex-shrink-0 text-red-500 group-hover:text-red-600" />
-              </div>
+              <LogOut className="h-5 w-5 flex-shrink-0 text-red-500 group-hover:text-red-600" />
               {!isCollapsed && <span className="text-sm">Sair</span>}
-            </button>
+            </Link>
 
             {isCollapsed && (
               <div className="fixed left-[4.5rem] px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
@@ -219,7 +209,7 @@ export function Sidebar({ className = "" }) {
       </div>
 
       <div className={`transition-all duration-300 ease-in-out w-full ${isCollapsed ? "md:ml-20" : "md:ml-72"}`}>
-        {/* Conteúdo principal aqui */}
+       
       </div>
     </>
   );
