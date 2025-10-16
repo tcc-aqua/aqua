@@ -18,12 +18,12 @@ export default function Home() {
 
     <>
 
-      <div className="bg-gradient-to-b from-5% from-blue-200 to-15% to-white dark:bg-background dark:bg-none">
+      <div className="bg-gradient-to-b from-5% from-blue-200 to-15% to-white dark:bg-[#032a43] dark:bg-none">
         <header>
           <Navbar04Page />
         </header>
 
-        <main className="container  mx-auto">
+        <main className="container  mx-auto" id="home">
 
           <Main />
         </main>
@@ -34,6 +34,7 @@ export default function Home() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
         className="py-20 lg:py-12"
+        id="sobre"
         >
           <Features01Page />
           </motion.section>

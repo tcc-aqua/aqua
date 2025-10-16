@@ -129,7 +129,7 @@ const PlanCard = ({ plan }) => (
     variants={itemVariants}
     transition={{ type: "tween", duration: 0.4 }}
     className={cn("relative p-6 bg-background border px-8", {
-      "shadow-[0px_2px_10px_0px_rgba(0,0,0,0.1)] py-14 z-1 px-10 lg:-mx-2 overflow-hidden":
+      "shadow-[0px_2px_10px_0px_rgba(0,0,0,0.1)] py-14 z-1 px-10 lg:-mx-2 overflow-hidden dark:bg-[#084266] border border-pr":
         plan.isPopular,
     })}
   >
@@ -217,7 +217,7 @@ const Pricing04 = () => {
           <TabsList className="h-11 bg-background border rounded-full ">
             <TabsTrigger
               value="residencial"
-              className="px-4 rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground cursor-pointer"
+              className="px-4 rounded-full data-[state=active]:bg-primary  data-[state=active]:text-primary-foreground cursor-pointer"
             >
               Residência
             </TabsTrigger>
@@ -238,7 +238,7 @@ const Pricing04 = () => {
           animate="visible"
           exit="hidden"
           variants={listVariants}
-          className="mt-12 sm:mt-16 max-w-screen-lg mx-auto grid grid-cols-1 lg:grid-cols-3 items-center gap-8 lg:gap-0"
+          className="mt-12 sm:mt-16 max-w-screen-lg mx-auto grid grid-cols-1 lg:grid-cols-3 items-center gap-8 lg:gap-0" 
         >
           {plans.map((plan) => (
             <PlanCard key={plan.name} plan={plan} />

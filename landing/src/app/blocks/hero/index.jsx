@@ -34,7 +34,7 @@ const Main = ({
                 <div className="flex flex-col gap-7 lg:w-2/3">
                     <h2 className="text-5xl font-semibold text-foreground md:text-5xl lg:text-8xl">
                         <span>{heading}</span>
-                        <span className="text-[#0084d1]">{subheading}</span>
+                        <span className="text-[#0084d1] ">{subheading}</span>
                     </h2>
                     <p className="text-base text-muted-foreground md:text-lg lg:text-xl">
                         {description}
@@ -45,15 +45,15 @@ const Main = ({
                         transition={{ duration: 0.6, delay: 0.2 }}
                         className="flex flex-wrap gap-6 text-sm"
                     >
-                        <div className="flex items-center gap-2 text-slate-700">
+                        <div className="flex items-center gap-2 text-slate-700 dark:text-white">
                             <div className="w-2 h-2 bg-emerald-500 rounded-full" />
                             Detecção automática de vazamentos
                         </div>
-                        <div className="flex items-center gap-2 text-slate-700">
+                        <div className="flex items-center gap-2 text-slate-700 dark:text-white">
                             <div className="w-2 h-2 bg-blue-500 rounded-full" />
                             Alertas em tempo real
                         </div>
-                        <div className="flex items-center gap-2 text-slate-700">
+                        <div className="flex items-center gap-2 text-slate-700 dark:text-white">
                             <div className="w-2 h-2 bg-purple-500 rounded-full" />
                             Economia comprovada
                         </div>

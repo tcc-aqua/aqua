@@ -122,11 +122,11 @@ const Features04Page = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <Card className="bg-white dark:bg-background border-2 border-slate-200 shadow-lg">
+            <Card className="bg-white dark:bg-[#0a5280] border-2 dark:border-primary shadow-lg">
               <CardContent className="p-8">
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 bg-blue-100 dark:bg-background rounded-full flex items-center justify-center">
-                    <QuoteIcon className="w-6 h-6 text-blue-600 " />
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-[#0a5280] rounded-full flex items-center justify-center">
+                    <QuoteIcon className="w-6 h-6 text-blue-600 dark:text-card" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-slate-900 mb-2 dark:text-white">
