@@ -18,7 +18,7 @@ export default function ConfirmChanges() {
 
   const handleConfirm = () => {
     setOpen(false)
-    toast.success("Alterações salvas com sucesso!") // popup do sonner
+    toast.success("Alterações salvas com sucesso!")
   }
 
   return (
