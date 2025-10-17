@@ -20,10 +20,10 @@ import {
 import { ModeToggle } from './layout/DarkMode/page';
 
 const navigationItems = [
-  { id: "dashboard", name: "Dashboard", icon: Home, href: "/dashboard" },
+  { id: "dashboard", name: "Dashboard", icon: Home, href: "/" },
   { id: "analytics", name: "Análises", icon: BarChart3, href: "/analytics" },
   { id: "documents", name: "Documentos", icon: FileText, href: "/documents", badge: "3" },
-  { id: "notifications", name: "Notificações", icon: Bell, href: "/notifications", badge: "12" },
+  { id: "notifications", name: "Notificações", icon: Bell, href: "/notifications", badge: "1" },
   { id: "profile", name: "Perfil", icon: User, href: "/profile" },
   { id: "settings", name: "Configurações", icon: Settings, href: "/settings" },
   { id: "help", name: "Ajuda e Suporte", icon: HelpCircle, href: "/help" },

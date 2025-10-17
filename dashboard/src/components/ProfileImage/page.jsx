@@ -28,16 +28,15 @@ export default function FotoPerfil() {
   };
 
   return (
-    <div className="flex flex-col items-center mt-6 space-y-4 relative">
+    <div className="flex flex-col items-end mt-6 mr-10 space-y-4 relative">
       <div className="relative">
      
         <img
           src={foto}
           alt="Foto de perfil"
-          className="w-32 h-32 object-cover rounded-full border-2"
+          className="w-50 h-50 object-cover rounded-full border-2"
         />
 
-        {/* Lápis com dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="absolute -mt-8 ml-21 bg-muted text-secondary p-2 rounded-full shadow hover:bg-accent hover:text-white">

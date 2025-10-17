@@ -22,9 +22,9 @@ export default function ConfirmChanges() {
   }
 
   return (
-    <section className="grid grid-cols-2 gap-4 mx-auto max-w-md p-1 mt-2">
+    <section className="grid grid-cols-2 gap-4 mx-auto max-w-lg p-1 mt-2">
    
-      <h1 className="text-sm text-start mt-1">
+      <h1 className="text-sm text-start mt-2">
         Salvar todas as alterações feitas?
       </h1>
 
@@ -32,7 +32,7 @@ export default function ConfirmChanges() {
       <div className="flex justify-end gap-4">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="default" className="text-sm h-7">Confirmar</Button>
+            <Button variant="default" className="text-sm ">Confirmar</Button>
           </DialogTrigger>
 
           <DialogContent>

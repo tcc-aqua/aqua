@@ -1,9 +1,15 @@
 "use client";
 
-import { Mail, CheckCircle, XCircle } from "lucide-react";
+import { Mail, Check, X } from "lucide-react";
 
-export default function InputProfile({ nome, sobrenome, role, telefone, telefoneVerificado, email }) {
-
+export default function InputProfile({
+  nome,
+  sobrenome,
+  role,
+  telefone,
+  telefoneVerificado,
+  email,
+}) {
   const handleChangeEmail = () => {
     const newEmail = prompt("Digite seu novo e-mail:", email);
     if (newEmail) {
@@ -13,10 +19,10 @@ export default function InputProfile({ nome, sobrenome, role, telefone, telefone
 
   return (
     <>
-
-      <section className="grid grid-cols-2 gap-4 mx-auto max-w-md mt-6">
+   
+      <section className="grid grid-cols-2 gap-4 mx-auto max-w-sm md:max-w-lg mt-6">
         <div>
-          <label className="text-sm mb-1">Nome</label>
+          <label className="text-sm mb-1 block">Nome</label>
           <input
             type="text"
             value={nome}
@@ -26,7 +32,7 @@ export default function InputProfile({ nome, sobrenome, role, telefone, telefone
         </div>
 
         <div>
-          <label className="text-sm mb-1">Sobrenome</label>
+          <label className="text-sm mb-1 block">Sobrenome</label>
           <input
             type="text"
             value={sobrenome}
@@ -36,10 +42,10 @@ export default function InputProfile({ nome, sobrenome, role, telefone, telefone
         </div>
       </section>
 
-
-      <section className="grid grid-cols-2 gap-4 mx-auto max-w-md mt-2">
+     
+      <section className="grid grid-cols-2 gap-4 mx-auto max-w-sm md:max-w-lg mt-2">
         <div>
-          <label className="text-sm mb-1">Role</label>
+          <label className="text-sm mb-1 block">Função</label>
           <input
             type="text"
             value={role}
@@ -49,10 +55,10 @@ export default function InputProfile({ nome, sobrenome, role, telefone, telefone
         </div>
       </section>
 
-
-      <section className="grid grid-cols-2 gap-4 mx-auto max-w-md mt-2 ">
+    
+      <section className="grid grid-cols-2 gap-4 mx-auto max-w-sm md:max-w-lg mt-2 relative">
         <div>
-          <label className="text-sm mb-1">Telefone</label>
+          <label className="text-sm mb-1 block">Telefone</label>
           <input
             type="text"
             value={telefone}
@@ -60,25 +66,27 @@ export default function InputProfile({ nome, sobrenome, role, telefone, telefone
             className="w-full border rounded-md p-2 bg-gray-100 text-gray-600 cursor-not-allowed text-sm"
           />
         </div>
-        <div className="flex items-center gap-1 mt-6 ml-29">
-          {telefoneVerificado ? (
-            <>
-              <CheckCircle className="text-green-500" size={16} />
-              <span className="text-xs text-green-600">Verificado</span>
-            </>
-          ) : (
-            <>
-              <XCircle className="text-red-500" size={16} />
-              <span className="text-xs text-red-600">Não Verificado</span>
-            </>
-          )}
+
+        <div className="relative">
+          <div className="absolute top-9 right-0 md:right-[-3rem] flex items-center gap-1 whitespace-nowrap">
+            {telefoneVerificado ? (
+              <>
+                <Check className="text-green-500" size={12} />
+                <span className="text-[9px] text-green-600">Verificado</span>
+              </>
+            ) : (
+              <>
+                <X className="text-red-500" size={12} />
+                <span className="text-[9px] text-red-600">Não Verificado</span>
+              </>
+            )}
+          </div>
         </div>
       </section>
 
-
-      <section className="grid grid-cols-2 gap-4 mx-auto max-w-md mt-2">
+      <section className="grid grid-cols-2 gap-4 mx-auto max-w-sm md:max-w-lg mt-2">
         <div>
-          <label className="text-sm mb-1">Email</label>
+          <label className="text-sm mb-1 block">Email</label>
           <input
             type="text"
             value={email}
@@ -86,17 +94,16 @@ export default function InputProfile({ nome, sobrenome, role, telefone, telefone
             className="w-full border rounded-md p-2 bg-gray-100 text-gray-600 cursor-not-allowed text-sm"
           />
         </div>
-        <div className="flex items-center mt-6 ml-28">
+        <div className="flex items-center mt-7 justify-end md:justify-start md:ml-[12rem]">
           <button
             onClick={handleChangeEmail}
-            className="flex items-center border rounded-md p-1 px-5 text-gray-700 hover:text-accent text-xs"
+            className="flex items-center border rounded-md p-1 px-5 text-gray-700 hover:text-accent text-xs whitespace-nowrap"
           >
             <Mail size={16} />
-            <span className="ml-1">Change</span>
+            <span className="ml-1">Change Email</span>
           </button>
         </div>
       </section>
-
     </>
   );
 }
