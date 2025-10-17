@@ -2,10 +2,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Field,
-  FieldDescription,
   FieldGroup,
-  FieldLabel,
-  FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 
@@ -14,22 +11,28 @@ export function LoginForm({
   ...props
 }) {
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
-      <FieldGroup>
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Organize suas
-leituras com o Skoob!
-</h1>
-          <p className="text-muted-foreground text-sm text-balance">
-          Escolha uma das opções abaixo para continuar.
+    <form className={cn("flex flex-col gap-6 w-full max-w-lg mx-auto", className)} {...props}>
+      <FieldGroup className="space-y-6">
+        <div className="flex flex-col items-center gap-4 text-white">
+          <h1 className="text-4xl md:text-4xl lg:text-6xl font-bold">
+           Bem-vindo ao Sistema Aqua!
+          </h1>
+          <p className="text-lg md:text-xl text-white">
+            Monitore o consumo de água, atribua alertas e inative usuários.
           </p>
         </div>
-       
-       
-        <Field>
-          <Button type="submit">Login</Button>
-        </Field>
-       
+
+        <div className="space-y-4 w-full">
+          <Field>
+            <Button
+              type="submit"
+              className="w-full h-20 rounded-full text-lg font-semibold cursor-pointer bg-[#1d9bf0]"
+            >
+              Acessar minha conta
+            </Button>
+          </Field>
+        </div>
+
       </FieldGroup>
     </form>
   );
