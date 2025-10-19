@@ -1,109 +1,92 @@
 "use client";
 
-import { Mail, Check, X } from "lucide-react";
+import { Mail, Check, X, User, Globe, Phone } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
-export default function InputProfile({
-  nome,
-  sobrenome,
-  role,
-  telefone,
-  telefoneVerificado,
-  email,
-}) {
+export default function InputProfile() {
+  const telefone = "(11) 91234-5678";
+  const telefoneVerificado = false;
+  const email = "thiago@example.com";
+  const nome = "Thiago";
+  const sobrenome = "Silva";
+  const role = "Administrador";
+  const localizacao = "São Paulo, Brasil";
+
   const handleChangeEmail = () => {
     const newEmail = prompt("Digite seu novo e-mail:", email);
-    if (newEmail) {
-      console.log("Novo e-mail:", newEmail);
-    }
+    if (newEmail) console.log("Novo e-mail:", newEmail);
   };
 
   return (
-    <>
+    <div className="mx-auto max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4">
    
-      <section className="grid grid-cols-2 gap-4 mx-auto max-w-sm md:max-w-lg mt-6">
-        <div>
-          <label className="text-sm mb-1 block">Nome</label>
-          <input
-            type="text"
-            value={nome}
-            readOnly
-            className="w-full border rounded-md p-2 bg-gray-100 text-gray-600 cursor-not-allowed text-sm"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm mb-1 block">Sobrenome</label>
-          <input
-            type="text"
-            value={sobrenome}
-            readOnly
-            className="w-full border rounded-md p-2 bg-gray-100 text-gray-600 cursor-not-allowed text-sm"
-          />
-        </div>
-      </section>
+      <Card className="shadow-md hover:shadow-lg transition-shadow">
+        <CardContent className="flex justify-between items-center py-2">
+          <div>
+            <p className="text-sm font-medium">Nome</p>
+            <p className="text-sm text-muted-foreground">
+              {nome} {sobrenome}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <User size={16} /> Editar
+          </Button>
+        </CardContent>
+      </Card>
 
      
-      <section className="grid grid-cols-2 gap-4 mx-auto max-w-sm md:max-w-lg mt-2">
-        <div>
-          <label className="text-sm mb-1 block">Função</label>
-          <input
-            type="text"
-            value={role}
-            readOnly
-            className="w-full border rounded-md p-2 bg-gray-100 text-gray-600 cursor-not-allowed text-sm"
-          />
-        </div>
-      </section>
-
-    
-      <section className="grid grid-cols-2 gap-4 mx-auto max-w-sm md:max-w-lg mt-2 relative">
-        <div>
-          <label className="text-sm mb-1 block">Telefone</label>
-          <input
-            type="text"
-            value={telefone}
-            readOnly
-            className="w-full border rounded-md p-2 bg-gray-100 text-gray-600 cursor-not-allowed text-sm"
-          />
-        </div>
-
-        <div className="relative">
-          <div className="absolute top-9 right-0 md:right-[-3rem] flex items-center gap-1 whitespace-nowrap">
+      <Card className="shadow-md hover:shadow-lg transition-shadow">
+        <CardContent className="flex justify-between items-center py-2">
+          <div>
+            <p className="text-sm font-medium">Telefone</p>
+            <p className="text-sm text-muted-foreground">{telefone}</p>
+          </div>
+          <div className="flex items-center gap-1">
             {telefoneVerificado ? (
               <>
-                <Check className="text-green-500" size={12} />
-                <span className="text-[9px] text-green-600">Verificado</span>
+                <Check className="text-green-500" size={14} />
+                <span className="text-xs text-green-600">Verificado</span>
               </>
             ) : (
               <>
-                <X className="text-red-500" size={12} />
-                <span className="text-[9px] text-red-600">Não Verificado</span>
+                <X className="text-red-500" size={14} />
+                <span className="text-xs text-red-600">Não verificado</span>
               </>
             )}
           </div>
-        </div>
-      </section>
+        </CardContent>
+      </Card>
 
-      <section className="grid grid-cols-2 gap-4 mx-auto max-w-sm md:max-w-lg mt-2">
-        <div>
-          <label className="text-sm mb-1 block">Email</label>
-          <input
-            type="text"
-            value={email}
-            readOnly
-            className="w-full border rounded-md p-2 bg-gray-100 text-gray-600 cursor-not-allowed text-sm"
-          />
-        </div>
-        <div className="flex items-center mt-7 justify-end md:justify-start md:ml-[12rem]">
-          <button
+      <Card className="shadow-md hover:shadow-lg transition-shadow">
+        <CardContent className="flex justify-between items-center py-2">
+          <div>
+            <p className="text-sm font-medium">E-mail</p>
+            <p className="text-sm text-muted-foreground">{email}</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleChangeEmail}
-            className="flex items-center border rounded-md p-1 px-5 text-gray-700 hover:text-accent text-xs whitespace-nowrap"
+            className="flex items-center gap-2"
           >
-            <Mail size={16} />
-            <span className="ml-1">Change Email</span>
-          </button>
-        </div>
-      </section>
-    </>
+            <Mail size={16} /> Alterar
+          </Button>
+        </CardContent>
+      </Card>
+
+  
+      <Card className="shadow-md hover:shadow-lg transition-shadow">
+        <CardContent className="flex justify-between items-center py-2">
+          <div>
+            <p className="text-sm font-medium">Localização</p>
+            <p className="text-sm text-muted-foreground">{localizacao}</p>
+          </div>
+          <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <Globe size={16} /> Editar
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -14,10 +14,9 @@ import {
   BarChart3,
   FileText,
   Bell,
-  Search,
   HelpCircle
 } from 'lucide-react';
-import { ModeToggle } from './layout/DarkMode/page';
+
 
 const navigationItems = [
   { id: "dashboard", name: "Dashboard", icon: Home, href: "/" },
@@ -100,18 +99,6 @@ export function Sidebar({ className = "" }) {
           </button>
         </div>
 
-        {!isCollapsed && (
-          <div className="px-4 py-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Buscar..."
-                className="w-full pl-9 pr-4 py-2  border border-border rounded-md text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-              />
-            </div>
-          </div>
-        )}
 
         <nav className="flex-1 px-3 py-2 overflow-y-auto">
           <ul className="space-y-0.5">
@@ -127,7 +114,7 @@ export function Sidebar({ className = "" }) {
                       w-full flex items-center transition-all duration-200
                       ${isCollapsed ? "justify-center px-2 py-2.5" : "space-x-2.5 px-3 py-2.5"}
                       rounded-md text-left
-                      ${isActive ? "bg-muted border-r-4 border-accent text-accent-foreground" : "text-sidebar-foreground hover:text-accent"}
+                      ${isActive ? "bg-muted border-r-4 border-accent text-accent" : "text-sidebar-foreground hover:text-accent"}
                     `}
                     title={isCollapsed ? item.name : undefined}
                     onClick={() => {
@@ -135,7 +122,7 @@ export function Sidebar({ className = "" }) {
                     }}
                   >
                     <div className="flex items-center justify-center min-w-[24px]">
-                      <Icon className={`h-5 w-5 ${isActive ? "text-accent-foreground" : "text-muted-foreground group-hover:text-accent"}`} />
+                      <Icon className={`h-5 w-5 ${isActive ? "text-accent" : "text-muted-foreground group-hover:text-accent"}`} />
                     </div>
 
                     {!isCollapsed && (
@@ -164,8 +151,13 @@ export function Sidebar({ className = "" }) {
             })}
           </ul>
         </nav>
+        <div className="mt-auto border-t border-sidebar-border">
+          
+        </div>
 
         <div className="mt-auto border-t border-sidebar-border">
+          
+   
           <div className="p-3">
             <Link
               href="/logout"

@@ -1,32 +1,37 @@
 'use client';
 
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Search } from 'lucide-react';
 
 export default function Header() {
   const isMobile = useIsMobile();
 
   return (
-    <header className="mx-auto w-full h-17 bg-white fixed z-50">
-      <div className={` border-slate-200 ${isMobile ? 'py-3 px-2' : 'p-3'}`}>
-        {!isMobile ? (
-          <div className="flex items-center justify-end space-x-3 p-2 rounded-md bg-white transition-colors duration-200">
-            <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
-              <span className="text-slate-700 font-medium text-sm">JD</span>
-            </div>
-            <div className="min-w-0 mr-100">
-              <p className="text-sm font-medium text-slate-800 truncate">João da Silva</p>
-              <p className="text-xs text-slate-500 truncate">Administrador Sênior</p>
-            </div>
-            <div className="w-2 h-2 bg-green-500 rounded-full" title="Online" />
+    <header className="fixed top-0 left-0 w-full h-17 z-50 bg-card dark:bg-sidebar border-b border-border dark:border-sidebar-border">
+      <div className={`${isMobile ? 'py-3 px-2' : 'p-3'} flex items-center justify-end space-x-3`}>
+        
+        {!isMobile && (
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Buscar..."
+              className="w-full pl-9 pr-4 py-2 border border-border rounded-md text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+            />
           </div>
-        ) : (
-          <div className="flex justify-end">
-            <div className="relative">
-              <div className="w-9 h-9 bg-slate-200 rounded-full flex items-center justify-center">
-                <span className="text-slate-700 font-medium text-sm">JD</span>
-              </div>
-              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
-            </div>
+        )}
+
+        <div className="relative">
+          <div className="w-9 h-9 bg-muted rounded-full flex items-center justify-center">
+            <span className="text-foreground font-medium text-sm">JD</span>
+          </div>
+          <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-500 dark:bg-green-400 border-2 border-card dark:border-sidebar" title="Online" />
+        </div>
+
+        {!isMobile && (
+          <div className="min-w-0 ">
+            <p className="text-sm font-medium text-foreground truncate">João da Silva</p>
+            <p className="text-xs text-muted-foreground truncate">Administrador Sênior</p>
           </div>
         )}
       </div>
