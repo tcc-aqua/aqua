@@ -2,6 +2,7 @@ import sequelize from "../config/sequelize.js";
 import { DataTypes, Model } from "sequelize";
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs'
+import sequelizePaginate from 'sequelize-paginate'
 
 export default class User extends Model {
     // compare hash password
@@ -32,12 +33,19 @@ User.init({
         type: DataTypes.STRING(255),
         allowNull: false
     },
+    status: {
+        type: DataTypes.ENUM('ativo', 'inativo'),
+        defaultValue: 'ativo',
+        allowNull: false
+    },
     role: {
         type: DataTypes.ENUM('morador', 'sindico'),
+        defaultValue: 'morador',
         allowNull: false
     }
 }, {
     sequelize,
+    paranoid: true,
     tableName: 'users',
     timestamps: true,
     createdAt: 'createdAt',
@@ -45,7 +53,7 @@ User.init({
 
     // hooks hash password
     hooks: {
-
+        
         // hash create user
         beforeCreate: async (user, options) => {
             if (user.password) {
@@ -53,7 +61,7 @@ User.init({
                 user.password = await bcrypt.hash(user.password, salt);
             }
         },
-
+        
         // hash update user
         beforeUpdate: async (user, options) => {
             if (user.changed('password')) {
@@ -63,3 +71,5 @@ User.init({
         }
     }
 })
+
+sequelizePaginate.paginate(User);
