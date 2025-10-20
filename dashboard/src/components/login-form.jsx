@@ -4,7 +4,7 @@ import {
   Field,
   FieldGroup,
 } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import Link from "next/link"
 
 export function LoginForm({
   className,
@@ -24,12 +24,14 @@ export function LoginForm({
 
         <div className="space-y-4 w-full">
           <Field>
-            <Button
+            <Link href='./auth/email-login'>
+            <Button 
               type="submit"
               className="w-full h-20 rounded-full text-lg font-semibold cursor-pointer bg-[#1d9bf0]"
-            >
+              >
               Acessar minha conta
             </Button>
+              </Link>
           </Field>
         </div>
 

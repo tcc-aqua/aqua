@@ -21,7 +21,7 @@ export default function LoginPage() {
             <img src="./escrita-dark.png" className="w-18 mt-2" />
           </div>
 
-          <Instruction className="h-16 w-16" /> {/* ALTERAÇÃO AQUI: Aumentado para h-16 w-16 */}
+          <Instruction className="h-16 w-16" /> 
 
         </div>
 
