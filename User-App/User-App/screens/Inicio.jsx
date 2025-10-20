@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function Perfil() {
+export default function Inicio() { 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>CONTEÚDO DA TELA DE PERFIL</Text>
+      <Text style={styles.text}>CONTEÚDO DA TELA DE INÍC</Text>
     </View>
   );
 }
@@ -14,11 +14,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFF3E0', // Fundo laranja claro para diferenciar
+    backgroundColor: '#f5f5f5',
   },
   text: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#E65100', // Cor laranja escuro
   },
 });
