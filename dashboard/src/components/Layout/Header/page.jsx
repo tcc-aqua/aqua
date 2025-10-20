@@ -1,17 +1,18 @@
 'use client';
 
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Search } from 'lucide-react';
+import { Search, Bell } from 'lucide-react';
 
 export default function Header() {
   const isMobile = useIsMobile();
 
   return (
-    <header className="fixed top-0 left-0 w-full h-17 z-50 bg-card dark:bg-sidebar border-b border-border dark:border-sidebar-border">
+    <header className="fixed top-0 left-0 w-full h-18.5 z-50 bg-card dark:bg-sidebar border-b border-border dark:border-sidebar-border">
       <div className={`${isMobile ? 'py-3 px-2' : 'p-3'} flex items-center justify-end space-x-3`}>
         
+    
         {!isMobile && (
-          <div className="relative w-64">
+          <div className="flex items-center relative w-120">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
@@ -20,6 +21,11 @@ export default function Header() {
             />
           </div>
         )}
+
+        <div className="relative right-3 ">
+            <Bell className="absolute top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+
+          </div>
 
         <div className="relative">
           <div className="w-9 h-9 bg-muted rounded-full flex items-center justify-center">

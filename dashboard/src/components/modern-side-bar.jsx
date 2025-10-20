@@ -14,23 +14,31 @@ import {
   BarChart3,
   FileText,
   Bell,
-  HelpCircle
+  HelpCircle,
+  NotepadText,
+  Users,
+  IdCardLanyard
 } from 'lucide-react';
+import { useTheme } from "next-themes"
 
 
 const navigationItems = [
   { id: "dashboard", name: "Dashboard", icon: Home, href: "/" },
   { id: "analytics", name: "Análises", icon: BarChart3, href: "/analytics" },
   { id: "documents", name: "Documentos", icon: FileText, href: "/documents", badge: "3" },
-  { id: "notifications", name: "Notificações", icon: Bell, href: "/notifications", badge: "1" },
-  { id: "profile", name: "Perfil", icon: User, href: "/profile" },
+  // { id: "notifications", name: "Notificações", icon: Bell, href: "/notifications", badge: "1" }, colocar na header
+  { id: "plans", name: "Planos", icon: NotepadText, href: "/plans" },
+  { id: "contractors", name: "Contratantes", icon: Users, href: "/contractors" },
+  { id: "funcionarios", name: "Funcionários", icon: IdCardLanyard, href: "/funcionarios" },
+  {id: "profile", name: "Perfil", icon: User, href: "/profile" },
   { id: "settings", name: "Configurações", icon: Settings, href: "/settings" },
-  { id: "help", name: "Ajuda e Suporte", icon: HelpCircle, href: "/help" },
+  // { id: "help", name: "Ajuda e Suporte", icon: HelpCircle, href: "/help" },
 ];
 
 export function Sidebar({ className = "" }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+    const { theme } = useTheme();
 
   const pathname = usePathname();
 
@@ -75,18 +83,29 @@ export function Sidebar({ className = "" }) {
       >
         <div className="flex items-center justify-between p-3.5 border-b border-sidebar-border bg-sidebar/60">
           {!isCollapsed ? (
-            <div className="flex items-center space-x-2.5">
-              <div className="w-9 h-9 bg-accent rounded-lg flex items-center justify-center shadow-sm">
-                <span className="text-accent-foreground font-bold text-base">A</span>
+            <div className="flex items-center ">
+              <div className="w-10 rounded-lg flex items-center justify-center shadow-sm">
+                <span className="text-accent-foreground font-bold text-base">
+                  <img src="./logo.svg" alt="logo"/>
+                </span>
               </div>
               <div className="flex flex-col">
-                <span className="font-semibold text-muted-foreground text-base">Aqua</span>
-                <span className="text-xs text-muted-foreground">Painel Corporativo</span>
+                <span className="font-semibold text-muted-foreground text-base">
+                 {theme === "dark" ? (
+                  <img src="./escrita-dark.png" alt="aqua" className='w-15 ml-4 '  />
+                 ) : (
+                   <img src="./escrita.png" alt="aqua" className='w-15 ml-4 '  />
+            
+                 )}
+                </span>
+  
               </div>
             </div>
           ) : (
-            <div className="w-9 h-10 bg-accent rounded-lg flex items-center justify-center mx-auto shadow-sm">
-              <span className="text-accent-foreground font-bold text-base">A</span>
+            <div className="w-12  rounded-lg flex items-center justify-center mx-auto shadow-sm">
+              <span className="text-accent-foreground font-bold text-base">
+                 <img src="./logo.svg" alt="logo" className='' />
+              </span>
             </div>
           )}
 
@@ -100,7 +119,7 @@ export function Sidebar({ className = "" }) {
         </div>
 
 
-        <nav className="flex-1 px-3 py-2 overflow-y-auto">
+        <nav className="flex-1 px-3 py-2 overflow-y-auto mt-4">
           <ul className="space-y-0.5">
             {navigationItems.map((item) => {
               const Icon = item.icon;
