@@ -16,6 +16,7 @@ export function ModeToggle() {
     <div className="flex gap-4">
       {themes.map((t) => {
         const isActive = theme === t.id || (t.id === "system" && theme === "system")
+
         return (
           <button
             key={t.id}

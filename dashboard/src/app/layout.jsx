@@ -1,9 +1,9 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "../components/layout/DarkMode/theme-provider";
-import Header from "../components/layout/Header/page";
+import { ThemeProvider } from "../components/Layout/DarkMode/theme-provider";
+import Header from "../components/Layout/Header/page";
 import { Sidebar } from "@/components/modern-side-bar";
-import PageTransitionWrapper from "@/components/layout/AnimationBetweenPages/page";
+import PageTransitionWrapper from "@/components/Layout/AnimationBetweenPages/page";
 import { Toaster } from "sonner"
 
 const geistSans = Geist({

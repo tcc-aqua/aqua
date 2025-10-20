@@ -41,94 +41,94 @@ export default function AccountSecurityCard({ password }) {
   return (
 
     
-    // <div className="mx-auto max-w-lg space-y-3 ">
-    //   <Toaster position="top-right" richColors />
+    <div className="mx-auto max-w-lg space-y-10 ">
+      <Toaster position="top-right" richColors />
 
-    //   <Card>
-    //     <CardContent className="flex justify-between items-center">
-    //       <div className="flex flex-col">
-    //         <p className="text-sm font-medium flex items-center gap-2">
-    //           <KeyRound size={16} /> Senha
-    //         </p>
-    //         <p className="text-xs text-muted-foreground mt-1">
-    //           Atualize sua senha periodicamente para manter a segurança
-    //         </p>
-    //       </div>
-    //       <Button
-    //         variant="outline"
-    //         size="sm"
-    //         onClick={handleChangePassword}
-    //         className="flex items-center gap-1"
-    //       >
-    //         <KeyRound size={16} /> Alterar
-    //       </Button>
-    //     </CardContent>
-    //   </Card>
+      <Card>
+        <CardContent className="flex justify-between items-center">
+          <div className="flex flex-col">
+            <p className="text-sm font-medium flex items-center gap-2">
+              <KeyRound size={16} /> Senha
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Atualize sua senha periodicamente para manter a segurança
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleChangePassword}
+            className="flex items-center gap-1"
+          >
+            <KeyRound size={16} /> Alterar
+          </Button>
+        </CardContent>
+      </Card>
 
-    //   <Card>
-    //     <CardContent className="flex justify-between items-center">
-    //       <div className="flex flex-col">
-    //         <p className="text-sm font-medium flex items-center gap-2">
-    //           <Eye size={16} /> Onde Você Fez Login
-    //         </p>
-    //         <p className="text-xs text-muted-foreground mt-1">
-    //           Visualize todos os dispositivos e sessões ativas na sua conta
-    //         </p>
-    //       </div>
-    //       <Button
-    //         variant="outline"
-    //         size="sm"
-    //         onClick={handleViewSessions}
-    //         className="flex items-center gap-1"
-    //       >
-    //         <Eye size={16} /> Visualizar
-    //       </Button>
-    //     </CardContent>
-    //   </Card>
+      <Card>
+        <CardContent className="flex justify-between items-center">
+          <div className="flex flex-col">
+            <p className="text-sm font-medium flex items-center gap-2">
+              <Eye size={16} /> Onde Você Fez Login
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Visualize todos os dispositivos e sessões ativas na sua conta
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleViewSessions}
+            className="flex items-center gap-1"
+          >
+            <Eye size={16} /> Visualizar
+          </Button>
+        </CardContent>
+      </Card>
 
-    //   <Card>
-    //     <CardContent className="flex justify-between items-center">
-    //       <div className="flex flex-col">
-    //         <p className="text-sm font-medium flex items-center gap-2">
-    //           <ShieldCheck size={16} /> Autenticação em 2 Etapas
-    //         </p>
-    //         <p className="text-xs text-muted-foreground mt-1">
-    //           Adicione uma camada extra de segurança à sua conta
-    //         </p>
-    //       </div>
-    //       <Button
-    //         variant="outline"
-    //         size="sm"
-    //         onClick={handleEnable2FA}
-    //         className="flex items-center gap-1"
-    //       >
-    //         <ShieldCheck size={16} /> Ativar
-    //       </Button>
-    //     </CardContent>
-    //   </Card>
+      {/* <Card>
+        <CardContent className="flex justify-between items-center">
+          <div className="flex flex-col">
+            <p className="text-sm font-medium flex items-center gap-2">
+              <ShieldCheck size={16} /> Autenticação em 2 Etapas
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Adicione uma camada extra de segurança à sua conta
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleEnable2FA}
+            className="flex items-center gap-1"
+          >
+            <ShieldCheck size={16} /> Ativar
+          </Button>
+        </CardContent>
+      </Card> */}
 
-    //   <Card>
-    //     <CardContent className="flex justify-between items-center">
-    //       <div className="flex flex-col">
-    //         <p className="text-sm font-medium flex items-center gap-2">
-    //           <LogOut size={16} /> Encerrar Sessões Remotas
-    //         </p>
-    //         <p className="text-xs text-muted-foreground mt-1">
-    //           Encerre todas as sessões em outros dispositivos conectados
-    //         </p>
-    //       </div>
-    //       <Button
-    //         variant="destructive"
-    //         size="sm"
-    //         onClick={handleLogoutOtherDevices}
-    //         className="flex items-center gap-1"
-    //       >
-    //         <LogOut size={16} /> Encerrar
-    //       </Button>
-    //     </CardContent>
-    //   </Card>
+      <Card>
+        <CardContent className="flex justify-between items-center">
+          <div className="flex flex-col">
+            <p className="text-sm font-medium flex items-center gap-2">
+              <LogOut size={16} /> Encerrar Sessões Remotas
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Encerre todas as sessões em outros dispositivos conectados
+            </p>
+          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleLogoutOtherDevices}
+            className="flex items-center gap-1"
+          >
+            <LogOut size={16} /> Encerrar
+          </Button>
+        </CardContent>
+      </Card>
 
-  <div className="mx-auto max-w-4xl">
+  {/* <div className="mx-auto max-w-4xl">
       <Toaster position="top-right" richColors />
 
       
@@ -136,8 +136,8 @@ export default function AccountSecurityCard({ password }) {
         <Card>
           <CardContent className="flex justify-between items-center">
             <div className="flex flex-col">
-              <p className="text-xs font-medium flex items-center gap-2">
-                <KeyRound size={16} /> Senha
+              <p className="text-sm font-medium flex items-center gap-2">
+              Senha
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Atualize sua senha periodicamente para manter a segurança
@@ -157,8 +157,8 @@ export default function AccountSecurityCard({ password }) {
         <Card>
           <CardContent className="flex justify-between items-center">
             <div className="flex flex-col">
-              <p className="text-xs font-medium flex items-center gap-2">
-                <Eye size={16} /> Onde Você Fez Login
+              <p className="text-sm font-medium flex items-center gap-2">
+                Onde Você Fez Login
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Visualize todos os dispositivos e sessões ativas na sua conta
@@ -178,8 +178,8 @@ export default function AccountSecurityCard({ password }) {
         <Card>
           <CardContent className="flex justify-between items-center">
             <div className="flex flex-col">
-              <p className="text-xs font-medium flex items-center gap-2">
-                <ShieldCheck size={16} /> Autenticação em 2 Etapas
+              <p className="text-sm font-medium flex items-center gap-2">
+              Autenticação em 2 Etapas
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Adicione uma camada extra de segurança à sua conta
@@ -199,8 +199,8 @@ export default function AccountSecurityCard({ password }) {
         <Card>
           <CardContent className="flex justify-between items-center">
             <div className="flex flex-col">
-              <p className="text-xs font-medium flex items-center gap-2">
-                <LogOut size={16} /> Encerrar Sessões Remotas
+              <p className="text-sm font-medium flex items-center gap-2">
+              Encerrar Sessões Remotas
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Encerre todas as sessões em outros dispositivos conectados
@@ -216,7 +216,7 @@ export default function AccountSecurityCard({ password }) {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       
 

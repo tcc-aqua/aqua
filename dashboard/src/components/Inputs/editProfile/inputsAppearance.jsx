@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Activity, Layout, Info, Sun } from "lucide-react";
-import { ModeToggle } from "../layout/DarkMode/page";
+import { ModeToggle } from "@/components/Layout/DarkMode/page";
 
 export default function InputAppearance() {
   const [sidebarCompact, setSidebarCompact] = useState(false);
