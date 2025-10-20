@@ -1,8 +1,11 @@
+// Arquivo: index.js
+
 import { registerRootComponent } from 'expo';
 
-import App from './screens/App';
+// CORREÇÃO:
+// A linha abaixo agora aponta para o arquivo 'app.jsx' que está na MESMA pasta
+// que o index.js. Este é o caminho correto.
+import App from './app'; 
 
-// registerRootComponent calls AppRegistry.registerComponent('main', () => App);
-// It also ensures that whether you load the app in Expo Go or in a native build,
-// the environment is set up appropriately
+// O resto continua igual
 registerRootComponent(App);
