@@ -1,8 +1,10 @@
-export default function errorHandler(err, req, res, next) {
-    console.error(err); // log completo
+export default async function errorHandler(fastify) {
+  fastify.setErrorHandler((err, req, reply) => {
+    console.error(err); // log do erro completo
 
-    const status = err.status || 500;
+    const status = err.statusCode || 500;
     const message = err.message || 'Erro interno do servidor';
-    
-    res.status(status).json({message})
+
+    reply.status(status).send({ message });
+  });
 }
