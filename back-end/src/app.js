@@ -10,6 +10,6 @@ const fastify = Fastify({
 
 fastify.get('/', (req, reply) => {
     return reply.status(200).send('Hello API!')
-})  
+})
 
 export default fastify;
