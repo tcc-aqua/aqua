@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export default function InputProfile() {
   const telefone = "(11) 91234-5678";
-  const telefoneVerificado = false;
+  const telefoneVerificado = true;
   const email = "thiago@example.com";
   const nome = "Thiago";
   const sobrenome = "Silva";
@@ -36,7 +36,7 @@ export default function InputProfile() {
       </Card>
 
      
-      <Card className="shadow-md hover:shadow-lg transition-shadow">
+      {/* <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardContent className="flex justify-between items-center py-2">
           <div>
             <p className="text-sm font-medium">Telefone</p>
@@ -56,7 +56,7 @@ export default function InputProfile() {
             )}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardContent className="flex justify-between items-center py-2">
@@ -76,7 +76,7 @@ export default function InputProfile() {
       </Card>
 
   
-      <Card className="shadow-md hover:shadow-lg transition-shadow">
+      {/* <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardContent className="flex justify-between items-center py-2">
           <div>
             <p className="text-sm font-medium">Localização</p>
@@ -86,7 +86,7 @@ export default function InputProfile() {
             <Globe size={16} /> Editar
           </Button>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }

@@ -10,14 +10,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function FotoPerfil() {
-  const [foto, setFoto] = useState("/default-avatar.png");
+export default function FotoPerfilEmpresa() {
+  const [foto, setFoto] = useState("/logo.svg");
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
 
-  const nome = "Thiago";
-  const sobrenome = "Henrique do Nascimento Pereira";
-  const role = "Frontend Developer";
+  const nome = "Aqua";
+  const sobrenome = '';
+  const role = "Painel Administrativo";
 
   const handleUpload = (e) => {
     const file = e.target.files[0];
@@ -29,7 +29,7 @@ export default function FotoPerfil() {
 
   const handleRemove = () => {
     setFile(null);
-    setFoto("/default-avatar.png");
+    setFoto("/logo.svg");
   };
 
   return (
@@ -39,12 +39,12 @@ export default function FotoPerfil() {
         <img
           src={foto}
           alt="Foto de perfil"
-          className="h-32 w-32 md:h-40 md:w-40 object-cover rounded-full border-2"
+          className="h-32 w-32 md:h-40 md:w-40 object-cover rounded-full "
         />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="absolute bottom-2 right-2 bg-muted text-secondary p-2 rounded-full shadow hover:bg-accent hover:text-white">
+            <button className="absolute bottom-2 right-2 bg-muted dark:text-muted-foreground text-secondary p-2 rounded-full shadow hover:bg-accent hover:text-white">
               <Pencil size={18} />
             </button>
           </DropdownMenuTrigger>
@@ -71,7 +71,7 @@ export default function FotoPerfil() {
           <CardTitle className="text-lg font-semibold whitespace-nowrap">
             {nome} {sobrenome}
           </CardTitle>
-          <p className="text-sm text-muted-foreground">{role}</p>
+          <p className="text-sm text-muted-foreground whitespace-nowrap ">{role}</p>
         </CardHeader>
       </div>
 
