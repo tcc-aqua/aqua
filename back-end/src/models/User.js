@@ -60,8 +60,8 @@ User.init({
     paranoid: true,
     tableName: 'users',
     timestamps: true,
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
+    createdAt: 'criado_em',
+    updatedAt: 'atualizado_em',
 
     // hooks hash password
     hooks: {

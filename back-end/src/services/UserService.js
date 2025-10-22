@@ -8,7 +8,7 @@ export default class UserService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['createdAt', 'DESC']],
+                order: [['criado_em', 'DESC']],
                 attributes: { exclude: ['password'] }
             }
             const users = await User.paginate(options);
