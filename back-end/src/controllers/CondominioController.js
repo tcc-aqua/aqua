@@ -1,4 +1,5 @@
 import CondominioService from "../services/Condominio.js";
+import { z } from 'zod';
 
 const createCondominioSchema = z.object({
     name: z.string(),
