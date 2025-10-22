@@ -1,7 +1,8 @@
-import { Model, DataTypes } from "sequelize";
+import { MoAdminel, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs'
+import sequelizePaginate from 'sequelize-paginate'
 
 export default class Admin extends Model {
     // compare hash password
@@ -27,11 +28,11 @@ Admin.init({
     },
     type: {
         type: DataTypes.ENUM('superadmin', 'admin'),
+        default: 'admin',
         allowNull: false
     },
     status: {
         type: DataTypes.ENUM('ativo', 'inativo'),
-        allowNull: false,
         defaultValue: 'ativo'
     }
 }, {
@@ -60,3 +61,4 @@ Admin.init({
         }
     }
 })
+sequelizePaginate.paginate(Admin);

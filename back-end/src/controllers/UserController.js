@@ -1,13 +1,13 @@
 import UserService from "../services/UserService.js";
 import { z } from 'zod';
 
-const createUserSchema = z.object({
-    name: z.string(),
-    email: z.string().email(),
-    cpf: z.string().length(14),
-    password: z.string().min(6),
-    role: z.enum(['morador', 'sindico']).optional(),
-})
+// const createUserSchema = z.object({
+//     name: z.string(),
+//     email: z.string().email(),
+//     cpf: z.string().length(14),
+//     password: z.string().min(6),
+//     role: z.enum(['morador', 'sindico']).optional(),
+// })
 
 const updateUserSchema = z.object({
     name: z.string().optional(),
@@ -47,11 +47,11 @@ export default class UserController {
         return reply.status(200).send(users);
     }
 
-    static async create(req, reply) {
-        const validateUser = createUserSchema.parse(req.body);
-        const user = await UserService.createUser(validateUser);
-        return reply.status(201).send(user);
-    }
+    // static async create(req, reply) {
+    //     const validateUser = createUserSchema.parse(req.body);
+    //     const user = await UserService.createUser(validateUser);
+    //     return reply.status(201).send(user);
+    // }
 
     static async update(req, reply) {
         const validatedUser = updateUserSchema.parse(req.body);
