@@ -37,14 +37,14 @@ export default function AccountSecurityCard({ password }) {
   return (
 
     
-    <div className="mx-auto max-w-lg space-y-10 ">
+    <div className="mx-auto max-w-lg space-y-4 ">
       <Toaster position="top-right" richColors />
 
       <Card>
         <CardContent className="flex justify-between items-center">
           <div className="flex flex-col">
             <p className="text-sm font-medium flex items-center gap-2">
-              <KeyRound size={16} /> Senha
+            Senha
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Atualize sua senha periodicamente para manter a segurança
@@ -54,7 +54,7 @@ export default function AccountSecurityCard({ password }) {
             variant="outline"
             size="sm"
             onClick={handleChangePassword}
-            className="flex items-center gap-1"
+            className="flex items-center gap-2"
           >
             <KeyRound size={16} /> Alterar
           </Button>
@@ -65,7 +65,7 @@ export default function AccountSecurityCard({ password }) {
         <CardContent className="flex justify-between items-center">
           <div className="flex flex-col">
             <p className="text-sm font-medium flex items-center gap-2">
-              <Eye size={16} /> Onde Você Fez Login
+             Onde Você Fez Login
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Visualize todos os dispositivos e sessões ativas na sua conta
@@ -75,7 +75,7 @@ export default function AccountSecurityCard({ password }) {
             variant="outline"
             size="sm"
             onClick={handleViewSessions}
-            className="flex items-center gap-1"
+            className="flex items-center gap-2"
           >
             <Eye size={16} /> Visualizar
           </Button>
@@ -86,7 +86,7 @@ export default function AccountSecurityCard({ password }) {
         <CardContent className="flex justify-between items-center">
           <div className="flex flex-col">
             <p className="text-sm font-medium flex items-center gap-2">
-              <LogOut size={16} /> Encerrar Sessões Remotas
+           Encerrar Sessões Remotas
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Encerre todas as sessões em outros dispositivos conectados
@@ -96,7 +96,7 @@ export default function AccountSecurityCard({ password }) {
             variant="destructive"
             size="sm"
             onClick={handleLogoutOtherDevices}
-            className="flex items-center gap-1"
+            className="flex items-center gap-2"
           >
             <LogOut size={16} /> Encerrar
           </Button>

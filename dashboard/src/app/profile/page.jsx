@@ -10,7 +10,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import FotoPerfil from "@/components/AdmProfileImage/page";
+import FotoPerfil from "@/components/Inputs/editProfile/InputProfileEdit";
 import InputProfile from "@/components/Inputs/editProfile/InputProfile";
 import Inputpassword from "@/components/Inputs/editProfile/InputSecurity";
 import InputNotifications from "@/components/Inputs/editProfile/inputConfigNotifications";
@@ -50,7 +50,7 @@ export default function Profile() {
               <Separator />
               <CardContent className="space-y-4">
                 <FotoPerfil />
-                <InputProfile />
+              
               </CardContent>
             </Card>
           </motion.div>
@@ -76,32 +76,15 @@ export default function Profile() {
         </section>
 
         <section className="mx-auto  grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-          <motion.div
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
-            custom={0.6}
-          >
-            <Card className="bg-card rounded-md shadow-md h-auto  ">
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <ShieldCheck size={18} /> Account & Security
-                </CardTitle>
-              </CardHeader>
-              <Separator />
-              <CardContent className='space-y-2'>
-                <Inputpassword />
-              </CardContent>
-            </Card>
-          </motion.div>
 
-            <motion.div
+
+              <motion.div
             variants={cardVariants}
             initial="hidden"
             animate="visible"
             custom={0.6}
             >
-            <Card className="bg-card rounded-md shadow-md h-auto md:-mt-20">
+            <Card className="bg-card rounded-md shadow-md h-auto md:-mt-7 ">
               {/* w-[33rem] md:w-[90rem] */}
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -114,6 +97,26 @@ export default function Profile() {
               </CardContent>
             </Card>
           </motion.div>
+          <motion.div
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
+            custom={0.6}
+          >
+            <Card className="bg-card rounded-md shadow-md h-auto   ">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <ShieldCheck size={18} /> Account & Security
+                </CardTitle>
+              </CardHeader>
+              <Separator />
+              <CardContent className='space-y-2'>
+                <Inputpassword />
+              </CardContent>
+            </Card>
+          </motion.div>
+
+        
         </section>
       </main>
     </>

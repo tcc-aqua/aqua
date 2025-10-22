@@ -1,4 +1,5 @@
-"use client";
+"use client" 
+
 import React, { useState, useEffect } from 'react';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,11 +26,11 @@ import { useTheme } from "next-themes"
 const navigationItems = [
   { id: "dashboard", name: "Dashboard", icon: Home, href: "/" },
   { id: "analytics", name: "Análises", icon: BarChart3, href: "/analytics" },
-  { id: "documents", name: "Documentos", icon: FileText, href: "/documents", badge: "3" },
+  // { id: "documents", name: "Documentos", icon: FileText, href: "/documents", badge: "3" },
   // { id: "notifications", name: "Notificações", icon: Bell, href: "/notifications", badge: "1" }, colocar na header
   { id: "plans", name: "Planos", icon: NotepadText, href: "/plans" },
   { id: "contractors", name: "Contratantes", icon: Users, href: "/contractors" },
-  { id: "funcionarios", name: "Funcionários", icon: IdCardLanyard, href: "/funcionarios" },
+  { id: "tecnicos", name: "Técnicos", icon: IdCardLanyard, href: "/funcionarios" },
   {id: "profile", name: "Perfil", icon: User, href: "/profile" },
   { id: "settings", name: "Configurações", icon: Settings, href: "/settings" },
   // { id: "help", name: "Ajuda e Suporte", icon: HelpCircle, href: "/help" },

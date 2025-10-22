@@ -53,12 +53,12 @@ export default function CardTop() {
     return (
         <section className="grid grid-cols-4 gap-4 mt-5 p-4">
             {cards.map((card, index) => (
-                <motion.div
-                    key={index}
-                    variants={cardVariants}
-                    initial='hidden'
-                    animate='visible'
-                    custom={index * 0.1}>
+                    <motion.div
+                           variants={cardVariants}
+                           initial="hidden"
+                           animate="visible"
+                           custom={0}
+                         >
                     <Card className="shadow-md hover:shadow-lg transition-shadow">
                         <CardHeader>
                             <CardTitle>{card.title}</CardTitle>

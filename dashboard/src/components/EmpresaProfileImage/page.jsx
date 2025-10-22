@@ -33,16 +33,16 @@ export default function FotoPerfilEmpresa() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-center md:items-start gap-6 p-4">
+    <div className="flex flex-col md:flex-row items-center md:items-start gap-6 ">
     
       <div className="relative">
         <img
           src={foto}
           alt="Foto de perfil"
-          className="h-32 w-32 md:h-40 md:w-40 object-cover rounded-full "
+          className="h-15 w-15  object-cover rounded-full "
         />
 
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="absolute bottom-2 right-2 bg-muted dark:text-muted-foreground text-secondary p-2 rounded-full shadow hover:bg-accent hover:text-white">
               <Pencil size={18} />
@@ -63,10 +63,10 @@ export default function FotoPerfilEmpresa() {
               Remover
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
       </div>
 
-      <div className=" items-center -ml-80 md:ml-0 text-center md:text-left md:mt-8">
+      <div className=" items-center -ml-80 md:ml-0 text-center md:text-left">
         <CardHeader className="p-0">
           <CardTitle className="text-lg font-semibold whitespace-nowrap">
             {nome} {sobrenome}

@@ -43,12 +43,12 @@ export default function Settings() {
             <Card className="bg-card rounded-md shadow-md h-auto">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold">
-                Empresa Settings 
+                  <FotoPerfilEmpresa></FotoPerfilEmpresa>
                 </CardTitle>
               </CardHeader>
               <Separator />
               <CardContent className="space-y-4">
-                <FotoPerfilEmpresa></FotoPerfilEmpresa>
+              
               <InputEmpresaSettings></InputEmpresaSettings>
               </CardContent>
             </Card>
