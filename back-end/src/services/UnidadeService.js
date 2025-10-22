@@ -51,6 +51,16 @@ export default class UnidadeService {
         }
     }
 
+    static async countUnidades(){
+        try {
+            const unidades = await Unidade.count();
+            return unidades;
+        } catch (error) {
+            console.error('Erro ao listar contagem de unidades.', error);
+            throw error;
+        }
+    }
+
     static async createUnidades({ condominio_id, numero, bloco, numero_moradores, sensor_id }) {
         try {
             const unidade = await Unidade.create({

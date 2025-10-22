@@ -21,7 +21,7 @@ Unidade.init({
         allowNull: false
     },
     bloco: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: true
     },
     numero_moradores: {

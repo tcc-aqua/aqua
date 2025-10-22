@@ -23,46 +23,46 @@ export default class UserController {
 
     static async getAll(req, reply) {
         const users = await UserService.getAllUsers();
-        reply.send(users);
+        return reply.send(users);
     }
 
     static async getAllActives(req, reply) {
         const users = await UserService.getAllUserActives();
-        reply.send(users);
+        return reply.send(users);
     }
 
     static async getAllDeactivated(req, reply) {
         const users = await UserService.getAllUsersDeactivated();
-        reply.send(users);
+        return reply.send(users);
     }
 
     static async getById(req, reply) {
         const { id } = req.params;
         const user = await UserService.getUserById(id);
-        reply.send(user)
+        return reply.send(user)
     }
 
-    static async count(req, reply){
+    static async count(req, reply) {
         const users = await UserService.countUsers();
-        reply.status(200).send(users);
+        return reply.status(200).send(users);
     }
 
     static async create(req, reply) {
         const validateUser = createUserSchema.parse(req.body);
         const user = await UserService.createUser(validateUser);
-        reply.status(201).send(user);
+        return reply.status(201).send(user);
     }
 
     static async update(req, reply) {
         const validatedUser = updateUserSchema.parse(req.body);
         const updateUser = await UserService.updateUser(id, validatedUser);
-        reply.send(updateUser);
+        return reply.send(updateUser);
     }
 
     static async deactivate(req, reply) {
         const { id } = idSchema.parse(req.params);
         const user = await UserService.deactivateUser(id);
-        reply.status(200).send(user)
+        return reply.status(200).send(user)
     }
 
 }
