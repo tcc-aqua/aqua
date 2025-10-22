@@ -66,7 +66,7 @@ export default function FotoPerfil() {
         </DropdownMenu>
       </div>
 
-      <div className=" items-center -ml-80 md:ml-0 text-center md:text-left md:mt-8">
+      <div className=" items-center -ml-25 md:ml-0 text-center md:text-left md:mt-8">
         <CardHeader className="p-0">
           <CardTitle className="text-lg font-semibold whitespace-nowrap">
             {nome} {sobrenome}

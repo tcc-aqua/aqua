@@ -1,4 +1,5 @@
 
+import CardTop from "@/components/Cards/CardTopPadrao"
 import { ChartAreaInteractive } from "@/components/Charts/ChartArea"
 import { ChartBarHorizontal } from "@/components/Charts/ChartBarHorizontal"
 import { ChartPieSeparatorNone } from "@/components/Charts/ChartPie"
@@ -12,6 +13,9 @@ export default function Analytics() {
         </div>
 
         <main className="container mx-auto space-y-4 mt-5">
+
+       <CardTop></CardTop>
+
             <div className="grid grid-cols-1">
                 <ChartAreaInteractive></ChartAreaInteractive>
             </div>
