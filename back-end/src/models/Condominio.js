@@ -1,6 +1,7 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import User from "./User.js";
+import sequelizePaginate from 'sequelize-paginate'
 
 export default class Condominio extends Model {}
 
@@ -30,3 +31,5 @@ Condominio.init({
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em'
 })
+
+sequelizePaginate.paginate(Condominio);
