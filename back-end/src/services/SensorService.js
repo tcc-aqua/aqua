@@ -1,4 +1,3 @@
-import { where } from "sequelize";
 import Sensor from "../models/Sensor.js";
 
 export default class SensorService {
@@ -46,6 +45,28 @@ export default class SensorService {
             return sensores;
         } catch (error) {
             console.error('Erro ao listar sensores inativos', error);
+            throw error;
+        }
+    }
+
+    static async countSensores() {
+        try {
+            const sensores = await Sensor.count();
+            return sensores;
+        } catch (error) {
+            console.error('Erro ao listar contagem de sensores', error);
+            throw error;
+        }
+    }
+
+    static async countSensoresAtivos(){
+        try {
+            const sensores = await Sensor.count({
+                where: {status: 'ativo'}
+            })
+            return sensores;
+        } catch (error) {
+            console.error('Erro ao listar sensores ativos', error);
             throw error;
         }
     }

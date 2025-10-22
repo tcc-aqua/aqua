@@ -4,6 +4,7 @@ import errorHandler from './middlewares/errorHandler.js';
 import condominioRoutes from './routes/condominio.routes.js';
 import unidadesRoutes from './routes/unidade.routes.js'
 import casaRoutes from './routes/casa.routes.js';
+import sensorRoutes from './routes/sensor.routes.js';
 const fastify = Fastify({
     logger: {
         transport: {
@@ -20,6 +21,7 @@ await fastify.register(userRoutes, {prefix: '/api/users'});
 await fastify.register(condominioRoutes, {prefix: '/api/condominios'});
 await fastify.register(unidadesRoutes, {prefix: '/api/unidades'});
 await fastify.register(casaRoutes, {prefix: '/api/casas'});
+await fastify.register(sensorRoutes, {prefix: '/api/sensores'});
 await fastify.register(errorHandler);
 
 export default fastify;
