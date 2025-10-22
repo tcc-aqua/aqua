@@ -51,6 +51,18 @@ export default class CasaController {
         return reply.status(201).send(casa);
     }
 
+    static async inativar(req, reply) {
+        const { id } = req.body;
+        const casa = await CasaService.inativarCasa(id);
+        return reply.status(200).send(casa);
+    }
+
+    static async ativar(req, reply) {
+        const { id } = req.body;
+        const casa = await CasaService.ativarCasa(id);
+        return reply.status(200).send(casa);
+    }
+
 
 
 }
