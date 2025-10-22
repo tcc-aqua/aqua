@@ -51,7 +51,7 @@ export default class UnidadeService {
         }
     }
 
-    static async countUnidades(){
+    static async countUnidades() {
         try {
             const unidades = await Unidade.count();
             return unidades;
@@ -90,7 +90,7 @@ export default class UnidadeService {
         }
     }
 
-    static async inativarUnidade(id){
+    static async inativarUnidade(id) {
         try {
             const unidade = await Unidade.findByPk(id);
             if (!unidade) {
@@ -100,9 +100,26 @@ export default class UnidadeService {
                 status: 'inativo'
             })
 
-            return {message: 'Unidade inativada com sucesso!'}
+            return { message: 'Unidade inativada com sucesso!', unidade }
         } catch (error) {
             console.error('Erro ao inativar unidade', error);
+            throw error;
+        }
+    }
+
+    static async ativarUnidade(id) {
+        try {
+            const unidade = await Unidade.findByPk(id);
+            if (!unidade) {
+                throw new Error('Unidade não encontrada.')
+            }
+            await unidade.update({
+                status: 'ativo'
+            })
+
+            return { message: 'Unidade ativada com sucesso!', unidade }
+        } catch (error) {
+            console.error('Erro ao ativar unidade', error);
             throw error;
         }
     }

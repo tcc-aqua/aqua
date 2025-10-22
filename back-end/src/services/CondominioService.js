@@ -105,4 +105,19 @@ export default class CondominioService {
             throw error;
         }
     }
+
+    static async ativarCondominio(id){
+        try {
+            const condominio = await findByPk(id);
+            if(!condominio) {
+                throw new Error('Condominio não encontrado');
+            }
+
+            await condominio.update({ status: 'ativo' });
+            return {message: 'Condominio ativado com sucesso!'}
+        } catch (error) {
+            console.error('Erro ao ativar condominio');
+            throw error;
+        }
+    }
 }

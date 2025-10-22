@@ -136,4 +136,20 @@ export default class UserService {
             throw error;
         }
     }
+
+    static async ativarUser(id) {
+        try {
+            const user = await User.findByPk(id);
+            if (!user) {
+                throw new Error('Usuário não encontrado.')
+            }
+            await user.update({ status: 'ativo' });
+            const userWithoutPassword = user.toJSON();
+            delete userWithoutPassword.password;
+            return { message: 'Usuário ativado com sucesso!', user: userWithoutPassword };
+        } catch (error) {
+            console.error('Erro ao ativar usuário:', error);
+            throw error;
+        }
+    }
 }
