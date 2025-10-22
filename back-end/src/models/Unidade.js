@@ -45,3 +45,5 @@ Unidade.init({
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em'
 })
+
+sequelizePaginate.paginate(Unidade);

@@ -8,7 +8,6 @@ export default class CondominioService {
                 page,
                 paginate: limit,
                 order: [['criado_em', 'DESC']],
-                attributes: { exclude: ['password'] }
             }
             const condomonios = await Condominio.paginate(options);
             return condomonios;
@@ -89,7 +88,7 @@ export default class CondominioService {
                 throw new Error('Condominio não encontrado');
             }
 
-            await condominio.destroy();
+            await condominio.update({ status: 'inativo' });
             return {message: 'Condominio inativado com sucesso!'}
         } catch (error) {
             console.error('Erro ao inativar condominio');
