@@ -8,7 +8,7 @@ export default class UserService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['createdAt', 'DESC']],
+                order: [['criado_em', 'DESC']],
                 attributes: { exclude: ['password'] }
             }
             const users = await User.paginate(options);
@@ -25,7 +25,7 @@ export default class UserService {
                 page,
                 paginate: limit,
                 where: { status: 'ativo' },
-                order: [['createdAt', 'DESC']],
+                order: [['criado_em', 'DESC']],
                 attributes: { exclude: ['password'] }
             }
             const users = await User.paginate(options);
@@ -42,7 +42,7 @@ export default class UserService {
                 page,
                 paginate: limit,
                 where: { status: 'inativo' },
-                order: [['createdAt', 'DESC']],
+                order: [['criado_em', 'DESC']],
                 attributes: { exclude: ['password'] }
             }
             const users = await User.paginate(options);
@@ -66,10 +66,10 @@ export default class UserService {
         }
     }
 
-    static async createUser({ name, email, cpf, password }) {
+    static async createUser({ name, email, cpf, password, type, residencia_type, residencia_id }) {
         try {
             const user = await User.create({
-                name, email, cpf, password
+                name, email, cpf, password, type, residencia_type, residencia_id
             })
 
             // removendo a senha no retorno por questões de segurança
@@ -98,7 +98,7 @@ export default class UserService {
             if (password !== undefined) fieldsToUpdate.password = password;
             if (role !== undefined) fieldsToUpdate.role = role;
 
-            await user.update(fielsToUpdate);
+            await user.update(fieldsToUpdate);
 
             const userWithoutPassword = user.toJSON();
             delete userWithoutPassword.password;

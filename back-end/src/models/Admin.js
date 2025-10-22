@@ -1,32 +1,24 @@
+import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
-import { DataTypes, Model } from "sequelize";
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs'
-import sequelizePaginate from 'sequelize-paginate'
 
-export default class User extends Model {
+export default class Admin extends Model {
     // compare hash password
     async checkPassword(password) {
         return bcrypt.compare(password, this.password)
     }
 }
 
-User.init({
+
+Admin.init({
     id: {
         type: DataTypes.CHAR(36),
         primaryKey: true,
         defaultValue: () => uuidv4(),
     },
-    name: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-    },
     email: {
         type: DataTypes.STRING(255),
-        allowNull: false
-    },
-    cpf: {
-        type: DataTypes.CHAR(14),
         allowNull: false
     },
     password: {
@@ -34,36 +26,21 @@ User.init({
         allowNull: false
     },
     type: {
-        type: DataTypes.ENUM('casa', 'condominio'),
-        allowNull: false
-    },
-    residencia_type: {
-        type: DataTypes.ENUM('casa', 'condominio'),
-        allowNull: false
-    },
-    residencia_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.ENUM('superadmin', 'admin'),
         allowNull: false
     },
     status: {
         type: DataTypes.ENUM('ativo', 'inativo'),
-        defaultValue: 'ativo',
-        allowNull: false
-    },
-    role: {
-        type: DataTypes.ENUM('morador', 'sindico'),
-        defaultValue: 'morador',
-        allowNull: false
+        allowNull: false,
+        defaultValue: 'ativo'
     }
 }, {
     sequelize,
-    paranoid: true,
-    tableName: 'users',
+    tableName: 'admins',
     timestamps: true,
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em',
 
-    // hooks hash password
     hooks: {
         
         // hash create user
@@ -83,5 +60,3 @@ User.init({
         }
     }
 })
-
-sequelizePaginate.paginate(User);
