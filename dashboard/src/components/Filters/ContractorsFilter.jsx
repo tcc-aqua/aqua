@@ -35,7 +35,7 @@ export default function ContractorsFilter() {
     setEndDate("");
     setTipoContrato("all");
   };
-
+// teste
   return (
     <section className="container mx-auto p-4 bg-card rounded-md shadow-sm">
       <h2 className="text-lg font-semibold mb-4">Filtros de Contratos</h2>
