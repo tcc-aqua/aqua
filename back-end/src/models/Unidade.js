@@ -1,7 +1,8 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import Condominio from "./Condominio.js";
-import Sensores from "./Sensor.js";
+import sequelizePaginate from 'sequelize-paginate'
+import Sensor from "./Sensor.js";
 
 export default class Unidade extends Model {}
 
@@ -31,7 +32,7 @@ Unidade.init({
     sensor_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {references: Sensores, key: 'id'}
+        references: {model: Sensor, key: 'id'}
     },
     status: {
         type: DataTypes.ENUM('ativo', 'inativo'),

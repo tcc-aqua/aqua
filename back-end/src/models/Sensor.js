@@ -1,11 +1,11 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import { v4 as uuidv4 } from 'uuid';
-import bcrypt from 'bcryptjs'
+import sequelizePaginate from 'sequelize-paginate'
 
-export default class Sensores extends Model { }
+export default class Sensor extends Model { }
 
-Sensores.init({
+Sensor.init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -13,8 +13,8 @@ Sensores.init({
     },
     codigo: {
         type: DataTypes.CHAR(36),
-        primaryKey: true,
         defaultValue: () => uuidv4(),
+        unique: true
     },
     status: {
         type: DataTypes.ENUM('ativo', 'inativo'),
@@ -33,3 +33,5 @@ Sensores.init({
     tableName: 'sensores',
     timestamps: false
 })
+
+sequelizePaginate.paginate(Sensor);

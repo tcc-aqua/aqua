@@ -1,6 +1,4 @@
-import { where } from "sequelize";
 import Unidade from "../models/Unidade.js";
-import sequelizePaginate, { paginate } from 'sequelize-paginate'
 
 export default class UnidadeService {
 
