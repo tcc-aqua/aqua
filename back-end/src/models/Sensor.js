@@ -28,4 +28,8 @@ Sensores.init({
         type: DataTypes.DATE,
         allowNull: false
     }
+}, {
+    sequelize,
+    tableName: 'sensores',
+    timestamps: false
 })

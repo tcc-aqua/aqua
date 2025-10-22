@@ -1,28 +1,18 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
-import Condominio from "./Condominio.js";
-import Sensores from "./Sensor.js";
+import Sensores from "./Sensor";
 
-export default class Unidade extends Model {}
+export default class Casas extends Model {}
 
-Unidade.init({
+Casas.init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    condominio_id:{
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {model: Condominio, key: 'id'}
-    },
-    numero: {
-        type: DataTypes.INTEGER,
+    endereco: {
+        type: DataTypes.TEXT,
         allowNull: false
-    },
-    bloco: {
-        type: DataTypes.INTEGER,
-        allowNull: true
     },
     numero_moradores: {
         type: DataTypes.INTEGER,
@@ -40,7 +30,7 @@ Unidade.init({
     }
 }, {
     sequelize,
-    tableName: 'unidades',
+    tableName: 'casas',
     timestamps: true,
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em'
