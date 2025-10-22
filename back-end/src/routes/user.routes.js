@@ -8,6 +8,6 @@ export default async function userRoutes(fastify) {
     fastify.get('/:id', UserController.getById);
     fastify.put('/:id', UserController.update);
     fastify.post('/', UserController.create);
-    fastify.delete('/:id', UserController.deactivate);
+    fastify.put('/deactivate/:id', UserController.deactivate);
 
 }
