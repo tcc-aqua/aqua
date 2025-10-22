@@ -21,13 +21,18 @@ export default class CondominioController {
     }
 
     static async getAllActives(req, reply) {
-        const condominios = await CondominioController.getAllActives();
+        const condominios = await CondominioService.getAllActives();
         reply.status(200).send(condominios);
     }
 
     static async getAllInativos(req, reply) {
-        const condominios = await CondominioController.getAllInativos();
+        const condominios = await CondominioService.getAllInativos();
         reply.status(200).send(condominios);
+    }
+
+    static async count(req, reply) {
+        const condominiosTotais = await CondominioService.countAllCondominios();
+        reply.status(200).send(condominiosTotais);
     }
 
     static async create(req, reply) {

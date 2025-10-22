@@ -33,14 +33,18 @@ User.init({
         type: DataTypes.STRING(255),
         allowNull: false
     },
+    // representa de onde o usuário vem
     type: {
         type: DataTypes.ENUM('casa', 'condominio'),
         allowNull: false
     },
+    // indica para a residencia/unidade para atribuir para a tabela correta
+    // uma especie de polimorfismo em banco de dados
     residencia_type: {
         type: DataTypes.ENUM('casa', 'condominio'),
         allowNull: false
     },
+    // id da residencia
     residencia_id: {
         type: DataTypes.INTEGER,
         allowNull: false
@@ -54,7 +58,7 @@ User.init({
         type: DataTypes.ENUM('morador', 'sindico'),
         defaultValue: 'morador',
         allowNull: false
-    }
+    },
 }, {
     sequelize,
     paranoid: true,
@@ -85,3 +89,10 @@ User.init({
 })
 
 sequelizePaginate.paginate(User);
+
+/*
+| id | name  | residencia_type | residencia_id |
+| -- | ----- | --------------- | ------------- |
+| 1  | João  | casa            | 3             |
+| 2  | Maria | unidade         | 7             |
+*/

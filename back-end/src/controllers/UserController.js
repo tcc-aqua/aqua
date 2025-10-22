@@ -42,6 +42,11 @@ export default class UserController {
         reply.send(user)
     }
 
+    static async count(req, reply){
+        const users = await UserService.countUsers();
+        reply.status(200).send(users);
+    }
+
     static async create(req, reply) {
         const validateUser = createUserSchema.parse(req.body);
         const user = await UserService.createUser(validateUser);

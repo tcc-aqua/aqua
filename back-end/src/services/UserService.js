@@ -53,6 +53,16 @@ export default class UserService {
         }
     }
 
+    static async countUsers() {
+        try {
+            const users = await User.count();
+            return users;
+        } catch (error) {
+            console.error('Erro ao listar contagem de usuários', error);
+            throw error;
+        }
+    }
+
     static async getUserById(id) {
         try {
             const user = await User.findByPk(id);

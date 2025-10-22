@@ -51,6 +51,16 @@ export default class CondominioService {
         }
     }
 
+    static async countAllCondominios(){
+        try {
+            const condominiosTotais = await Condominio.count();
+            return condominiosTotais;
+        } catch (error){
+            console.error('Erro ao contar condominios', error);
+            throw error;
+        }
+    }
+
     static async createCondominio({ name, endereco, sindico_id }) {
         try {
             const condominio = await Condominio({
