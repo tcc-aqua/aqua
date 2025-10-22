@@ -33,6 +33,18 @@ User.init({
         type: DataTypes.STRING(255),
         allowNull: false
     },
+    type: {
+        type: DataTypes.ENUM('casa', 'condominio'),
+        allowNull: false
+    },
+    residencia_type: {
+        type: DataTypes.ENUM('casa', 'condominio'),
+        allowNull: false
+    },
+    residencia_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
     status: {
         type: DataTypes.ENUM('ativo', 'inativo'),
         defaultValue: 'ativo',
