@@ -21,8 +21,8 @@ Condominio.init({
         allowNull: false
     },
     codigo_acesso: {
-    type: DataTypes.CHAR(10), 
-    defaultValue: () => nanoid(10), 
+    type: DataTypes.CHAR(5), 
+    defaultValue: () => nanoid(5), 
     allowNull: false,
     unique: true
 },

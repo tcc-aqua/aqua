@@ -1,6 +1,6 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 import sequelizePaginate from 'sequelize-paginate'
 
 export default class Sensor extends Model { }
@@ -12,8 +12,9 @@ Sensor.init({
         autoIncrement: true
     },
     codigo: {
-        type: DataTypes.CHAR(36),
-        defaultValue: () => uuidv4(),
+        type: DataTypes.CHAR(10), 
+        defaultValue: () => nanoid(10), 
+        allowNull: false,
         unique: true
     },
     status: {

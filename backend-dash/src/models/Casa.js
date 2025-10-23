@@ -4,7 +4,7 @@ import sequelizePaginate from 'sequelize-paginate'
 import Sensor from "./Sensor.js";
 import { v4 as uuidv4 } from 'uuid';
 
-export default class Casa extends Model {}
+export default class Casa extends Model { }
 
 Casa.init({
     id: {
@@ -12,8 +12,32 @@ Casa.init({
         primaryKey: true,
         autoIncrement: true
     },
-    endereco: {
-        type: DataTypes.TEXT,
+    logradouro: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    bairro: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    numero: {
+        type: DataTypes.CHAR(10),
+        allowNull: false
+    },
+    cidade: {
+        type: DataTypes.STRING(100),
+        allowNull: false
+    },
+    estado: {
+        type: DataTypes.ENUM(
+            'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT',
+            'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO',
+            'RR', 'SC', 'SP', 'SE', 'TO'
+        ),
+        allowNull: false
+    },
+    cep: {
+        type: DataTypes.CHAR(10),
         allowNull: false
     },
     numero_moradores: {
@@ -24,7 +48,7 @@ Casa.init({
     sensor_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {model: Sensor, key: 'id'}
+        references: { model: Sensor, key: 'id' }
     },
     codigo_acesso: {
         type: DataTypes.CHAR(36),
