@@ -47,7 +47,7 @@ const Header = ({
       <View style={styles.container}>
         {/* Esquerda: Logo + Infos */}
         <View style={styles.leftContent}>
-          <Image source={{ uri: logoUri }} style={styles.logo} />
+          <Image source={require('../assets/logo.png')} style={styles.logo} />
           <View style={styles.textInfoWrapper}>
             <Text style={styles.appName} numberOfLines={1}>{appName}</Text>
             <Text style={styles.appLocation} numberOfLines={1}>{appLocation}</Text>
