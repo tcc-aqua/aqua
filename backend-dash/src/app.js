@@ -9,6 +9,7 @@ import unidadesRoutes from './routes/unidade.routes.js'
 import casaRoutes from './routes/casa.routes.js';
 import sensorRoutes from './routes/sensor.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import authRoutes from './routes/auth.routes.js';
 
 const fastify = Fastify({
     logger: {
@@ -36,6 +37,7 @@ await fastify.register(unidadesRoutes, {prefix: '/api/unidades'});
 await fastify.register(casaRoutes, {prefix: '/api/casas'});
 await fastify.register(sensorRoutes, {prefix: '/api/sensores'});
 await fastify.register(adminRoutes, {prefix: '/api/admins'});
+await fastify.register(authRoutes, {prefix: '/api/auth'});
 await fastify.register(errorHandler);
 
 export default fastify;

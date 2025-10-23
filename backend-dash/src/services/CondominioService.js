@@ -151,7 +151,9 @@ export default class CondominioService {
                 paginate: limit,
                 order:[['criado_em', 'DESC']],
             }
+        } catch (error) {
+            console.error('Ero ao listar')
         }
-    }
+     }
 
 }

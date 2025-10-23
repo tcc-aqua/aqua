@@ -28,7 +28,7 @@ Admin.init({
     },
     type: {
         type: DataTypes.ENUM('superadmin', 'admin'),
-        default: 'admin',
+        defaultValue: 'admin',
         allowNull: false
     },
     status: {
