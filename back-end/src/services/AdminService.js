@@ -2,7 +2,7 @@ import Admin from '../models/Admin.js'
 
 export default class AdminService {
 
-    static async getAll(page = 1, limit = 10) {
+    static async getAllAdmins(page = 1, limit = 10) {
         try {
             const options = {
                 page,
@@ -17,7 +17,7 @@ export default class AdminService {
         }
     }
 
-    static async getAllAtivos(page = 1, limit = 10) {
+    static async getAllAdminsAtivos(page = 1, limit = 10) {
         try {
             const options = {
                 page,
@@ -33,7 +33,7 @@ export default class AdminService {
         }
     }
 
-    static async getAllInativos(page = 1, limit = 10) {
+    static async getAllAdminsInativos(page = 1, limit = 10) {
         try {
             const options = {
                 page,
@@ -61,7 +61,7 @@ export default class AdminService {
         }
     }
 
-    static async update(id, { email, password, type }) {
+    static async updateAdmin(id, { email, password, type }) {
         try {
             const admin = await Admin.findByPk(id);
             if (!admin) {
@@ -77,7 +77,7 @@ export default class AdminService {
         }
     }
 
-    static async inativar(id){
+    static async inativarAdmin(id){
         try {
             const admin = await Admin.findByPk(id);
               if (!admin) {
@@ -95,7 +95,7 @@ export default class AdminService {
         }
     } 
     
-    static async ativar(id){
+    static async ativarAdmin(id){
         try {
             const admin = await Admin.findByPk(id);
               if (!admin) {

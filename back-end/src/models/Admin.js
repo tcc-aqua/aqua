@@ -1,4 +1,4 @@
-import { MoAdminel, DataTypes } from "sequelize";
+import { Model  , DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs'
