@@ -61,7 +61,14 @@ export function Instruction() {
     const currentItem = tabsData.find((t) => t.value === currentTab);
 
     return (
-        <AlertDialog>
+        <AlertDialog
+            onOpenChange={(isOpen) => {
+                // sempre que o modal for fechado, resetar para a primeira tab
+                if (!isOpen) {
+                    setCurrentTab(tabsData[0].value);
+                }
+            }}
+        >
             <AlertDialogTrigger asChild>
                 <Button
                     variant="ghost"
@@ -76,7 +83,7 @@ export function Instruction() {
                     className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted transition"
                     asChild
                 >
-                    <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
+                    <Button variant="ghost" size="icon" className="h-6 w-6 p-0 cursor-pointer">
                         x
                     </Button>
                 </AlertDialogCancel>
@@ -108,6 +115,7 @@ export function Instruction() {
                         variant="outline"
                         onClick={goPrevious}
                         disabled={currentTab === tabsData[0].value}
+                        className="cursor-pointer"
                     >
                         Anterior
                     </Button>
@@ -115,6 +123,7 @@ export function Instruction() {
                     <Button
                         onClick={goNext}
                         disabled={currentTab === tabsData[tabsData.length - 1].value}
+                        className="cursor-pointer"
                     >
                         Próximo
                     </Button>

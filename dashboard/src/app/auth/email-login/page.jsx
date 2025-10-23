@@ -17,10 +17,13 @@ export default function EmailLogin() {
                         className="absolute inset-0 h-full w-full object-cover"
                     />
 
-                    <div className="absolute inset-0 flex flex-col justify-end items-center pb-10 px-4 text-white z-20">
+                    <div className="absolute inset-0 flex flex-col justify-end mb-50 items-center pb-10 px-4 text-white z-20">
                         <h1 className="text-4xl md:text-4xl lg:text-6xl font-bold">
-                        Bem-vindo ao Sistema Aqua! 
+                        Bem-vindo ao <br/> Sistema Aqua! 
                         </h1>
+                        <p className="text-lg max-w-100 md:text-xl text-white">
+            Monitore o consumo de água, atribua alertas e inative usuários.
+          </p>
                     </div>
                 </div>
 

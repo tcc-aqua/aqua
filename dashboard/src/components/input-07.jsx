@@ -28,7 +28,7 @@ export default function InputWithAdornmentDemo() {
         <LockIcon className="h-5 w-5 text-muted-foreground" />
         <Input
           type={showPassword ? "text" : "password"}
-          placeholder="Password"
+          placeholder="Senha"
           className="border-0 focus-visible:ring-0 shadow-none h-15 rounded-full" />
         <button onClick={togglePasswordVisibility}>
           {showPassword ? (
@@ -39,7 +39,7 @@ export default function InputWithAdornmentDemo() {
         </button>
       </div>
       <Link href={'../dashboard'}>
-      <Button className="w-full rounded-full h-10 mt-5">Entrar</Button>
+      <Button className="w-full rounded-full h-10 mt-5 cursor-pointer">Entrar</Button>
       </Link>
       <Link href='../login' className="text-[#0372c6] underline hover:text-blue-900 flex justify-center">
          Esqueci minha senha
