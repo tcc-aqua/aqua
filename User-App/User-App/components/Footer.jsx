@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,41 +7,32 @@ import {
   Animated,
   Platform,
 } from 'react-native';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 
-// Dados dos itens do footer
 const footerItems = [
-  { id: 'home', icon: 'home-outline', text: 'Início', activeIcon: 'home' },
-  { id: 'reports', icon: 'bar-chart-outline', text: 'Relatórios', activeIcon: 'bar-chart' },
-  { id: 'devices', icon: 'trophy-outline', text: 'Metas', activeIcon: 'trophy' },
-  { id: 'profile', icon: 'person-outline', text: 'Perfil', activeIcon: 'person' },
+  { id: 'App', icon: 'home-outline', text: 'Início', activeIcon: 'home' },
+  { id: 'Relatorios', icon: 'bar-chart-outline', text: 'Relatórios', activeIcon: 'bar-chart' },
+  { id: 'Metas', icon: 'trophy-outline', text: 'Metas', activeIcon: 'trophy' },
+  { id: 'Perfil', icon: 'person-outline', text: 'Perfil', activeIcon: 'person' },
 ];
 
 const Footer = ({ activeScreen, onNavigate }) => {
-  // Referências para as animações de cada item
-  const scaleAnimations = useRef(footerItems.reduce((acc, item) => {
-    acc[item.id] = new Animated.Value(1);
-    return acc;
-  }, {})).current;
+  const [scaleAnimations] = useState(() =>
+    footerItems.reduce((acc, item) => {
+      acc[item.id] = new Animated.Value(1);
+      return acc;
+    }, {})
+  );
 
-  // Função para iniciar a animação de "apertar"
-  const animatePressIn = (itemId) => {
-    Animated.spring(scaleAnimations[itemId], {
-      toValue: 0.9,
-      useNativeDriver: true,
-      speed: 20,
-      bounciness: 10,
-    }).start();
-  };
-
-  // Função para iniciar a animação de "soltar"
-  const animatePressOut = (itemId) => {
-    Animated.spring(scaleAnimations[itemId], {
-      toValue: 1,
-      useNativeDriver: true,
-      speed: 20,
-      bounciness: 10,
-    }).start();
+  const animatePress = (animation, toValue) => {
+    if (animation) {
+      Animated.spring(animation, {
+        toValue: toValue,
+        useNativeDriver: true,
+        speed: 20,
+        bounciness: 10,
+      }).start();
+    }
   };
 
   return (
@@ -50,23 +41,22 @@ const Footer = ({ activeScreen, onNavigate }) => {
         const isActive = activeScreen === item.id;
         const iconName = isActive ? item.activeIcon : item.icon;
         const textColor = isActive ? '#2196F3' : '#777';
+        const itemAnimation = scaleAnimations[item.id];
 
         return (
           <TouchableOpacity
             key={item.id}
             style={styles.footerItem}
             onPress={() => onNavigate(item.id)}
-            onPressIn={() => animatePressIn(item.id)}
-            onPressOut={() => animatePressOut(item.id)}
+            onPressIn={() => animatePress(itemAnimation, 0.9)}
+            onPressOut={() => animatePress(itemAnimation, 1)}
             accessibilityRole="button"
             accessibilityLabel={item.text}
           >
-            <Animated.View style={{ transform: [{ scale: scaleAnimations[item.id] }] }}>
+            <Animated.View style={{ transform: [{ scale: itemAnimation }] }}>
               <Ionicons name={iconName} size={24} color={textColor} />
             </Animated.View>
-            <Text style={[styles.itemText, { color: textColor }]}>
-              {item.text}
-            </Text>
+            <Text style={[styles.itemText, { color: textColor }]}>{item.text}</Text>
           </TouchableOpacity>
         );
       })}
@@ -83,6 +73,7 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#eee',
     paddingVertical: Platform.OS === 'ios' ? 12 : 10,
+    paddingBottom: Platform.OS === 'ios' ? 25 : 10, // Ajuste para iPhone
     ...Platform.select({
       ios: {
         shadowColor: '#000',

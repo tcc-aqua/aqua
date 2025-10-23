@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 
-// --- Exemplo de lista de notificações (placeholder)
+// --- Lista de notificações de exemplo
 const mockNotifications = [
   { id: '1', title: 'Alerta de Vazamento detectado no Bloco C.', time: 'Agora mesmo' },
   { id: '2', title: 'Consumo de água acima da média em sua unidade.', time: 'Há 2h' },
@@ -27,13 +27,10 @@ const Header = ({
   appLocation = 'Apto 1502 • Bloco A',
   logoUri = 'https://via.placeholder.com/40/2196F3/FFFFFF?text=AM',
   notificationsCount = mockNotifications.length,
-  onMenuPress,
 }) => {
   const [notificationsVisible, setNotificationsVisible] = useState(false);
 
-  const toggleNotifications = () => {
-    setNotificationsVisible((prev) => !prev);
-  };
+  const toggleNotifications = () => setNotificationsVisible(prev => !prev);
 
   const renderNotificationItem = ({ item }) => (
     <View style={styles.notificationCard}>
@@ -52,51 +49,28 @@ const Header = ({
         <View style={styles.leftContent}>
           <Image source={{ uri: logoUri }} style={styles.logo} />
           <View style={styles.textInfoWrapper}>
-            <Text style={styles.appName} numberOfLines={1}>
-              {appName}
-            </Text>
-            <Text style={styles.appLocation} numberOfLines={1}>
-              {appLocation}
-            </Text>
+            <Text style={styles.appName} numberOfLines={1}>{appName}</Text>
+            <Text style={styles.appLocation} numberOfLines={1}>{appLocation}</Text>
           </View>
         </View>
 
         {/* Direita: Notificações + Menu */}
         <View style={styles.rightContent}>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={toggleNotifications}
-            accessibilityLabel="Notificações"
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="notifications-outline" size={24} color="#555" />
+          <TouchableOpacity style={styles.iconButton} onPress={toggleNotifications} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Ionicons name="notifications-outline" size={26} color="#555" />
             {notificationsCount > 0 && (
               <View style={styles.notificationBadge}>
-                <Text style={styles.badgeText}>
-                  {notificationsCount > 99 ? '99+' : notificationsCount}
-                </Text>
+                <Text style={styles.badgeText}>{notificationsCount > 99 ? '99+' : notificationsCount}</Text>
               </View>
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={onMenuPress}
-            accessibilityLabel="Abrir Menu"
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Feather name="menu" size={26} color="#555" />
-          </TouchableOpacity>
+
         </View>
       </View>
 
-      {/* Modal de notificações Flutuante */}
-      <Modal
-        visible={notificationsVisible}
-        animationType="fade"
-        transparent
-        onRequestClose={toggleNotifications}
-      >
+      {/* Modal de notificações */}
+      <Modal visible={notificationsVisible} animationType="fade" transparent onRequestClose={toggleNotifications}>
         <TouchableWithoutFeedback onPress={toggleNotifications}>
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback>
@@ -104,7 +78,7 @@ const Header = ({
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>Notificações</Text>
                   <TouchableOpacity onPress={toggleNotifications} style={styles.closeButton}>
-                    <Ionicons name="close" size={24} color="#555" />
+                    <Ionicons name="close" size={26} color="#555" />
                   </TouchableOpacity>
                 </View>
 
@@ -118,7 +92,7 @@ const Header = ({
                   />
                 ) : (
                   <View style={styles.emptyNotifications}>
-                    <Ionicons name="checkmark-circle-outline" size={40} color="#bbb" />
+                    <Ionicons name="checkmark-circle-outline" size={50} color="#bbb" />
                     <Text style={styles.emptyNotificationsText}>Nenhuma notificação nova!</Text>
                   </View>
                 )}
@@ -132,175 +106,84 @@ const Header = ({
 };
 
 const styles = StyleSheet.create({
-  // --- Header ---
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: Platform.OS === 'ios' ? 14 : 12,
+    paddingHorizontal: 20,
+    paddingVertical: Platform.OS === 'ios' ? 16 : 14,
     backgroundColor: '#fff',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#ddd',
     ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 3 },
-      },
-      android: { elevation: 4 },
+      ios: { shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } },
+      android: { elevation: 5 },
     }),
   },
-  leftContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexShrink: 1,
-  },
-  logo: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    marginRight: 12,
-    backgroundColor: '#e0f7fa',
-  },
-  textInfoWrapper: {
-    flexShrink: 1,
-  },
-  appName: {
-    fontSize: Platform.OS === 'ios' ? 19 : 18,
-    fontWeight: '700',
-    color: '#333',
-  },
-  appLocation: {
-    fontSize: 13,
-    color: '#777',
-    marginTop: 2,
-  },
-  rightContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconButton: {
-    marginLeft: 20,
-    position: 'relative',
-    padding: 4,
-  },
+  leftContent: { flexDirection: 'row', alignItems: 'center', flexShrink: 1 },
+  logo: { width: 50, height: 50, borderRadius: 14, marginRight: 14, backgroundColor: '#e0f7fa' },
+  textInfoWrapper: { flexShrink: 1 },
+  appName: { fontSize: Platform.OS === 'ios' ? 20 : 19, fontWeight: '800', color: '#222' },
+  appLocation: { fontSize: 14, color: '#777', marginTop: 2 },
+  rightContent: { flexDirection: 'row', alignItems: 'center' },
+  iconButton: { marginLeft: 22, position: 'relative', padding: 4 },
 
-  // --- Badge ---
   notificationBadge: {
     position: 'absolute',
-    top: -5,
-    right: -5,
+    top: -6,
+    right: -6,
     backgroundColor: '#FF3B30',
-    borderRadius: 10,
-    minWidth: 20,
-    paddingHorizontal: 5,
-    height: 20,
+    borderRadius: 12,
+    minWidth: 22,
+    paddingHorizontal: 6,
+    height: 22,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#fff',
   },
-  badgeText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: '700',
-  },
+  badgeText: { color: '#fff', fontSize: 12, fontWeight: '800' },
 
-  // --- Modal de Notificações ---
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.35)',
     justifyContent: 'flex-start',
-    paddingTop: Platform.OS === 'ios' ? 80 : 60,
+    paddingTop: Platform.OS === 'ios' ? 90 : 70,
     alignItems: 'center',
   },
   modalContainer: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    width: '90%',
-    maxHeight: '70%',
+    borderRadius: 16,
+    width: '92%',
+    maxHeight: '72%',
     ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 5 },
-      },
-      android: { elevation: 8 },
+      ios: { shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } },
+      android: { elevation: 9 },
     }),
   },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
-  },
-  modalTitle: {
-    fontSize: 19,
-    fontWeight: '700',
-    color: '#333',
-  },
-  closeButton: {
-    padding: 4,
-  },
-  notificationListContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 18, paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#eee' },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: '#222' },
+  closeButton: { padding: 6 },
+  notificationListContent: { paddingHorizontal: 18, paddingVertical: 10 },
   notificationCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    backgroundColor: '#f8f8f8',
-    borderRadius: 8,
-    marginBottom: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    backgroundColor: '#f4f6f8',
+    borderRadius: 10,
+    marginBottom: 10,
     ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOpacity: 0.05,
-        shadowRadius: 3,
-        shadowOffset: { width: 0, height: 2 },
-      },
+      ios: { shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 3 } },
       android: { elevation: 1 },
     }),
   },
-  notificationContent: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  notificationText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#333',
-    lineHeight: 20,
-  },
-  notificationTime: {
-    fontSize: 12,
-    color: '#888',
-    marginTop: 4,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: '#f0f0f0',
-    marginVertical: 4,
-  },
-  emptyNotifications: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyNotificationsText: {
-    marginTop: 15,
-    fontSize: 16,
-    color: '#888',
-  },
+  notificationContent: { marginLeft: 14, flex: 1 },
+  notificationText: { fontSize: 16, fontWeight: '500', color: '#333', lineHeight: 22 },
+  notificationTime: { fontSize: 13, color: '#888', marginTop: 4 },
+  separator: { height: 1, backgroundColor: '#e6e6e6', marginVertical: 6 },
+  emptyNotifications: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 50 },
+  emptyNotificationsText: { marginTop: 18, fontSize: 17, color: '#aaa', fontWeight: '500' },
 });
 
 export default Header;
