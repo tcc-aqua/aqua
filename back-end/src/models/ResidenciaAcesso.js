@@ -1,40 +1,36 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
-import User from "./User.js";
 import { v4 as uuidv4 } from 'uuid';
-import sequelizePaginate from 'sequelize-paginate'
+import User from "./User.js";
 
-export default class Condominio extends Model {}
+export default class ResidenciaAcesso extends Model {}
 
-Condominio.init({
+ResidenciaAcesso.init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    name: {
-        type: DataTypes.STRING(255),
+    residencia_type: {
+        type: DataTypes.ENUM('casa', 'unidade'),
         allowNull: false
     },
-    endereco: {
-        type: DataTypes.TEXT,
+    residencia_id: {
+        type: DataTypes.INTEGER,
         allowNull: false
     },
-    codigo: {
+    codigo_acesso: {
         type: DataTypes.CHAR(36),
         defaultValue: () => uuidv4(),
     },
-    sindico_id: {
+    responsavel_id: {
         type: DataTypes.CHAR(36),
-        allowNull: true,
         references: {model: User, key: 'id'}
-    },
+    }
 }, {
     sequelize,
-    tableName: 'condominios',
+    tableName: 'residencias_acesso',
     timestamps: true,
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em'
 })
-
-sequelizePaginate.paginate(Condominio);

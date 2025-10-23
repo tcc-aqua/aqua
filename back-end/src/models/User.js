@@ -38,10 +38,15 @@ User.init({
         type: DataTypes.ENUM('casa', 'condominio'),
         allowNull: false
     },
+    responsavel_id: {
+        type: DataTypes.CHAR(36),
+        allowNull: true,
+        references: {model: 'users', key: 'id'}
+    },
     // indica para a residencia/unidade para atribuir para a tabela correta
     // uma especie de polimorfismo em banco de dados
     residencia_type: {
-        type: DataTypes.ENUM('casa', 'condominio'),
+        type: DataTypes.ENUM('casa', 'unidade'),
         allowNull: false
     },
     // id da residencia
