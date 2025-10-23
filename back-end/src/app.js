@@ -1,4 +1,7 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import fastifyFormbody from '@fastify/formbody'
+
 import userRoutes from './routes/user.routes.js';
 import errorHandler from './middlewares/errorHandler.js';
 import condominioRoutes from './routes/condominio.routes.js';
@@ -6,6 +9,7 @@ import unidadesRoutes from './routes/unidade.routes.js'
 import casaRoutes from './routes/casa.routes.js';
 import sensorRoutes from './routes/sensor.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+
 const fastify = Fastify({
     logger: {
         transport: {
@@ -13,6 +17,14 @@ const fastify = Fastify({
         }
     }
 })
+
+await fastify.register(cors, {
+    origin: 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
+})      
+
+fastify.register(fastifyFormbody);      
 
 fastify.get('/', (req, reply) => {
     return reply.status(200).send('Hello API!')

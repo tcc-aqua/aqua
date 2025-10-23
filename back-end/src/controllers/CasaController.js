@@ -10,7 +10,7 @@ const updateHouseSchema = z.object({
     numero_moradores: z.string().optional(),
     endereco: z.string().email().optional(),
     sensor_id: z.string().uuid()
-});
+}); 
 
 export default class CasaController {
 
