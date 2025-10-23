@@ -50,7 +50,7 @@ export default class CondominioService {
         }
     }
 
-    static async getAllUnidadesAtivasDeUmCondominio(id, page = 1, limit = 10) {
+    static async getAllApartamentosAtivosDeUmCondominio(id, page = 1, limit = 10) {
         try {
             const condominio = await Condominio.findByPk(id);
             if (!condominio) {
@@ -67,33 +67,10 @@ export default class CondominioService {
                 }
             }
 
-            const unidades = await Condominio.paginate(options);
-            return unidades;
+            const apartamentos = await Condominio.paginate(options);
+            return apartamentos;
         } catch (error) {
-            console.error('Erro ao listar unidades ativas do condominio')
-        }
-    }
-    static async getAllUnidadesAtivasDeUmCondominio(id, page = 1, limit = 10) {
-        try {
-            const condominio = await Condominio.findByPk(id);
-            if (!condominio) {
-                throw new Error('Condominio não encontrado');
-            }
-
-            const options = {
-                page,
-                paginate: limit,
-                order: [['criado_em', 'DESC']],
-                where: {
-                    condominio_id: id,
-                    status: 'ativo'
-                }
-            }
-
-            const unidades = await Condominio.paginate(options);
-            return unidades;
-        } catch (error) {
-            console.error('Erro ao listar unidades ativas do condominio')
+            console.error('Erro ao listar apartamentos ativas do condominio')
         }
     }
 

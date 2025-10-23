@@ -12,7 +12,7 @@ ResidenciaAcesso.init({
         autoIncrement: true
     },
     residencia_type: {
-        type: DataTypes.ENUM('casa', 'unidade'),
+        type: DataTypes.ENUM('casa', 'apartamento'),
         allowNull: false
     },
     residencia_id: {

@@ -46,7 +46,7 @@ User.init({
     // indica para a residencia/unidade para atribuir para a tabela correta
     // uma especie de polimorfismo em banco de dados
     residencia_type: {
-        type: DataTypes.ENUM('casa', 'unidade'),
+        type: DataTypes.ENUM('casa', 'apartamento'),
         allowNull: false
     },
     // id da residencia
@@ -94,10 +94,3 @@ User.init({
 })
 
 sequelizePaginate.paginate(User);
-
-/*
-| id | name  | residencia_type | residencia_id |
-| -- | ----- | --------------- | ------------- |
-| 1  | João  | casa            | 3             |
-| 2  | Maria | unidade         | 7             |
-*/

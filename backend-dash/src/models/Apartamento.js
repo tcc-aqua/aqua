@@ -4,9 +4,9 @@ import Condominio from "./Condominio.js";
 import sequelizePaginate from 'sequelize-paginate'
 import Sensor from "./Sensor.js";
 
-export default class Unidade extends Model {}
+export default class Apartamento extends Model {}
 
-Unidade.init({
+Apartamento.init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -41,10 +41,10 @@ Unidade.init({
     }
 }, {
     sequelize,
-    tableName: 'unidades',
+    tableName: 'apartamentos',
     timestamps: true,
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em'
 })
 
-sequelizePaginate.paginate(Unidade);
+sequelizePaginate.paginate(Apartamento);
