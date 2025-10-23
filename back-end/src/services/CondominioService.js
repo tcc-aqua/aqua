@@ -1,5 +1,4 @@
 import Condominio from "../models/Condominio.js";
-
 export default class CondominioService {
 
     static async getAllCondominios(page = 1, limit = 10) {

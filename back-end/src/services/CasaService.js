@@ -72,34 +72,6 @@ export default class CasaService {
         }
     }
 
-    static async createHouse({ endereco, sensor_id }) {
-        try {
-            const casas = await Casa.create({
-                endereco, sensor_id
-            })
-            return casas;
-        } catch (error) {
-            console.error('Erro ao criar casa', error);
-            throw error;
-        }
-    }
-
-    static async updateHouse(id, { numero_moradores, endereco, sensor_id }) {
-        try {
-            const casa = await Casa.findByPk(id);
-            if (!casa) {
-                throw new Error('Casa não encontrada');
-            }
-            await casa.update({
-                numero_moradores, endereco, sensor_id
-            })
-            return casa;
-        } catch (error) {
-            console.error('Erro ao atualizar casa', error);
-            throw error;
-        }
-    }
-
     static async inativarCasa(id) {
         try {
             const casa = await Casa.findByPk(id);
