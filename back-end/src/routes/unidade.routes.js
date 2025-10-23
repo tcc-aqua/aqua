@@ -6,8 +6,6 @@ export default async function unidadeRoutes(fastify) {
     fastify.get('/ativos', UnidadeController.getAllAtivos);
     fastify.get('/inativos', UnidadeController.getAllInativos);
     fastify.get('/count', UnidadeController.count);
-    fastify.post('/', UnidadeController.create);
-    fastify.put('/:id', UnidadeController.update);
     fastify.patch('/:id/inativar', UnidadeController.inativar);
 
 }

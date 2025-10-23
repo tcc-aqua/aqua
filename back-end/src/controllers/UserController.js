@@ -1,38 +1,26 @@
 import UserService from "../services/UserService.js";
-import { z } from 'zod';
-
-// const createUserSchema = z.object({
-//     name: z.string(),
-//     email: z.string().email(),
-//     cpf: z.string().length(14),
-//     password: z.string().min(6),
-//     role: z.enum(['morador', 'sindico']).optional(),
-// })
-
-const updateUserSchema = z.object({
-    name: z.string().optional(),
-    email: z.string().email().optional(),
-    cpf: z.string().length(14).optional(),
-    password: z.string().min(6).optional(),
-    role: z.enum(['morador', 'sindico']).optional(),
-});
-
-const idSchema = z.string().uuid();
 
 export default class UserController {
 
     static async getAll(req, reply) {
-        const users = await UserService.getAllUsers();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const users = await UserService.getAllUsers(page, limit);
         return reply.send(users);
     }
 
     static async getAllActives(req, reply) {
-        const users = await UserService.getAllUserActives();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const users = await UserService.getAllUserActives(page, limit);
         return reply.send(users);
     }
 
     static async getAllDeactivated(req, reply) {
-        const users = await UserService.getAllUsersDeactivated();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const users = await UserService.getAllUsersDeactivated(page, limit);
         return reply.send(users);
     }
 
@@ -47,21 +35,20 @@ export default class UserController {
         return reply.status(200).send(users);
     }
 
-    // static async create(req, reply) {
-    //     const validateUser = createUserSchema.parse(req.body);
-    //     const user = await UserService.createUser(validateUser);
-    //     return reply.status(201).send(user);
-    // }
-
-    static async update(req, reply) {
-        const validatedUser = updateUserSchema.parse(req.body);
-        const updateUser = await UserService.updateUser(id, validatedUser);
-        return reply.send(updateUser);
+    static async countAtivos(req, reply){
+        const users = await UserService.countUsersAtivos();
+        return reply.status(200).send(users);
     }
 
     static async deactivate(req, reply) {
-        const { id } = idSchema.parse(req.params);
+        const { id } = (req.params);
         const user = await UserService.deactivateUser(id);
+        return reply.status(200).send(user)
+    }
+
+    static async ativar(req, reply) {
+        const { id } = idSchema.parse(req.params);
+        const user = await UserService.ativarUser(id);
         return reply.status(200).send(user)
     }
 

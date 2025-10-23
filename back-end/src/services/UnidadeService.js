@@ -49,45 +49,6 @@ export default class UnidadeService {
         }
     }
 
-    static async countUnidades() {
-        try {
-            const unidades = await Unidade.count();
-            return unidades;
-        } catch (error) {
-            console.error('Erro ao listar contagem de unidades.', error);
-            throw error;
-        }
-    }
-
-    static async createUnidades({ condominio_id, numero, bloco, numero_moradores, sensor_id }) {
-        try {
-            const unidade = await Unidade.create({
-                condominio_id, numero, bloco, numero_moradores, sensor_id
-            })
-
-            return unidade;
-        } catch (error) {
-            console.error('Erro ao criar unidade', error);
-            throw error;
-        }
-    }
-
-    static async updateUnidade(id, { numero, bloco, numero_moradores, sensor_id }) {
-        try {
-            const unidade = await Unidade.findByPk(id);
-            if (!unidade) {
-                throw new Error('Unidade não encontrada.')
-            }
-            await unidade.update({
-                numero, bloco, numero_moradores, sensor_id
-            })
-            return unidade;
-        } catch (error) {
-            console.error('Erro ao atualizar unidade', error);
-            throw error;
-        }
-    }
-
     static async inativarUnidade(id) {
         try {
             const unidade = await Unidade.findByPk(id);

@@ -63,6 +63,16 @@ export default class UserService {
         }
     }
 
+    static async countUsersAtivos() {
+        try {
+            const users = await User.count({ where: { status: 'ativo' } });
+            return users;
+        } catch (error) {
+            console.error('Erro ao listar contagem de usuários', error);
+            throw error;
+        }
+    }
+
     static async getUserById(id) {
         try {
             const user = await User.findByPk(id);
@@ -72,51 +82,6 @@ export default class UserService {
             return user;
         } catch (error) {
             console.error('Erro ao listar usuário.', error);
-            throw error;
-        }
-    }
-
-    // static async createUser({ name, email, cpf, password, type, residencia_type, residencia_id }) {
-    //     try {
-    //         const user = await User.create({
-    //             name, email, cpf, password, type, residencia_type, residencia_id
-    //         })
-
-    //         // removendo a senha no retorno por questões de segurança
-    //         const userWithoutPassword = user.toJSON();
-    //         delete userWithoutPassword.password;
-
-    //         return userWithoutPassword;
-    //     } catch (error) {
-    //         console.error('Erro ao criar usuário:', error);
-    //         throw error;
-    //     }
-    // }
-
-    static async updateUser(id, { name, email, cpf, password, role }) {
-        try {
-            const user = await User.findByPk(id);
-            if (!user) {
-                throw new Error('Usuário não encontrado');
-            }
-
-            const fieldsToUpdate = {};
-
-            if (name !== undefined) fieldsToUpdate.name = name;
-            if (email !== undefined) fieldsToUpdate.email = email;
-            if (cpf !== undefined) fieldsToUpdate.cpf = cpf;
-            if (password !== undefined) fieldsToUpdate.password = password;
-            if (role !== undefined) fieldsToUpdate.role = role;
-
-            await user.update(fieldsToUpdate);
-
-            const userWithoutPassword = user.toJSON();
-            delete userWithoutPassword.password;
-
-            return userWithoutPassword;
-
-        } catch (error) {
-            console.error('Erro ao atualizar usuário:', error);
             throw error;
         }
     }
