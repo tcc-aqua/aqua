@@ -50,11 +50,58 @@ export default class CondominioService {
         }
     }
 
-    static async countAllCondominios(){
+    static async getAllUnidadesAtivasDeUmCondominio(id, page = 1, limit = 10) {
+        try {
+            const condominio = await Condominio.findByPk(id);
+            if (!condominio) {
+                throw new Error('Condominio não encontrado');
+            }
+
+            const options = {
+                page,
+                paginate: limit,
+                order: [['criado_em', 'DESC']],
+                where: {
+                    condominio_id: id,
+                    status: 'ativo'
+                }
+            }
+
+            const unidades = await Condominio.paginate(options);
+            return unidades;
+        } catch (error) {
+            console.error('Erro ao listar unidades ativas do condominio')
+        }
+    }
+    static async getAllUnidadesAtivasDeUmCondominio(id, page = 1, limit = 10) {
+        try {
+            const condominio = await Condominio.findByPk(id);
+            if (!condominio) {
+                throw new Error('Condominio não encontrado');
+            }
+
+            const options = {
+                page,
+                paginate: limit,
+                order: [['criado_em', 'DESC']],
+                where: {
+                    condominio_id: id,
+                    status: 'ativo'
+                }
+            }
+
+            const unidades = await Condominio.paginate(options);
+            return unidades;
+        } catch (error) {
+            console.error('Erro ao listar unidades ativas do condominio')
+        }
+    }
+
+    static async countAllCondominios() {
         try {
             const condominiosTotais = await Condominio.count();
             return condominiosTotais;
-        } catch (error){
+        } catch (error) {
             console.error('Erro ao contar condominios', error);
             throw error;
         }
@@ -90,30 +137,30 @@ export default class CondominioService {
         }
     }
 
-    static async inativarCondominio(id){
+    static async inativarCondominio(id) {
         try {
             const condominio = await findByPk(id);
-            if(!condominio) {
+            if (!condominio) {
                 throw new Error('Condominio não encontrado');
             }
 
             await condominio.update({ status: 'inativo' });
-            return {message: 'Condominio inativado com sucesso!'}
+            return { message: 'Condominio inativado com sucesso!' }
         } catch (error) {
             console.error('Erro ao inativar condominio');
             throw error;
         }
     }
 
-    static async ativarCondominio(id){
+    static async ativarCondominio(id) {
         try {
             const condominio = await findByPk(id);
-            if(!condominio) {
+            if (!condominio) {
                 throw new Error('Condominio não encontrado');
             }
 
             await condominio.update({ status: 'ativo' });
-            return {message: 'Condominio ativado com sucesso!'}
+            return { message: 'Condominio ativado com sucesso!' }
         } catch (error) {
             console.error('Erro ao ativar condominio');
             throw error;
