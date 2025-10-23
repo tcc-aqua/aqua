@@ -16,17 +16,23 @@ const updateCondominioSchema = z.object({
 const idSchema = z.string().uuid();
 export default class CondominioController {
     static async getAll(req, reply) {
-        const condominios = await CondominioService.getAllCondominios();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const condominios = await CondominioService.getAllCondominios(page, limit);
         return reply.status(200).send(condominios);
     }
 
     static async getAllActives(req, reply) {
-        const condominios = await CondominioService.getAllActives();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const condominios = await CondominioService.getAllActives(page, limit);
         return reply.status(200).send(condominios);
     }
 
     static async getAllInativos(req, reply) {
-        const condominios = await CondominioService.getAllInativos();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const condominios = await CondominioService.getAllInativos(page, limit);
         return reply.status(200).send(condominios);
     }
 

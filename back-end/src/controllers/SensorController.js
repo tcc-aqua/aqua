@@ -8,17 +8,23 @@ const createSensorSchema = z.object({
 
 export default class SensorController {
     static async getAll(req, reply) {
-        const sensores = await SensorService.getAll();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const sensores = await SensorService.getAll(page, limit);
         return reply.status(200).send(sensores);
     }
 
     static async getAllInativos(req, reply) {
-        const sensores = await SensorService.getAllInativos();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const sensores = await SensorService.getAllInativos(page, limit);
         return reply.status(200).send(sensores);
     }
 
     static async getAllAtivos(req, reply) {
-        const sensores = await SensorService.getAllAtivos();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const sensores = await SensorService.getAllAtivos(page, limit);
         return reply.status(200).send(sensores);
     }
 
@@ -27,7 +33,7 @@ export default class SensorController {
         return reply.status(200).send(sensores);
     }
 
-    static async countAtivos(req, reply){
+    static async countAtivos(req, reply) {
         const sensores = await SensorService.countSensoresAtivos();
         return reply.status(200).send(sensores);
     }

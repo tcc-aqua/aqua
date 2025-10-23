@@ -11,12 +11,16 @@ export default class UserController {
     }
 
     static async getAllActives(req, reply) {
-        const users = await UserService.getAllUserActives();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const users = await UserService.getAllUserActives(page, limit);
         return reply.send(users);
     }
 
     static async getAllDeactivated(req, reply) {
-        const users = await UserService.getAllUsersDeactivated();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const users = await UserService.getAllUsersDeactivated(page, limit);
         return reply.send(users);
     }
 
