@@ -143,4 +143,15 @@ export default class CondominioService {
             throw error;
         }
     }
+
+    static async listaCondominio(){
+        try {
+            const options = {
+                page,
+                paginate: limit,
+                order:[['criado_em', 'DESC']],
+            }
+        }
+    }
+
 }
