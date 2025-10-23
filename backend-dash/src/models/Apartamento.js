@@ -38,7 +38,13 @@ Apartamento.init({
         type: DataTypes.ENUM('ativo', 'inativo'),
         allowNull: false,
         defaultValue: 'ativo'
-    }
+    },
+     codigo_acesso: {
+            type: DataTypes.CHAR(5),
+            defaultValue: () => nanoid(5),
+            allowNull: false,
+            unique: true
+        },
 }, {
     sequelize,
     tableName: 'apartamentos',
