@@ -5,7 +5,7 @@ import fastifyFormbody from '@fastify/formbody'
 import userRoutes from './routes/user.routes.js';
 import errorHandler from './middlewares/errorHandler.js';
 import condominioRoutes from './routes/condominio.routes.js';
-import unidadesRoutes from './routes/unidade.routes.js'
+import unidadesRoutes from './routes/apartamento.routes.js'
 import casaRoutes from './routes/casa.routes.js';
 import sensorRoutes from './routes/sensor.routes.js';
 import adminRoutes from './routes/admin.routes.js';

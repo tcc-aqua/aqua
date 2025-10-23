@@ -1,6 +1,6 @@
 import Apartamento from "../models/Apartamento.js";
 
-export default class Apartamento {
+export default class ApartamentoService {
 
     static async getAllApartamentos(page = 1, limit = 10) {
         try {
