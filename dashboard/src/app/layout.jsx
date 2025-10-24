@@ -16,16 +16,20 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Aqua Administrativo",
   description: "Administrativo",
+ 
+  icons: {
+    icon: '/logo.svg', 
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-br" suppressHydrationWarning>
-      <head />
+     
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <head>
+      
           <link rel="icon" href="/logo.svg" sizes="any" />
-        </head>
+        
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

@@ -17,24 +17,19 @@ export default function InputNotifications() {
       state: emailNotifs,
       setState: setEmailNotifs,
     },
-    {
-      title: "Notificações por SMS",
-      description: "Receba alertas via SMS no seu celular.",
-      state: smsNotifs,
-      setState: setSmsNotifs,
-    },
+    // {
+    //   title: "Notificações por SMS",
+    //   description: "Receba alertas via SMS no seu celular.",
+    //   state: smsNotifs,
+    //   setState: setSmsNotifs,
+    // },
     {
       title: "Notificações Push",
       description: "Receba notificações diretamente no seu navegador ou app.",
       state: pushNotifs,
       setState: setPushNotifs,
     },
-    {
-      title: "Newsletter",
-      description: "Receba novidades e promoções por e-mail.",
-      state: newsletter,
-      setState: setNewsletter,
-    },
+  
   ];
 
   return (

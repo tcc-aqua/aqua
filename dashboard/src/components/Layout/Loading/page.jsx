@@ -9,13 +9,14 @@ export default function Loading() {
 
   useEffect(() => {
     if (lottieRef.current) {
-      lottieRef.current.setSpeed(3.5); 
+      lottieRef.current.setSpeed(1.5); 
     }
   }, []);
 
   return (
-    <div className="bg-muted">
-      <div className="w-40 h-40 flex items-center justify-center mx-auto">
+    <div className="">
+      {/* <h1 className="flex justify-center font-semibold">Carregando informacoes</h1> */}
+      <div className="w-50 h-50 flex items-center justify-center mx-auto">
         <Lottie
           animationData={animationData}
           lottieRef={lottieRef}

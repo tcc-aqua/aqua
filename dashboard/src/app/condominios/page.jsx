@@ -1,9 +1,12 @@
-import CardTop from "@/components/Cards/CardTopPadrao"
-import { Sidebar } from "@/components/modern-side-bar"
-import Header from "@/components/Layout/Header/page"
-export default function Funcionarios() {
+import CardTop from "@/components/Cards/CardTopPadrao";
+import Header from "@/components/Layout/Header/page";
+import { Sidebar } from "@/components/modern-side-bar";
+
+
+
+export default function Condominios() {
     return (<>
-     
+
         <div className="fixed left-0 top-0 h-screen w-64 z-50">
             <Sidebar />
         </div>
@@ -12,10 +15,14 @@ export default function Funcionarios() {
             <header className="fixed top-0 left-64 right-0 z-40">
                 <Header />
             </header>
-            <main className="container mx-auto pt-20">
+
+
+            <main className="container mx-auto pt-20 ">
+
                 <CardTop></CardTop>
             </main>
         </div>
 
+      
     </>)
 }

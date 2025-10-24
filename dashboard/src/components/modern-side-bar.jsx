@@ -1,6 +1,6 @@
-"use client" 
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -12,44 +12,39 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  BarChart3,
-  FileText,
-  Bell,
-  HelpCircle,
-  NotepadText,
   Users,
-  IdCardLanyard
-} from 'lucide-react';
-import { useTheme } from "next-themes"
-
+  IdCardLanyard,
+  Droplets,
+  Building,
+  HelpCircle,
+  MessageCircle
+} from "lucide-react";
+import { useTheme } from "next-themes";
 
 const navigationItems = [
-  { id: "dashboard", name: "Dashboard", icon: Home, href: "/" },
-  { id: "analytics", name: "Análises", icon: BarChart3, href: "/analytics" },
-  // { id: "documents", name: "Documentos", icon: FileText, href: "/documents", badge: "3" },
-  // { id: "notifications", name: "Notificações", icon: Bell, href: "/notifications", badge: "1" }, colocar na header
-  { id: "plans", name: "Planos", icon: NotepadText, href: "/plans" },
-  { id: "contractors", name: "Contratantes", icon: Users, href: "/contractors" },
+  { id: "dashboard", name: "Dashboard", icon: Home, href: "/dashboard" },
+  { id: "sensors", name: "Sensores", icon: Droplets, href: "/sensors" },
+  { id: "condominios", name: "Condomínios", icon: Building, href: "/condominios" },
+  { id: "users", name: "Usuários", icon: Users, href: "/users" },
   { id: "tecnicos", name: "Técnicos", icon: IdCardLanyard, href: "/funcionarios" },
-  {id: "profile", name: "Perfil", icon: User, href: "/profile" },
+  { id: "profile", name: "Perfil", icon: User, href: "/profile" },
+  { id: "contact", name: "Contato", icon: MessageCircle, href: "/contact" },
   { id: "settings", name: "Configurações", icon: Settings, href: "/settings" },
-  // { id: "help", name: "Ajuda e Suporte", icon: HelpCircle, href: "/help" },
 ];
 
 export function Sidebar({ className = "" }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
-    const { theme } = useTheme();
-
+  const [isOpen, setIsOpen] = useState(false);       // mobile
+  const [isCollapsed, setIsCollapsed] = useState(false); // desktop
+  const { theme } = useTheme();
   const pathname = usePathname();
 
   useEffect(() => {
     const handleResize = () => {
-      setIsOpen(window.innerWidth >= 768);
+      setIsOpen(window.innerWidth >= 768); // abre automaticamente em telas maiores
     };
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
@@ -57,6 +52,7 @@ export function Sidebar({ className = "" }) {
 
   return (
     <>
+   
       <button
         onClick={toggleSidebar}
         className="fixed top-3 left-3 z-50 p-2 rounded-lg bg-white shadow-md border border-border md:hidden hover:bg-muted transition-all duration-200"
@@ -65,6 +61,7 @@ export function Sidebar({ className = "" }) {
         {isOpen ? <X className="h-5 w-5 text-foreground" /> : <Menu className="h-5 w-5 text-foreground" />}
       </button>
 
+     
       {isOpen && (
         <div
           className="fixed inset-0 bg-accent/30 backdrop-blur-sm z-30 md:hidden transition-opacity duration-300"
@@ -72,128 +69,80 @@ export function Sidebar({ className = "" }) {
         />
       )}
 
+    
       <div
-        className={`
-          fixed top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border z-999 transition-all duration-300 ease-in-out flex flex-col 
+        className={`fixed top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border z-50 transition-all duration-300 ease-in-out flex flex-col
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          ${isCollapsed ? "w-28" : "w-78"}
-          md:translate-x-0 md:static md:z-auto
-          overflow-hidden
+          ${isCollapsed ? "w-24" : "w-64"}
+          md:translate-x-0 overflow-hidden
           ${className}
         `}
       >
+     
         <div className="flex items-center justify-between p-3.5 border-b border-sidebar-border bg-sidebar/60">
           {!isCollapsed ? (
-            <div className="flex items-center ">
-              <div className="w-10 rounded-lg flex items-center justify-center shadow-sm">
-                <span className="text-accent-foreground font-bold text-base">
-                  <img src="./logo.svg" alt="logo"/>
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-semibold text-muted-foreground text-base">
-                 {theme === "dark" ? (
-                  <img src="./escrita-dark.png" alt="aqua" className='w-15 ml-4 '  />
-                 ) : (
-                   <img src="./escrita.png" alt="aqua" className='w-15 ml-4 '  />
-            
-                 )}
-                </span>
-  
-              </div>
+            <div className="flex items-center">
+              <img src="./logo.svg" alt="logo" className="w-10" />
+              {theme === "dark" ? (
+                <img src="./escrita-dark.png" alt="aqua" className="w-20 ml-4" />
+              ) : (
+                <img src="./escrita.png" alt="aqua" className="w-20 ml-4" />
+              )}
             </div>
           ) : (
-            <div className="w-12  rounded-lg flex items-center justify-center mx-auto shadow-sm">
-              <span className="text-accent-foreground font-bold text-base">
-                 <img src="./logo.svg" alt="logo" className='' />
-              </span>
-            </div>
+            <img src="./logo.svg" alt="logo" className="w-10 mx-auto" />
           )}
 
+    
           <button
             onClick={toggleCollapse}
             className="hidden md:flex p-1.5 rounded-md hover:bg-muted transition-all duration-200"
             aria-label={isCollapsed ? "Expandir menu" : "Colapsar menu"}
           >
-            {isCollapsed ? <ChevronRight className="h-4 w-4 text-muted-foreground" /> : <ChevronLeft className="h-4 w-4 text-muted-foreground" />}
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </button>
         </div>
-
 
         <nav className="flex-1 px-3 py-2 overflow-y-auto mt-4">
           <ul className="space-y-0.5">
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
-
               return (
-                <li key={item.id} className="relative group">
+                <li key={item.id}>
                   <Link
                     href={item.href}
                     className={`
-                      w-full flex items-center transition-all duration-200
-                      ${isCollapsed ? "justify-center px-2 py-2.5" : "space-x-2.5 px-3 py-2.5"}
-                      rounded-md text-left
-                      ${isActive ? "bg-muted border-r-4 border-accent text-accent" : "text-sidebar-foreground hover:text-accent"}
+                      flex items-center transition-all duration-200 rounded-md
+                      ${isCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 space-x-2.5"}
+                      ${isActive
+                        ? "bg-muted border-r-4 border-accent text-accent"
+                        : "text-sidebar-foreground hover:text-accent"}
                     `}
-                    title={isCollapsed ? item.name : undefined}
                     onClick={() => {
                       if (window.innerWidth < 768) setIsOpen(false);
                     }}
                   >
-                    <div className="flex items-center justify-center min-w-[24px]">
-                      <Icon className={`h-5 w-5 ${isActive ? "text-accent" : "text-muted-foreground group-hover:text-accent"}`} />
-                    </div>
-
-                    {!isCollapsed && (
-                      <div className="flex items-center justify-between w-full ">
-                        <span className={`text-sm ${isActive ? "font-medium" : "font-normal"}`}>{item.name}</span>
-                        {item.badge && (
-                          <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                            {item.badge}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    <Icon className={`h-5 w-5 ${isActive ? "text-accent" : "text-muted-foreground"}`} />
+                    {!isCollapsed && <span className="text-sm">{item.name}</span>}
                   </Link>
-{/* 
-                  {isCollapsed && (
-                    <div className="fixed left-[4.5rem] px-2 py-1 bg-accent text-accent-foreground text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-500">
-                      {item.name}
-                      {item.badge && (
-                        <span className="ml-1.5 px-1 py-0.5 bg-accent rounded-full text-[10px]">{item.badge}</span>
-                      )}
-                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-1.5 h-1.5 bg-accent rotate-45" />
-                    </div>
-                  )} */}
                 </li>
               );
             })}
           </ul>
         </nav>
-        <div className="mt-auto border-t border-sidebar-border">
-          
-        </div>
 
-        <div className="mt-auto border-t border-sidebar-border">
-          
-   
-          <div className="p-3">
-            <Link
-              href="/logout"
-              className={`w-full flex items-center rounded-md text-left transition-all duration-200 group text-destructive hover:bg-destructive/10  ${isCollapsed ? "justify-center p-2.5" : "space-x-2.5 px-3 py-2.5"}`}
-            >
-              <LogOut className="h-5 w-5 flex-shrink-0 text-destructive" />
-              {!isCollapsed && <span className="text-sm">Sair</span>}
-            </Link>
-
-            {isCollapsed && (
-              <div className="fixed left-[4.5rem] px-2 py-1 bg-destructive text-destructive-foreground text-xs rounded opacity-0 invisible hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
-                Sair
-                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-1.5 h-1.5 bg-destructive rotate-45" />
-              </div>
-            )}
-          </div>
+        <div className="p-3 border-t border-sidebar-border">
+          <Link
+            href="/logout"
+            className={`
+              flex items-center rounded-md transition-all duration-200 text-destructive hover:bg-destructive/10
+              ${isCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 space-x-2.5"}
+            `}
+          >
+            <LogOut className="h-5 w-5" />
+            {!isCollapsed && <span className="text-sm">Sair</span>}
+          </Link>
         </div>
       </div>
     </>
