@@ -1,6 +1,6 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
-import Sensor from "./Sensor";
+import Sensor from "./Sensor.js";
 import sequelizePaginate from 'sequelize-paginate'
 
 export default class Alertas extends Model {}

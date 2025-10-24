@@ -66,7 +66,6 @@ User.init({
     },
 }, {
     sequelize,
-    paranoid: true,
     tableName: 'users',
     timestamps: true,
     createdAt: 'criado_em',

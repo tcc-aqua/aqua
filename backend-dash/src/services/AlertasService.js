@@ -1,4 +1,4 @@
-import { where } from "sequelize";
+import { fn, col, Op } from "sequelize";
 import Alertas from "../models/Alertas.js";
 import Condominio from "../models/Condominio.js";
 
@@ -56,9 +56,9 @@ export default class AlertasService {
             const alertas = await Alertas.count({
                 where: { resolvido: false }
             });
-            return alertas;
+            return { totalAlertasAtivos: alertas };
         } catch (error) {
-            console.error('Erro ao fazer contagem de alertas', error);
+            console.error('Erro ao fazer contagem de alertas ativos', error);
             throw error;
         }
     }
@@ -67,9 +67,8 @@ export default class AlertasService {
         try {
             const total = await Alertas.count({
                 where: {
-                    casa_id: {
-                        [Op.ne]: null // exclui alertas que não pertencem a casa
-                    }
+                    casa_id: { [Op.ne]: null },
+                    resolvido: false // apenas alertas ativos
                 }
             });
 
@@ -80,13 +79,12 @@ export default class AlertasService {
         }
     }
 
-    static async countTotalCondominios() {
+    static async countTotalApartamento() {
         try {
             const total = await Alertas.count({
                 where: {
-                    condominio_id: {
-                        [Op.ne]: null // exclui alertas que não pertencem a condomínio
-                    }
+                    condominio_id: { [Op.ne]: null },
+                    resolvido: false 
                 }
             });
 
@@ -112,15 +110,13 @@ export default class AlertasService {
                     }
                 ],
                 where: {
-                    condominio_id: {
-                        [Op.ne]: null
-                    }
+                    condominio_id: { [Op.ne]: null },
+                    resolvido: false // apenas ativos
                 },
                 group: ['condominio_id', 'condominio.id', 'condominio.nome'],
                 order: [[fn('COUNT', col('id')), 'DESC']]
             });
 
-            // Mapeia o resultado
             const condominios = resultados.map(r => ({
                 condominioId: r.condominio_id,
                 nome: r.condominio?.nome || 'Desconhecido',
@@ -139,26 +135,24 @@ export default class AlertasService {
             const alerta = await Alertas.create({ sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel })
             return alerta;
         } catch (error) {
-            console.error('erro ao emitir alerta ', error);
+            console.error('Erro ao emitir alerta', error);
             throw error;
         }
     }
 
-    static async removerAlerta(id, { resolvido }) {
+    static async removerAlerta(id) {
         try {
             const alerta = await Alertas.findByPk(id);
-            if(!alerta){
+            if (!alerta) {
                 throw new Error("Alerta não encontrado")
             }
-            alerta.update({
-                resolvido: true
-            })
-            return {message: 'Alerta resolvido com sucesso!', alerta}
+
+            await alerta.update({ resolvido: true });
+
+            return { message: 'Alerta resolvido com sucesso!', alerta };
         } catch (error) {
             console.error('Erro ao atualizar status do alerta', error);
             throw error;
         }
     }
-
-
 }
