@@ -32,7 +32,9 @@ Sensor.init({
 }, {
     sequelize,
     tableName: 'sensores',
-    timestamps: false
+    timestamps: true,
+    createdAt: 'criado_em',
+    updatedAt: 'atualizado_em'
 })
 
 sequelizePaginate.paginate(Sensor);

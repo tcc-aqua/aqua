@@ -53,6 +53,39 @@ export default class UserService {
         }
     }
 
+    static async getAllUsersDeCondominio(page = 1, limit = 10) {
+        try {
+            const options = {
+                page,
+                paginate: limit,
+                where: { type: 'condominio' },
+                order: [['criado_em', 'DESC']],
+                attributes: { exclude: ['password'] }
+            }
+            const users = await User.paginate(options);
+            return users;
+        } catch (error) {
+            console.error('Erro ao buscar usuários', error);
+            throw error;
+        }
+    }
+    static async getAllUsersDeCasa(page = 1, limit = 10) {
+        try {
+            const options = {
+                page,
+                paginate: limit,
+                where: { type: 'casa' },
+                order: [['criado_em', 'DESC']],
+                attributes: { exclude: ['password'] }
+            }
+            const users = await User.paginate(options);
+            return users;
+        } catch (error) {
+            console.error('Erro ao buscar usuários', error);
+            throw error;
+        }
+    }
+
     static async countUsers() {
         try {
             const users = await User.count();

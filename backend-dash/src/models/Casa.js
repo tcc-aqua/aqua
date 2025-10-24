@@ -4,6 +4,36 @@ import sequelizePaginate from 'sequelize-paginate'
 import Sensor from "./Sensor.js";
 import { nanoid } from "nanoid";
 
+export const estados = {
+    AC: "Acre",
+    AL: "Alagoas",
+    AP: "Amapá",
+    AM: "Amazonas",
+    BA: "Bahia",
+    CE: "Ceará",
+    DF: "Distrito Federal",
+    ES: "Espírito Santo",
+    GO: "Goiás",
+    MA: "Maranhão",
+    MT: "Mato Grosso",
+    MS: "Mato Grosso do Sul",
+    MG: "Minas Gerais",
+    PA: "Pará",
+    PB: "Paraíba",
+    PR: "Paraná",
+    PE: "Pernambuco",
+    PI: "Piauí",
+    RJ: "Rio de Janeiro",
+    RN: "Rio Grande do Norte",
+    RS: "Rio Grande do Sul",
+    RO: "Rondônia",
+    RR: "Roraima",
+    SC: "Santa Catarina",
+    SP: "São Paulo",
+    SE: "Sergipe",
+    TO: "Tocantins",
+};
+
 export default class Casa extends Model { }
 
 Casa.init({
@@ -28,13 +58,13 @@ Casa.init({
         type: DataTypes.STRING(100),
         allowNull: false
     },
+    uf: {
+        type: DataTypes.STRING(2),
+        allowNull: false,
+    },
     estado: {
-        type: DataTypes.ENUM(
-            'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT',
-            'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO',
-            'RR', 'SC', 'SP', 'SE', 'TO'
-        ),
-        allowNull: false
+        type: DataTypes.STRING(50),
+        allowNull: false,
     },
     cep: {
         type: DataTypes.CHAR(10),
@@ -52,7 +82,7 @@ Casa.init({
     },
     codigo_acesso: {
         type: DataTypes.CHAR(10),
-        defaultValue: () => nanoid(10),
+        defaultValue: () => nanoid(5).replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
         allowNull: false,
         unique: true
     },
@@ -66,7 +96,15 @@ Casa.init({
     tableName: 'casas',
     timestamps: true,
     createdAt: 'criado_em',
-    updatedAt: 'atualizado_em'
+    updatedAt: 'atualizado_em',
+
+    hooks: {
+        beforeValidate: (casa) => {
+            if (casa.uf) {
+                casa.estado = estados[casa.uf] || casa.estado;
+            }
+        },
+    },
 })
 
 sequelizePaginate.paginate(Casa);

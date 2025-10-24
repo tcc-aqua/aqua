@@ -24,6 +24,20 @@ export default class UserController {
         return reply.send(users);
     }
 
+    static async getAllMoramCondominio(req, reply) {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const users = await UserService.getAllUsersDeCondominio(page, limit);
+        return reply.send(users);
+    }
+
+    static async getAllMoramEmCasa(req, reply) {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const users = await UserService.getAllUsersDeCasa(page, limit);
+        return reply.send(users);
+    }
+
     static async getById(req, reply) {
         const { id } = req.params;
         const user = await UserService.getUserById(id);

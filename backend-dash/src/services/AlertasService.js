@@ -4,6 +4,19 @@ import Condominio from "../models/Condominio.js";
 
 export default class AlertasService {
 
+    static async getAlertasRecentes() {
+        try {
+            const alertas = await Alertas.findAll({
+                limit: 5, // pega apenas 5
+                order: [['criado_em', 'DESC']]
+            });
+            return alertas;
+        } catch (error) {
+            console.error('Erro ao listar alertas recentes', error);
+            throw error;
+        }
+    }
+
     static async getAllAlertas(page = 1, limit = 10) {
         try {
             const options = {
@@ -84,7 +97,7 @@ export default class AlertasService {
             const total = await Alertas.count({
                 where: {
                     condominio_id: { [Op.ne]: null },
-                    resolvido: false 
+                    resolvido: false
                 }
             });
 
