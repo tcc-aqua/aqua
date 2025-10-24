@@ -48,7 +48,13 @@ export default function ListaCasas(){
         <ul>
           {casas.map((casa) => (
             <li key={casa.id}>
-              {casa.logradouro} 
+              {casa.logradouro} -
+                {casa.numero} -
+                  {casa.bairro} -
+                    {casa.cidade} -
+                      {casa.estado}  - 
+                      {casa.cep} - 
+                       {casa.numero_moradores} 
             </li>
           ))}
         </ul>

@@ -13,8 +13,11 @@ const cardVariants = {
 
 export default function CardTop() {
   const pathname = usePathname();
+
   const [userStats, setUserStats] = useState({ total: 0, ativos: 0, inativos: 0, novos: 0 });
-  const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, alertas: 0 });
+  const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0 });
+  const [condominioStats, setCondominioStats] = useState({ total: 0, unidades: 0, sensoresAtivos: 0, alertas: 0 });
+  const [casaStats, setCasaStats] = useState({ total: 0, moradores: 0, sensoresAtivos: 0, alertas: 0 });
 
   useEffect(() => {
     async function fetchData() {
@@ -23,35 +26,62 @@ export default function CardTop() {
           const res = await fetch("http://localhost:3333/api/users");
           const data = await res.json();
           const docs = data.docs || data || [];
-          const total = docs.length;
-          const ativos = docs.filter(u => u.status === "ativo").length;
-          const inativos = docs.filter(u => u.status === "inativo").length;
-          const novos = docs.filter(u => new Date(u.criado_em).getMonth() === new Date().getMonth()).length;
-          setUserStats({ total, ativos, inativos, novos });
+          setUserStats({
+            total: docs.length,
+            ativos: docs.filter(u => u.status === "ativo").length,
+            inativos: docs.filter(u => u.status === "inativo").length,
+            novos: docs.filter(u => new Date(u.criado_em).getMonth() === new Date().getMonth()).length
+          });
         }
 
         if (pathname === "/sensors") {
           const res = await fetch("http://localhost:3333/api/sensores");
           const data = await res.json();
           const docs = data.docs || data || [];
-          const total = docs.length;
-          const ativos = docs.filter(s => s.status === "ativo").length;
-          const alertas = docs.filter(s => s.status === "inativo").length;
-          setSensorStats({ total, ativos, alertas });
+          setSensorStats({
+            total: docs.length,
+            ativos: docs.filter(s => s.status === "ativo").length,
+            inativos: docs.filter(s => s.status === "inativo").length
+          });
         }
 
         if (pathname === "/condominios") {
           const res = await fetch("http://localhost:3333/api/condominios");
           const data = await res.json();
           const docs = data.docs || data || [];
-          setSensorStats({ total: docs.length, ativos: docs.filter(c => c.status === "ativo").length, alertas: docs.filter(c => c.status === "inativo").length });
+
+          // Contagem de unidades e sensores ativos nos apartamentos
+          let unidades = 0;
+          let sensoresAtivos = 0;
+          let alertas = 0;
+
+          for (let cond of docs) {
+            if (cond.apartamentos) {
+              unidades += cond.apartamentos.length;
+              sensoresAtivos += cond.apartamentos.filter(a => a.status === "ativo").length;
+            }
+            if (cond.alertas) alertas += cond.alertas.length;
+          }
+
+          setCondominioStats({
+            total: docs.length,
+            unidades,
+            sensoresAtivos,
+            alertas
+          });
         }
 
         if (pathname === "/casas") {
           const res = await fetch("http://localhost:3333/api/casas");
           const data = await res.json();
           const docs = data.docs || data || [];
-          setSensorStats({ total: docs.length, ativos: docs.filter(c => c.status === "ativo").length, alertas: docs.filter(c => c.status === "inativo").length });
+
+          setCasaStats({
+            total: docs.length,
+            moradores: docs.reduce((acc, c) => acc + (c.numero_moradores || 0), 0),
+            sensoresAtivos: docs.filter(c => c.status === "ativo").length,
+            alertas: docs.filter(c => c.status === "inativo").length
+          });
         }
       } catch (err) {
         console.error("Erro ao buscar dados:", err);
@@ -62,31 +92,31 @@ export default function CardTop() {
   }, [pathname]);
 
   const cards = {
-    "/users": [
-      { title: "Total Usuários", value: userStats.total, icon: Users, bg: "bg-blue-100" },
-      { title: "Ativos", value: userStats.ativos, icon: UserCheck, bg: "bg-green-100" },
-      { title: "Novos (mês)", value: userStats.novos, icon: UserPlus, bg: "bg-purple-100" },
-      { title: "Inativos", value: userStats.inativos, icon: UserX, bg: "bg-red-100" }
-    ],
-    "/sensors": [
-      { title: "Total Sensores", value: sensorStats.total, icon: Cpu, bg: "bg-blue-100" },
-      { title: "Ativos", value: sensorStats.ativos, icon: SignalHigh, bg: "bg-green-100" },
-      { title: "Alertas", value: sensorStats.alertas, icon: AlertTriangle, bg: "bg-red-100" },
-      { title: "Manutenção", value: "-", icon: Hammer, bg: "bg-yellow-100" }
-    ],
-    "/condominios": [
-      { title: "Total Condomínios", value: sensorStats.total, icon: Building, bg: "bg-blue-100" },
-      { title: "Unidades Totais", value: sensorStats.ativos, icon: Home, bg: "bg-green-100" },
-        { title: "Sensores Ativos", value: "-", icon: Cpu, bg: "bg-yellow-100" },
-      { title: "Alertas", value: sensorStats.alertas, icon: AlertTriangle, bg: "bg-red-100" }
-    
-    ],
-    "/casas": [
-      { title: "Total Casas", value: sensorStats.total, icon: Building, bg: "bg-blue-100" },
-      { title: "Total Moradores", value: sensorStats.ativos, icon: Home, bg: "bg-green-100" },
-      { title: "Sensores Ativos", value: sensorStats.alertas, icon: Cpu, bg: "bg-yellow-100" },
-      { title: "Alertas", value: sensorStats.alertas, icon: AlertTriangle, bg: "bg-red-100" }
-    ]
+      "/users": [
+    { title: "Todos os Usuários", value: userStats.total, icon: Users, bg: "bg-blue-100" },
+    { title: "Usuários Ativos", value: userStats.ativos, icon: UserCheck, bg: "bg-green-100" },
+    { title: "Síndicos", value: userStats.sindicos, icon: Building, bg: "bg-purple-100" },
+    { title: "Usuários com Alerta", value: userStats.alertas, icon: AlertTriangle, bg: "bg-red-100" }
+  ],
+  "/sensors": [
+    { title: "Total Sensores", value: sensorStats.total, icon: Cpu, bg: "bg-blue-100" },
+    { title: "Sensores Ativos", value: sensorStats.ativos, icon: SignalHigh, bg: "bg-green-100" },
+    { title: "Em Manutenção", value: sensorStats.manutencao, icon: Hammer, bg: "bg-yellow-100" },
+    { title: "Alertas Ativos", value: sensorStats.alertas, icon: AlertTriangle, bg: "bg-red-100" }
+  ],
+  "/condominios": [
+    { title: "Total Condomínios", value: condominioStats.total, icon: Building, bg: "bg-blue-100" },
+    { title: "Unidades Totais", value: condominioStats.unidades, icon: Home, bg: "bg-green-100" },
+    { title: "Sensores Ativos", value: condominioStats.sensoresAtivos, icon: SignalHigh, bg: "bg-yellow-100" },
+    { title: "Alertas Ativos", value: condominioStats.alertas, icon: AlertTriangle, bg: "bg-red-100" }
+  ],
+  "/casas": [
+    { title: "Total Casas", value: casaStats.total, icon: Building, bg: "bg-blue-100" },
+    { title: "Total Moradores", value: casaStats.moradores, icon: Users, bg: "bg-green-100" },
+    { title: "Sensores Ativos", value: casaStats.sensoresAtivos, icon: SignalHigh, bg: "bg-yellow-100" },
+    { title: "Alertas Ativos", value: casaStats.alertas, icon: AlertTriangle, bg: "bg-red-100" }
+  ]
+
   }[pathname] || [];
 
   return (

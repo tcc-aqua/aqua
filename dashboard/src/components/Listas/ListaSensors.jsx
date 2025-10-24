@@ -40,16 +40,15 @@ export default function ListaSensors(){
 
 
     return(
-       <section>
+ <section>
       {sensores.length === 0 ? (
-        <p>Nenhum condomínio encontrado.</p>
+        <p>Nenhum sensor encontrado.</p>
       ) : (
         <ul>
           {sensores.map((sensor) => (
             <li key={sensor.id}>
               <strong>{sensor.codigo}</strong> <br />
-                <strong>{sensor.status}</strong>
-             
+              <small>{sensor.status}</small>
             </li>
           ))}
         </ul>

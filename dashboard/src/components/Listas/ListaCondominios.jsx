@@ -51,7 +51,9 @@ export default function ListaCondominios() {
           {condominios.map((condominio) => (
             <li key={condominio.id}>
               <strong>{condominio.name}</strong> <br />
-              <small>{condominio.endereco}</small>
+
+                    <small>{condominio.criado_em}</small>
+                    <small>{condominio.atualizado_em}</small>
             </li>
           ))}
         </ul>
