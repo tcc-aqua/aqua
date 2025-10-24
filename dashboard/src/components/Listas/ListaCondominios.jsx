@@ -3,47 +3,59 @@
 import { useEffect, useState } from "react";
 import Loading from "../Layout/Loading/page";
 
+export default function ListaCondominios() {
+  const [condominios, setCondominios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-export default function ListaCondominios(){
-   const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-useEffect(() =>{
+  useEffect(() => {
+    const fetchCondominios = async () => {
+      try {
+        const response = await fetch("http://localhost:3333/api/condominios");
 
-    fetch("http://localhost:3333/api/condominio")
-    .then((response) =>{
-        if (!response.ok) throw new Error("Erro na requisição")
-            return response.json()
-    })
-        .then((data) => {
-        setUsers(data);
-      })
-      .catch((err) => {
+        if (!response.ok) {
+          throw new Error(`Erro na requisição: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Resposta do backend:", data);
+
+     
+        setCondominios(data.docs || []);
+      } catch (err) {
+        console.error("Erro ao buscar condomínios:", err);
         setError(err.message);
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCondominios();
   }, []);
 
-  if (loading) return <div>
-    <Loading></Loading>
-</div>
+  if (loading)
+    return (
+      <div>
+        <Loading />
+      </div>
+    );
+
   if (error) return <p>Erro: {error}</p>;
 
-
-    return(
-          <section>
-      {users.length === 0 ? (
+  return (
+    <section>
+      {condominios.length === 0 ? (
         <p>Nenhum condomínio encontrado.</p>
       ) : (
         <ul>
-          {condominio.map((condominio) => (
+          {condominios.map((condominio) => (
             <li key={condominio.id}>
-              {condominio.nome} 
+              <strong>{condominio.name}</strong> <br />
+              <small>{condominio.endereco}</small>
             </li>
           ))}
         </ul>
       )}
     </section>
-
-    )
+  );
 }

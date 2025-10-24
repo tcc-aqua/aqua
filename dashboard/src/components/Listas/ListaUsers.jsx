@@ -8,20 +8,29 @@ export default function ListaUsers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
- 
-  useEffect(() => {
-    fetch("http://localhost:3333/api/users") 
-      .then((response) => {
-        if (!response.ok) throw new Error("Erro na requisição");
-        return response.json();
-      })
-      .then((data) => {
-        setUsers(data);
-      })
-      .catch((err) => {
+ useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("http://localhost:3333/api/users");
+
+        if (!response.ok) {
+          throw new Error(`Erro na requisição: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Resposta do backend:", data);
+
+     
+        setUsers(data.docs || []);
+      } catch (err) {
+        console.error("Erro ao buscar condomínios:", err);
         setError(err.message);
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
   if (loading) return <div>
@@ -37,7 +46,7 @@ export default function ListaUsers() {
         <ul>
           {users.map((user) => (
             <li key={user.id}>
-              {user.nome} - {user.email}
+              {user.name} - {user.email}
             </li>
           ))}
         </ul>

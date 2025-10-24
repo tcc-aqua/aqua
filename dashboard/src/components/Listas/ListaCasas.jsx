@@ -4,15 +4,15 @@ import { useEffect, useState } from "react";
 import Loading from "../Layout/Loading/page";
 
 
-export default function ListaSensors(){
-   const [sensores, setSensores] = useState([]);
+export default function ListaCasas(){
+   const [casas, setCasas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchSensores = async () => {
+ useEffect(() => {
+    const fetchCasas = async () => {
       try {
-        const response = await fetch("http://localhost:3333/api/sensores");
+        const response = await fetch("http://localhost:3333/api/casas");
 
         if (!response.ok) {
           throw new Error(`Erro na requisição: ${response.status}`);
@@ -22,7 +22,7 @@ export default function ListaSensors(){
         console.log("Resposta do backend:", data);
 
      
-        setSensores(data.docs || []);
+        setCasas(data.docs || []);
       } catch (err) {
         console.error("Erro ao buscar condomínios:", err);
         setError(err.message);
@@ -31,8 +31,9 @@ export default function ListaSensors(){
       }
     };
 
-    fetchSensores();
+    fetchCasas();
   }, []);
+
   if (loading) return <div>
     <Loading></Loading>
 </div>
@@ -40,16 +41,14 @@ export default function ListaSensors(){
 
 
     return(
-       <section>
-      {sensores.length === 0 ? (
-        <p>Nenhum condomínio encontrado.</p>
+          <section>
+      {casas.length === 0 ? (
+        <p>Nenhuma casa encontrado.</p>
       ) : (
         <ul>
-          {sensores.map((sensor) => (
-            <li key={sensor.id}>
-              <strong>{sensor.codigo}</strong> <br />
-                <strong>{sensor.status}</strong>
-             
+          {casas.map((casa) => (
+            <li key={casa.id}>
+              {casa.logradouro} 
             </li>
           ))}
         </ul>
