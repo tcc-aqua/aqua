@@ -71,6 +71,44 @@ export default class SensorService {
         }
     }
 
+    static async countSensoresPorCasa() {
+        try {
+            const total = await Sensor.count({
+                where: {
+                    casa_id: {
+                        [Op.ne]: null, // exclui Sensores que não pertencem a casa
+                        
+                    },
+                    status: 'ativo'
+                }
+            });
+
+            return { totalSensoresCasa: total };
+        } catch (error) {
+            console.error('Erro ao contar sensores gerais de casas:', error);
+            throw error;
+        }
+    }
+
+    static async countSensoresPorApartamento() {
+        try {
+            const total = await Sensor.count({
+                where: {
+                    apartamento_id: {
+                        [Op.ne]: null,
+                        
+                    },
+                    status: 'ativo'
+                }
+            });
+
+            return { totalSensoresApartamento: total };
+        } catch (error) {
+            console.error('Erro ao contar sensores gerais de apartamento:', error);
+            throw error;
+        }
+    }
+
     static async createSensor({ codigo }) {
         try {
             const sensor = await Sensor.create({

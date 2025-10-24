@@ -10,6 +10,8 @@ import casaRoutes from './routes/casa.routes.js';
 import sensorRoutes from './routes/sensor.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import residenciaRoutes from './routes/residencia.routes.js';
+import alertasRoutes from './routes/alertas.routes.js';
 
 const fastify = Fastify({
     logger: {
@@ -23,21 +25,23 @@ await fastify.register(cors, {
     origin: 'http://localhost:3000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
-})      
+})
 
-fastify.register(fastifyFormbody);      
+fastify.register(fastifyFormbody);
 
 fastify.get('/', (req, reply) => {
     return reply.status(200).send('Hello API!')
 })
 
-await fastify.register(userRoutes, {prefix: '/api/users'});
-await fastify.register(condominioRoutes, {prefix: '/api/condominios'});
-await fastify.register(unidadesRoutes, {prefix: '/api/unidades'});
-await fastify.register(casaRoutes, {prefix: '/api/casas'});
-await fastify.register(sensorRoutes, {prefix: '/api/sensores'});
-await fastify.register(adminRoutes, {prefix: '/api/admins'});
-await fastify.register(authRoutes, {prefix: '/api/auth'});
+await fastify.register(userRoutes, { prefix: '/api/users' });
+await fastify.register(condominioRoutes, { prefix: '/api/condominios' });
+await fastify.register(unidadesRoutes, { prefix: '/api/unidades' });
+await fastify.register(casaRoutes, { prefix: '/api/casas' });
+await fastify.register(sensorRoutes, { prefix: '/api/sensores' });
+await fastify.register(adminRoutes, { prefix: '/api/admins' });
+await fastify.register(authRoutes, { prefix: '/api/auth' });
+await fastify.register(residenciaRoutes, { prefix: '/api/residencias' });
+await fastify.register(alertasRoutes, { prefix: '/api/alertas' });
 await fastify.register(errorHandler);
 
 export default fastify;

@@ -73,6 +73,26 @@ export default class UserService {
         }
     }
 
+    static async countSindicos() {
+        try {
+            const users = await User.count({ where: { role: 'sindico' } });
+            return users;
+        } catch (error) {
+            console.error('Erro ao listar contagem de sindicos', error);
+            throw error;
+        }
+    }
+
+    static async countMoradores() {
+        try {
+            const users = await User.count({ where: { role: 'morador' } });
+            return users;
+        } catch (error) {
+            console.error('Erro ao listar contagem de moradores', error);
+            throw error;
+        }
+    }
+
     static async getUserById(id) {
         try {
             const user = await User.findByPk(id);
