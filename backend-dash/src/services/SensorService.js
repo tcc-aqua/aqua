@@ -59,10 +59,10 @@ export default class SensorService {
         }
     }
 
-    static async countSensoresAtivos(){
+    static async countSensoresAtivos() {
         try {
             const sensores = await Sensor.count({
-                where: {status: 'ativo'}
+                where: { status: 'ativo' }
             })
             return sensores;
         } catch (error) {
@@ -77,7 +77,7 @@ export default class SensorService {
                 where: {
                     casa_id: {
                         [Op.ne]: null, // exclui Sensores que não pertencem a casa
-                        
+
                     },
                     status: 'ativo'
                 }
@@ -96,7 +96,7 @@ export default class SensorService {
                 where: {
                     apartamento_id: {
                         [Op.ne]: null,
-                        
+
                     },
                     status: 'ativo'
                 }
@@ -105,6 +105,16 @@ export default class SensorService {
             return { totalSensoresApartamento: total };
         } catch (error) {
             console.error('Erro ao contar sensores gerais de apartamento:', error);
+            throw error;
+        }
+    }
+
+    static async consumoTotalSensores() {
+        try {
+            const total = await Sensor.sum('consumo_total');
+            return total;
+        } catch (error) {
+            console.error('Erro ao calcular consumo total dos sensores', error);
             throw error;
         }
     }

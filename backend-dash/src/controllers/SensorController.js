@@ -28,6 +28,11 @@ export default class SensorController {
         return reply.status(200).send(sensores);
     }
 
+    static async getConsumoTotalDosSensores(req, reply) {
+        const sensor = await SensorService.consumoTotalSensores();
+        return reply.status(200).send(sensor);
+    }
+
     static async count(req, reply) {
         const sensores = await SensorService.countSensores();
         return reply.status(200).send(sensores);
