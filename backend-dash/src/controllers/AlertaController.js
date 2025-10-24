@@ -23,6 +23,11 @@ export default class AlertasController {
         return reply.status(200).send(alertas);
     }
 
+    static async getRecentes(req, reply){
+        const alertas = await AlertasService.getAlertasRecentes();
+        return reply.status(200).send(alertas);
+    }
+ 
     static async countAtivos(req, reply) {
         const alertas = await AlertasService.countAlertasAtivos();
         return reply.status(200).send(alertas);

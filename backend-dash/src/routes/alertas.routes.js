@@ -5,6 +5,7 @@ export default async function alertasRoutes(fastify) {
     fastify.get('/', AlertasController.getAll);
     fastify.get('/ativos', AlertasController.getAllAtivos);
     fastify.get('/inativos', AlertasController.getAllInativos);
+    fastify.get('/recentes', AlertasController.getRecentes);
     fastify.get('/count-ativos', AlertasController.countAtivos);
     fastify.get('/count-casas', AlertasController.countPorCasa);
     fastify.get('/count-apartamentos', AlertasController.countTotalPorApartamento);
