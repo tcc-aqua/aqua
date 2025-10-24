@@ -63,7 +63,7 @@ export default class AlertasService {
         }
     }
 
-     static async countTotalCasa() {
+    static async countTotalCasa() {
         try {
             const total = await Alertas.count({
                 where: {
@@ -80,7 +80,7 @@ export default class AlertasService {
         }
     }
 
-     static async countTotalCondominios() {
+    static async countTotalCondominios() {
         try {
             const total = await Alertas.count({
                 where: {
@@ -130,6 +130,32 @@ export default class AlertasService {
             return { condominios };
         } catch (error) {
             console.error('Erro ao contar alertas por condomínio:', error);
+            throw error;
+        }
+    }
+
+    static async createAlerta({ sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel }) {
+        try {
+            const alerta = await Alertas.create({ sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel })
+            return alerta;
+        } catch (error) {
+            console.error('erro ao emitir alerta ', error);
+            throw error;
+        }
+    }
+
+    static async removerAlerta(id, { resolvido }) {
+        try {
+            const alerta = await Alertas.findByPk(id);
+            if(!alerta){
+                throw new Error("Alerta não encontrado")
+            }
+            alerta.update({
+                resolvido: true
+            })
+            return {message: 'Alerta resolvido com sucesso!', alerta}
+        } catch (error) {
+            console.error('Erro ao atualizar status do alerta', error);
             throw error;
         }
     }
