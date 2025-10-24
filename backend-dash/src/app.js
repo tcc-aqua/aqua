@@ -10,6 +10,7 @@ import casaRoutes from './routes/casa.routes.js';
 import sensorRoutes from './routes/sensor.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import residenciaRoutes from './routes/residencia.routes.js';
 
 const fastify = Fastify({
     logger: {
@@ -38,6 +39,7 @@ await fastify.register(casaRoutes, {prefix: '/api/casas'});
 await fastify.register(sensorRoutes, {prefix: '/api/sensores'});
 await fastify.register(adminRoutes, {prefix: '/api/admins'});
 await fastify.register(authRoutes, {prefix: '/api/auth'});
+await fastify.register(residenciaRoutes, {prefix: '/api/residencias'});
 await fastify.register(errorHandler);
 
 export default fastify;
