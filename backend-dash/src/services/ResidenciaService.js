@@ -2,6 +2,7 @@ import Condominio from "../models/Condominio.js";
 import Apartamento from "../models/Apartamento.js";
 import Casa from '../models/Casa.js'
 import { estados } from '../models/Condominio.js';
+import sequelize from "../config/sequelize.js";
 
 export default class ResidenciaService {
 

@@ -4,7 +4,7 @@ import sequelizePaginate from 'sequelize-paginate'
 import Sensor from "./Sensor.js";
 import { nanoid } from "nanoid";
 
-const estados = {
+export const estados = {
     AC: "Acre",
     AL: "Alagoas",
     AP: "Amapá",
@@ -99,9 +99,9 @@ Casa.init({
     updatedAt: 'atualizado_em',
 
     hooks: {
-        beforeValidate: (condominio) => {
-            if (condominio.uf) {
-                condominio.estado = estados[condominio.uf] || condominio.estado;
+        beforeValidate: (casa) => {
+            if (casa.uf) {
+                casa.estado = estados[casa.uf] || casa.estado;
             }
         },
     },
