@@ -4,7 +4,7 @@ import User from "./User.js";
 import { nanoid } from 'nanoid';
 import sequelizePaginate from 'sequelize-paginate'
 
-const estados = {
+export const estados = {
     AC: "Acre",
     AL: "Alagoas",
     AP: "Amapá",

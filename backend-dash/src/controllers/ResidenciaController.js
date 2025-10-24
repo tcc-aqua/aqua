@@ -7,4 +7,9 @@ export default class ResidenciaController {
         return reply.status(200).send(residencias)
     }
 
+    static async getPorEstado(req, reply) {
+        const residencias = await ResidenciaService.getAllDistribuicaoPorUf();
+        return reply.status(200).send(residencias);
+    }
+
 }
