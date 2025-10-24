@@ -1,78 +1,47 @@
+import { Model  , DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
-import { DataTypes, Model } from "sequelize";
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs'
 import sequelizePaginate from 'sequelize-paginate'
 
-export default class User extends Model {
+export default class Admin extends Model {
     // compare hash password
     async checkPassword(password) {
         return bcrypt.compare(password, this.password)
     }
 }
 
-User.init({
+
+Admin.init({
     id: {
         type: DataTypes.CHAR(36),
         primaryKey: true,
         defaultValue: () => uuidv4(),
     },
-    name: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-    },
     email: {
         type: DataTypes.STRING(255),
-        allowNull: false
-    },
-    cpf: {
-        type: DataTypes.CHAR(14),
         allowNull: false
     },
     password: {
         type: DataTypes.STRING(255),
         allowNull: false
     },
-    // representa de onde o usuário vem
     type: {
-        type: DataTypes.ENUM('casa', 'condominio'),
-        allowNull: false
-    },
-    responsavel_id: {
-        type: DataTypes.CHAR(36),
-        allowNull: true,
-        references: {model: 'users', key: 'id'}
-    },
-    // indica para a residencia/unidade para atribuir para a tabela correta
-    // uma especie de polimorfismo em banco de dados
-    residencia_type: {
-        type: DataTypes.ENUM('casa', 'apartamento'),
-        allowNull: false
-    },
-    // id da residencia
-    residencia_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.ENUM('superadmin', 'admin'),
+        defaultValue: 'admin',
         allowNull: false
     },
     status: {
         type: DataTypes.ENUM('ativo', 'inativo'),
-        defaultValue: 'ativo',
-        allowNull: false
-    },
-    role: {
-        type: DataTypes.ENUM('morador', 'sindico'),
-        defaultValue: 'morador',
-        allowNull: false
-    },
+        defaultValue: 'ativo'
+    }
 }, {
     sequelize,
-    paranoid: true,
-    tableName: 'users',
+    tableName: 'admins',
     timestamps: true,
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em',
 
-    // hooks hash password
     hooks: {
         
         // hash create user
@@ -92,5 +61,4 @@ User.init({
         }
     }
 })
-
-sequelizePaginate.paginate(User);
+sequelizePaginate.paginate(Admin);
