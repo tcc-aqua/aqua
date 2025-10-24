@@ -20,7 +20,6 @@ export default function Condominios() {
 
             <main className="container mx-auto pt-20 ">
 
-                <CardTop></CardTop>  
                  <div className="p-4 mt-5">
                             <ListaCondominios></ListaCondominios>
                         </div>

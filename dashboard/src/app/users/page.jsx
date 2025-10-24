@@ -3,6 +3,7 @@ import ContractorsFilter from "@/components/Filters/ContractorsFilter"
 import { Sidebar } from "@/components/modern-side-bar"
 import Header from "@/components/Layout/Header/page"
 import ListaUsers from "@/components/Listas/ListaUsers"
+import CardTopUsers from "@/components/Cards/CardsTop/CardTopUsers"
 
 export default function Users() {
   return (<>
@@ -17,7 +18,7 @@ export default function Users() {
       </header>
       <main className="container mx-auto pt-20">
         <div className="">
-          <CardTop></CardTop>
+          <CardTopUsers/>
         </div>
         <div className="p-4 mt-5">
           <ListaUsers></ListaUsers>
