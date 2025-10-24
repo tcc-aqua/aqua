@@ -1,4 +1,6 @@
 import Condominio from "../models/Condominio.js";
+import CepService from "./CepService.js";
+
 export default class CondominioService {
 
     static async getAllCondominios(page = 1, limit = 10) {
@@ -95,7 +97,7 @@ export default class CondominioService {
                 logradouro: endereco.logradouro,
                 bairro: endereco.bairro,
                 cidade: endereco.cidade,
-                estado: endereco.uf,
+                uf: endereco.uf,
                 sindico_id,
             });
 
@@ -105,6 +107,7 @@ export default class CondominioService {
             throw error;
         }
     }
+
 
     static async updateCondominio(id, { name, endereco, sindico_id }) {
         try {
