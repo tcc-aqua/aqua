@@ -49,6 +49,16 @@ export default class ApartamentoService {
         }
     }
 
+    static async countApartamentos(){
+        try {
+            const apartamentos = await Apartamento.count();
+            return apartamentos;
+        } catch (error) {
+            console.error('Erro ao contar apartamentos', error);
+            throw error;
+        }
+    }
+
     static async inativarApartamento(id) {
         try {
             const apartamento = await Apartamento.findByPk(id);

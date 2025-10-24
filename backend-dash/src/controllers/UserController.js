@@ -40,6 +40,16 @@ export default class UserController {
         return reply.status(200).send(users);
     }
 
+    static async countSindicos(req, reply){
+        const sindicos = await UserService.countSindicos();
+        return reply.status(200).send(sindicos);
+    }
+
+    static async countMoradores(req, reply){
+        const moradores = await UserService.countMoradores();
+        return reply.status(200).send(moradores);
+    }
+
     static async deactivate(req, reply) {
         const { id } = (req.params);
         const user = await UserService.deactivateUser(id);

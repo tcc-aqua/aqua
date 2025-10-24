@@ -24,7 +24,7 @@ export default class ApartamentoController {
     }
 
     static async count(req, reply) {
-        const apartamentos = await ApartamentoService.countUnidades();
+        const apartamentos = await ApartamentoService.countApartamentos();
         return reply.status(200).send(apartamentos);
     }
 
