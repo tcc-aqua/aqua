@@ -1,4 +1,6 @@
 import Sensor from "../models/Sensor.js";
+import { Op } from 'sequelize';
+
 
 export default class SensorService {
 
@@ -115,6 +117,34 @@ export default class SensorService {
             return total;
         } catch (error) {
             console.error('Erro ao calcular consumo total dos sensores', error);
+            throw error;
+        }
+    }
+
+    static async consumoTotalSensoresCasas() {
+        try {
+            const total = await Sensor.sum('consumo_total', {
+                where: {
+                    casa_id: { [Op.ne]: null } // somente sensores de casas
+                }
+            });
+            return total;
+        } catch (error) {
+            console.error('Erro ao calcular consumo total dos sensores de casas', error);
+            throw error;
+        }
+    }
+
+    static async consumoTotalSensoresApartamento() {
+        try {
+            const total = await Sensor.sum('consumo_total', {
+                where: {
+                    apartamento_id: { [Op.ne]: null } 
+                }
+            });
+            return total;
+        } catch (error) {
+            console.error('Erro ao calcular consumo total dos sensores de apartamentos', error);
             throw error;
         }
     }
