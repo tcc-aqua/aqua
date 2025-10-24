@@ -84,14 +84,24 @@ export default class CondominioService {
         }
     }
 
-    static async createCondominio({ name, endereco, sindico_id }) {
+    static async createCondominio({ name, numero, cep, sindico_id }) {
         try {
-            const condominio = await Condominio({
-                name, endereco, sindico_id
-            })
+            const endereco = await CepService.buscarCep(cep);
+
+            const condominio = await Condominio.create({
+                name,
+                numero,
+                cep: endereco.cep,
+                logradouro: endereco.logradouro,
+                bairro: endereco.bairro,
+                cidade: endereco.cidade,
+                estado: endereco.uf,
+                sindico_id,
+            });
+
             return condominio;
         } catch (error) {
-            console.error('Erro ao criar condominio', error);
+            console.error("Erro ao criar condomínio:", error);
             throw error;
         }
     }
@@ -144,16 +154,16 @@ export default class CondominioService {
         }
     }
 
-    static async listaCondominio(){
+    static async listaCondominio() {
         try {
             const options = {
                 page,
                 paginate: limit,
-                order:[['criado_em', 'DESC']],
+                order: [['criado_em', 'DESC']],
             }
         } catch (error) {
             console.error('Ero ao listar')
         }
-     }
+    }
 
 }
