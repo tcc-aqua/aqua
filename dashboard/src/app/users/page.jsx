@@ -20,10 +20,6 @@ export default function Users() {
           <CardTop></CardTop>
         </div>
         <div className="p-4 mt-5">
-          <ContractorsFilter></ContractorsFilter>
-        </div>
-
-        <div className="p-4 mt-5">
           <ListaUsers></ListaUsers>
         </div>
       </main>

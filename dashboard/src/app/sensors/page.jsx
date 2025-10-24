@@ -20,9 +20,9 @@ export default function Sensors() {
                 <CardTop></CardTop>
             </main>
 
-              <div className="p-4 mt-5">
-                  <ListaSensors></ListaSensors>
-                    </div>
+            <div className="p-4 mt-5">
+                <ListaSensors></ListaSensors>
+            </div>
         </div>
 
 

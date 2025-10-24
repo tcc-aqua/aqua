@@ -17,13 +17,15 @@ import {
   Droplets,
   Building,
   HelpCircle,
-  MessageCircle
+  MessageCircle,
+  HousePlus
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
 const navigationItems = [
   { id: "dashboard", name: "Dashboard", icon: Home, href: "/dashboard" },
   { id: "sensors", name: "Sensores", icon: Droplets, href: "/sensors" },
+   { id: "casas", name: "Casas", icon: HousePlus, href: "/casas" },
   { id: "condominios", name: "Condomínios", icon: Building, href: "/condominios" },
   { id: "users", name: "Usuários", icon: Users, href: "/users" },
   { id: "tecnicos", name: "Técnicos", icon: IdCardLanyard, href: "/funcionarios" },
@@ -33,8 +35,8 @@ const navigationItems = [
 ];
 
 export function Sidebar({ className = "" }) {
-  const [isOpen, setIsOpen] = useState(false);       // mobile
-  const [isCollapsed, setIsCollapsed] = useState(false); // desktop
+  const [isOpen, setIsOpen] = useState(false);    
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { theme } = useTheme();
   const pathname = usePathname();
 
@@ -114,7 +116,7 @@ export function Sidebar({ className = "" }) {
                     href={item.href}
                     className={`
                       flex items-center transition-all duration-200 rounded-md
-                      ${isCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 space-x-2.5"}
+                      ${isCollapsed ? "justify-center p-2.5" : "px-3 py-3.5 space-x-2.5"}
                       ${isActive
                         ? "bg-muted border-r-4 border-accent text-accent"
                         : "text-sidebar-foreground hover:text-accent"}
