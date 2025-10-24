@@ -57,7 +57,7 @@ export default class UserController {
     }
 
     static async ativar(req, reply) {
-        const { id } = idSchema.parse(req.params);
+        const { id } = (req.params);
         const user = await UserService.ativarUser(id);
         return reply.status(200).send(user)
     }
