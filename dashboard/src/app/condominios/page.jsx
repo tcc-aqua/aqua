@@ -1,5 +1,6 @@
 import CardTop from "@/components/Cards/CardTopPadrao";
 import Header from "@/components/Layout/Header/page";
+import CondominiosDashboard from "@/components/Listas/ListaCondominios";
 import ListaCondominios from "@/components/Listas/ListaCondominios";
 import { Sidebar } from "@/components/modern-side-bar";
 
@@ -20,8 +21,8 @@ export default function Condominios() {
 
             <main className="container mx-auto pt-20 ">
 
-                 <div className="p-4 mt-5">
-                            <ListaCondominios></ListaCondominios>
+                 <div className="">
+                            <CondominiosDashboard></CondominiosDashboard>
                         </div>
             </main>
            

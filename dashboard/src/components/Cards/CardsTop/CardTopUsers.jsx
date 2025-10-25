@@ -54,8 +54,6 @@ export default function CardTopUsers() {
 
     fetchStats();
 
-    const interval = setInterval(fetchStats, 500);
-    return () => clearInterval(interval);
 
   }, []);
 

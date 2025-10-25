@@ -1,5 +1,6 @@
 import CardTop from "@/components/Cards/CardTopPadrao";
 import Header from "@/components/Layout/Header/page";
+import SensorsDashboard from "@/components/Listas/ListaSensors";
 import ListaSensors from "@/components/Listas/ListaSensors";
 import { Sidebar } from "@/components/modern-side-bar";
 
@@ -17,12 +18,12 @@ export default function Sensors() {
                 <header className="fixed top-0 left-64 right-0 z-40">
                     <Header />
                 </header>
-                <CardTop></CardTop>
+                 <div className="">
+                <SensorsDashboard></SensorsDashboard>
+            </div>
             </main>
 
-            <div className="p-4 mt-5">
-                <ListaSensors></ListaSensors>
-            </div>
+           
         </div>
 
 

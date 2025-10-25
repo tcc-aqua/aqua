@@ -1,5 +1,6 @@
 import CardTop from "@/components/Cards/CardTopPadrao";
 import Header from "@/components/Layout/Header/page";
+import CasasDashboard from "@/components/Listas/ListaCasas";
 import ListaCasas from "@/components/Listas/ListaCasas";
 import { Sidebar } from "@/components/modern-side-bar";
 
@@ -17,9 +18,10 @@ export default function Casas() {
                 <header className="fixed top-0 left-64 right-0 z-40">
                     <Header />
                 </header>
-                <CardTop></CardTop> 
-                <div className="p-4 mt-5">
-                <ListaCasas></ListaCasas>
+              
+                <div className="">
+                    <CasasDashboard></CasasDashboard>
+           
             </div>
             </main>
            

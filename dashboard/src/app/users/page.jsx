@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/modern-side-bar"
 import Header from "@/components/Layout/Header/page"
 import ListaUsers from "@/components/Listas/ListaUsers"
 import CardTopUsers from "@/components/Cards/CardsTop/CardTopUsers"
+import UsersDashboard from "@/components/Listas/ListaUsers"
 
 export default function Users() {
   return (<>
@@ -18,11 +19,9 @@ export default function Users() {
       </header>
       <main className="container mx-auto pt-20">
         <div className="">
-          <CardTopUsers/>
+         <UsersDashboard></UsersDashboard>
         </div>
-        <div className="p-4 mt-5">
-          <ListaUsers></ListaUsers>
-        </div>
+      
       </main>
     </div>
 
