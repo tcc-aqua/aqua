@@ -1,19 +1,21 @@
 import CondominioService from "../services/CondominioService.js";
-import { z } from 'zod';
+import { z } from "zod";
 
-const createCondominioSchema = z.object({
+export const createCondominioSchema = z.object({
     name: z.string(),
-    email: z.string().email(),
-    sindico_id: z.string().uuid()
-})
-
-const updateCondominioSchema = z.object({
-    name: z.string().optional(),
-    email: z.string().email().optional(),
+    numero: z.string(),
+    cep: z.string().regex(/^\d{5}-?\d{3}$/, "CEP inválido"),
     sindico_id: z.string().uuid()
 });
 
-const idSchema = z.string().uuid();
+
+const updateCondominioSchema = z.object({
+    name: z.string().optional(),
+    numero: z.string().optional(),
+    cep: z.string().regex(/^\d{5}-?\d{3}$/, "CEP inválido").optional(),
+    sindico_id: z.string().uuid().optional()
+});
+
 export default class CondominioController {
     static async getAll(req, reply) {
         const page = parseInt(req.query.page) || 1;
@@ -48,6 +50,7 @@ export default class CondominioController {
     }
 
     static async update(req, reply) {
+        const { id } = req.params;
         const validateCondominio = updateCondominioSchema.parse(req.body);
         const updateCondominio = await CondominioService.updateCondominio(id, validateCondominio);
         return reply.status(200).send(updateCondominio)
