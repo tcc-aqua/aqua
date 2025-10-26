@@ -46,7 +46,7 @@ Apartamento.init({
         unique: true
     },
     responsavel_id: {
-        type: DataTypes.CHAR(36),
+        type: DataTypes.CHAR(36),               
         allowNull: true,
         references: { model: 'users', key: 'id' }
     }

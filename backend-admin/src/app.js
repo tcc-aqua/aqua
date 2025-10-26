@@ -36,7 +36,7 @@ fastify.get('/', (req, reply) => {
 
 await fastify.register(userRoutes, { prefix: '/api/users' });
 await fastify.register(condominioRoutes, { prefix: '/api/condominios' });
-await fastify.register(unidadesRoutes, { prefix: '/api/unidades' });
+await fastify.register(unidadesRoutes, { prefix: '/api/apartamentos' });
 await fastify.register(casaRoutes, { prefix: '/api/casas' });
 await fastify.register(sensorRoutes, { prefix: '/api/sensores' });
 await fastify.register(adminRoutes, { prefix: '/api/admins' });

@@ -10,7 +10,7 @@ export default class UserService {
   static async register(data) {
     const { codigo_acesso, residencia_type, name, email, cpf, password, numero, bloco, cep, sensor_id } = data;
 
-    // CASO SEJA CADASTRO DE CASA NOVA
+    // Cadastro de nova CASA
     if (!codigo_acesso && residencia_type === "casa") {
       if (!sensor_id) throw new Error("sensor_id obrigatório para cadastro de casa");
       if (!cep) throw new Error("CEP obrigatório para cadastro de casa");
@@ -48,7 +48,7 @@ export default class UserService {
       return { user, residencia: casa };
     }
 
-    // CASO SEJA UM DEPENDENTE DE CASA EXISTENTE
+    // Cadastro de DEPENDENTE de CASA existente
     if (residencia_type === "casa" && codigo_acesso) {
       const casa = await Casa.findOne({ where: { codigo_acesso } });
       if (!casa) throw new Error("Código da casa inválido");
@@ -66,19 +66,18 @@ export default class UserService {
         responsavel_id: casa.responsavel_id
       });
 
-      // Atualiza número de moradores
       casa.numero_moradores += 1;
       await casa.save();
 
       return { user, residencia: casa };
     }
 
-    // CASO SEJA APARTAMENTO
+    // Cadastro de APARTAMENTO
     if (residencia_type === "apartamento") {
       const condominio = await Condominio.findOne({ where: { codigo_acesso } });
 
       if (!condominio) {
-        // Caso seja código de apartamento direto
+        // Código do apartamento direto (dependente)
         const apartamento = await Apartamento.findOne({ where: { codigo_acesso } });
         if (!apartamento) throw new Error("Código do apartamento inválido");
 
@@ -102,15 +101,6 @@ export default class UserService {
         // Criando novo apartamento dentro do condomínio
         if (!numero) throw new Error("Número do apartamento é obrigatório");
 
-        const apartamento = await Apartamento.create({
-          condominio_id: condominio.id,
-          numero,
-          bloco: bloco || null,
-          codigo_acesso: nanoid(6).toUpperCase(),
-          numero_moradores: 1,
-          sensor_id: data.sensor_id || null
-        });
-
         const user = await User.create({
           name,
           email,
@@ -119,9 +109,22 @@ export default class UserService {
           type: "condominio",
           role: "morador",
           residencia_type: "apartamento",
-          residencia_id: apartamento.id,
+          residencia_id: null,
           responsavel_id: null
         });
+
+        const apartamento = await Apartamento.create({
+          condominio_id: condominio.id,
+          numero,
+          bloco: bloco || null,
+          codigo_acesso: nanoid(6).toUpperCase(),
+          numero_moradores: 1,
+          sensor_id: sensor_id || null,
+          responsavel_id: user.id
+        });
+
+        user.residencia_id = apartamento.id;
+        await user.save();
 
         return { user, residencia: apartamento };
       }
