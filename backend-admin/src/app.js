@@ -1,9 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+
 import fastifyFormbody from '@fastify/formbody'
-
-import './models/associations.js';
-
 import userRoutes from './routes/user.routes.js';
 import errorHandler from './middlewares/errorHandler.js';
 import condominioRoutes from './routes/condominio.routes.js';

@@ -109,15 +109,21 @@ export default class CondominioService {
     }
 
 
-    static async updateCondominio(id, { name, endereco, sindico_id }) {
+    static async updateCondominio(id, { name, numero, cep, sindico_id }) {
         try {
+            const endereco = await CepService.buscarCep(cep);
+
             const condominio = await Condominio.findByPk(id);
             if (!condominio) {
                 throw new Error('Condominio não encontrado.')
             }
 
             await condominio.update({
-                name, endereco, sindico_id
+                name, numero, sindico_id, cep: endereco.cep,
+                logradouro: endereco.logradouro,
+                bairro: endereco.bairro,
+                cidade: endereco.cidade,
+                uf: endereco.uf,
             })
 
             return condominio;
