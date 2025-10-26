@@ -4,7 +4,7 @@ dotenv.config({ path: resolve("..", ".env") });
 import app from "./app.js";
 import { connectDB } from "./config/sequelize.js";
 
-const PORT = process.env.PORT || 3333;
+const PORT = process.env.PORT || 3334;
 
 const start = async () => {
     try {
