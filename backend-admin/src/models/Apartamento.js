@@ -4,7 +4,7 @@ import Condominio from "./Condominio.js";
 import sequelizePaginate from 'sequelize-paginate'
 import Sensor from "./Sensor.js";
 
-export default class Apartamento extends Model {}
+export default class Apartamento extends Model { }
 
 Apartamento.init({
     id: {
@@ -12,10 +12,10 @@ Apartamento.init({
         primaryKey: true,
         autoIncrement: true
     },
-    condominio_id:{
+    condominio_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {model: Condominio, key: 'id'}
+        references: { model: Condominio, key: 'id' }
     },
     numero: {
         type: DataTypes.INTEGER,
@@ -32,19 +32,24 @@ Apartamento.init({
     sensor_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {model: Sensor, key: 'id'}
+        references: { model: Sensor, key: 'id' }
     },
     status: {
         type: DataTypes.ENUM('ativo', 'inativo'),
         allowNull: false,
         defaultValue: 'ativo'
     },
-     codigo_acesso: {
-            type: DataTypes.CHAR(5),
-            defaultValue: () => nanoid(5),
-            allowNull: false,
-            unique: true
-        },
+    codigo_acesso: {
+        type: DataTypes.CHAR(5),
+        defaultValue: () => nanoid(5),
+        allowNull: false,
+        unique: true
+    },
+    responsavel_id: {
+        type: DataTypes.CHAR(36),
+        allowNull: true,
+        references: { model: 'users', key: 'id' }
+    }
 }, {
     sequelize,
     tableName: 'apartamentos',

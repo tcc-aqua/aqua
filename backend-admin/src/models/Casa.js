@@ -90,6 +90,11 @@ Casa.init({
         type: DataTypes.ENUM('ativo', 'inativo'),
         allowNull: false,
         defaultValue: 'ativo'
+    },
+    responsavel_id: {
+        type: DataTypes.CHAR(36),
+        allowNull: true,
+        references: { model: 'users', key: 'id' }
     }
 }, {
     sequelize,
