@@ -5,7 +5,6 @@ export const createCondominioSchema = z.object({
     name: z.string(),
     numero: z.string(),
     cep: z.string().regex(/^\d{5}-?\d{3}$/, "CEP inválido"),
-    sindico_id: z.string().uuid()
 });
 
 

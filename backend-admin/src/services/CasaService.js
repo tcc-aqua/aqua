@@ -12,7 +12,7 @@ export default class CasaService {
 
             const casas = await Casa.paginate(options);
             return casas;
-        } catch (error) {
+        } catch (error) {   
             console.error('Erro ao listar casas', error);
             throw error;
         }
