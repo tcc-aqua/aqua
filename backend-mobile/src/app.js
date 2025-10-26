@@ -1,18 +1,26 @@
-import fastify from 'fastify';
-import userRoutes from './routes/UserRoute.js';
-import enderecoRoutes from './routes/EnderecoRoute.js';
-const app = fastify({
+import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import fastifyFormbody from '@fastify/formbody'
+
+const fastify = Fastify({
     logger: {
         transport: {
             target: 'pino-pretty'
         }
     }
-});
-
-app.get("/", (request, reply) => {
-    return reply.status(200).send({ message: 'Hello API!!' });
 })
 
-app.register(userRoutes, { prefix: '/users' });
-app.register(enderecoRoutes, { prefix: '/enderecos' });
-export default app;
+await fastify.register(cors, {
+    origin: 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
+})
+
+fastify.register(fastifyFormbody);
+
+fastify.get('/', (req, reply) => {
+    return reply.status(200).send('Hello API MOBILE!')
+})
+
+
+export default fastify;
