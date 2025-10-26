@@ -6,7 +6,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Home, UserCheck, AlertTriangle } from "lucide-react";
+import { Home, UserCheck, AlertTriangle, SignalHigh } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,37 +22,91 @@ const cardVariants = {
 
 export default function CasasDashboard() {
   const [casas, setCasas] = useState([]);
+  const [sensores, setSensores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [casaStats, setCasaStats] = useState({ total: 0, ativas: 0, inativas: 0, alertas: 0 });
+  const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
   const [showModal, setShowModal] = useState(false);
   const [selectedCasa, setSelectedCasa] = useState(null);
-  const [sensores, setSensores] = useState([]);
+
+  const API_CASAS = "http://localhost:3333/api/casas";
+  const API_SENSORES = "http://localhost:3333/api/sensores";
 
   const fetchData = async () => {
     try {
-      const res = await fetch("http://localhost:3333/api/casas");
-      const data = await res.json();
-      const allCasas = data.docs || [];
-      setCasas(allCasas);
+      setLoading(true);
 
-      const resSensores = await fetch("http://localhost:3333/api/sensores");
-      const dataSensores = await resSensores.json();
+      // Faz todos os fetch em paralelo para otimizar
+      const [
+        resCasas,
+        resCasasAtivas,
+        resCasasInativas,
+        resCasasCount,
+        resSensores,
+        resSensoresAtivos,
+        resSensoresCount,
+      ] = await Promise.all([
+        fetch(`${API_CASAS}`),
+        fetch(`${API_CASAS}/ativos`),
+        fetch(`${API_CASAS}/inativos`),
+        fetch(`${API_CASAS}/count`),
+        fetch(`${API_SENSORES}`),
+        fetch(`${API_SENSORES}/ativos`),
+        fetch(`${API_SENSORES}/count`),
+      ]);
+
+      const [
+        dataCasas,
+        dataCasasAtivas,
+        dataCasasInativas,
+        dataCasasCount,
+        dataSensores,
+        dataSensoresAtivos,
+        dataSensoresCount,
+      ] = await Promise.all([
+        resCasas.json(),
+        resCasasAtivas.json(),
+        resCasasInativas.json(),
+        resCasasCount.json(),
+        resSensores.json(),
+        resSensoresAtivos.json(),
+        resSensoresCount.json(),
+      ]);
+
+      const allCasas = dataCasas.docs || [];
       const allSensores = dataSensores.docs || [];
+
+      setCasas(allCasas);
       setSensores(allSensores);
 
-      const ativas = allCasas.filter(c => c.status === "ativo");
-      const inativas = allCasas.filter(c => c.status === "inativo");
+      // Estatísticas de casas
       const alertas = allCasas.filter(c => !c.numero_moradores || c.numero_moradores === 0);
 
       setCasaStats({
-        total: allCasas.length,
-        ativas: ativas.length,
-        inativas: inativas.length,
+        total: dataCasasCount || 0,
+        ativas: dataCasasAtivas.docs?.length || 0,
+        inativas: dataCasasInativas.docs?.length || 0,
         alertas: alertas.length,
       });
+
+      // Estatísticas de sensores vinculados às casas
+      const sensoresVinculados = allSensores.filter(s =>
+        allCasas.some(c => c.sensor_id === s.id)
+      );
+
+      const sensoresAtivos = sensoresVinculados.filter(s => s.status === "ativo");
+      const sensoresInativos = sensoresVinculados.filter(s => s.status === "inativo");
+      const sensoresComAlerta = sensoresVinculados.filter(s => s.consumo_total > 1000);
+
+      setSensorStats({
+        total: sensoresVinculados.length,
+        ativos: sensoresAtivos.length,
+        inativos: sensoresInativos.length,
+        alertas: sensoresComAlerta.length,
+      });
     } catch (err) {
-      console.error(err);
+      console.error("Erro ao buscar dados:", err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -72,9 +126,7 @@ export default function CasasDashboard() {
     if (!selectedCasa) return;
     try {
       const action = selectedCasa.status === "ativo" ? "inativar" : "ativar";
-      const res = await fetch(`http://localhost:3333/api/casas/${selectedCasa.id}/${action}`, {
-        method: "PATCH",
-      });
+      const res = await fetch(`${API_CASAS}/${selectedCasa.id}/${action}`, { method: "PATCH" });
       if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
       toast.success(`Casa ${selectedCasa.status === "ativo" ? "inativada" : "ativada"} com sucesso!`);
       fetchData();
@@ -90,10 +142,10 @@ export default function CasasDashboard() {
   if (error) return <p className="text-red-500">Erro: {error}</p>;
 
   const cards = [
-    { title: "Total de Casas", value: casaStats.total, icon: Home, bg: "bg-blue-300" },
-    { title: "Casas Ativas", value: casaStats.ativas, icon: UserCheck, bg: "bg-green-300" },
-    { title: "Casas Inativas", value: casaStats.inativas, icon: AlertTriangle, bg: "bg-red-300" },
-    { title: "Alertas Ativos", value: casaStats.alertas, icon: AlertTriangle, bg: "bg-yellow-300" },
+    { title: "Total de Casas", value: casaStats.total, icon: Home, bg: "bg-blue-300", iconColor: "text-blue-700", textColor: "text-blue-800" },
+    { title: "Casas Ativas", value: casaStats.ativas, icon: UserCheck, bg: "bg-green-300", iconColor: "text-green-700", textColor: "text-green-800" },
+    { title: "Sensores Ativos", value: sensorStats.ativos, icon: SignalHigh, bg: "bg-yellow-200", iconColor: "text-yellow-700", textColor: "text-yellow-800" },
+    { title: "Alertas", value: casaStats.alertas, icon: AlertTriangle, bg: "bg-red-400", iconColor: "text-red-700", textColor: "text-red-800" },
   ];
 
   return (
@@ -107,11 +159,11 @@ export default function CasasDashboard() {
             <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
               <Card className={`p-4 ${card.bg}`}>
                 <CardHeader>
-                  <CardTitle>{card.title}</CardTitle>
+                  <CardTitle className={`font-bold text-xl ${card.textColor}`}>{card.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
-                  <Icon className="w-10 h-10 mb-2" />
-                  <p className="font-bold text-xl">{card.value}</p>
+                  <Icon className={`w-10 h-10 mb-2 ${card.iconColor}`} />
+                  <p className={`font-bold text-xl ${card.textColor}`}>{card.value}</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -119,7 +171,7 @@ export default function CasasDashboard() {
         })}
       </section>
 
-      <Card className="mx-auto max-w-7xl mt-20">
+      <Card className="mx-auto mt-20">
         <CardHeader>
           <CardTitle>Lista de Casas</CardTitle>
         </CardHeader>
@@ -130,13 +182,13 @@ export default function CasasDashboard() {
             <table className="min-w-full divide-y divide-border">
               <thead className="bg-muted">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Casa</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Morador Principal</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Sensor</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Consumo</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Alertas</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Ações</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Casa</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Morador Principal</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Sensor</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Consumo</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Alertas</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -145,29 +197,36 @@ export default function CasasDashboard() {
                   return (
                     <tr key={casa.id} className="hover:bg-muted/10 text-foreground">
                       <td className="px-4 py-2 ">
-                        <div className="text-sm">{`${casa.logradouro}, ${casa.numero} - ${casa.bairro}`}</div>
-                        <div className="text-xs ">{`${casa.numero_moradores || 0} Moradores`}</div>
-                        </td>
+                        <div className="text-sm font-semibold">{`${casa.logradouro}, ${casa.numero} - ${casa.bairro} - ${casa.uf}`}</div>
+                        <div className="text-xs text-foreground/80">{`${casa.numero_moradores || 0} Moradores`}</div>
+                        <div className="text-[10px] text-foreground/60 ">{casa.cep}</div>
+                        <div className="text-[10px] text-foreground/60 ">
+                          Criado em {new Date(casa.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                      </td>
                       <td className="px-4 py-2 text-sm">-</td>
-                      <td className="px-4 py-2 text-sm"><div>{sensor ? `${sensor.codigo}` : "-"}</div>
-                      
-                      <div className={`ml-3 text-sm font-bold ${sensor.status === "ativo" ? "text-green-600" : sensor.status === "inativo" ? "text-red-600" : "text-yellow-600"}`}>
-                        {sensor ? `${sensor.status === "ativo" ? "Ativo" : "Inativo"}` : "-"}</div> 
-                        </td>
-                      <td className="px-4 py-2 text-sm">{sensor?.consumo_total || 0}</td>
-                     <td className="px-4 py-2 text-sm font-bold flex items-center ml-5">
-                      <span
-                        className={`inline-block w-3 h-3 rounded-full mt-3 ${casa.status === "ativo" ? "bg-green-600" : "bg-red-600"}`}
-                        title={casa.status}
-                      />
-                    </td>
-                      <td className="px-4 py-2 text-sm">{!casa.numero_moradores || casa.numero_moradores === 0 ? "-" : "-"}</td>
                       <td className="px-4 py-2 text-sm">
-                        <Button
-                          size="sm"
-                          variant={casa.status === "ativo" ? "destructive" : "outline"}
-                          onClick={() => confirmToggleStatus(casa)}
-                        >
+                        <div>{sensor ? sensor.codigo : "-"}</div>
+                        {sensor && (
+                          <div className="ml-3 text-sm font-bold">
+                            <span className={sensor.status === "ativo" ? "text-green-600" : "text-red-600"}>
+                              {sensor.status === "ativo" ? "Ativo" : "Inativo"}
+                            </span>
+                          </div>
+                        )}
+                        <div className="text-[10px] text-foreground/60">
+                          Último envio: {sensor?.ultimo_envio
+                            ? new Date(sensor.ultimo_envio).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                            : "-"}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 text-sm">{sensor?.consumo_total || 0}L/dia</td>
+                      <td className="px-4 py-2 text-sm font-bold flex items-center ml-5">
+                        <span className={`inline-block w-3 h-3 rounded-full mt-3 ${casa.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={casa.status} />
+                      </td>
+                      <td className="px-4 py-2 text-sm">-</td>
+                      <td className="px-4 py-2 text-sm">
+                        <Button size="sm" variant={casa.status === "ativo" ? "destructive" : "outline"} onClick={() => confirmToggleStatus(casa)}>
                           {casa.status === "ativo" ? "Inativar" : "Ativar"}
                         </Button>
                       </td>
@@ -186,14 +245,11 @@ export default function CasasDashboard() {
             <DialogTitle>Confirmação</DialogTitle>
           </DialogHeader>
           <p className="py-4">
-            Deseja realmente {selectedCasa?.status === "ativo" ? "inativar" : "ativar"} a casa{" "}
-            <strong>{selectedCasa?.logradouro}, {selectedCasa?.numero}</strong>?
+            Deseja realmente {selectedCasa?.status === "ativo" ? "inativar" : "ativar"} a casa <strong>{selectedCasa?.logradouro}, {selectedCasa?.numero}</strong>?
           </p>
           <DialogFooter className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={toggleStatus}>
-              {selectedCasa?.status === "ativo" ? "Inativar" : "Ativar"}
-            </Button>
+            <Button variant="destructive" onClick={toggleStatus}>{selectedCasa?.status === "ativo" ? "Inativar" : "Ativar"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
