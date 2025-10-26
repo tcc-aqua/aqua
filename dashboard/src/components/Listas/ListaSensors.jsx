@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Toaster } from "sonner";
-import { Cpu, SignalHigh, AlertTriangle } from "lucide-react";
+import { Cpu, SignalHigh, AlertTriangle, Wrench } from "lucide-react";
 
 const cardVariants = {
   hidden: { y: 20, opacity: 0 },
@@ -18,23 +18,40 @@ export default function SensorsDashboard() {
   const [error, setError] = useState(null);
   const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
 
+  const API_URL = "http://localhost:3333/api/sensores";
+
   const fetchData = async () => {
     try {
-      const res = await fetch("http://localhost:3333/api/sensores");
-      const data = await res.json();
-      const allSensores = data.docs || [];
-      setSensores(allSensores);
+      
+      const [totalRes, ativosRes, inativosRes, allRes] = await Promise.all([
+        fetch(`${API_URL}/count`),
+        fetch(`${API_URL}/count-ativos`),
+        fetch(`${API_URL}/inativos`),
+        fetch(`${API_URL}/`),
+      ]);
 
-      const ativos = allSensores.filter(s => s.status === "ativo");
-      const inativos = allSensores.filter(s => s.status === "inativo");
-      const alertas = allSensores.filter(s => !["ativo", "inativo"].includes(s.status));
+      if (!totalRes.ok || !ativosRes.ok || !inativosRes.ok || !allRes.ok) {
+        throw new Error("Erro ao buscar dados dos sensores.");
+      }
+
+      const total = await totalRes.json();
+      const ativos = await ativosRes.json();
+      const inativos = await inativosRes.json();
+      const allSensores = await allRes.json();
+
+     
+      const alertas = allSensores.docs?.filter(
+        (s) => !["ativo", "inativo"].includes(s.status)
+      ).length || 0;
 
       setSensorStats({
-        total: allSensores.length,
-        ativos: ativos.length,
-        inativos: inativos.length,
-        alertas: alertas.length,
+        total: total ?? 0,
+        ativos: ativos ?? 0,
+        inativos: inativos.docs?.length ?? 0,
+        alertas,
       });
+
+      setSensores(allSensores.docs || []);
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -51,10 +68,38 @@ export default function SensorsDashboard() {
   if (error) return <p className="text-red-500">Erro: {error}</p>;
 
   const cards = [
-    { title: "Total de Sensores", value: sensorStats.total, icon: Cpu, bg: "bg-blue-300" },
-    { title: "Sensores Ativos", value: sensorStats.ativos, icon: SignalHigh, bg: "bg-green-300" },
-    { title: "Sensores Inativos", value: sensorStats.inativos, icon: AlertTriangle, bg: "bg-red-300" },
-    { title: "Sensores com Alerta", value: sensorStats.alertas, icon: AlertTriangle, bg: "bg-yellow-300" },
+    {
+      title: "Total de Sensores",
+      value: sensorStats.total,
+      icon: Cpu,
+      bg: "bg-blue-100",
+      iconColor: "text-blue-700",
+      textColor: "text-blue-800",
+    },
+    {
+      title: "Sensores Ativos",
+      value: sensorStats.ativos,
+      icon: SignalHigh,
+      bg: "bg-green-200",
+      iconColor: "text-green-700",
+      textColor: "text-green-800",
+    },
+    {
+      title: "Em manutenção",
+      value: sensorStats.inativos,
+      icon: Wrench,
+      bg: "bg-yellow-200",
+      iconColor: "text-yellow-700",
+      textColor: "text-yellow-800",
+    },
+    {
+      title: "Alertas",
+      value: sensorStats.alertas,
+      icon: AlertTriangle,
+      bg: "bg-red-200",
+      iconColor: "text-red-700",
+      textColor: "text-red-800",
+    },
   ];
 
   return (
@@ -68,11 +113,13 @@ export default function SensorsDashboard() {
             <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
               <Card className={`p-4 ${card.bg}`}>
                 <CardHeader>
-                  <CardTitle>{card.title}</CardTitle>
+                  <CardTitle className={`font-bold text-xl ${card.textColor}`}>
+                    {card.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
-                  <Icon className="w-10 h-10 mb-2" />
-                  <p className="font-bold text-xl">{card.value}</p>
+                  <Icon className={`w-10 h-10 mb-2 ${card.iconColor}`} />
+                  <p className={`font-bold text-xl ${card.textColor}`}>{card.value ?? 0}</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -80,7 +127,7 @@ export default function SensorsDashboard() {
         })}
       </section>
 
-      <Card className="mx-auto max-w-7xl mt-20">
+      <Card className="mx-auto mt-20">
         <CardHeader>
           <CardTitle>Lista de Sensores</CardTitle>
         </CardHeader>
@@ -91,24 +138,30 @@ export default function SensorsDashboard() {
             <table className="min-w-full divide-y divide-border">
               <thead className="bg-muted">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Sensor</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Localização</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
-                                                      <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Consumo</th>
-                                                                        <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Conectividade</th>
-                                                                                          <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Bateria</th>
-                                                                                                            <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Alertas</th>
-                                                                                                                              <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Ações</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">
+                    Sensor
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">
+                    Status
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">
+                    Localização
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {sensores.map(sensor => (
+                {sensores.map((sensor) => (
                   <tr key={sensor.id} className="hover:bg-muted/10 text-foreground">
                     <td className="px-4 py-2 text-sm font-bold">{sensor.codigo}</td>
-                    <td className={`px-4 py-2 text-sm font-bold ${
-                      sensor.status === "ativo" ? "text-green-600" :
-                      sensor.status === "inativo" ? "text-red-600" : "text-yellow-600"
-                    }`}>
+                    <td
+                      className={`px-4 py-2 text-sm font-bold ${
+                        sensor.status === "ativo"
+                          ? "text-green-600"
+                          : sensor.status === "inativo"
+                          ? "text-red-600"
+                          : "text-yellow-600"
+                      }`}
+                    >
                       {sensor.status}
                     </td>
                     <td className="px-4 py-2 text-sm">{sensor.localizacao || "-"}</td>

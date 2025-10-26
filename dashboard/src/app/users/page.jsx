@@ -1,5 +1,5 @@
 import CardTop from "@/components/Cards/CardTopPadrao"
-import ContractorsFilter from "@/components/Filters/ContractorsFilter"
+import ContractorsFilter from "@/components/Filters/Usuarios"
 import { Sidebar } from "@/components/modern-side-bar"
 import Header from "@/components/Layout/Header/page"
 import ListaUsers from "@/components/Listas/ListaUsers"
