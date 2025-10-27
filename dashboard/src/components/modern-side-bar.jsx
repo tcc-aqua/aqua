@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Home,
   User,
@@ -16,8 +16,8 @@ import {
   IdCardLanyard,
   Droplets,
   Building,
-  HelpCircle,
   MessageCircle,
+  Rows,
   HousePlus
 } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -25,36 +25,40 @@ import { useTheme } from "next-themes";
 const navigationItems = [
   { id: "dashboard", name: "Dashboard", icon: Home, href: "/dashboard" },
   { id: "sensors", name: "Sensores", icon: Droplets, href: "/sensors" },
-   { id: "casas", name: "Casas", icon: HousePlus, href: "/casas" },
+  { id: "casas", name: "Casas", icon: HousePlus, href: "/casas" },
   { id: "condominios", name: "Condomínios", icon: Building, href: "/condominios" },
+  { id: "apartamentos", name: "Apartamentos", icon: Rows, href: "/apartamentos" },
   { id: "users", name: "Usuários", icon: Users, href: "/users" },
   { id: "tecnicos", name: "Técnicos", icon: IdCardLanyard, href: "/funcionarios" },
   { id: "profile", name: "Perfil", icon: User, href: "/profile" },
   { id: "contact", name: "Contato", icon: MessageCircle, href: "/contact" },
-  { id: "settings", name: "Configurações", icon: Settings, href: "/settings" },
 ];
 
 export function Sidebar({ className = "" }) {
-  const [isOpen, setIsOpen] = useState(false);    
+  const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { theme } = useTheme();
   const pathname = usePathname();
+  const router = useRouter();
+
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsOpen(window.innerWidth >= 768); // abre automaticamente em telas maiores
-    };
+    const handleResize = () => setIsOpen(window.innerWidth >= 768);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Pré-carrega todas as páginas do sidebar
+  useEffect(() => {
+    navigationItems.forEach(item => router.prefetch(item.href));
+  }, [router]);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
   return (
     <>
-   
       <button
         onClick={toggleSidebar}
         className="fixed top-3 left-3 z-50 p-2 rounded-lg bg-white shadow-md border border-border md:hidden hover:bg-muted transition-all duration-200"
@@ -63,7 +67,6 @@ export function Sidebar({ className = "" }) {
         {isOpen ? <X className="h-5 w-5 text-foreground" /> : <Menu className="h-5 w-5 text-foreground" />}
       </button>
 
-     
       {isOpen && (
         <div
           className="fixed inset-0 bg-accent/30 backdrop-blur-sm z-30 md:hidden transition-opacity duration-300"
@@ -71,16 +74,13 @@ export function Sidebar({ className = "" }) {
         />
       )}
 
-    
       <div
         className={`fixed top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border z-50 transition-all duration-300 ease-in-out flex flex-col
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           ${isCollapsed ? "w-24" : "w-64"}
           md:translate-x-0 overflow-hidden
-          ${className}
-        `}
+          ${className}`}
       >
-     
         <div className="flex items-center justify-between p-3.5 border-b border-sidebar-border bg-sidebar/60">
           {!isCollapsed ? (
             <div className="flex items-center">
@@ -95,7 +95,6 @@ export function Sidebar({ className = "" }) {
             <img src="./logo.svg" alt="logo" className="w-10 mx-auto" />
           )}
 
-    
           <button
             onClick={toggleCollapse}
             className="hidden md:flex p-1.5 rounded-md hover:bg-muted transition-all duration-200"
@@ -107,7 +106,7 @@ export function Sidebar({ className = "" }) {
 
         <nav className="flex-1 px-3 py-2 overflow-y-auto mt-4">
           <ul className="space-y-0.5">
-            {navigationItems.map((item) => {
+            {navigationItems.map(item => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (
@@ -119,13 +118,11 @@ export function Sidebar({ className = "" }) {
                       ${isCollapsed ? "justify-center p-2.5" : "px-3 py-3.5 space-x-2.5"}
                       ${isActive
                         ? "bg-muted border-r-4 border-accent text-accent"
-                        : "text-sidebar-foreground hover:text-accent"}
+                        : "text-sidebar-foreground hover:bg-muted hover:text-accent"}
                     `}
-                    onClick={() => {
-                      if (window.innerWidth < 768) setIsOpen(false);
-                    }}
+                    onClick={() => { if (window.innerWidth < 768) setIsOpen(false); }}
                   >
-                    <Icon className={`h-5 w-5 ${isActive ? "text-accent" : "text-muted-foreground"}`} />
+                    <Icon className="h-5 w-5 transition-colors duration-200" />
                     {!isCollapsed && <span className="text-sm">{item.name}</span>}
                   </Link>
                 </li>
@@ -136,13 +133,24 @@ export function Sidebar({ className = "" }) {
 
         <div className="p-3 border-t border-sidebar-border">
           <Link
-            href="/logout"
-            className={`
-              flex items-center rounded-md transition-all duration-200 text-destructive hover:bg-destructive/10
+            href="/settings"
+            className={`flex items-center rounded-md transition-all duration-200
               ${isCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 space-x-2.5"}
-            `}
+              text-sidebar-foreground hover:bg-muted hover:text-accent`}
           >
-            <LogOut className="h-5 w-5" />
+            <Settings className="h-5 w-5 transition-colors duration-200" />
+            {!isCollapsed && <span className="text-sm">Configurações</span>}
+          </Link>
+        </div>
+
+        <div className="p-3 border-t border-sidebar-border mt-auto">
+          <Link
+            href="/logout"
+            className={`flex items-center rounded-md transition-all duration-200
+              ${isCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 space-x-2.5"}
+              text-destructive hover:bg-destructive/10 hover:text-destructive`}
+          >
+            <LogOut className="h-5 w-5 transition-colors duration-200" />
             {!isCollapsed && <span className="text-sm">Sair</span>}
           </Link>
         </div>

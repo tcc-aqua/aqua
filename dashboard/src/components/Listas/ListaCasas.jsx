@@ -142,10 +142,37 @@ export default function CasasDashboard() {
   if (error) return <p className="text-red-500">Erro: {error}</p>;
 
   const cards = [
-    { title: "Total de Casas", value: casaStats.total, icon: Home, bg: "bg-blue-300", iconColor: "text-blue-700", textColor: "text-blue-800" },
-    { title: "Casas Ativas", value: casaStats.ativas, icon: UserCheck, bg: "bg-green-300", iconColor: "text-green-700", textColor: "text-green-800" },
-    { title: "Sensores Ativos", value: sensorStats.ativos, icon: SignalHigh, bg: "bg-yellow-200", iconColor: "text-yellow-700", textColor: "text-yellow-800" },
-    { title: "Alertas", value: casaStats.alertas, icon: AlertTriangle, bg: "bg-red-400", iconColor: "text-red-700", textColor: "text-red-800" },
+    {
+      title: "Total de Casas",
+      value: casaStats.total,
+      icon: Home, bg: "bg-card",
+      iconColor: "text-blue-700",
+      textColor: "text-blue-800"
+    },
+    {
+      title: "Casas Ativas",
+      value: casaStats.ativas,
+      icon: UserCheck,
+      bg: "bg-card",
+      iconColor: "text-green-700",
+      textColor: "text-green-800"
+    },
+    {
+      title: "Sensores Ativos",
+      value: sensorStats.ativos,
+      icon: SignalHigh,
+      bg: "bg-card",
+      iconColor: "text-green-700",
+      textColor: "text-green-800"
+    },
+    {
+      title: "Alertas",
+      value: casaStats.alertas,
+      icon: AlertTriangle,
+      bg: "bg-card",
+      iconColor: "text-red-700",
+      textColor: "text-red-800"
+    },
   ];
 
   return (
@@ -204,7 +231,7 @@ export default function CasasDashboard() {
                           Criado em {new Date(casa.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                         </div>
                       </td>
-                      <td className="px-4 py-2 text-sm">-</td>
+                      <td className="px-4 py-2 text-sm"></td>
                       <td className="px-4 py-2 text-sm">
                         <div>{sensor ? sensor.codigo : "-"}</div>
                         {sensor && (

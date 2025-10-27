@@ -34,7 +34,7 @@ export default function CondominiosDashboard() {
     try {
       setLoading(true);
 
-      // Fetch paralelo de todos os endpoints relevantes
+
       const [
         resAll,
         resAtivos,
@@ -71,7 +71,7 @@ export default function CondominiosDashboard() {
         alertas: alertas.length,
       });
 
-      
+
     } catch (err) {
       console.error("Erro ao buscar dados dos condomínios:", err);
       setError(err.message);
@@ -109,10 +109,38 @@ export default function CondominiosDashboard() {
   if (error) return <p className="text-red-500">Erro: {error}</p>;
 
   const cards = [
-    { title: "Total de Condomínios", value: condominioStats.total, icon: Building, bg: "bg-blue-200", iconColor: "text-blue-700", textColor: "text-blue-800" },
-    { title: "Condomínios Ativos", value: condominioStats.ativos, icon: UserCheck, bg: "bg-green-200", iconColor: "text-green-700", textColor: "text-green-800" },
-    { title: "Sensores Ativos", value: condominioStats.inativos, icon: SignalHigh, bg: "bg-yellow-200", iconColor: "text-yellow-700", textColor: "text-yellow-800" },
-    { title: "Alertas", value: condominioStats.alertas, icon: AlertTriangle, bg: "bg-red-400", iconColor: "text-red-700", textColor: "text-red-800" },
+    {
+      title: "Total de Condomínios",
+      value: condominioStats.total,
+      icon: Building,
+      bg: "bg-card",
+      iconColor: "text-blue-700",
+      textColor: "text-blue-800"
+    },
+    {
+      title: "Condomínios Ativos",
+      value: condominioStats.ativos,
+      icon: UserCheck,
+      bg: "bg-card",
+      iconColor: "text-green-700",
+      textColor: "text-green-800"
+    },
+    {
+      title: "Sensores Ativos",
+      value: condominioStats.inativos,
+      icon: SignalHigh,
+       bg: "bg-card",
+      iconColor: "text-green-700",
+      textColor: "text-green-800"
+    },
+    {
+      title: "Alertas",
+      value: condominioStats.alertas,
+      icon: AlertTriangle,
+      bg: "bg-card",
+      iconColor: "text-red-600",
+      textColor: "text-red-800"
+    },
   ];
 
   return (
@@ -130,7 +158,7 @@ export default function CondominiosDashboard() {
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
                   <Icon className={`w-10 h-10 mb-2 ${card.iconColor}`} />
-                  <p className={`font-bold text-xl ${card.textColor}`}>{card.value }</p>
+                  <p className={`font-bold text-xl ${card.textColor}`}>{card.value}</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -172,7 +200,7 @@ export default function CondominiosDashboard() {
                     <td className="px-4 py-2 text-sm">{"-"}</td>
                     <td className="px-4 py-2 text-sm">{"-"}</td>
                     <td className={`px-4 py-2 text-sm font-bold ${condominio.ativo ? "text-green-600" : "text-red-600"}`}>{condominio.ativo ? "Ativo" : "Inativo"}</td>
-                    <td className="px-4 py-2 text-sm">{"-"}</td>
+                    <td className="px-4 py-2 text-sm"></td>
                     <td className="px-4 py-2 text-sm">{"-"}</td>
                     <td className="px-4 py-2 text-sm">
                       <Button size="sm" variant={condominio.ativo ? "destructive" : "outline"} onClick={() => confirmToggleStatus(condominio)}>
