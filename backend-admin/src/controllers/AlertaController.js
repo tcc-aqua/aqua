@@ -23,11 +23,11 @@ export default class AlertasController {
         return reply.status(200).send(alertas);
     }
 
-    static async getRecentes(req, reply){
+    static async getRecentes(req, reply) {
         const alertas = await AlertasService.getAlertasRecentes();
         return reply.status(200).send(alertas);
     }
- 
+
     static async countAtivos(req, reply) {
         const alertas = await AlertasService.countAlertasAtivos();
         return reply.status(200).send(alertas);
@@ -49,7 +49,8 @@ export default class AlertasController {
     }
 
     static async countPorCasa(req, reply) {
-        const alertas = await AlertasService.countPorCasa();
+        const { id } = req.params;
+        const alertas = await AlertasService.countAlertasAtivosPorCasa(id);
         return reply.status(200).send(alertas);
     }
 
