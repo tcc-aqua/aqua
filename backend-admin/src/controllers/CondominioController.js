@@ -7,7 +7,6 @@ export const createCondominioSchema = z.object({
     cep: z.string().regex(/^\d{5}-?\d{3}$/, "CEP inválido"),
 });
 
-
 const updateCondominioSchema = z.object({
     name: z.string().optional(),
     numero: z.string().optional(),
@@ -56,8 +55,14 @@ export default class CondominioController {
     }
 
     static async inativar(req, reply) {
-        const { id } = idSchema.parse(req.params);
+        const { id } = req.params;
         const condominio = await CondominioService.inativarCondominio(id);
+        return reply.status(200).send(condominio);
+    }
+
+    static async ativar(req, reply) {
+        const { id } = req.params;
+        const condominio = await CondominioService.ativarCondominio(id);
         return reply.status(200).send(condominio);
     }
 }
