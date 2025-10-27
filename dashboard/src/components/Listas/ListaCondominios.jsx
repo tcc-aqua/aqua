@@ -35,24 +35,14 @@ export default function CondominiosDashboard() {
       setLoading(true);
 
 
-      const [
-        resAll,
-        resAtivos,
-        resInativos,
-        resCount,
-      ] = await Promise.all([
+      const [resAll, resAtivos, resInativos, resCount,] = await Promise.all([
         fetch(`${API}`),
         fetch(`${API}/ativos`),
         fetch(`${API}/inativos`),
         fetch(`${API}/count`),
       ]);
 
-      const [
-        dataAll,
-        dataAtivos,
-        dataInativos,
-        dataCount,
-      ] = await Promise.all([
+      const [dataAll, dataAtivos, dataInativos, dataCount,] = await Promise.all([
         resAll.json(),
         resAtivos.json(),
         resInativos.json(),
@@ -65,9 +55,9 @@ export default function CondominiosDashboard() {
       const alertas = allCondominios.filter(c => !c.responsavel_id);
 
       setCondominioStats({
-        total: dataCount || 0,
-        ativos: dataAtivos.docs?.length || 0,
-        inativos: dataInativos.docs?.length || 0,
+        total: dataCount ?? 0,
+        ativos: dataAtivos.docs?.length ?? 0,
+        inativos: dataInativos.docs?.length ?? 0,
         alertas: alertas.length,
       });
 
@@ -166,7 +156,7 @@ export default function CondominiosDashboard() {
         })}
       </section>
 
-      <Card className="mx-auto mt-20">
+      <Card className="mx-auto mt-10 max-w-7xl">
         <CardHeader>
           <CardTitle>Lista de Condomínios</CardTitle>
         </CardHeader>

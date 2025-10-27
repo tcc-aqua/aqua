@@ -37,16 +37,9 @@ export default function CasasDashboard() {
     try {
       setLoading(true);
 
-      // Faz todos os fetch em paralelo para otimizar
+  
       const [
-        resCasas,
-        resCasasAtivas,
-        resCasasInativas,
-        resCasasCount,
-        resSensores,
-        resSensoresAtivos,
-        resSensoresCount,
-      ] = await Promise.all([
+        resCasas, resCasasAtivas, resCasasInativas, resCasasCount, resSensores, resSensoresAtivos, resSensoresCount,] = await Promise.all([
         fetch(`${API_CASAS}`),
         fetch(`${API_CASAS}/ativos`),
         fetch(`${API_CASAS}/inativos`),
@@ -57,14 +50,7 @@ export default function CasasDashboard() {
       ]);
 
       const [
-        dataCasas,
-        dataCasasAtivas,
-        dataCasasInativas,
-        dataCasasCount,
-        dataSensores,
-        dataSensoresAtivos,
-        dataSensoresCount,
-      ] = await Promise.all([
+        dataCasas, dataCasasAtivas, dataCasasInativas, dataCasasCount, dataSensores, dataSensoresAtivos, dataSensoresCount, ] = await Promise.all([
         resCasas.json(),
         resCasasAtivas.json(),
         resCasasInativas.json(),
@@ -80,13 +66,12 @@ export default function CasasDashboard() {
       setCasas(allCasas);
       setSensores(allSensores);
 
-      // Estatísticas de casas
       const alertas = allCasas.filter(c => !c.numero_moradores || c.numero_moradores === 0);
 
       setCasaStats({
-        total: dataCasasCount || 0,
-        ativas: dataCasasAtivas.docs?.length || 0,
-        inativas: dataCasasInativas.docs?.length || 0,
+        total: dataCasasCount ?? 0,
+        ativas: dataCasasAtivas.docs?.length ?? 0,
+        inativas: dataCasasInativas.docs?.length ?? 0,
         alertas: alertas.length,
       });
 
@@ -198,7 +183,7 @@ export default function CasasDashboard() {
         })}
       </section>
 
-      <Card className="mx-auto mt-20">
+      <Card className="mx-auto mt-10 max-w-7xl">
         <CardHeader>
           <CardTitle>Lista de Casas</CardTitle>
         </CardHeader>
