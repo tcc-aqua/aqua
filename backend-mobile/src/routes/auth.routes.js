@@ -1,4 +1,4 @@
-import UserController from "../controllers/UserController.js";
+import UserController from "../controllers/AuthController.js";
 import { authMiddleware } from "../middlewares/AuthMidlleweare.js"
 
 export default async function authRoutes(fastify) {

@@ -3,6 +3,8 @@ import { DataTypes, Model } from "sequelize";
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs'
 import sequelizePaginate from 'sequelize-paginate'
+import Apartamento from './Apartamento.js';
+import Casa from "./Casa.js";
 
 export default class User extends Model {
     // compare hash password
@@ -41,7 +43,7 @@ User.init({
     responsavel_id: {
         type: DataTypes.CHAR(36),
         allowNull: true,
-        references: {model: 'users', key: 'id'}
+        references: { model: 'users', key: 'id' }
     },
     // indica para a residencia/unidade para atribuir para a tabela correta
     // uma especie de polimorfismo em banco de dados
@@ -73,7 +75,7 @@ User.init({
 
     // hooks hash password
     hooks: {
-        
+
         // hash create user
         beforeCreate: async (user, options) => {
             if (user.password) {
@@ -81,7 +83,7 @@ User.init({
                 user.password = await bcrypt.hash(user.password, salt);
             }
         },
-        
+
         // hash update user
         beforeUpdate: async (user, options) => {
             if (user.changed('password')) {
@@ -91,5 +93,15 @@ User.init({
         }
     }
 })
+User.belongsTo(Casa, {
+    foreignKey: 'residencia_id',
+    constraints: false,
+    as: 'casa'
+});
 
+User.belongsTo(Apartamento, {
+    foreignKey: 'residencia_id',
+    constraints: false,
+    as: 'apartamento'
+});
 sequelizePaginate.paginate(User);

@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyFormbody from '@fastify/formbody'
 import authRoutes from './routes/auth.routes.js';
+import apartamentoRoutes from './routes/apartamento.routes.js';
 
 const fastify = Fastify({
     logger: {
@@ -23,7 +24,8 @@ fastify.get('/', (req, reply) => {
     return reply.status(200).send('Hello API MOBILE!')
 })
 
-fastify.register(authRoutes, {prefix: '/api/auth'})
+fastify.register(authRoutes, {prefix: '/api/auth'});
+fastify.register(apartamentoRoutes, {prefix: '/api/apartamentos'});
 
 
 export default fastify;

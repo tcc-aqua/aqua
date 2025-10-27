@@ -39,11 +39,8 @@ await fastify.register(fastifySwagger, {
         info: {
             title: 'Aqua API',
             version: '1.0.0',
-            description: 'Documentação da API do sistema Aqua, Sistema de Gestão para Consumo de Água'
+            description: 'Documentação do nosso TCC Aqua.'
         },
-        servers: [
-            { url: 'http://localhost:3333' }
-        ]
     }
 });
 
@@ -56,8 +53,19 @@ await fastify.register(swaggerUI, {
     initOAuth: {},
 });
 
-
-fastify.get('/', (req, reply) => {
+fastify.get('/', {
+    schema: {
+        tags: ['Health Check'],
+        summary: 'Status da API',
+        description: 'Verifica se a API está online e respondendo',
+        response: {
+            200: {
+                type: 'string',
+                example: 'Hello API'
+            }
+        }
+    }
+}, (req, reply) => {
     return reply.status(200).send('Hello API!')
 })
 
@@ -72,8 +80,5 @@ await fastify.register(residenciaRoutes, { prefix: '/api/residencias' });
 await fastify.register(alertasRoutes, { prefix: '/api/alertas' });
 await fastify.register(cepRoutes, { prefix: '/api/cep' });
 await fastify.register(errorHandler);
-
-
-
 
 export default fastify;
