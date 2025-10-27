@@ -33,6 +33,30 @@ await fastify.register(cors, {
 
 fastify.register(fastifyFormbody);
 
+// docs api
+await fastify.register(fastifySwagger, {
+    openapi: {
+        info: {
+            title: 'Aqua API',
+            version: '1.0.0',
+            description: 'Documentação da API do sistema Aqua, Sistema de Gestão para Consumo de Água'
+        },
+        servers: [
+            { url: 'http://localhost:3333' }
+        ]
+    }
+});
+
+await fastify.register(swaggerUI, {
+    routePrefix: '/docs',
+    uiConfig: {
+        docExpansion: 'list',
+        deepLinking: false
+    },
+    initOAuth: {},
+});
+
+
 fastify.get('/', (req, reply) => {
     return reply.status(200).send('Hello API!')
 })
@@ -49,24 +73,7 @@ await fastify.register(alertasRoutes, { prefix: '/api/alertas' });
 await fastify.register(cepRoutes, { prefix: '/api/cep' });
 await fastify.register(errorHandler);
 
-// docs api
-await fastify.register(fastifySwagger, {
-    openapi: {
-        info: {
-            title: 'Aqua API',
-            version: '1.0.0',
-            description: 'Documentação da API do sistema Aqua, Sistema de Gestão para Consumo de Água'
-        },
-    }
-});
 
-await fastify.register(swaggerUI, {
-    routePrefix: '/docs',
-    uiConfig: {
-        docExpansion: 'list',
-        deepLinking: false
-    },
-});
 
 
 export default fastify;
