@@ -1,5 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import { fastifySwagger } from '@fastify/swagger';
+import swaggerUI from '@fastify/swagger-ui';
 
 import fastifyFormbody from '@fastify/formbody'
 import userRoutes from './routes/user.routes.js';
@@ -13,6 +15,7 @@ import authRoutes from './routes/auth.routes.js';
 import residenciaRoutes from './routes/residencia.routes.js';
 import alertasRoutes from './routes/alertas.routes.js';
 import cepRoutes from './routes/cep.routes.js';
+
 
 const fastify = Fastify({
     logger: {
@@ -45,5 +48,25 @@ await fastify.register(residenciaRoutes, { prefix: '/api/residencias' });
 await fastify.register(alertasRoutes, { prefix: '/api/alertas' });
 await fastify.register(cepRoutes, { prefix: '/api/cep' });
 await fastify.register(errorHandler);
+
+// docs api
+await fastify.register(fastifySwagger, {
+    openapi: {
+        info: {
+            title: 'Aqua API',
+            version: '1.0.0',
+            description: 'Documentação da API do sistema Aqua, Sistema de Gestão para Consumo de Água'
+        },
+    }
+});
+
+await fastify.register(swaggerUI, {
+    routePrefix: '/docs',
+    uiConfig: {
+        docExpansion: 'list',
+        deepLinking: false
+    },
+});
+
 
 export default fastify;

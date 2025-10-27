@@ -12,7 +12,7 @@ export default class CasaService {
 
             const casas = await Casa.paginate(options);
             return casas;
-        } catch (error) {   
+        } catch (error) {
             console.error('Erro ao listar casas', error);
             throw error;
         }
@@ -88,8 +88,8 @@ export default class CasaService {
             })
             return casa;
         } catch (error) {
-            console.error('Erro ao inativar casa');
-            throw error;
+            console.error('Erro ao inativar casa:', error.message);
+            throw new Error(error.message);
         }
     }
 

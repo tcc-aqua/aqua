@@ -135,7 +135,7 @@ export default class CondominioService {
 
     static async inativarCondominio(id) {
         try {
-            const condominio = await findByPk(id);
+            const condominio = await Condominio.findByPk(id);
             if (!condominio) {
                 throw new Error('Condominio não encontrado');
             }
@@ -150,7 +150,7 @@ export default class CondominioService {
 
     static async ativarCondominio(id) {
         try {
-            const condominio = await findByPk(id);
+            const condominio = await Condominio.findByPk(id);
             if (!condominio) {
                 throw new Error('Condominio não encontrado');
             }
