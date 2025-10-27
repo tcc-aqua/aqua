@@ -57,7 +57,19 @@ await fastify.register(swaggerUI, {
 });
 
 
-fastify.get('/', (req, reply) => {
+fastify.get('/', {
+    schema: {
+        tags: ['Health Check'],
+        summary: 'Status da API',
+        description: 'Verifica se a API está online e respondendo',
+        response: {
+            200: {
+                type: 'string',
+                example: 'Hello API'
+            }
+        }
+    }
+}, (req, reply) => {
     return reply.status(200).send('Hello API!')
 })
 

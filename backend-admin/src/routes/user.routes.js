@@ -4,9 +4,12 @@ export default async function userRoutes(fastify) {
 
     fastify.get('/', {
         schema: {
+            summary: 'Listar Usuários',
             description: 'Lista todos os usuários do sistema',
             tags: ['users'],
-            description: 'List Users'
+            description: 'List Users' ,
+            
+    
         }
     },   UserController.getAll
     );
