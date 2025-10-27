@@ -127,7 +127,7 @@ export default function SensorsDashboard() {
         })}
       </section>
 
-      <Card className="mx-auto mt-20">
+      <Card className="mx-auto mt-10 max-w-7xl">
         <CardHeader>
           <CardTitle>Lista de Sensores</CardTitle>
         </CardHeader>

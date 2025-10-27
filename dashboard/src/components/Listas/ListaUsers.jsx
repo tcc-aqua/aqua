@@ -60,7 +60,7 @@ export default function UsersDashboard() {
       setUsers(dataUsers.docs || dataUsers || []);
       setUserStats({
         total: dataTotal ?? 0,
-        ativos: dataAtivos?? 0,
+        ativos: dataAtivos ?? 0,
         sindicos: dataSindicos ?? 0,
         moradores: dataMoradores ?? 0,
       });
@@ -130,7 +130,7 @@ export default function UsersDashboard() {
       textColor: "text-yellow-800",
     },
     {
-      title: "Moradores",
+      title: "Alertas",
       value: userStats.moradores,
       icon: AlertTriangle,
       bg: "bg-card",
@@ -165,7 +165,7 @@ export default function UsersDashboard() {
         })}
       </section>
 
-      <Card className="mx-auto mt-20">
+      <Card className="mx-auto mt-10 max-w-7xl">
         <CardHeader>
           <CardTitle>Lista de Usuários</CardTitle>
         </CardHeader>
@@ -237,11 +237,7 @@ export default function UsersDashboard() {
                     </td>
 
                     <td className="px-4 py-2 text-sm text-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => confirmToggleStatus(user)}
-                      >
+                      <Button size="sm" variant={user.status === "ativo" ? "destructive" : "outline"} onClick={() => confirmToggleStatus(ap)}>
                         {user.status === "ativo" ? "Inativar" : "Ativar"}
                       </Button>
                     </td>
@@ -253,7 +249,7 @@ export default function UsersDashboard() {
         </CardContent>
       </Card>
 
-      {/* Modal de confirmação */}
+
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

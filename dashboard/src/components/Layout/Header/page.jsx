@@ -16,22 +16,10 @@ export default function Header() {
   const isMobile = useIsMobile();
 
   return (
-    <header className="fixed top-0 left-0 w-full h-18.5 z-50 bg-card dark:bg-sidebar border-b border-border dark:border-sidebar-border">
+    <header className="fixed top-0 left-0 w-full h-20 z-50 bg-card dark:bg-sidebar border-b border-border dark:border-sidebar-border">
       <div
         className={`${isMobile ? 'py-3 px-2' : 'p-3'
-          } flex items-center justify-end relative space-x-3`}
-      >
-
-        {!isMobile && (
-          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center w-180">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Buscar..."
-              className="w-full pl-9 pr-4 py-2 border border-border rounded-md text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-            />
-          </div>
-        )}
+          } flex items-center justify-end relative space-x-3`}>
 
 
         <div className="flex items-center space-x-5 ml-auto">

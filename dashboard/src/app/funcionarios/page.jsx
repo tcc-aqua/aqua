@@ -8,7 +8,7 @@ export default function Funcionarios() {
             <Sidebar />
         </div>
 
-        <div className="flex-1 md:ml-50">
+        <div className="flex-1 md:ml-30">
             <header className="fixed top-0 left-64 right-0 z-40">
                 <Header />
             </header>

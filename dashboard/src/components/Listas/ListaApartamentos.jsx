@@ -37,15 +37,7 @@ export default function ApartamentosDashboard() {
         try {
             setLoading(true);
 
-            const [
-                resAp,
-                resApAtivos,
-                resApInativos,
-                resApCount,
-                resSensores,
-                resSensoresAtivos,
-                resSensoresCount,
-            ] = await Promise.all([
+            const [resAp, resApAtivos, resApInativos, resApCount, resSensores, resSensoresAtivos, resSensoresCount,] = await Promise.all([
                 fetch(`${API_AP}`),
                 fetch(`${API_AP}/ativos`),
                 fetch(`${API_AP}/inativos`),
@@ -55,15 +47,7 @@ export default function ApartamentosDashboard() {
                 fetch(`${API_SENSORES}/count`),
             ]);
 
-            const [
-                dataAp,
-                dataApAtivos,
-                dataApInativos,
-                dataApCount,
-                dataSensores,
-                dataSensoresAtivos,
-                dataSensoresCount,
-            ] = await Promise.all([
+            const [dataAp, dataApAtivos, dataApInativos, dataApCount, dataSensores, dataSensoresAtivos, dataSensoresCount,] = await Promise.all([
                 resAp.json(),
                 resApAtivos.json(),
                 resApInativos.json(),
@@ -82,9 +66,9 @@ export default function ApartamentosDashboard() {
             const alertas = allAp.filter(a => !a.numero_moradores || a.numero_moradores === 0);
 
             setApStats({
-                total: dataApCount || 0,
-                ativas: dataApAtivos.docs?.length || 0,
-                inativas: dataApInativos.docs?.length || 0,
+                total: dataApCount ?? 0,
+                ativas: dataApAtivos.docs?.length ?? 0,
+                inativas: dataApInativos.docs?.length ?? 0,
                 alertas: alertas.length,
             });
 
@@ -196,7 +180,7 @@ export default function ApartamentosDashboard() {
                 })}
             </section>
 
-            <Card className="mx-auto mt-20">
+            <Card className="mx-auto mt-10 max-w-7xl">
                 <CardHeader>
                     <CardTitle>Lista de Apartamentos</CardTitle>
                 </CardHeader>
