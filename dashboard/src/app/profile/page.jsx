@@ -13,7 +13,7 @@ export default function Profile() {
             <Sidebar />
         </div>
 
-        <div className="flex-1 md:ml-30">
+        <div className="flex-1 md:ml-20">
             <header className="fixed top-0 left-64 right-0 z-40">
                 <Header />
             </header>

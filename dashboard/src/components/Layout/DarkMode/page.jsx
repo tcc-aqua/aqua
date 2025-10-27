@@ -9,7 +9,7 @@ export function ModeToggle() {
   const themes = [
     { id: "light", label: "Light", img: "/themes/light-preview.png" },
     { id: "dark", label: "Dark", img: "/themes/dark-preview.png" },
-    { id: "system", label: "System", img: "/themes/system-preview.png" }, // opcional
+    { id: "system", label: "System", img: "/themes/system-preview.png" }, 
   ]
 
   return (

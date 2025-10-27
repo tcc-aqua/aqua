@@ -22,7 +22,7 @@ export default function SensorsDashboard() {
 
   const fetchData = async () => {
     try {
-      
+
       const [totalRes, ativosRes, inativosRes, allRes] = await Promise.all([
         fetch(`${API_URL}/count`),
         fetch(`${API_URL}/count-ativos`),
@@ -39,7 +39,7 @@ export default function SensorsDashboard() {
       const inativos = await inativosRes.json();
       const allSensores = await allRes.json();
 
-     
+
       const alertas = allSensores.docs?.filter(
         (s) => !["ativo", "inativo"].includes(s.status)
       ).length || 0;
@@ -138,29 +138,22 @@ export default function SensorsDashboard() {
             <table className="min-w-full divide-y divide-border">
               <thead className="bg-muted">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">
-                    Sensor
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">
-                    Status
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">
-                    Localização
-                  </th>
-                </tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Sensor</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase"> Status </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase"> Localização </th>
+              </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {sensores.map((sensor) => (
                   <tr key={sensor.id} className="hover:bg-muted/10 text-foreground">
                     <td className="px-4 py-2 text-sm font-bold">{sensor.codigo}</td>
                     <td
-                      className={`px-4 py-2 text-sm font-bold ${
-                        sensor.status === "ativo"
+                      className={`px-4 py-2 text-sm font-bold ${sensor.status === "ativo"
                           ? "text-green-600"
                           : sensor.status === "inativo"
-                          ? "text-red-600"
-                          : "text-yellow-600"
-                      }`}
+                            ? "text-red-600"
+                            : "text-yellow-600"
+                        }`}
                     >
                       {sensor.status}
                     </td>
