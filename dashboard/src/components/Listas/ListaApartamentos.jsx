@@ -6,7 +6,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Building2, UserCheck, AlertTriangle, SignalHigh } from "lucide-react";
+import { Building2, UserCheck, AlertTriangle, SignalHigh, X, Check } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -229,14 +229,27 @@ export default function ApartamentosDashboard() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-2 text-sm">{sensor?.consumo_total || 0}L/dia</td>
-                                            <td className="px-4 py-2 text-sm font-bold flex items-center ml-5">
-                                                <span className={`inline-block w-3 h-3 rounded-full mt-3 ${ap.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={ap.status} />
+                                            <td className=" text-sm font-bold flex items-center ml-7 ">
+                                                <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${ap.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={ap.status} />
                                             </td>
                                             <td className="px-4 py-2 text-sm">-</td>
                                             <td className="px-4 py-2 text-sm">
-                                                <Button size="sm" variant={ap.status === "ativo" ? "destructive" : "outline"} onClick={() => confirmToggleStatus(ap)}>
-                                                    {ap.status === "ativo" ? "Inativar" : "Ativar"}
-                                                </Button>
+                                                  <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(ap)}>
+
+                                                        <div className="flex items-center gap-1">
+                                                            {ap.status === "ativo" ? (
+                                                                <>
+                                                                    <Check className="text-green-500" size={14} />
+
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <X className="text-red-500" size={14} />
+
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </Button>
                                             </td>
                                         </tr>
                                     );

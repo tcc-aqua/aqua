@@ -6,7 +6,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Home, UserCheck, AlertTriangle, SignalHigh } from "lucide-react";
+import { Home, HousePlug, AlertTriangle, SignalHigh, X, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -37,28 +37,28 @@ export default function CasasDashboard() {
     try {
       setLoading(true);
 
-  
-      const [
-        resCasas, resCasasAtivas, resCasasInativas, resCasasCount, resSensores, resSensoresAtivos, resSensoresCount,] = await Promise.all([
-        fetch(`${API_CASAS}`),
-        fetch(`${API_CASAS}/ativos`),
-        fetch(`${API_CASAS}/inativos`),
-        fetch(`${API_CASAS}/count`),
-        fetch(`${API_SENSORES}`),
-        fetch(`${API_SENSORES}/ativos`),
-        fetch(`${API_SENSORES}/count`),
-      ]);
 
       const [
-        dataCasas, dataCasasAtivas, dataCasasInativas, dataCasasCount, dataSensores, dataSensoresAtivos, dataSensoresCount, ] = await Promise.all([
-        resCasas.json(),
-        resCasasAtivas.json(),
-        resCasasInativas.json(),
-        resCasasCount.json(),
-        resSensores.json(),
-        resSensoresAtivos.json(),
-        resSensoresCount.json(),
-      ]);
+        resCasas, resCasasAtivas, resCasasInativas, resCasasCount, resSensores, resSensoresAtivos, resSensoresCount,] = await Promise.all([
+          fetch(`${API_CASAS}`),
+          fetch(`${API_CASAS}/ativos`),
+          fetch(`${API_CASAS}/inativos`),
+          fetch(`${API_CASAS}/count`),
+          fetch(`${API_SENSORES}`),
+          fetch(`${API_SENSORES}/ativos`),
+          fetch(`${API_SENSORES}/count`),
+        ]);
+
+      const [
+        dataCasas, dataCasasAtivas, dataCasasInativas, dataCasasCount, dataSensores, dataSensoresAtivos, dataSensoresCount,] = await Promise.all([
+          resCasas.json(),
+          resCasasAtivas.json(),
+          resCasasInativas.json(),
+          resCasasCount.json(),
+          resSensores.json(),
+          resSensoresAtivos.json(),
+          resSensoresCount.json(),
+        ]);
 
       const allCasas = dataCasas.docs || [];
       const allSensores = dataSensores.docs || [];
@@ -129,22 +129,24 @@ export default function CasasDashboard() {
   const cards = [
     {
       title: "Total de Casas",
-      value: casaStats.total,
-      icon: Home, bg: "bg-card",
+     valueTotal: casaStats.total,
+     valueAtivas: casaStats.ativas,
+      icon: Home,
+       bg: "bg-card",
       iconColor: "text-blue-700",
       textColor: "text-blue-800"
     },
     {
-      title: "Casas Ativas",
-      value: casaStats.ativas,
-      icon: UserCheck,
+      title: "Total de moradoes",
+    
+      icon: HousePlug,
       bg: "bg-card",
       iconColor: "text-green-700",
       textColor: "text-green-800"
     },
     {
       title: "Sensores Ativos",
-      value: sensorStats.ativos,
+      valueTotal: sensorStats.ativos,
       icon: SignalHigh,
       bg: "bg-card",
       iconColor: "text-green-700",
@@ -152,7 +154,7 @@ export default function CasasDashboard() {
     },
     {
       title: "Alertas",
-      value: casaStats.alertas,
+      valueTotal: casaStats.alertas,
       icon: AlertTriangle,
       bg: "bg-card",
       iconColor: "text-red-700",
@@ -174,8 +176,13 @@ export default function CasasDashboard() {
                   <CardTitle className={`font-bold text-xl ${card.textColor}`}>{card.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
-                  <Icon className={`w-10 h-10 mb-2 ${card.iconColor}`} />
-                  <p className={`font-bold text-xl ${card.textColor}`}>{card.value}</p>
+                  <Icon className={`w-10 h-10 mb-2  ${card.iconColor}`} />
+                  <p className={`font-bold text-xl ${card.textColor}`}>{card.valueTotal} </p>
+                    {card.valueAtivas && (
+            <p className="text-green-600 text-sm mt-1">
+              {card.valueAtivas} Ativas
+            </p>
+          )}
                 </CardContent>
               </Card>
             </motion.div>
@@ -216,7 +223,7 @@ export default function CasasDashboard() {
                           Criado em {new Date(casa.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                         </div>
                       </td>
-                      <td className="px-4 py-2 text-sm"></td>
+                      <td className="px-4 py-2 text-sm">{casa.principal}</td>
                       <td className="px-4 py-2 text-sm">
                         <div>{sensor ? sensor.codigo : "-"}</div>
                         {sensor && (
@@ -233,14 +240,29 @@ export default function CasasDashboard() {
                         </div>
                       </td>
                       <td className="px-4 py-2 text-sm">{sensor?.consumo_total || 0}L/dia</td>
-                      <td className="px-4 py-2 text-sm font-bold flex items-center ml-5">
-                        <span className={`inline-block w-3 h-3 rounded-full mt-3 ${casa.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={casa.status} />
+                      <td className=" text-sm font-bold flex items-center ml-7">
+                        <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${casa.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={casa.status} />
                       </td>
                       <td className="px-4 py-2 text-sm">-</td>
                       <td className="px-4 py-2 text-sm">
-                        <Button size="sm" variant={casa.status === "ativo" ? "destructive" : "outline"} onClick={() => confirmToggleStatus(casa)}>
-                          {casa.status === "ativo" ? "Inativar" : "Ativar"}
-                        </Button>
+                        <div className="flex items-center gap-1">
+                            <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(casa)}>
+
+                        <div className="flex items-center gap-1">
+                          {casa.status === "ativo" ? (
+                            <>
+                              <Check className="text-green-500" size={14} />
+
+                            </>
+                          ) : (
+                            <>
+                              <X className="text-red-500" size={14} />
+
+                            </>
+                          )}
+                        </div>
+                      </Button>
+                        </div>
                       </td>
                     </tr>
                   );
