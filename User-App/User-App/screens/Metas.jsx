@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
 // 1. Limpei as importações não utilizadas (ProgressBar, MD3Colors)
 import { Avatar, Button, Card, Title, Paragraph } from 'react-native-paper'; 
-import LinearGradient from 'react-native-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const MetasScreen = () => {
   return (
