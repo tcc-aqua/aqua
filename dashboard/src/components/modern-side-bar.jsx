@@ -77,14 +77,14 @@ export function Sidebar({ className = "" }) {
       <div
         className={`fixed top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border z-50 transition-all duration-300 ease-in-out flex flex-col
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          ${isCollapsed ? "w-24" : "w-64"}
+          ${isCollapsed ? "w-24" : "w-54"}
           md:translate-x-0 overflow-hidden
           ${className}`}
       >
-        <div className="flex items-center justify-between p-3.5 border-b border-sidebar-border bg-sidebar/60">
+        <div className="flex items-center justify-between p-2.5 border-b border-sidebar-border bg-sidebar/60">
           {!isCollapsed ? (
             <div className="flex items-center">
-              <img src="./logo.svg" alt="logo" className="w-10" />
+              <img src="./logo.svg" alt="logo" className="w-12" />
               {theme === "dark" ? (
                 <img src="./escrita-dark.png" alt="aqua" className="w-20 ml-4" />
               ) : (
@@ -92,12 +92,12 @@ export function Sidebar({ className = "" }) {
               )}
             </div>
           ) : (
-            <img src="./logo.svg" alt="logo" className="w-10 mx-auto" />
+            <img src="./logo.svg" alt="logo" className="w-12 mx-auto py-1.5" />
           )}
 
           <button
             onClick={toggleCollapse}
-            className="hidden md:flex p-1.5 rounded-md hover:bg-muted transition-all duration-200"
+            className="hidden md:flex p-1 rounded-md hover:bg-muted transition-all duration-200"
             aria-label={isCollapsed ? "Expandir menu" : "Colapsar menu"}
           >
             {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}

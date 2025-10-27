@@ -58,5 +58,5 @@ Apartamento.init({
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em'
 })
-
+Apartamento.belongsTo(Sensor, { foreignKey: "sensor_id", as: "sensor" });
 sequelizePaginate.paginate(Apartamento);

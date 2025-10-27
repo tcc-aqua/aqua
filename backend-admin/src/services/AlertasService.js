@@ -1,6 +1,7 @@
 import { fn, col, Op } from "sequelize";
 import Alertas from "../models/Alertas.js";
 import Condominio from "../models/Condominio.js";
+import Casa from "../models/Casa.js";
 
 export default class AlertasService {
 
@@ -142,6 +143,40 @@ export default class AlertasService {
             throw error;
         }
     }
+
+    // alertas por cada casa
+    static async countAlertasAtivosPorCasa() {
+        try {
+            const alertas = await Alertas.findAll({
+                attributes: [
+                    'residencia_id',
+                    [fn('COUNT', col('Alertas.id')), 'total_alertas'] 
+                ],
+                where: {
+                    resolvido: false,
+                    residencia_type: 'casa'
+                },
+                group: ['residencia_id'],
+                include: [
+                    {
+                        model: Casa,
+                        as: 'casa',
+                        attributes: ['logradouro', 'bairro', 'numero', 'cidade', 'uf']
+                    }
+                ]
+            });
+
+            return alertas.map(a => ({
+                residencia_id: a.residencia_id,
+                endereco: a.casa ? `${a.casa.logradouro}, ${a.casa.numero} - ${a.casa.bairro}, ${a.casa.cidade} - ${a.casa.uf}` : null,
+                total_alertas: a.getDataValue('total_alertas')
+            }));
+        } catch (error) {
+            console.error("Erro ao contar alertas ativos por casa", error);
+            throw error;
+        }
+    }
+
 
     static async createAlerta({ sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel }) {
         try {

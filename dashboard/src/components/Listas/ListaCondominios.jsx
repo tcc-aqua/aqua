@@ -6,7 +6,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Building, UserCheck, AlertTriangle, SignalHigh } from "lucide-react";
+import { Building, UserCheck, AlertTriangle, SignalHigh, X, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -35,24 +35,14 @@ export default function CondominiosDashboard() {
       setLoading(true);
 
 
-      const [
-        resAll,
-        resAtivos,
-        resInativos,
-        resCount,
-      ] = await Promise.all([
+      const [resAll, resAtivos, resInativos, resCount,] = await Promise.all([
         fetch(`${API}`),
         fetch(`${API}/ativos`),
         fetch(`${API}/inativos`),
         fetch(`${API}/count`),
       ]);
 
-      const [
-        dataAll,
-        dataAtivos,
-        dataInativos,
-        dataCount,
-      ] = await Promise.all([
+      const [dataAll, dataAtivos, dataInativos, dataCount,] = await Promise.all([
         resAll.json(),
         resAtivos.json(),
         resInativos.json(),
@@ -65,9 +55,9 @@ export default function CondominiosDashboard() {
       const alertas = allCondominios.filter(c => !c.responsavel_id);
 
       setCondominioStats({
-        total: dataCount || 0,
-        ativos: dataAtivos.docs?.length || 0,
-        inativos: dataInativos.docs?.length || 0,
+        total: dataCount ?? 0,
+        ativos: dataAtivos.docs?.length ?? 0,
+        inativos: dataInativos.docs?.length ?? 0,
         alertas: alertas.length,
       });
 
@@ -92,10 +82,10 @@ export default function CondominiosDashboard() {
   const toggleStatus = async () => {
     if (!selectedCondominio) return;
     try {
-      const action = selectedCondominio.ativo ? "inativar" : "ativar";
+      const action = selectedCondominio.status ? "inativar" : "ativar";
       const res = await fetch(`${API}/${selectedCondominio.id}/${action}`, { method: "PATCH" });
       if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
-      toast.success(`Condomínio ${selectedCondominio.ativo ? "inativado" : "ativado"} com sucesso!`);
+      toast.success(`Condomínio ${selectedCondominio.status ? "inativado" : "ativado"} com sucesso!`);
       fetchData();
     } catch (err) {
       toast.error(err.message);
@@ -129,7 +119,7 @@ export default function CondominiosDashboard() {
       title: "Sensores Ativos",
       value: condominioStats.inativos,
       icon: SignalHigh,
-       bg: "bg-card",
+      bg: "bg-card",
       iconColor: "text-green-700",
       textColor: "text-green-800"
     },
@@ -166,7 +156,7 @@ export default function CondominiosDashboard() {
         })}
       </section>
 
-      <Card className="mx-auto mt-20">
+      <Card className="mx-auto mt-10 max-w-7xl">
         <CardHeader>
           <CardTitle>Lista de Condomínios</CardTitle>
         </CardHeader>
@@ -199,13 +189,33 @@ export default function CondominiosDashboard() {
                     </td>
                     <td className="px-4 py-2 text-sm">{"-"}</td>
                     <td className="px-4 py-2 text-sm">{"-"}</td>
-                    <td className={`px-4 py-2 text-sm font-bold ${condominio.ativo ? "text-green-600" : "text-red-600"}`}>{condominio.ativo ? "Ativo" : "Inativo"}</td>
-                    <td className="px-4 py-2 text-sm"></td>
+                    <td className="text-sm font-bold flex items-center ml-7">
+                        <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${condominio.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={condominio.status} />
+                    </td>
+                   
+                    <td className="px-4 py-2 text-sm">
+
+                    </td>
                     <td className="px-4 py-2 text-sm">{"-"}</td>
                     <td className="px-4 py-2 text-sm">
-                      <Button size="sm" variant={condominio.ativo ? "destructive" : "outline"} onClick={() => confirmToggleStatus(condominio)}>
-                        {condominio.ativo ? "Inativar" : "Ativar"}
+                      <div className="flex items-center gap-1">
+                         <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(condominio)}>
+
+                        <div className="flex items-center gap-1">
+                          {condominio.status === "ativo" ? (
+                            <>
+                              <Check className="text-green-500" size={14} />
+
+                            </>
+                          ) : (
+                            <>
+                              <X className="text-red-500" size={14} />
+
+                            </>
+                          )}
+                        </div>
                       </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

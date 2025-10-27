@@ -1,6 +1,5 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
-import User from "./User.js";
 import { nanoid } from 'nanoid';
 import sequelizePaginate from 'sequelize-paginate'
 
@@ -83,7 +82,7 @@ Condominio.init({
     sindico_id: {
         type: DataTypes.CHAR(36),
         allowNull: true,
-        references: { model: User, key: 'id' }
+        references: { model: 'users', key: 'id' }
     },
     status: {
         type: DataTypes.ENUM("ativo", 'inativo'),

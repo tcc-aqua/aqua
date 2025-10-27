@@ -6,7 +6,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Users, UserCheck, Building, AlertTriangle } from "lucide-react";
+import { Users, UserCheck, UserCog, AlertTriangle, X, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -60,7 +60,7 @@ export default function UsersDashboard() {
       setUsers(dataUsers.docs || dataUsers || []);
       setUserStats({
         total: dataTotal ?? 0,
-        ativos: dataAtivos?? 0,
+        ativos: dataAtivos ?? 0,
         sindicos: dataSindicos ?? 0,
         moradores: dataMoradores ?? 0,
       });
@@ -124,13 +124,13 @@ export default function UsersDashboard() {
     {
       title: "Síndicos",
       value: userStats.sindicos,
-      icon: Building,
+      icon: UserCog,
       bg: "bg-card",
       iconColor: "text-yellow-700",
       textColor: "text-yellow-800",
     },
     {
-      title: "Moradores",
+      title: "Alertas",
       value: userStats.moradores,
       icon: AlertTriangle,
       bg: "bg-card",
@@ -165,7 +165,7 @@ export default function UsersDashboard() {
         })}
       </section>
 
-      <Card className="mx-auto mt-20">
+      <Card className="mx-auto mt-10 max-w-7xl">
         <CardHeader>
           <CardTitle>Lista de Usuários</CardTitle>
         </CardHeader>
@@ -176,27 +176,14 @@ export default function UsersDashboard() {
             <table className="min-w-full divide-y divide-border">
               <thead className="bg-muted">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">
-                    Usuário
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">
-                    Residência
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">
-                    Tipo
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">
-                    Função
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">
-                    Status
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">
-                    Último acesso
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">
-                    Ações
-                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Usuário</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase"> Residência </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Tipo</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Função</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase"> Último acesso</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Alertas</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase"> Ações</th>
                 </tr>
               </thead>
 
@@ -209,40 +196,46 @@ export default function UsersDashboard() {
                       <div className="text-xs text-foreground/60">{user.cpf}</div>
                     </td>
 
-                    <td className="px-4 py-2 text-sm">{user.residencia_id}</td>
+                    <td className="px-4 py-2 text-sm">{user.residencia}</td>
                     <td className="px-4 py-2 text-sm">{user.type}</td>
                     <td className="px-4 py-2 text-sm">{user.role}</td>
 
-                    <td className="px-4 py-2 text-sm font-bold flex items-center justify-center">
+
+                    <td className=" text-sm font-bold flex items-center ml-7">
                       <span
-                        className={`inline-block w-3 h-3 rounded-full mt-3 ${user.status === "ativo" ? "bg-green-600" : "bg-red-600"
-                          }`}
-                        title={user.status}
-                      />
+                        className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${user.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={user.status} />
                     </td>
 
                     <td className="px-4 py-2 text-sm">
-                      <div className="text-sm font-semibold">
-                        Último acesso{" "}
-                        {user.atualizado_em
+                      <div className="text-xs font-semibold">
+                        Último acesso {user.atualizado_em
                           ? new Date(user.atualizado_em).toLocaleString("pt-BR")
                           : "-"}
                       </div>
                       <div className="text-[10px] text-foreground/60">
-                        Criado em{" "}
-                        {user.criado_em
+                        Criado em {user.criado_em
                           ? new Date(user.criado_em).toLocaleString("pt-BR")
                           : "-"}
                       </div>
                     </td>
+                        <td className="px-4 py-2 text-sm"></td>
 
                     <td className="px-4 py-2 text-sm text-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => confirmToggleStatus(user)}
-                      >
-                        {user.status === "ativo" ? "Inativar" : "Ativar"}
+                      <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
+
+                        <div className="flex items-center gap-1">
+                          {user.status === "ativo" ? (
+                            <>
+                              <Check className="text-green-500" size={14} />
+
+                            </>
+                          ) : (
+                            <>
+                              <X className="text-red-500" size={14} />
+
+                            </>
+                          )}
+                        </div>
                       </Button>
                     </td>
                   </tr>
@@ -253,7 +246,7 @@ export default function UsersDashboard() {
         </CardContent>
       </Card>
 
-      {/* Modal de confirmação */}
+
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

@@ -2,7 +2,18 @@ import UserController from "../controllers/UserController.js";
 
 export default async function userRoutes(fastify) {
 
-    fastify.get('/', UserController.getAll);
+    fastify.get('/', {
+        schema: {
+            summary: 'Listar Usuários',
+            description: 'Lista todos os usuários do sistema',
+            tags: ['users'],
+            description: 'List Users' ,
+            
+    
+        }
+    },   UserController.getAll
+    );
+
     fastify.get('/ativos', UserController.getAllActives);
     fastify.get('/inativos', UserController.getAllDeactivated);
     fastify.get('/casa', UserController.getAllMoramEmCasa);

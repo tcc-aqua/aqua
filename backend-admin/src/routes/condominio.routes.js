@@ -9,4 +9,5 @@ export default async function condominioRoutes(fastify){
     fastify.post('/', CondominioController.create);
     fastify.put('/:id', CondominioController.update);
     fastify.patch('/:id/inativar', CondominioController.inativar);
+    fastify.patch('/:id/ativar', CondominioController.ativar);
 }
