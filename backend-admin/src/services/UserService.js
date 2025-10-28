@@ -1,3 +1,4 @@
+import { where } from "sequelize";
 import Apartamento from "../models/Apartamento.js";
 import Casa from "../models/Casa.js";
 import Condominio from "../models/Condominio.js";
@@ -58,15 +59,49 @@ export default class UserService {
 
     static async getAllUserActives(page = 1, limit = 10) {
         try {
-            const options = {
+            const result = await User.paginate({
                 page,
                 paginate: limit,
-                where: { status: 'ativo' },
                 order: [['criado_em', 'DESC']],
-                attributes: { exclude: ['password'] }
-            }
-            const users = await User.paginate(options);
-            return users;
+                attributes: { exclude: ['password'] },
+                where: { status: 'ativo' },
+                include: [
+                    { model: Casa, as: 'casa' },
+                    {
+                        model: Apartamento, as: 'apartamento',
+                        include: [
+                            { model: Condominio, as: 'condominio', attributes: ['nome', 'logradouro'] }
+                        ]
+                    }
+                ]
+
+            });
+
+            const usersWithResidencia = result.docs.map(user => {
+                let residencia = null;
+
+                if (user.residencia_type === 'casa' && user.casa) {
+                    residencia = `${user.casa.logradouro}, ${user.casa.numero} - ${user.casa.bairro}, ${user.casa.cidade} - ${user.casa.uf}`;
+                } else if (user.residencia_type === 'apartamento' && user.apartamento) {
+                    const apt = user.apartamento;
+                    const cond = apt.condominio;
+                    residencia = `Condomínio: ${cond?.nome || 'Desconhecido'}, Rua: ${cond?.logradouro || '-'}, Bloco ${apt.bloco || '-'} - Apt ${apt.numero}`;
+                }
+
+                const plainUser = user.get({ plain: true });
+                delete plainUser.casa;
+                delete plainUser.apartamento;
+
+                return {
+                    ...plainUser,
+                    residencia
+                };
+            });
+
+            return {
+                ...result,
+                docs: usersWithResidencia
+            };
         } catch (error) {
             console.error('Erro ao buscar usuários', error);
             throw error;
@@ -75,15 +110,49 @@ export default class UserService {
 
     static async getAllUsersDeactivated(page = 1, limit = 10) {
         try {
-            const options = {
+            const result = await User.paginate({
                 page,
                 paginate: limit,
-                where: { status: 'inativo' },
                 order: [['criado_em', 'DESC']],
-                attributes: { exclude: ['password'] }
-            }
-            const users = await User.paginate(options);
-            return users;
+                attributes: { exclude: ['password'] },
+                where: { status: 'inativo' },
+                include: [
+                    { model: Casa, as: 'casa' },
+                    {
+                        model: Apartamento, as: 'apartamento',
+                        include: [
+                            { model: Condominio, as: 'condominio', attributes: ['nome', 'logradouro'] }
+                        ]
+                    }
+                ]
+
+            });
+
+            const usersWithResidencia = result.docs.map(user => {
+                let residencia = null;
+
+                if (user.residencia_type === 'casa' && user.casa) {
+                    residencia = `${user.casa.logradouro}, ${user.casa.numero} - ${user.casa.bairro}, ${user.casa.cidade} - ${user.casa.uf}`;
+                } else if (user.residencia_type === 'apartamento' && user.apartamento) {
+                    const apt = user.apartamento;
+                    const cond = apt.condominio;
+                    residencia = `Condomínio: ${cond?.nome || 'Desconhecido'}, Rua: ${cond?.logradouro || '-'}, Bloco ${apt.bloco || '-'} - Apt ${apt.numero}`;
+                }
+
+                const plainUser = user.get({ plain: true });
+                delete plainUser.casa;
+                delete plainUser.apartamento;
+
+                return {
+                    ...plainUser,
+                    residencia
+                };
+            });
+
+            return {
+                ...result,
+                docs: usersWithResidencia
+            };
         } catch (error) {
             console.error('Erro ao buscar usuários', error);
             throw error;
