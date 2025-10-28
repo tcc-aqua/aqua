@@ -1,18 +1,6 @@
 import CondominioService from "../services/CondominioService.js";
-import { z } from "zod";
-
-export const createCondominioSchema = z.object({
-    name: z.string(),
-    numero: z.string(),
-    cep: z.string().regex(/^\d{5}-?\d{3}$/, "CEP inválido"),
-});
-
-const updateCondominioSchema = z.object({
-    name: z.string().optional(),
-    numero: z.string().optional(),
-    cep: z.string().regex(/^\d{5}-?\d{3}$/, "CEP inválido").optional(),
-    sindico_id: z.string().uuid().optional()
-});
+import { createCondominioDTO } from "../dto/condominio/createCondominioDTO.js";
+import {updateCondominioDTO} from '../dto/condominio/updateCondominioDTO.js'
 
 export default class CondominioController {
     static async getAll(req, reply) {
@@ -42,14 +30,14 @@ export default class CondominioController {
     }
 
     static async create(req, reply) {
-        const validateCondominio = createCondominioSchema.parse(req.body);
+        const validateCondominio = createCondominioDTO.parse(req.body);
         const condominio = await CondominioService.createCondominio(validateCondominio)
         return reply.status(201).send(condominio);
     }
 
     static async update(req, reply) {
         const { id } = req.params;
-        const validateCondominio = updateCondominioSchema.parse(req.body);
+        const validateCondominio = updateCondominioDTO.parse(req.body);
         const updateCondominio = await CondominioService.updateCondominio(id, validateCondominio);
         return reply.status(200).send(updateCondominio)
     }
