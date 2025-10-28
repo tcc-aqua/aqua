@@ -16,11 +16,13 @@ export default class UserService {
                 include: [
                     { model: Casa, as: 'casa' },
                     {
-                        model: Apartamento, as: 'apartamento', include: [
-                            { model: Condominio, as: 'condominio', attributes: ['logradouro'] }
+                        model: Apartamento, as: 'apartamento',
+                        include: [
+                            { model: Condominio, as: 'condominio', attributes: ['nome', 'logradouro'] }
                         ]
                     }
                 ]
+
             });
 
             const usersWithResidencia = result.docs.map(user => {
@@ -29,7 +31,9 @@ export default class UserService {
                 if (user.residencia_type === 'casa' && user.casa) {
                     residencia = `${user.casa.logradouro}, ${user.casa.numero} - ${user.casa.bairro}, ${user.casa.cidade} - ${user.casa.uf}`;
                 } else if (user.residencia_type === 'apartamento' && user.apartamento) {
-                    residencia = `Bloco ${user.apartamento.bloco} - Apt ${user.apartamento.numero}, Cond.: ${user.apartamento.condominio_id}, Rua: ${user.apartamento.condominio.logradouro}`;
+                    const apt = user.apartamento;
+                    const cond = apt.condominio;
+                    residencia = `Condomínio: ${cond?.nome || 'Desconhecido'}, Rua: ${cond?.logradouro || '-'}, Bloco ${apt.bloco || '-'} - Apt ${apt.numero}`;
                 }
 
                 const plainUser = user.get({ plain: true });
@@ -51,8 +55,6 @@ export default class UserService {
             throw error;
         }
     }
-
-
 
     static async getAllUserActives(page = 1, limit = 10) {
         try {
