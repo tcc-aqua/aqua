@@ -1,5 +1,5 @@
 import UserService from "../services/AuthService.js";
-import { registerUserSchema, loginUserSchema } from "../validations/userSchema.js";
+import { registerUserSchema, loginUserSchema } from "../dtos/userSchema.js";
 import jwt from 'jsonwebtoken'
 
 export default class UserController {

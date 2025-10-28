@@ -6,8 +6,8 @@ export default class UpdateService {
             const user = await User.findByPk(userId);
             if (!user) throw new Error('Usuário não encontrado');
 
-            const { name, email, password } = data;
-            await user.update({ name, email, password });
+            const { name, email } = data;
+            await user.update({ name, email });
             return user;
         } catch (error) {
             console.error('Erro ao atualizar usuário', error);

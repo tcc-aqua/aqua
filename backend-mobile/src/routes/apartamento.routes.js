@@ -1,4 +1,4 @@
-import ApartamentoController from "../controllers/ApartamentoService.js";
+import ApartamentoController from "../controllers/ApartamentoController.js";
 
 export default async function apartamentoRoutes(fastify){
 
