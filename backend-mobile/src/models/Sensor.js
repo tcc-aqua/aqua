@@ -12,8 +12,8 @@ Sensor.init({
         autoIncrement: true
     },
     codigo: {
-        type: DataTypes.CHAR(10), 
-        defaultValue: () => nanoid(10), 
+        type: DataTypes.CHAR(10),
+        defaultValue: () => nanoid(10),
         allowNull: false,
         unique: true
     },
@@ -26,9 +26,10 @@ Sensor.init({
         allowNull: false
     },
     ultimo_envio: {
-        type: DataTypes.DATE,
-        allowNull: false
-    }
+  type: DataTypes.DATE,
+  allowNull: true, 
+  defaultValue: null
+}
 }, {
     sequelize,
     tableName: 'sensores',
