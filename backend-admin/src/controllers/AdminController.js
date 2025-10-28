@@ -1,16 +1,6 @@
 import AdminService from "../services/AdminService.js";
-import { z } from 'zod';
-
-const createAdminSchema = z.object({
-    email: z.string().email(),
-    password: z.string().min(6),
-})
-
-const updateAdminSchema = z.object({
-    email: z.string().email().optional(),
-    password: z.string().min(6).optional(),
-    role: z.enum(['superadmin', 'admin']).optional(),
-});
+import { createAdminDTO } from '../dto/admin/createAdminDTO.js';
+import { updateAdminDTO } from "../dto/admin/updateAdminDTO.js";
 
 export default class AdminController {
 
@@ -30,13 +20,13 @@ export default class AdminController {
     }
 
     static async create(req, reply){
-        const validateAdmin = createAdminSchema.parse(req.body);
+        const validateAdmin = createAdminDTO.parse(req.body);
         const admin = await AdminService.create(validateAdmin);
         return reply.status(201).send(admin);
     }
 
     static async update(req, reply){
-        const validateAdmin = updateAdminSchema.parse(req.body);
+        const validateAdmin = updateAdminDTO.parse(req.body);
         const admin = await AdminService.update(validateAdmin);
         return reply.status(200).send(admin);
     }
