@@ -53,7 +53,7 @@ await fastify.register(swaggerUI, {
     initOAuth: {},
 });
 
-fastify.get('/', {
+fastify.get('/api', {
     schema: {
         tags: ['Health Check'],
         summary: 'Status da API',

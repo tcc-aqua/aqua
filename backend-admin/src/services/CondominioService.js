@@ -163,16 +163,26 @@ export default class CondominioService {
         }
     }
 
-    static async listaCondominio() {
+    static async countApartamentosPorCondominio() {
         try {
-            const options = {
-                page,
-                paginate: limit,
-                order: [['criado_em', 'DESC']],
+            const condominio = await Condominio.findByPk(id);
+
+            if (!condominio) {
+                throw new Error('Condomínio não encontrado');
             }
+
+            const total = await Apartamento.count({
+                where: { condominio_id: id }
+            });
+
+            return {
+                condominio_id: id,
+                nome: condominio.nome,
+                total_apartamentos: total
+            };
         } catch (error) {
-            console.error('Ero ao listar')
+            console.error('Erro ao listar contagem de apartamentos.', error);
+            throw error;
         }
     }
-
 }

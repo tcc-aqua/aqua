@@ -65,4 +65,10 @@ export default class CondominioController {
         const condominio = await CondominioService.ativarCondominio(id);
         return reply.status(200).send(condominio);
     }
+
+    static async listarQtdApartamentos(req, reply){
+        const { id } = req.params;
+        const apartamentos = await CondominioService.countApartamentosPorCondominio(id);
+        return reply.status(200).send(apartamentos);
+    }
 }
