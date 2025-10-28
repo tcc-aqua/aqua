@@ -25,10 +25,10 @@ export default class SensorService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
-                where: { status: 'ativo' }
+                order: [['sensor_id', 'ASC']],
+                where: { sensor_status: 'ativo' }
             }
-            const sensores = await Sensor.paginate(options);
+            const sensores = await SensorView.paginate(options);
             return sensores;
         } catch (error) {
             console.error('Erro ao listar sensores ativos', error);
@@ -41,10 +41,10 @@ export default class SensorService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
-                where: { status: 'inativo' }
+                order: [['sensor_id', 'ASC']],
+                where: { sensor_status: 'inativo' }
             }
-            const sensores = await Sensor.paginate(options);
+            const sensores = await SensorView.paginate(options);
             return sensores;
         } catch (error) {
             console.error('Erro ao listar sensores inativos', error);
@@ -140,7 +140,7 @@ export default class SensorService {
         try {
             const total = await Sensor.sum('consumo_total', {
                 where: {
-                    apartamento_id: { [Op.ne]: null } 
+                    apartamento_id: { [Op.ne]: null }
                 }
             });
             return total;
