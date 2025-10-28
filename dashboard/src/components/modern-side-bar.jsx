@@ -40,7 +40,9 @@ export function Sidebar({ className = "" }) {
   const { theme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const handleResize = () => setIsOpen(window.innerWidth >= 768);
@@ -85,11 +87,11 @@ export function Sidebar({ className = "" }) {
           {!isCollapsed ? (
             <div className="flex items-center">
               <img src="./logo.svg" alt="logo" className="w-12" />
-              {theme === "dark" ? (
+              {mounted && theme === "dark" ? (
                 <img src="./escrita-dark.png" alt="aqua" className="w-20 ml-4" />
-              ) : (
+              ) : mounted ? (
                 <img src="./escrita.png" alt="aqua" className="w-20 ml-4" />
-              )}
+              ) : null}
             </div>
           ) : (
             <img src="./logo.svg" alt="logo" className="w-12 mx-auto py-1.5" />

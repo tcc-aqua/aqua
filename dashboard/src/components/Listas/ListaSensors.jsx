@@ -8,9 +8,15 @@ import { Toaster } from "sonner";
 import { Cpu, SignalHigh, AlertTriangle, Wrench } from "lucide-react";
 
 const cardVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
+  hidden: { y: -120, opacity: 0, zIndex: -1 },
+  visible: (delay = 0) => ({
+    y: 0,
+    opacity: 1,
+    zIndex: 10,
+    transition: { duration: 0.8, ease: "easeOut", delay },
+  }),
 };
+
 
 export default function SensorsDashboard() {
   const [sensores, setSensores] = useState([]);

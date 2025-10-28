@@ -14,11 +14,19 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import useToggleConfirm from "@/hooks/useStatus";
+
 
 const cardVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
+  hidden: { y: -120, opacity: 0, zIndex: -1 },
+  visible: (delay = 0) => ({
+    y: 0,
+    opacity: 1,
+    zIndex: 10,
+    transition: { duration: 0.8, ease: "easeOut", delay },
+  }),
 };
+
 
 export default function CasasDashboard() {
   const [casas, setCasas] = useState([]);
@@ -27,8 +35,7 @@ export default function CasasDashboard() {
   const [error, setError] = useState(null);
   const [casaStats, setCasaStats] = useState({ total: 0, ativas: 0, inativas: 0, alertas: 0 });
   const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
-  const [showModal, setShowModal] = useState(false);
-  const [selectedCasa, setSelectedCasa] = useState(null);
+
 
   const API_CASAS = "http://localhost:3333/api/casas";
   const API_SENSORES = "http://localhost:3333/api/sensores";
@@ -75,7 +82,7 @@ export default function CasasDashboard() {
         alertas: alertas.length,
       });
 
-      // Estatísticas de sensores vinculados às casas
+
       const sensoresVinculados = allSensores.filter(s =>
         allCasas.some(c => c.sensor_id === s.id)
       );
@@ -97,31 +104,12 @@ export default function CasasDashboard() {
       setLoading(false);
     }
   };
+  const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } =
+    useToggleConfirm(API_CASAS, fetchData);
 
   useEffect(() => {
     fetchData();
   }, []);
-
-  const confirmToggleStatus = (casa) => {
-    setSelectedCasa(casa);
-    setShowModal(true);
-  };
-
-  const toggleStatus = async () => {
-    if (!selectedCasa) return;
-    try {
-      const action = selectedCasa.status === "ativo" ? "inativar" : "ativar";
-      const res = await fetch(`${API_CASAS}/${selectedCasa.id}/${action}`, { method: "PATCH" });
-      if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
-      toast.success(`Casa ${selectedCasa.status === "ativo" ? "inativada" : "ativada"} com sucesso!`);
-      fetchData();
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setShowModal(false);
-      setSelectedCasa(null);
-    }
-  };
 
   if (loading) return <Loading />;
   if (error) return <p className="text-red-500">Erro: {error}</p>;
@@ -129,16 +117,16 @@ export default function CasasDashboard() {
   const cards = [
     {
       title: "Total de Casas",
-     valueTotal: casaStats.total,
-     valueAtivas: casaStats.ativas,
+      valueTotal: casaStats.total,
+      valueAtivas: casaStats.ativas,
       icon: Home,
-       bg: "bg-card",
+      bg: "bg-card",
       iconColor: "text-blue-700",
       textColor: "text-blue-800"
     },
     {
       title: "Total de moradoes",
-    
+
       icon: HousePlug,
       bg: "bg-card",
       iconColor: "text-green-700",
@@ -178,11 +166,11 @@ export default function CasasDashboard() {
                 <CardContent className="flex flex-col items-center">
                   <Icon className={`w-10 h-10 mb-2  ${card.iconColor}`} />
                   <p className={`font-bold text-xl ${card.textColor}`}>{card.valueTotal} </p>
-                    {card.valueAtivas && (
-            <p className="text-green-600 text-sm mt-1">
-              {card.valueAtivas} Ativas
-            </p>
-          )}
+                  {card.valueAtivas && (
+                    <p className="text-green-600 text-sm mt-1">
+                      {card.valueAtivas} Ativas
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
@@ -246,22 +234,22 @@ export default function CasasDashboard() {
                       <td className="px-4 py-2 text-sm">-</td>
                       <td className="px-4 py-2 text-sm">
                         <div className="flex items-center gap-1">
-                            <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(casa)}>
+                          <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(casa)}>
 
-                        <div className="flex items-center gap-1">
-                          {casa.status === "ativo" ? (
-                            <>
-                              <Check className="text-green-500" size={14} />
+                            <div className="flex items-center gap-1">
+                              {casa.status === "ativo" ? (
+                                <>
+                                  <Check className="text-green-500" size={14} />
 
-                            </>
-                          ) : (
-                            <>
-                              <X className="text-red-500" size={14} />
+                                </>
+                              ) : (
+                                <>
+                                  <X className="text-red-500" size={14} />
 
-                            </>
-                          )}
-                        </div>
-                      </Button>
+                                </>
+                              )}
+                            </div>
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -279,11 +267,14 @@ export default function CasasDashboard() {
             <DialogTitle>Confirmação</DialogTitle>
           </DialogHeader>
           <p className="py-4">
-            Deseja realmente {selectedCasa?.status === "ativo" ? "inativar" : "ativar"} a casa <strong>{selectedCasa?.logradouro}, {selectedCasa?.numero}</strong>?
+            Deseja realmente {selectedItem?.status === "ativo" ? "inativar" : "ativar"} a casa{" "}
+            <strong>{selectedItem?.logradouro}, {selectedItem?.numero}</strong>?
           </p>
           <DialogFooter className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={toggleStatus}>{selectedCasa?.status === "ativo" ? "Inativar" : "Ativar"}</Button>
+            <Button variant="destructive" onClick={toggleStatus}>
+              {selectedItem?.status === "ativo" ? "Inativar" : "Ativar"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

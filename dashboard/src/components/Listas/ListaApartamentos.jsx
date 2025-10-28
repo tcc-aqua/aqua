@@ -14,11 +14,18 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
+import useToggleConfirm from "@/hooks/useStatus";
 
 const cardVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
+    hidden: { y: -120, opacity: 0, zIndex: -1 },
+    visible: (delay = 0) => ({
+        y: 0,
+        opacity: 1,
+        zIndex: 10,
+        transition: { duration: 0.8, ease: "easeOut", delay },
+    }),
 };
+
 
 export default function ApartamentosDashboard() {
     const [apartamentos, setApartamentos] = useState([]);
@@ -27,7 +34,6 @@ export default function ApartamentosDashboard() {
     const [error, setError] = useState(null);
     const [apStats, setApStats] = useState({ total: 0, ativas: 0, inativas: 0, alertas: 0 });
     const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
-    const [showModal, setShowModal] = useState(false);
     const [selectedAp, setSelectedAp] = useState(null);
 
     const API_AP = "http://localhost:3333/api/apartamentos";
@@ -93,31 +99,13 @@ export default function ApartamentosDashboard() {
             setLoading(false);
         }
     };
-
+    const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } =
+        useToggleConfirm(API_AP, fetchData);
     useEffect(() => {
         fetchData();
     }, []);
 
-    const confirmToggleStatus = (ap) => {
-        setSelectedAp(ap);
-        setShowModal(true);
-    };
 
-    const toggleStatus = async () => {
-        if (!selectedAp) return;
-        try {
-            const action = selectedAp.status === "ativo" ? "inativar" : "ativar";
-            const res = await fetch(`${API_AP}/${selectedAp.id}/${action}`, { method: "PATCH" });
-            if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
-            toast.success(`Apartamento ${selectedAp.status === "ativo" ? "inativado" : "ativado"} com sucesso!`);
-            fetchData();
-        } catch (err) {
-            toast.error(err.message);
-        } finally {
-            setShowModal(false);
-            setSelectedAp(null);
-        }
-    };
 
     if (loading) return <Loading />;
     if (error) return <p className="text-red-500">Erro: {error}</p>;
@@ -234,22 +222,22 @@ export default function ApartamentosDashboard() {
                                             </td>
                                             <td className="px-4 py-2 text-sm">-</td>
                                             <td className="px-4 py-2 text-sm">
-                                                  <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(ap)}>
+                                                <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(ap)}>
 
-                                                        <div className="flex items-center gap-1">
-                                                            {ap.status === "ativo" ? (
-                                                                <>
-                                                                    <Check className="text-green-500" size={14} />
+                                                    <div className="flex items-center gap-1">
+                                                        {ap.status === "ativo" ? (
+                                                            <>
+                                                                <Check className="text-green-500" size={14} />
 
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <X className="text-red-500" size={14} />
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <X className="text-red-500" size={14} />
 
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    </Button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </Button>
                                             </td>
                                         </tr>
                                     );
