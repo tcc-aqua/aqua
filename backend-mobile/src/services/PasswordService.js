@@ -11,42 +11,42 @@ export default class PasswordService {
 
             const user = await User.findOne({ where: { email } });
             if (!user) throw new Error('Usuário não encontrado');
-            
-            const token = uuidv4(); // token unico
-        const expira_em = new Date(Date.now() + 3600 * 1000); // 1hr
-        
-        await PasswordReset.create({ user_id: user_id, token, expira_em: expira_em });
-        
-        const transporter = nodemailer.createTransport({
-            host: 'thdrk.21@gmail.com',
-            port: 587,
-            secure: false,
-            auth: {
-                user: 'thdrk.21@gmail.com',
-                pass: '123456'
-            }
-        })
 
-        const resetUrl = `http://localhost:5181/reset-password?token=${token}`
-        await transporter.sendMail({
-            from: '"Suporte" <suporte@exemplo.com>',
-            to: user.email,
-            subject: 'Redefinição de senha',
-            html: `<p>Você solicitou redefinição de senha.</p>
+            const token = uuidv4(); // token unico
+            const expira_em = new Date(Date.now() + 3600 * 1000); // 1hr
+
+            await PasswordReset.create({ user_id: user.id, token, expira_em: expira_em });
+
+            const transporter = nodemailer.createTransport({
+                host: process.env.MAIL_HOST,
+                port: process.env.MAIL_PORT,
+                secure: false,
+                auth: {
+                    user: process.env.MAIL_USER,
+                    pass: process.env.MAIL_PASS
+                }
+            });
+
+            const resetUrl = `http://localhost:5181/reset-password?token=${token}`
+            await transporter.sendMail({
+                from: process.env.MAIL_USER,
+                to: user.email,
+                subject: 'Redefinição de senha',
+                html: `<p>Você solicitou redefinição de senha.</p>
             <p>Clique no link para redefinir: <a href="${resetUrl}">${resetUrl}</a></p>
             <p>O link expira em 1 hora.</p>`
-        });
+            });
 
-        return { message: 'Email enviado com sucesso!' };
-    } catch (error) {
-        console.error('Erro ao receber email', error);
-        throw error;
+            return { message: 'Email enviado com sucesso!' };
+        } catch (error) {
+            console.error('Erro ao receber email', error);
+            throw error;
+        }
     }
-    }
-    
+
     static async resetPassword(token, newPassword) {
         try {
-            const reset = await PasswordReset.findOne({ where: token });
+            const reset = await PasswordReset.findOne({ where: {token} });
             if (!reset || reset.expira_em < new Date()) throw new Error('Token inválido ou expirado')
 
             const user = await User.findByPk(reset.user_id);
