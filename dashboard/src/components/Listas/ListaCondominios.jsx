@@ -145,9 +145,9 @@ export default function CondominiosDashboard() {
           const Icon = card.icon;
           return (
             <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
-              <Card className={`p-4 ${card.bg}`}>
+              <Card>
                 <CardHeader>
-                  <CardTitle className={`font-bold text-xl ${card.textColor}`}>{card.title}</CardTitle>
+                 <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
                   <Icon className={`w-10 h-10 mb-2 ${card.iconColor}`} />
@@ -184,7 +184,7 @@ export default function CondominiosDashboard() {
                   <tr key={condominio.id} className="hover:bg-muted/10 text-foreground">
                     <td className="px-4 py-2">
                       <div className="text-sm font-semibold">{condominio.name}</div>
-                      <div className="text-xs text-foreground/80">{`${condominio.logradouro}, ${condominio.numero} - ${condominio.bairro} - ${condominio.uf}`}</div>
+                      <div className="text-xs text-foreground/80">{`${condominio.logradouro}, ${condominio.numero} - ${condominio.bairro}/${condominio.uf}`}</div>
                       <div className="text-[10px] text-foreground/60">{condominio.cep}</div>
                       <div className="text-[10px] text-foreground/60">
                         Criado em {new Date(condominio.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
