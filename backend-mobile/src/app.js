@@ -4,6 +4,7 @@ import fastifyFormbody from '@fastify/formbody'
 import authRoutes from './routes/auth.routes.js';
 import apartamentoRoutes from './routes/apartamento.routes.js';
 import dicaRoutes from './routes/dica.routes.js';
+import userRoutes from './routes/user.routes.js';
 
 const fastify = Fastify({
     logger: {
@@ -28,6 +29,7 @@ fastify.get('/', (req, reply) => {
 fastify.register(authRoutes, {prefix: '/api/auth'});
 fastify.register(apartamentoRoutes, {prefix: '/api/apartamentos'});
 fastify.register(dicaRoutes, {prefix: '/api/dica'});
+fastify.register(userRoutes, {prefix: '/api/user'});
 
 
 export default fastify;

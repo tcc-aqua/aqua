@@ -60,7 +60,16 @@ export default class UserController {
     }
   }
 
-  static async me(request, reply) {
-    return reply.send({ user: request.user });
+  static async me(req, reply) {
+    const userId = req.user.id; // obtido do authMiddleware
+    const user = await UserService.getMe(userId);
+    return reply.status(200).send({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      type: user.type,
+      role: user.role,
+      status: user.status
+    });
   }
 }

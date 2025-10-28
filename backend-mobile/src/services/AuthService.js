@@ -142,4 +142,16 @@ export default class UserService {
 
     return user;
   }
+
+  static async getMe(userId) {
+    try {
+      const user = await User.findByPk(userId);
+      if (!user) throw new Error('Usuário não encontrado');
+      return user;
+    } catch (error) {
+      console.error("erro em listar dados de usuário", error);
+      throw error;
+    }
+  }
+
 }
