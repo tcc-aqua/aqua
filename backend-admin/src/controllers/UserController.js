@@ -64,6 +64,16 @@ export default class UserController {
         return reply.status(200).send(moradores);
     }
 
+    static async moradoresCasa(req, reply){
+        const moradores = await UserService.countMoradoresCasa();
+        return reply.status(200).send(moradores);
+    }
+
+    static async moradoresApartamentos(req, reply){
+        const moradores = await UserService.countMoradoresApartamentos();
+        return reply.status(200).send(moradores);
+    }
+
     static async deactivate(req, reply) {
         const { id } = (req.params);
         const user = await UserService.deactivateUser(id);

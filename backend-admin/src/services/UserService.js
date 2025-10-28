@@ -161,6 +161,26 @@ export default class UserService {
         }
     }
 
+    static async countMoradoresCasa() {
+        try {
+            const users = await User.count({ where: { type: 'casa' } });
+            return users;
+        } catch (error) {
+            console.error('Erro ao listar contagem de moradores', error);
+            throw error;
+        }
+    }
+
+    static async countMoradoresApartamentos() {
+        try {
+            const users = await User.count({ where: { type: 'condominio' } });
+            return users;
+        } catch (error) {
+            console.error('Erro ao listar contagem de moradores', error);
+            throw error;
+        }
+    }
+
     static async getUserById(id) {
         try {
             const user = await User.findByPk(id);

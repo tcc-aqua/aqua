@@ -20,8 +20,10 @@ export default async function userRoutes(fastify) {
     fastify.get('/condominio', UserController.getAllMoramCondominio);
     fastify.get('/count', UserController.count);
     fastify.get('/count-ativos', UserController.countAtivos);
-    fastify.get('/count-sindicos', UserController.countSindicos);
-    fastify.get('/count-moradores', UserController.countMoradores);
+    fastify.get('/sindicos', UserController.countSindicos);
+    fastify.get('/moradores', UserController.countMoradores);
+    fastify.get('/moradores/casas', UserController.moradoresCasa);
+    fastify.get('/moradores/apartamentos', UserController.moradoresApartamentos);
     fastify.get('/:id', UserController.getById);
     fastify.patch('/:id/inativar', UserController.deactivate);
     fastify.patch('/:id/ativar', UserController.ativar);
