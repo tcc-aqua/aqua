@@ -3,59 +3,26 @@ import Apartamento from "../models/Apartamento.js";
 import Casa from "../models/Casa.js";
 import Condominio from "../models/Condominio.js";
 import User from "../models/User.js";
+import UserView from "../models/UserView.js";
 
 export default class UserService {
 
     // fazendo paginação de usuários para não sobracarregar o front-end com muitos dados
     static async getAllUsers(page = 1, limit = 10) {
-        try {
-            const result = await User.paginate({
-                page,
-                paginate: limit,
-                order: [['criado_em', 'DESC']],
-                attributes: { exclude: ['password'] },
-                include: [
-                    { model: Casa, as: 'casa' },
-                    {
-                        model: Apartamento, as: 'apartamento',
-                        include: [
-                            { model: Condominio, as: 'condominio', attributes: ['name', 'logradouro'] }
-                        ]
-                    }
-                ]
-
-            });
-
-            const usersWithResidencia = result.docs.map(user => {
-                let residencia = null;
-
-                if (user.residencia_type === 'casa' && user.casa) {
-                    residencia = `${user.casa.logradouro}, ${user.casa.numero} - ${user.casa.bairro}, ${user.casa.cidade} - ${user.casa.uf}`;
-                } else if (user.residencia_type === 'apartamento' && user.apartamento) {
-                    const apt = user.apartamento;
-                    const cond = apt.condominio;
-                    residencia = `Condomínio: ${cond?.name || 'Desconhecido'}, Rua: ${cond?.logradouro || '-'}, Bloco ${apt.bloco || '-'} - Apt ${apt.numero}`;
+            try {
+                const options = {
+                    page,
+                    paginate: limit,
+                    order: [['user_id', 'DESC']]
                 }
-
-                const plainUser = user.get({ plain: true });
-                delete plainUser.casa;
-                delete plainUser.apartamento;
-
-                return {
-                    ...plainUser,
-                    residencia
-                };
-            });
-
-            return {
-                ...result,
-                docs: usersWithResidencia
-            };
-        } catch (error) {
-            console.error('Erro ao buscar usuários', error);
-            throw error;
+                const usuarios = await UserView.paginate(options);
+                return usuarios;
+            } catch (error) {
+                console.error("Erro ao listar todas as usuarios", error);
+                throw error;
+            }
         }
-    }
+    
 
     static async getAllUserActives(page = 1, limit = 10) {
         try {
@@ -137,7 +104,7 @@ export default class UserService {
                     const apt = user.apartamento;
                     const cond = apt.condominio;
                     residencia = `Condomínio: ${cond?.
-                    name || 'Desconhecido'}, Rua: ${cond?.logradouro || '-'}, Bloco ${apt.bloco || '-'} - Apt ${apt.numero}`;
+                        name || 'Desconhecido'}, Rua: ${cond?.logradouro || '-'}, Bloco ${apt.bloco || '-'} - Apt ${apt.numero}`;
                 }
 
                 const plainUser = user.get({ plain: true });
