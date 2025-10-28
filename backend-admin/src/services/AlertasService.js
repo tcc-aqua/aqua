@@ -2,6 +2,7 @@ import { fn, col, Op } from "sequelize";
 import Alertas from "../models/Alertas.js";
 import Condominio from "../models/Condominio.js";
 import Casa from "../models/Casa.js";
+import Apartamento from "../models/Apartamento.js";
 
 export default class AlertasService {
 
@@ -150,7 +151,7 @@ export default class AlertasService {
             const alertas = await Alertas.findAll({
                 attributes: [
                     'residencia_id',
-                    [fn('COUNT', col('Alertas.id')), 'total_alertas'] 
+                    [fn('COUNT', col('Alertas.id')), 'total_alertas']
                 ],
                 where: {
                     resolvido: false,
@@ -161,15 +162,19 @@ export default class AlertasService {
                     {
                         model: Casa,
                         as: 'casa',
-                        attributes: ['logradouro', 'bairro', 'numero', 'cidade', 'uf']
+                        attributes: ['logradouro', 'numero', 'bairro', 'cidade', 'uf']
                     }
-                ]
+                ],
+                order: [[fn('COUNT', col('Alertas.id')), 'DESC']]
             });
 
-            return alertas.map(a => ({
+            return alertas.map((a, index) => ({
+                id: index + 1,
                 residencia_id: a.residencia_id,
-                endereco: a.casa ? `${a.casa.logradouro}, ${a.casa.numero} - ${a.casa.bairro}, ${a.casa.cidade} - ${a.casa.uf}` : null,
-                total_alertas: a.getDataValue('total_alertas')
+                identificacao: a.casa
+                    ? `${a.casa.logradouro}, Nº ${a.casa.numero} - ${a.casa.bairro}, ${a.casa.cidade} - ${a.casa.uf}`
+                    : 'Desconhecido',
+                total_alertas: Number(a.getDataValue('total_alertas'))
             }));
         } catch (error) {
             console.error("Erro ao contar alertas ativos por casa", error);
@@ -177,6 +182,42 @@ export default class AlertasService {
         }
     }
 
+    static async countAlertasAtivosPorApartamento() {
+        try {
+            const alertas = await Alertas.findAll({
+                attributes: [
+                    'residencia_id',
+                    [fn('COUNT', col('Alertas.id')), 'total_alertas']
+                ],
+                where: {
+                    resolvido: false,
+                    residencia_type: 'apartamento'
+                },
+                group: ['residencia_id'],
+                include: [
+                    {
+                        model: Apartamento,
+                        as: 'apartamento',
+                        attributes: ['numero', 'bloco']
+                    }
+                ],
+                order: [[fn('COUNT', col('Alertas.id')), 'DESC']]
+            });
+
+            return alertas.map((a, index) => ({
+                id: index + 1,
+                residencia_id: a.residencia_id,
+                identificacao: a.apartamento
+                    ? `Bloco ${a.apartamento.bloco || '-'}, Nº ${a.apartamento.numero}`
+                    : 'Desconhecido',
+                total_alertas: Number(a.getDataValue('total_alertas'))
+            }));
+        }
+        catch (error) {
+            console.error('Erro ao listar count', error);
+            throw error;
+        }
+    }
 
     static async createAlerta({ sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel }) {
         try {
