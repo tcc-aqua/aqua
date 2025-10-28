@@ -1,5 +1,6 @@
 import Sensor from "../models/Sensor.js";
 import { Op } from 'sequelize';
+import SensorView from "../models/SensorView.js";
 
 
 export default class SensorService {
@@ -9,9 +10,9 @@ export default class SensorService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']]
+                order: [['sensor_id', 'ASC']]
             }
-            const sensores = await Sensor.paginate(options);
+            const sensores = await SensorView.paginate(options);
             return sensores;
         } catch (error) {
             console.error('Erro ao listar sensores', error);
