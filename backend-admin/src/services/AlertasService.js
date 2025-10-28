@@ -155,6 +155,42 @@ export default class AlertasService {
                 ],
                 where: {
                     resolvido: false,
+                    residencia_type: 'casa'
+                },
+                group: ['residencia_id'],
+                include: [
+                    {
+                        model: Casa,
+                        as: 'casa',
+                        attributes: ['logradouro', 'numero', 'bairro', 'cidade', 'uf']
+                    }
+                ],
+                order: [[fn('COUNT', col('Alertas.id')), 'DESC']]
+            });
+
+            return alertas.map((a, index) => ({
+                id: index + 1,
+                residencia_id: a.residencia_id,
+                identificacao: a.casa
+                    ? `${a.casa.logradouro}, Nº ${a.casa.numero} - ${a.casa.bairro}, ${a.casa.cidade} - ${a.casa.uf}`
+                    : 'Desconhecido',
+                total_alertas: Number(a.getDataValue('total_alertas'))
+            }));
+        } catch (error) {
+            console.error("Erro ao contar alertas ativos por casa", error);
+            throw error;
+        }
+    }
+
+    static async countAlertasAtivosPorApartamento() {
+        try {
+            const alertas = await Alertas.findAll({
+                attributes: [
+                    'residencia_id',
+                    [fn('COUNT', col('Alertas.id')), 'total_alertas']
+                ],
+                where: {
+                    resolvido: false,
                     residencia_type: 'apartamento'
                 },
                 group: ['residencia_id'],
@@ -175,41 +211,6 @@ export default class AlertasService {
                     ? `Bloco ${a.apartamento.bloco || '-'}, Nº ${a.apartamento.numero}`
                     : 'Desconhecido',
                 total_alertas: Number(a.getDataValue('total_alertas'))
-            }));
-        } catch (error) {
-            console.error("Erro ao contar alertas ativos por casa", error);
-            throw error;
-        }
-    }
-
-    static async countAlertasAtivosPorApartamento() {
-        try {
-
-            const alertas = await Alertas.findAll({
-                attributes: [
-                    'residencia_id',
-                    [fn('COUNT', col('Alertas.id')), 'total_alertas']
-                ],
-                where: {
-                    resolvido: false,
-                    residencia_type: 'apartamento'
-                },
-                group: ['residencia_id', 'apartamento.id', 'apartamento.numero', 'apartamento.bloco'],
-                include: [
-                    {
-                        model: Apartamento,
-                        as: 'apartamento',
-                        attributes: ['numero', 'bloco']
-                    }
-                ]
-            });
-
-            return alertas.map(a => ({
-                residencia_id: a.residencia_id,
-                apartamento: a.apartamento
-                    ? `Bloco ${a.apartamento.bloco || '-'}, Nº ${a.apartamento.numero}`
-                    : null,
-                total_alertas: a.getDataValue('total_alertas')
             }));
         }
         catch (error) {
