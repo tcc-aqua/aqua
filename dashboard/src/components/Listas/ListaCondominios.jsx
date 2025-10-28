@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Building, UserCheck, AlertTriangle, SignalHigh, X, Check } from "lucide-react";
+import { Building, UserCheck, AlertTriangle, SignalHigh, X, Check, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,35 +14,46 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import useToggleConfirm from "@/hooks/useStatus";
+import useCreateUpdate from "@/hooks/useUpdate";
+
 
 const cardVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
+  hidden: { y: -120, opacity: 0, zIndex: -1 },
+  visible: (delay = 0) => ({
+    y: 0,
+    opacity: 1,
+    zIndex: 10,
+    transition: { duration: 0.8, ease: "easeOut", delay },
+  }),
 };
+
 
 export default function CondominiosDashboard() {
   const [condominios, setCondominios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [condominioStats, setCondominioStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
-  const [showModal, setShowModal] = useState(false);
-  const [selectedCondominio, setSelectedCondominio] = useState(null);
 
-  const API = "http://localhost:3333/api/condominios";
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedCondominio, setSelectedCondominio] = useState(null);
+  const [editData, setEditData] = useState({ name: "", logradouro: "", numero: "", bairro: "", cep: "", uf: "" });
+
+  const API_CONDOMINIOS = "http://localhost:3333/api/condominios";
+
 
   const fetchData = async () => {
     try {
       setLoading(true);
 
-
-      const [resAll, resAtivos, resInativos, resCount,] = await Promise.all([
-        fetch(`${API}`),
-        fetch(`${API}/ativos`),
-        fetch(`${API}/inativos`),
-        fetch(`${API}/count`),
+      const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
+        fetch(`${API_CONDOMINIOS}`),
+        fetch(`${API_CONDOMINIOS}/ativos`),
+        fetch(`${API_CONDOMINIOS}/inativos`),
+        fetch(`${API_CONDOMINIOS}/count`),
       ]);
 
-      const [dataAll, dataAtivos, dataInativos, dataCount,] = await Promise.all([
+      const [dataAll, dataAtivos, dataInativos, dataCount] = await Promise.all([
         resAll.json(),
         resAtivos.json(),
         resInativos.json(),
@@ -60,8 +71,6 @@ export default function CondominiosDashboard() {
         inativos: dataInativos.docs?.length ?? 0,
         alertas: alertas.length,
       });
-
-
     } catch (err) {
       console.error("Erro ao buscar dados dos condomínios:", err);
       setError(err.message);
@@ -70,67 +79,44 @@ export default function CondominiosDashboard() {
     }
   };
 
+  const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } =
+    useToggleConfirm(API_CONDOMINIOS, fetchData);
+
+  const { createItem, updateItem, } = useCreateUpdate(API_CONDOMINIOS, fetchData);
   useEffect(() => {
     fetchData();
   }, []);
 
-  const confirmToggleStatus = (condominio) => {
+  const handleEdit = (condominio) => {
     setSelectedCondominio(condominio);
-    setShowModal(true);
-  };
+    setEditData({
+      name: condominio.name,
+      logradouro: condominio.logradouro,
+      numero: condominio.numero,
+      bairro: condominio.bairro,
+      uf: condominio.uf,
+    });
+    setShowEditModal(true);
+  }
 
-  const toggleStatus = async () => {
-    if (!selectedCondominio) return;
+  const handleSaveEdit = async () => {
     try {
-      const action = selectedCondominio.status ? "inativar" : "ativar";
-      const res = await fetch(`${API}/${selectedCondominio.id}/${action}`, { method: "PATCH" });
-      if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
-      toast.success(`Condomínio ${selectedCondominio.status ? "inativado" : "ativado"} com sucesso!`);
-      fetchData();
+      await updateItem(selectedCondominio.id, editData);
+      setShowEditModal(false);
     } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setShowModal(false);
-      setSelectedCondominio(null);
+      toast.error("Erro ao salvar alterações.");
+      console.error(err);
     }
-  };
+  }
 
   if (loading) return <Loading />;
   if (error) return <p className="text-red-500">Erro: {error}</p>;
 
   const cards = [
-    {
-      title: "Total de Condomínios",
-      value: condominioStats.total,
-      icon: Building,
-      bg: "bg-card",
-      iconColor: "text-blue-700",
-      textColor: "text-blue-800"
-    },
-    {
-      title: "Condomínios Ativos",
-      value: condominioStats.ativos,
-      icon: UserCheck,
-      bg: "bg-card",
-      iconColor: "text-green-700",
-      textColor: "text-green-800"
-    },
-    {
-      title: "Sensores Ativos",
-      value: condominioStats.inativos,
-      icon: SignalHigh,
-      bg: "bg-card",
-      iconColor: "text-green-700",
-      textColor: "text-green-800"
-    },
-    {
-      title: "Alertas",
-      value: condominioStats.alertas,
-      icon: AlertTriangle,
-      bg: "bg-card",
-      iconColor: "text-red-600",
-      textColor: "text-red-800"
-    },
+    { title: "Total de Condomínios", value: condominioStats.total, icon: Building, bg: "bg-card", iconColor: "text-blue-700", textColor: "text-blue-800" },
+    { title: "Condomínios Ativos", value: condominioStats.ativos, icon: UserCheck, bg: "bg-card", iconColor: "text-green-700", textColor: "text-green-800" },
+    { title: "Sensores Ativos", value: condominioStats.inativos, icon: SignalHigh, bg: "bg-card", iconColor: "text-green-700", textColor: "text-green-800" },
+    { title: "Alertas", value: condominioStats.alertas, icon: AlertTriangle, bg: "bg-card", iconColor: "text-red-600", textColor: "text-red-800" },
   ];
 
   return (
@@ -190,31 +176,24 @@ export default function CondominiosDashboard() {
                     <td className="px-4 py-2 text-sm">{"-"}</td>
                     <td className="px-4 py-2 text-sm">{"-"}</td>
                     <td className="text-sm font-bold flex items-center ml-7">
-                        <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${condominio.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={condominio.status} />
+                      <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${condominio.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={condominio.status} />
                     </td>
-                   
-                    <td className="px-4 py-2 text-sm">
-
-                    </td>
+                    <td className="px-4 py-2 text-sm"></td>
                     <td className="px-4 py-2 text-sm">{"-"}</td>
                     <td className="px-4 py-2 text-sm">
                       <div className="flex items-center gap-1">
-                         <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(condominio)}>
-
-                        <div className="flex items-center gap-1">
-                          {condominio.status === "ativo" ? (
-                            <>
+                        <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(condominio)}>
+                          <div className="flex items-center gap-1">
+                            {condominio.status === "ativo" ? (
                               <Check className="text-green-500" size={14} />
-
-                            </>
-                          ) : (
-                            <>
+                            ) : (
                               <X className="text-red-500" size={14} />
-
-                            </>
-                          )}
-                        </div>
-                      </Button>
+                            )}
+                          </div>
+                        </Button>
+                        <Button size="sm" variant='ghost' onClick={() => useCreateUpdate(API_CONDOMINIOS, fetchData)}>
+                          <Pencil />
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -231,11 +210,61 @@ export default function CondominiosDashboard() {
             <DialogTitle>Confirmação</DialogTitle>
           </DialogHeader>
           <p className="py-4">
-            Deseja realmente {selectedCondominio?.ativo ? "inativar" : "ativar"} o condomínio <strong>{selectedCondominio?.name}</strong>?
+            Deseja realmente {selectedItem?.status === "ativo" ? "inativar" : "ativar"} o condomínio <strong>{selectedItem?.name}</strong>?
           </p>
           <DialogFooter className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={toggleStatus}>{selectedCondominio?.ativo ? "Inativar" : "Ativar"}</Button>
+            <Button variant="destructive" onClick={toggleStatus}>
+              {selectedItem?.status === "ativo" ? "Inativar" : "Ativar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
+      {/* edit */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Editar Condomínio</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <input
+              type="text"
+              className="w-full border  rounded p-2"
+              placeholder="Nome"
+              value={editData.name}
+              onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+            />
+            <input type="text"
+              className="w-full border  rounded p-2"
+              placeholder="Logradouro"
+              value={editData.logradouro}
+              onChange={(e) => setEditData({ ...editData, logradouro: e.target.value })}
+            />
+            <input type="text"
+              className="w-full border  rounded p-2"
+              placeholder="Número"
+              value={editData.numero}
+              onChange={(e) => setEditData({ ...editData, numero: e.target.value })}
+            />
+            <input type="text"
+              className="w-full border  rounded p-2"
+              placeholder="Bairro"
+              value={editData.bairro}
+              onChange={(e) => setEditData({ ...editData, bairro: e.target.value })}
+
+            />
+            <input type="text"
+              className="w-full border  rounded p-2"
+              placeholder="UF"
+              value={editData.uf}
+              onChange={(e) => setEditData({ ...editData, uf: e.target.value })}
+            />
+          </div>
+          <DialogFooter className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => handleEdit(false)}>Cancelar</Button>
+            <Button onClick={handleSaveEdit}>Salvar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

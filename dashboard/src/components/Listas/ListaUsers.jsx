@@ -14,11 +14,19 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import useToggleConfirm from "@/hooks/useStatus";
+
 
 const cardVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
+  hidden: { y: -120, opacity: 0, zIndex: -1 },
+  visible: (delay = 0) => ({
+    y: 0,
+    opacity: 1,
+    zIndex: 10,
+    transition: { duration: 0.8, ease: "easeOut", delay },
+  }),
 };
+
 
 export default function UsersDashboard() {
   const [users, setUsers] = useState([]);
@@ -30,15 +38,12 @@ export default function UsersDashboard() {
     sindicos: 0,
     moradores: 0,
   });
-  const [showModal, setShowModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
 
   const API_URL = "http://localhost:3333/api/users";
 
   const fetchData = async () => {
     try {
       setLoading(true);
-
 
       const [resUsers, resTotal, resAtivos, resSindicos, resMoradores] = await Promise.all([
         fetch(`${API_URL}`),
@@ -48,14 +53,13 @@ export default function UsersDashboard() {
         fetch(`${API_URL}/count-moradores`),
       ]);
 
-      const [dataUsers, dataTotal, dataAtivos, dataSindicos, dataMoradores] =
-        await Promise.all([
-          resUsers.json(),
-          resTotal.json(),
-          resAtivos.json(),
-          resSindicos.json(),
-          resMoradores.json(),
-        ]);
+      const [dataUsers, dataTotal, dataAtivos, dataSindicos, dataMoradores] = await Promise.all([
+        resUsers.json(),
+        resTotal.json(),
+        resAtivos.json(),
+        resSindicos.json(),
+        resMoradores.json(),
+      ]);
 
       setUsers(dataUsers.docs || dataUsers || []);
       setUserStats({
@@ -72,77 +76,26 @@ export default function UsersDashboard() {
     }
   };
 
+
+  const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
+
   useEffect(() => {
     fetchData();
   }, []);
-
-  const confirmToggleStatus = (user) => {
-    setSelectedUser(user);
-    setShowModal(true);
-  };
-
-  const toggleStatus = async () => {
-    if (!selectedUser) return;
-    try {
-      const action = selectedUser.status === "ativo" ? "inativar" : "ativar";
-      const res = await fetch(`${API_URL}/${selectedUser.id}/${action}`, {
-        method: "PATCH",
-      });
-      if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
-      toast.success(
-        `Usuário ${selectedUser.status === "ativo" ? "inativado" : "ativado"} com sucesso!`
-      );
-      fetchData();
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setShowModal(false);
-      setSelectedUser(null);
-    }
-  };
 
   if (loading) return <Loading />;
   if (error) return <p className="text-red-500">Erro: {error}</p>;
 
   const cards = [
-    {
-      title: "Todos os Usuários",
-      value: userStats.total,
-      icon: Users,
-      bg: "bg-card",
-      iconColor: "text-blue-700",
-      textColor: "text-blue-800",
-    },
-    {
-      title: "Usuários Ativos",
-      value: userStats.ativos,
-      icon: UserCheck,
-      bg: "bg-card",
-      iconColor: "text-green-700",
-      textColor: "text-green-800",
-    },
-    {
-      title: "Síndicos",
-      value: userStats.sindicos,
-      icon: UserCog,
-      bg: "bg-card",
-      iconColor: "text-yellow-700",
-      textColor: "text-yellow-800",
-    },
-    {
-      title: "Alertas",
-      value: userStats.moradores,
-      icon: AlertTriangle,
-      bg: "bg-card",
-      iconColor: "text-red-700",
-      textColor: "text-red-800",
-    },
+    { title: "Todos os Usuários", value: userStats.total, icon: Users, bg: "bg-card", iconColor: "text-blue-700", textColor: "text-blue-800" },
+    { title: "Usuários Ativos", value: userStats.ativos, icon: UserCheck, bg: "bg-card", iconColor: "text-green-700", textColor: "text-green-800" },
+    { title: "Síndicos", value: userStats.sindicos, icon: UserCog, bg: "bg-card", iconColor: "text-yellow-700", textColor: "text-yellow-800" },
+    { title: "Alertas", value: userStats.moradores, icon: AlertTriangle, bg: "bg-card", iconColor: "text-red-700", textColor: "text-red-800" },
   ];
 
   return (
     <div className="p-4">
       <Toaster position="top-right" richColors />
-
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {cards.map((card, i) => {
@@ -151,9 +104,7 @@ export default function UsersDashboard() {
             <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
               <Card className={`p-4 ${card.bg}`}>
                 <CardHeader>
-                  <CardTitle className={`font-bold text-xl ${card.textColor}`}>
-                    {card.title}
-                  </CardTitle>
+                  <CardTitle className={`font-bold text-xl ${card.textColor}`}>{card.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
                   <Icon className={`w-10 h-10 mb-2 ${card.iconColor}`} />
@@ -195,46 +146,25 @@ export default function UsersDashboard() {
                       <div className="text-xs text-foreground/80">{user.email}</div>
                       <div className="text-xs text-foreground/60">{user.cpf}</div>
                     </td>
-
                     <td className="px-4 py-2 text-sm">{user.residencia}</td>
                     <td className="px-4 py-2 text-sm">{user.type}</td>
                     <td className="px-4 py-2 text-sm">{user.role}</td>
-
-
                     <td className=" text-sm font-bold flex items-center ml-7">
-                      <span
-                        className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${user.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={user.status} />
+                      <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${user.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={user.status} />
                     </td>
-
                     <td className="px-4 py-2 text-sm">
                       <div className="text-xs font-semibold">
-                        Último acesso {user.atualizado_em
-                          ? new Date(user.atualizado_em).toLocaleString("pt-BR")
-                          : "-"}
+                        Último acesso {user.atualizado_em ? new Date(user.atualizado_em).toLocaleString("pt-BR") : "-"}
                       </div>
                       <div className="text-[10px] text-foreground/60">
-                        Criado em {user.criado_em
-                          ? new Date(user.criado_em).toLocaleString("pt-BR")
-                          : "-"}
+                        Criado em {user.criado_em ? new Date(user.criado_em).toLocaleString("pt-BR") : "-"}
                       </div>
                     </td>
-                        <td className="px-4 py-2 text-sm"></td>
-
+                    <td className="px-4 py-2 text-sm"></td>
                     <td className="px-4 py-2 text-sm text-center">
                       <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
-
                         <div className="flex items-center gap-1">
-                          {user.status === "ativo" ? (
-                            <>
-                              <Check className="text-green-500" size={14} />
-
-                            </>
-                          ) : (
-                            <>
-                              <X className="text-red-500" size={14} />
-
-                            </>
-                          )}
+                          {user.status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-red-500" size={14} />}
                         </div>
                       </Button>
                     </td>
@@ -246,24 +176,17 @@ export default function UsersDashboard() {
         </CardContent>
       </Card>
 
-
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Confirmação</DialogTitle>
           </DialogHeader>
           <p className="py-4">
-            Deseja realmente{" "}
-            {selectedUser?.status === "ativo" ? "inativar" : "ativar"} o usuário{" "}
-            <strong>{selectedUser?.name}</strong>?
+            Deseja realmente {selectedItem?.status === "ativo" ? "inativar" : "ativar"} o usuário <strong>{selectedItem?.name}</strong>?
           </p>
           <DialogFooter className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowModal(false)}>
-              Cancelar
-            </Button>
-            <Button variant="destructive" onClick={toggleStatus}>
-              {selectedUser?.status === "ativo" ? "Inativar" : "Ativar"}
-            </Button>
+            <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={toggleStatus}>{selectedItem?.status === "ativo" ? "Inativar" : "Ativar"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
