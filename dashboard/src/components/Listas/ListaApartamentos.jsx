@@ -154,9 +154,9 @@ export default function ApartamentosDashboard() {
                     const Icon = card.icon;
                     return (
                         <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
-                            <Card className={`p-4 ${card.bg}`}>
+                            <Card>
                                 <CardHeader>
-                                    <CardTitle className={`font-bold text-xl ${card.textColor}`}>{card.title}</CardTitle>
+                                       <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="flex flex-col items-center">
                                     <Icon className={`w-10 h-10 mb-2 ${card.iconColor}`} />

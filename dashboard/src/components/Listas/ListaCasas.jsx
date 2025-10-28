@@ -159,13 +159,13 @@ export default function CasasDashboard() {
           const Icon = card.icon;
           return (
             <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
-              <Card className={`p-4 ${card.bg}`}>
+              <Card>
                 <CardHeader>
-                  <CardTitle className={`font-bold text-xl ${card.textColor}`}>{card.title}</CardTitle>
+                  <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
                   <Icon className={`w-10 h-10 mb-2  ${card.iconColor}`} />
-                  <p className={`font-bold text-xl ${card.textColor}`}>{card.valueTotal} </p>
+                  <p className="font-bold text-xl text-foreground">{card.valueTotal} </p>
                   {card.valueAtivas && (
                     <p className="text-green-600 text-sm mt-1">
                       {card.valueAtivas} Ativas
@@ -204,7 +204,7 @@ export default function CasasDashboard() {
                   return (
                     <tr key={casa.id} className="hover:bg-muted/10 text-foreground">
                       <td className="px-4 py-2 ">
-                        <div className="text-sm font-semibold">{`${casa.logradouro}, ${casa.numero} - ${casa.bairro} - ${casa.uf}`}</div>
+                        <div className="text-sm font-semibold">{`${casa.logradouro}, ${casa.numero} - ${casa.bairro}/${casa.uf}`}</div>
                         <div className="text-xs text-foreground/80">{`${casa.numero_moradores || 0} Moradores`}</div>
                         <div className="text-[10px] text-foreground/60 ">{casa.cep}</div>
                         <div className="text-[10px] text-foreground/60 ">
