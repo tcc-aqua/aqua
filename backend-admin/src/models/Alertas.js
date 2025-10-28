@@ -3,6 +3,7 @@ import sequelize from "../config/sequelize.js";
 import Sensor from "./Sensor.js";
 import sequelizePaginate from 'sequelize-paginate'
 import Casa from "./Casa.js";
+import Apartamento from "./Apartamento.js";
 
 export default class Alertas extends Model {}
 
@@ -50,5 +51,6 @@ Alertas.init({
 })
 
 Alertas.belongsTo(Casa, { as: 'casa', foreignKey: 'residencia_id' });
+Alertas.belongsTo(Apartamento, { as: 'apartamento', foreignKey: 'residencia_id' });
 
 sequelizePaginate.paginate(Alertas);

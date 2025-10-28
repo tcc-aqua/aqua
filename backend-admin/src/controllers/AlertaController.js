@@ -53,6 +53,12 @@ export default class AlertasController {
         const alertas = await AlertasService.countAlertasAtivosPorCasa(id);
         return reply.status(200).send(alertas);
     }
+    
+    static async countPorApartamento(req, reply) {
+        const { id } = req.params;
+        const alertas = await AlertasService.countAlertasAtivosPorApartamento(id);
+        return reply.status(200).send(alertas);
+    }
 
     static async create(req, reply) {
         const { sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel } = req.body;

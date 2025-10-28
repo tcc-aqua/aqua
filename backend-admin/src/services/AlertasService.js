@@ -2,6 +2,7 @@ import { fn, col, Op } from "sequelize";
 import Alertas from "../models/Alertas.js";
 import Condominio from "../models/Condominio.js";
 import Casa from "../models/Casa.js";
+import Apartamento from "../models/Apartamento.js";
 
 export default class AlertasService {
 
@@ -150,7 +151,7 @@ export default class AlertasService {
             const alertas = await Alertas.findAll({
                 attributes: [
                     'residencia_id',
-                    [fn('COUNT', col('Alertas.id')), 'total_alertas'] 
+                    [fn('COUNT', col('Alertas.id')), 'total_alertas']
                 ],
                 where: {
                     resolvido: false,
@@ -177,6 +178,41 @@ export default class AlertasService {
         }
     }
 
+    static async countAlertasAtivosPorApartamento() {
+        try {
+
+            const alertas = await Alertas.findAll({
+                attributes: [
+                    'residencia_id',
+                    [fn('COUNT', col('Alertas.id')), 'total_alertas']
+                ],
+                where: {
+                    resolvido: false,
+                    residencia_type: 'apartamento'
+                },
+                group: ['residencia_id', 'apartamento.id', 'apartamento.numero', 'apartamento.bloco'],
+                include: [
+                    {
+                        model: Apartamento,
+                        as: 'apartamento',
+                        attributes: ['numero', 'bloco']
+                    }
+                ]
+            });
+
+            return alertas.map(a => ({
+                residencia_id: a.residencia_id,
+                apartamento: a.apartamento
+                    ? `Bloco ${a.apartamento.bloco || '-'}, Nº ${a.apartamento.numero}`
+                    : null,
+                total_alertas: a.getDataValue('total_alertas')
+            }));
+        }
+        catch (error) {
+            console.error('Erro ao listar count', error);
+            throw error;
+        }
+    }
 
     static async createAlerta({ sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel }) {
         try {
