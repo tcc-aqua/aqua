@@ -155,22 +155,26 @@ export default class AlertasService {
                 ],
                 where: {
                     resolvido: false,
-                    residencia_type: 'casa'
+                    residencia_type: 'apartamento'
                 },
                 group: ['residencia_id'],
                 include: [
                     {
-                        model: Casa,
-                        as: 'casa',
-                        attributes: ['logradouro', 'bairro', 'numero', 'cidade', 'uf']
+                        model: Apartamento,
+                        as: 'apartamento',
+                        attributes: ['numero', 'bloco']
                     }
-                ]
+                ],
+                order: [[fn('COUNT', col('Alertas.id')), 'DESC']]
             });
 
-            return alertas.map(a => ({
+            return alertas.map((a, index) => ({
+                id: index + 1,
                 residencia_id: a.residencia_id,
-                endereco: a.casa ? `${a.casa.logradouro}, ${a.casa.numero} - ${a.casa.bairro}, ${a.casa.cidade} - ${a.casa.uf}` : null,
-                total_alertas: a.getDataValue('total_alertas')
+                identificacao: a.apartamento
+                    ? `Bloco ${a.apartamento.bloco || '-'}, Nº ${a.apartamento.numero}`
+                    : 'Desconhecido',
+                total_alertas: Number(a.getDataValue('total_alertas'))
             }));
         } catch (error) {
             console.error("Erro ao contar alertas ativos por casa", error);
