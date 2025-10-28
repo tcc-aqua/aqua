@@ -20,7 +20,7 @@ import {
 } from 'react-native-paper';
 
 // ALTERAÇÃO IMPORTANTE: Corrigido a URL para incluir o prefixo /api que provavelmente está configurado no seu backend.
-const BACKEND_URL = 'http://localhost:3334/api/auth';
+const BACKEND_URL = 'http://10.0.2.2:3334/api/auth';
 
 const theme = {
   ...DefaultTheme,
