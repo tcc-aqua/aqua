@@ -19,7 +19,7 @@ export default class UserService {
                     {
                         model: Apartamento, as: 'apartamento',
                         include: [
-                            { model: Condominio, as: 'condominio', attributes: ['nome', 'logradouro'] }
+                            { model: Condominio, as: 'condominio', attributes: ['name', 'logradouro'] }
                         ]
                     }
                 ]
@@ -34,7 +34,7 @@ export default class UserService {
                 } else if (user.residencia_type === 'apartamento' && user.apartamento) {
                     const apt = user.apartamento;
                     const cond = apt.condominio;
-                    residencia = `Condomínio: ${cond?.nome || 'Desconhecido'}, Rua: ${cond?.logradouro || '-'}, Bloco ${apt.bloco || '-'} - Apt ${apt.numero}`;
+                    residencia = `Condomínio: ${cond?.name || 'Desconhecido'}, Rua: ${cond?.logradouro || '-'}, Bloco ${apt.bloco || '-'} - Apt ${apt.numero}`;
                 }
 
                 const plainUser = user.get({ plain: true });
@@ -70,7 +70,7 @@ export default class UserService {
                     {
                         model: Apartamento, as: 'apartamento',
                         include: [
-                            { model: Condominio, as: 'condominio', attributes: ['nome', 'logradouro'] }
+                            { model: Condominio, as: 'condominio', attributes: ['name', 'logradouro'] }
                         ]
                     }
                 ]
@@ -85,7 +85,7 @@ export default class UserService {
                 } else if (user.residencia_type === 'apartamento' && user.apartamento) {
                     const apt = user.apartamento;
                     const cond = apt.condominio;
-                    residencia = `Condomínio: ${cond?.nome || 'Desconhecido'}, Rua: ${cond?.logradouro || '-'}, Bloco ${apt.bloco || '-'} - Apt ${apt.numero}`;
+                    residencia = `Condomínio: ${cond?.name || 'Desconhecido'}, Rua: ${cond?.logradouro || '-'}, Bloco ${apt.bloco || '-'} - Apt ${apt.numero}`;
                 }
 
                 const plainUser = user.get({ plain: true });
@@ -121,7 +121,7 @@ export default class UserService {
                     {
                         model: Apartamento, as: 'apartamento',
                         include: [
-                            { model: Condominio, as: 'condominio', attributes: ['nome', 'logradouro'] }
+                            { model: Condominio, as: 'condominio', attributes: ['name', 'logradouro'] }
                         ]
                     }
                 ]
@@ -136,7 +136,8 @@ export default class UserService {
                 } else if (user.residencia_type === 'apartamento' && user.apartamento) {
                     const apt = user.apartamento;
                     const cond = apt.condominio;
-                    residencia = `Condomínio: ${cond?.nome || 'Desconhecido'}, Rua: ${cond?.logradouro || '-'}, Bloco ${apt.bloco || '-'} - Apt ${apt.numero}`;
+                    residencia = `Condomínio: ${cond?.
+                    name || 'Desconhecido'}, Rua: ${cond?.logradouro || '-'}, Bloco ${apt.bloco || '-'} - Apt ${apt.numero}`;
                 }
 
                 const plainUser = user.get({ plain: true });
