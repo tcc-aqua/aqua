@@ -1,4 +1,5 @@
 import Condominio from "../models/Condominio.js";
+import CondominioView from "../models/CondominioView.js";
 import CepService from "./CepService.js";
 
 export default class CondominioService {
@@ -8,9 +9,9 @@ export default class CondominioService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
+                order: [['condominio_id', 'DESC']],
             }
-            const condomonios = await Condominio.paginate(options);
+            const condomonios = await CondominioView.paginate(options);
             return condomonios;
         } catch (error) {
             console.error('Erro ao buscar condominios', error);
