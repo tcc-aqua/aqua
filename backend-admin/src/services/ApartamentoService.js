@@ -23,10 +23,10 @@ export default class ApartamentoService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
-                where: { status: 'ativo' }
+                order: [['apartamento_id', 'DESC']],
+                where: { apartamento_status: 'ativo' }
             }
-            const apartamentos = await Apartamento.paginate(options);
+            const apartamentos = await ApartamentoView.paginate(options);
             return apartamentos;
         } catch (error) {
             console.error('Erro ao listar todas as apartamentos ativas');
@@ -39,10 +39,10 @@ export default class ApartamentoService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
-                where: { status: 'inativo' }
+                order: [['apartamento_id', 'DESC']],
+                where: { apartamento_status: 'inativo' }
             }
-            const apartamentos = await Apartamento.paginate(options);
+            const apartamentos = await ApartamentoView.paginate(options);
             return apartamentos;
         } catch (error) {
             console.error('Erro ao listar todas as apartamentos inativas');
