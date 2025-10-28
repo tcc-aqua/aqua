@@ -47,7 +47,7 @@ User.init({
     // uma especie de polimorfismo em banco de dados
     residencia_type: {
         type: DataTypes.ENUM('casa', 'apartamento'),
-        allowNull: false
+        allowNull: true
     },
     // id da residencia
     residencia_id: {

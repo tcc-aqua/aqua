@@ -149,18 +149,6 @@ export default class SensorService {
         }
     }
 
-    static async createSensor({ codigo }) {
-        try {
-            const sensor = await Sensor.create({
-                codigo
-            })
-            return sensor;
-        } catch (error) {
-            console.error('Erro ao criar sensor', error);
-            throw error;
-        }
-    }
-
     static async updatesensor(id, { codigo }) {
         try {
             const sensor = await Sensor.findByPk(id);

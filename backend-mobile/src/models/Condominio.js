@@ -75,7 +75,7 @@ Condominio.init({
         allowNull: false
     },
     codigo_acesso: {
-        type: DataTypes.CHAR(5),
+        type: DataTypes.CHAR(10),
         defaultValue: () => nanoid(5).replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
         allowNull: false,
         unique: true
