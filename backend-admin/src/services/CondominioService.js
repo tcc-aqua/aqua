@@ -24,10 +24,10 @@ export default class CondominioService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
-                where: { status: 'ativo' },
+                order: [['condominio_id', 'DESC']],
+                where: { condominio_status: 'ativo' },
             }
-            const condominios = await Condominio.paginate(options);
+            const condominios = await CondominioView.paginate(options);
             return condominios;
         } catch (error) {
             console.error('Erro ao buscar condominios ativos');
@@ -41,10 +41,10 @@ export default class CondominioService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
-                where: { status: 'inativo' },
+                order: [['condominio_id', 'DESC']],
+                where: { condominio_status: 'ativo' },
             }
-            const condominios = await Condominio.paginate(options);
+            const condominios = await CondominioView.paginate(options);
             return condominios;
 
         } catch (error) {
