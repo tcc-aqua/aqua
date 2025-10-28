@@ -11,13 +11,12 @@ export const registerUserSchema = z
     residencia_type: z.enum(["casa", "apartamento"], {
       required_error: "O tipo de residência é obrigatório.",
     }),
-    codigo_acesso: z.string().optional(), // Para dependentes ou entrada em apartamento existente
-    cep: z.string().optional(),           // Obrigatório para cadastro de casa
-    numero: z.string().optional(),        // Obrigatório para casa ou apartamento
-    bloco: z.string().optional(),         // Opcional para apartamento
+    codigo_acesso: z.string().optional(), 
+    cep: z.string().optional(),           
+    numero: z.string().optional(),      
+    bloco: z.string().optional(),        
   })
 
-  // 🏠 Cadastro de CASA (responsável)
   .refine(
     (data) => {
       if (data.residencia_type === "casa" && !data.codigo_acesso) {
@@ -31,15 +30,12 @@ export const registerUserSchema = z
     }
   )
 
-  // 🏢 Cadastro de APARTAMENTO
   .refine(
     (data) => {
-      // Criando novo apartamento no condomínio
       if (data.residencia_type === "apartamento" && !data.codigo_acesso) {
         return !!data.numero;
       }
 
-      // Entrando em apartamento existente (dependente)
       if (data.residencia_type === "apartamento" && data.codigo_acesso) {
         return !!data.codigo_acesso;
       }
