@@ -192,9 +192,7 @@ const cards = [
                       <div className="text-xs text-foreground/80">{`${casa.numero_moradores || 0} Moradores`}</div>
                       <div className="text-[10px] text-foreground/60">CEP: {casa.casa_cep}</div>
                       <div className="text-[10px] text-accent">Código {casa.codigo_acesso}</div>
-                      <div className="text-[10px] text-foreground/60">
-                        Criado em {new Date(casa.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-                      </div>
+                     
                     </td>
                     <td className="px-4 py-2 text-sm">{casa.responsavel_nome}</td>
                     <td className="px-4 py-2 text-sm">
@@ -213,13 +211,13 @@ const cards = [
                     </td>
                     <td className="px-4 py-2 text-sm">{casa.consumo_total || 0}L/dia</td>
                     <td className="text-sm font-bold flex items-center ml-7">
-                      <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${casa.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={casa.status} />
+                      <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${casa.casa_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={casa.casa_status} />
                     </td>
                     <td className="px-4 py-2 text-sm">-</td>
                     <td className="px-4 py-2 text-sm">
                       <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(casa)}>
                         <div className="flex items-center gap-1">
-                          {casa.status === "ativo" ? (
+                          {casa.casa_status === "ativo" ? (
                             <Check className="text-green-500" size={14} />
                           ) : (
                             <X className="text-red-500" size={14} />

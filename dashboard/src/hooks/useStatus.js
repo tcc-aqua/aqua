@@ -13,13 +13,13 @@ export default function useToggleConfirm(baseURL, refreshFn) {
   const toggleStatus = async () => {
     if (!selectedItem) return;
     try {
-      const action = selectedItem.user_status === "ativo" ? "inativar" : "ativar";
-      const res = await fetch(`${baseURL}/${selectedItem.user_id}/${action}`, {
+      const action = selectedItem.status === "ativo" ? "inativar" : "ativar";
+      const res = await fetch(`${baseURL}/${selectedItem.id}/${action}`, {
         method: "PATCH",
       });
-      if (!res.ok) throw new Error(`Erro ao atualizar: ${res.user_status}`);
+      if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
       toast.success(
-        `Item ${selectedItem.user_status === "ativo" ? "inativado" : "ativado"} com sucesso!`
+        `Item ${selectedItem.status === "ativo" ? "inativado" : "ativado"} com sucesso!`
       );
       refreshFn(); 
     } catch (err) {

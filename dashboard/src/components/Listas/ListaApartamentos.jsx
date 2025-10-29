@@ -186,11 +186,12 @@ setApStats(apStats);
                                 {apartamentos.map(ap => (
                                     <tr key={ap.apartamento_id} className="hover:bg-muted/10 text-foreground">
                                         <td className="px-4 py-2 ">
-                                            <div className="text-sm font-semibold">{ap.endereco_completo}</div>
+                                            <div className="text-sm font-semibold">Bloco {ap.endereco_completo}</div>
+                                             <div className="text-xs text-foreground/80">{ap.endereco_condominio}</div>
                                             <div className="text-xs text-foreground/80">{`${ap.numero_moradores || 0} Moradores`}</div>
-                                            <div className="text-[10px] text-foreground/60 ">
-                                                Criado em {new Date(ap.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-                                            </div>
+                                              <div className="text-[10px] text-chart-1">Código {ap.apartamento_codigo}</div>
+                                            
+                                            
                                         </td>
                                         <td className="px-4 py-2 text-sm">{ap.responsavel_nome}
                                             <div className="text-xs text-foreground/80">{ap.responsavel_email}</div>
@@ -204,11 +205,7 @@ setApStats(apStats);
                                                 </span>
                                             </div>
                                              <div className="text-[10px] text-foreground/60">ID : {ap.sensor_id}</div>
-                                            <div className="text-[10px] text-foreground/60">
-                                                Último envio: {ap.ultimo_envio
-                                                    ? new Date(ap.ultimo_envio).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
-                                                    : "-"}
-                                            </div>
+                                            
                                            
                                         </td>
                                         <td className="px-4 py-2 text-sm">{ap.consumo_total || 0}L/dia</td>
