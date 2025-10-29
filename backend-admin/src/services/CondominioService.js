@@ -1,4 +1,5 @@
 import Condominio from "../models/Condominio.js";
+import CondominioView from "../models/CondominioView.js";
 import CepService from "./CepService.js";
 
 export default class CondominioService {
@@ -8,9 +9,9 @@ export default class CondominioService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
+                order: [['condominio_id', 'DESC']],
             }
-            const condomonios = await Condominio.paginate(options);
+            const condomonios = await CondominioView.paginate(options);
             return condomonios;
         } catch (error) {
             console.error('Erro ao buscar condominios', error);
@@ -23,10 +24,10 @@ export default class CondominioService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
-                where: { status: 'ativo' },
+                order: [['condominio_id', 'DESC']],
+                where: { condominio_status: 'ativo' },
             }
-            const condominios = await Condominio.paginate(options);
+            const condominios = await CondominioView.paginate(options);
             return condominios;
         } catch (error) {
             console.error('Erro ao buscar condominios ativos');
@@ -40,10 +41,10 @@ export default class CondominioService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
-                where: { status: 'inativo' },
+                order: [['condominio_id', 'DESC']],
+                where: { condominio_status: 'ativo' },
             }
-            const condominios = await Condominio.paginate(options);
+            const condominios = await CondominioView.paginate(options);
             return condominios;
 
         } catch (error) {
@@ -129,6 +130,24 @@ export default class CondominioService {
             return condominio;
         } catch (error) {
             console.error('Erro ao atualizar condominio', error);
+            throw error;
+        }
+    }
+
+    static async atribuirSindico(id, { sindico_id }) {
+        try {
+            const condominio = await Condominio.findByPk(id);
+            if (!condominio) throw new Error('Condomínio não encontrado');
+
+            if (condominio.sindico_id) {
+                throw new Error('Esse condomínio já possui um síndico.');
+            }
+
+            await condominio.update({ sindico_id });
+
+            return condominio;
+        } catch (error) {
+            console.error('Erro ao atribuir síndico', error);
             throw error;
         }
     }

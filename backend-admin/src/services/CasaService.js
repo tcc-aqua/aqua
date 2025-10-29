@@ -1,4 +1,5 @@
 import Casa from "../models/Casa.js";
+import CasaView from "../models/CasaView.js";
 
 export default class CasaService {
 
@@ -7,10 +8,10 @@ export default class CasaService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
+                order: [["casa_id", "ASC"]],
             }
 
-            const casas = await Casa.paginate(options);
+            const casas = await CasaView.paginate(options);
             return casas;
         } catch (error) {
             console.error('Erro ao listar casas', error);
@@ -23,10 +24,10 @@ export default class CasaService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
-                where: { status: 'ativo' }
+                order: [["casa_id", "ASC"]],
+                where: { casa_status: 'ativo' }
             }
-            const casas = await Casa.paginate(options);
+            const casas = await CasaView.paginate(options);
             return casas;
         } catch (error) {
             console.error('Erro ao listar casas ativas', error);
@@ -39,10 +40,10 @@ export default class CasaService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
-                where: { status: 'inativo' }
+                order: [["casa_id", "ASC"]],
+                where: { casa_status: 'inativo' }
             }
-            const casas = await Casa.paginate(options);
+            const casas = await CasaView.paginate(options);
             return casas;
         } catch (error) {
             console.error('Erro ao listar casas inativas');

@@ -5,16 +5,17 @@ import Condominio from "../models/Condominio.js";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import CepService from "./CepService.js";
+import Sensor from "../models/Sensor.js";
 
 export default class UserService {
+
   static async register(data) {
-    const { codigo_acesso, residencia_type, name, email, cpf, password, numero, bloco, cep, sensor_id } = data;
+    const { codigo_acesso, residencia_type, name, email, cpf, password, numero, bloco, cep } = data;
 
-    // Cadastro de nova CASA
     if (!codigo_acesso && residencia_type === "casa") {
-      if (!sensor_id) throw new Error("sensor_id obrigatório para cadastro de casa");
-      if (!cep) throw new Error("CEP obrigatório para cadastro de casa");
+      if (!cep || !numero) throw new Error("CEP e Número obrigatórios para cadastro de casa.");
 
+      // cria usuário responsável
       const user = await User.create({
         name,
         email,
@@ -23,36 +24,45 @@ export default class UserService {
         type: "casa",
         role: "morador",
         residencia_type: "casa",
+        residencia_id: null,
         responsavel_id: null
       });
 
       const endereco = await CepService.buscarCep(cep);
 
+      // cria sensor automaticamente
+      const sensor = await Sensor.create({
+        codigo: nanoid(10),
+        status: "ativo",
+        consumo_total: 0,
+        ultimo_envio: new Date()
+      });
+
+      // cria a casa e vincula o sensor
       const casa = await Casa.create({
         logradouro: endereco.logradouro,
         numero,
         bairro: endereco.bairro,
         cidade: endereco.cidade,
         uf: endereco.uf,
-        estado: endereco.uf,
         cep: endereco.cep,
         numero_moradores: 1,
-        sensor_id,
+        sensor_id: sensor.id,
         codigo_acesso: nanoid(6).toUpperCase(),
         responsavel_id: user.id
       });
 
+      // atualiza residencia_id do usuário
       user.residencia_id = casa.id;
       await user.save();
 
-      return { user, residencia: casa };
+      return { user, residencia: casa, sensor };
     }
 
-    // Cadastro de DEPENDENTE de CASA existente
     if (residencia_type === "casa" && codigo_acesso) {
       const casa = await Casa.findOne({ where: { codigo_acesso } });
       if (!casa) throw new Error("Código da casa inválido");
-      if (!casa.responsavel_id) throw new Error("Não é possível cadastrar dependente: casa ainda não possui responsável");
+      if (!casa.responsavel_id) throw new Error("Casa ainda não possui responsável");
 
       const user = await User.create({
         name,
@@ -72,12 +82,11 @@ export default class UserService {
       return { user, residencia: casa };
     }
 
-    // Cadastro de APARTAMENTO
     if (residencia_type === "apartamento") {
       const condominio = await Condominio.findOne({ where: { codigo_acesso } });
 
+      // dependente de apartamento existente
       if (!condominio) {
-        // Código do apartamento direto (dependente)
         const apartamento = await Apartamento.findOne({ where: { codigo_acesso } });
         if (!apartamento) throw new Error("Código do apartamento inválido");
 
@@ -97,41 +106,50 @@ export default class UserService {
         await apartamento.save();
 
         return { user, residencia: apartamento };
-      } else {
-        // Criando novo apartamento dentro do condomínio
-        if (!numero) throw new Error("Número do apartamento é obrigatório");
-
-        const user = await User.create({
-          name,
-          email,
-          cpf,
-          password,
-          type: "condominio",
-          role: "morador",
-          residencia_type: "apartamento",
-          residencia_id: null,
-          responsavel_id: null
-        });
-
-        const apartamento = await Apartamento.create({
-          condominio_id: condominio.id,
-          numero,
-          bloco: bloco || null,
-          codigo_acesso: nanoid(6).toUpperCase(),
-          numero_moradores: 1,
-          sensor_id: sensor_id || null,
-          responsavel_id: user.id
-        });
-
-        user.residencia_id = apartamento.id;
-        await user.save();
-
-        return { user, residencia: apartamento };
       }
+
+      // criar novo apartamento no condomínio
+      if (!numero) throw new Error("Número do apartamento é obrigatório");
+
+      const user = await User.create({
+        name,
+        email,
+        cpf,
+        password,
+        type: "condominio",
+        role: "morador",
+        residencia_type: "apartamento",
+        residencia_id: null,
+        responsavel_id: null
+      });
+
+      // cria sensor automaticamente
+      const sensor = await Sensor.create({
+        codigo: nanoid(10),
+        status: "ativo",
+        consumo_total: 0,
+        ultimo_envio: new Date()
+      });
+
+      const apartamento = await Apartamento.create({
+        condominio_id: condominio.id,
+        numero,
+        bloco: bloco || null,
+        codigo_acesso: nanoid(6).toUpperCase(),
+        numero_moradores: 1,
+        sensor_id: sensor.id,
+        responsavel_id: user.id
+      });
+
+      user.residencia_id = apartamento.id;
+      await user.save();
+
+      return { user, residencia: apartamento, sensor };
     }
 
     throw new Error("Tipo de residência inválido");
   }
+
 
   static async login({ email, password }) {
     const user = await User.findOne({ where: { email } });

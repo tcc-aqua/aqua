@@ -27,5 +27,6 @@ export default async function userRoutes(fastify) {
     fastify.get('/:id', UserController.getById);
     fastify.patch('/:id/inativar', UserController.deactivate);
     fastify.patch('/:id/ativar', UserController.ativar);
+    fastify.patch('/:id/sindico', UserController.sindico);
 
 }

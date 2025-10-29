@@ -1,4 +1,5 @@
 import Apartamento from "../models/Apartamento.js";
+import ApartamentoView from "../models/ApartamentoView.js";
 
 export default class ApartamentoService {
 
@@ -7,9 +8,9 @@ export default class ApartamentoService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']]
+                order: [['apartamento_id', 'DESC']]
             }
-            const apartamentos = await Apartamento.paginate(options);
+            const apartamentos = await ApartamentoView.paginate(options);
             return apartamentos;
         } catch (error) {
             console.error("Erro ao listr todas as apartamentos", error);
@@ -22,10 +23,10 @@ export default class ApartamentoService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
-                where: { status: 'ativo' }
+                order: [['apartamento_id', 'DESC']],
+                where: { apartamento_status: 'ativo' }
             }
-            const apartamentos = await Apartamento.paginate(options);
+            const apartamentos = await ApartamentoView.paginate(options);
             return apartamentos;
         } catch (error) {
             console.error('Erro ao listar todas as apartamentos ativas');
@@ -38,10 +39,10 @@ export default class ApartamentoService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']],
-                where: { status: 'inativo' }
+                order: [['apartamento_id', 'DESC']],
+                where: { apartamento_status: 'inativo' }
             }
-            const apartamentos = await Apartamento.paginate(options);
+            const apartamentos = await ApartamentoView.paginate(options);
             return apartamentos;
         } catch (error) {
             console.error('Erro ao listar todas as apartamentos inativas');
