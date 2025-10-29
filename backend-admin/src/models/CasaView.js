@@ -13,9 +13,7 @@ CasaView.init(
     casa_codigo: { // novo campo
       type: DataTypes.CHAR(10),
     },
-    endereco: {
-      type: DataTypes.STRING,
-    },
+
     endereco_completo: {
       type: DataTypes.STRING,
     },
