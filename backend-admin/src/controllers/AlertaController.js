@@ -33,6 +33,16 @@ export default class AlertasController {
         return reply.status(200).send(alertas);
     }
 
+    static async countVazamentos(req, reply) {
+        const alertas = await AlertasService.countAlertasDeVazamento();
+        return reply.status(200).send(alertas);
+    }
+
+    static async countConsumoAlto(req, reply) {
+        const alertas = await AlertasService.countAlertasDeConsumoAlto();
+        return reply.status(200).send(alertas);
+    }
+
     static async countTotalPorCasa(req, reply) {
         const alertas = await AlertasService.countTotalCasa();
         return reply.status(200).send(alertas);
