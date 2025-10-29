@@ -37,6 +37,12 @@ UserView.init(
     endereco: {
       type: DataTypes.STRING,
     },
+    cidade: {
+      type: DataTypes.STRING,
+    },
+    uf: {
+      type: DataTypes.CHAR(2),
+    },
   },
   {
     sequelize,
