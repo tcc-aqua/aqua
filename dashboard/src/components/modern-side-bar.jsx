@@ -34,9 +34,10 @@ const navigationItems = [
   { id: "contact", name: "Contato", icon: MessageCircle, href: "/contact" },
 ];
 
-export function Sidebar({ className = "" }) {
+export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
+
   const [isOpen, setIsOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+
   const { theme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
@@ -51,7 +52,7 @@ export function Sidebar({ className = "" }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Pré-carrega todas as páginas do sidebar
+  
   useEffect(() => {
     navigationItems.forEach(item => router.prefetch(item.href));
   }, [router]);
@@ -79,7 +80,7 @@ export function Sidebar({ className = "" }) {
       <div
         className={`fixed top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border z-50 transition-all duration-300 ease-in-out flex flex-col
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          ${isCollapsed ? "w-24" : "w-54"}
+          ${isCollapsed ? "w-24" : "w-55"}
           md:translate-x-0 overflow-hidden
           ${className}`}
       >

@@ -41,41 +41,52 @@ export default function UsersDashboard() {
   });
 
   const API_URL = "http://localhost:3333/api/users";
+const fetchData = async () => {
+  try {
+    setLoading(true);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
+    const [resUsers, resTotal, resAtivos, resSindicos, resMoradores] = await Promise.all([
+      fetch(`${API_URL}`),
+      fetch(`${API_URL}/count`),
+      fetch(`${API_URL}/count-ativos`),
+      fetch(`${API_URL}/sindicos`),
+      fetch(`${API_URL}/moradores`)
+    ]);
 
-      const [resUsers, resTotal, resAtivos, resSindicos, resMoradores] = await Promise.all([
-        fetch(`${API_URL}`),
-        fetch(`${API_URL}/count`),
-        fetch(`${API_URL}/count-ativos`),
-        fetch(`${API_URL}/sindicos`),
-        fetch(`${API_URL}/moradores`)
-      ]);
+    const [dataUsers, dataTotal, dataAtivos, dataSindicos, dataMoradores] = await Promise.all([
+      resUsers.json(),
+      resTotal.json(),
+      resAtivos.json(),
+      resSindicos.json(),
+      resMoradores.json(),
+    ]);
 
-      const [dataUsers, dataTotal, dataAtivos, dataSindicos, dataMoradores] = await Promise.all([
-        resUsers.json(),
-        resTotal.json(),
-        resAtivos.json(),
-        resSindicos.json(),
-        resMoradores.json(),
-      ]);
-
-      setUsers(dataUsers.docs ?? dataUsers ?? []);
-      setUserStats({
-        total: dataTotal ?? 0,
-        ativos: dataAtivos ?? 0,
-        sindicos: dataSindicos ?? 0,
-        moradores: dataMoradores ?? 0,
-      });
-    } catch (err) {
-      console.error("Erro ao buscar dados:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    // Garantir que users sempre será um array
+    let usersArray = [];
+    if (Array.isArray(dataUsers)) {
+      usersArray = dataUsers;
+    } else if (Array.isArray(dataUsers.docs)) {
+      usersArray = dataUsers.docs;
+    } else if (Array.isArray(dataUsers.users)) {
+      usersArray = dataUsers.users;
     }
-  };
+
+    setUsers(usersArray);
+
+    setUserStats({
+      total: dataTotal ?? 0,
+      ativos: dataAtivos ?? 0,
+      sindicos: dataSindicos ?? 0,
+      moradores: dataMoradores ?? 0,
+    });
+
+  } catch (err) {
+    console.error("Erro ao buscar dados:", err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);

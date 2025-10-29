@@ -190,7 +190,7 @@ const cards = [
                     <td className="px-4 py-2">
                       <div className="text-sm font-semibold">{casa.endereco_completo}</div>
                       <div className="text-xs text-foreground/80">{`${casa.numero_moradores || 0} Moradores`}</div>
-                      <div className="text-[10px] text-foreground/60">CEP: {casa.casa_cep}</div>
+                      <div className="text-[10px] text-foreground/60">CEP: {casa.cep}</div>
                       <div className="text-[10px] text-accent">Código {casa.codigo_acesso}</div>
                      
                     </td>

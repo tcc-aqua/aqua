@@ -189,7 +189,7 @@ setApStats(apStats);
                                             <div className="text-sm font-semibold">Bloco {ap.endereco_completo}</div>
                                              <div className="text-xs text-foreground/80">{ap.endereco_condominio}</div>
                                             <div className="text-xs text-foreground/80">{`${ap.numero_moradores || 0} Moradores`}</div>
-                                              <div className="text-[10px] text-chart-1">Código {ap.apartamento_codigo}</div>
+                                              <div className="text-[10px] text-chart-1">Código {ap.codigo}</div>
                                             
                                             
                                         </td>

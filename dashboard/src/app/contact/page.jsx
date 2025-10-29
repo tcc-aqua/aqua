@@ -1,16 +1,15 @@
 import Header from "@/components/Layout/Header/page"
+import LayoutDashboard from "@/components/Layout/LayoutDashboards/page"
 import { Sidebar } from "@/components/modern-side-bar"
 
 
 export default function Contact() {
     return (<>
-        <div className="fixed left-0 top-0 h-screen w-64 z-50">
-            <Sidebar />
-        </div>
-        <div className="flex-1 md:ml-30">
+       <LayoutDashboard>
+         <div className="flex-1 md:ml-30">
 
             <main className="container mx-auto pt-20 ">
-                <header className="fixed top-0 left-64 right-0 z-40">
+                <header className="fixed top-0 right-0 z-40">
                     <Header />
                 </header>
 
@@ -18,5 +17,8 @@ export default function Contact() {
 
 
         </div>
+
+       </LayoutDashboard>
+       
     </>)
 }
