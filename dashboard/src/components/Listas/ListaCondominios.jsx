@@ -25,51 +25,60 @@ export default function CondominiosDashboard() {
   const [condominios, setCondominios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [condominioStats, setCondominioStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
+  const [condominioStats, setCondominioStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0, sensoresAtivos: 0 });
   const [showModal, setShowModal] = useState(false);
   const [selectedCondominio, setSelectedCondominio] = useState(null);
 
   const API = "http://localhost:3333/api/condominios";
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
+const fetchData = async () => {
+  try {
+    setLoading(true);
+
+    const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
+      fetch(`${API}`),
+      fetch(`${API}/ativos`),
+      fetch(`${API}/inativos`),
+      fetch(`${API}/count`),
+    ]);
+
+    const [dataAll, dataAtivos, dataInativos, dataCount] = await Promise.all([
+      resAll.json(),
+      resAtivos.json(),
+      resInativos.json(),
+      resCount.json(),
+    ]);
+
+    const allCondominios = dataAll.docs || [];
+    setCondominios(allCondominios);
+
+ 
+    const alertas = allCondominios.filter(c => !c.responsavel_id).length;
 
 
-      const [resAll, resAtivos, resInativos, resCount,] = await Promise.all([
-        fetch(`${API}`),
-        fetch(`${API}/ativos`),
-        fetch(`${API}/inativos`),
-        fetch(`${API}/count`),
-      ]);
+    const sensorStats = allCondominios.reduce((acc, c) => {
+      acc.sensoresAtivos += c.numero_sensores_ativos || 0;
+      acc.sensoresInativos += c.numero_sensores_inativos || 0;
+      return acc;
+    }, { sensoresAtivos: 0, sensoresInativos: 0 });
 
-      const [dataAll, dataAtivos, dataInativos, dataCount,] = await Promise.all([
-        resAll.json(),
-        resAtivos.json(),
-        resInativos.json(),
-        resCount.json(),
-      ]);
+    setCondominioStats({
+      total: dataCount ?? allCondominios.length,
+      ativos: dataAtivos.docs?.length ?? 0,
+      inativos: dataInativos.docs?.length ?? 0,
+      alertas: alertas,
+      sensoresAtivos: sensorStats.sensoresAtivos,
+      sensoresInativos: sensorStats.sensoresInativos,
+    });
 
-      const allCondominios = dataAll.docs || [];
-      setCondominios(allCondominios);
+  } catch (err) {
+    console.error("Erro ao buscar dados dos condomínios:", err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
-      const alertas = allCondominios.filter(c => !c.responsavel_id);
-
-      setCondominioStats({
-        total: dataCount ?? 0,
-        ativos: dataAtivos.docs?.length ?? 0,
-        inativos: dataInativos.docs?.length ?? 0,
-        alertas: alertas.length,
-      });
-
-
-    } catch (err) {
-      console.error("Erro ao buscar dados dos condomínios:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     fetchData();
@@ -83,11 +92,10 @@ export default function CondominiosDashboard() {
   const toggleStatus = async () => {
     if (!selectedCondominio) return;
     try {
- 
-      const action = selectedCondominio.status ? "inativar" : "ativar";
+      const action = selectedCondominio.condominio_status === "ativo" ? "inativar" : "ativar";
       const res = await fetch(`${API}/${selectedCondominio.id}/${action}`, { method: "PATCH" });
       if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
-      toast.success(`Condomínio ${selectedCondominio.status ? "inativado" : "ativado"} com sucesso!`);
+      toast.success(`Condomínio ${selectedCondominio.condominio_status === "ativo" ? "inativado" : "ativado"} com sucesso!`);
       fetchData();
     } catch (err) {
       toast.error(err.message);
@@ -105,33 +113,25 @@ export default function CondominiosDashboard() {
       title: "Total de Condomínios",
       value: condominioStats.total,
       icon: Building,
-    
       iconColor: "text-blue-700",
-    
     },
     {
       title: "Condomínios Ativos",
       value: condominioStats.ativos,
       icon: UserCheck,
-    
       iconColor: "text-green-700",
-      
     },
     {
       title: "Sensores Ativos",
-      value: condominioStats.inativos,
+      value: condominioStats.sensoresAtivos,
       icon: SignalHigh,
-   
       iconColor: "text-green-700",
-     
     },
     {
       title: "Alertas",
       value: condominioStats.alertas,
       icon: AlertTriangle,
-    
       iconColor: "text-red-600",
-     
     },
   ];
 
@@ -140,27 +140,25 @@ export default function CondominiosDashboard() {
       <Toaster position="top-right" richColors />
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {cards.map((card, i) => {
-                const Icon = card.icon;
-                return (
-                  <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="flex flex-row items-center justify-between -mt-6">
-                        <p className="font-bold text-4xl text-foreground ">{card.value ?? 0}</p>
-                        <Icon className={`w-10 h-10   ${card.iconColor}`}
-                        />
-                      </CardContent>
-      
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </section>
+        {cards.map((card, i) => {
+          const Icon = card.icon;
+          return (
+            <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-row items-center justify-between -mt-6">
+                  <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
+                  <Icon className={`w-10 h-10 ${card.iconColor}`} />
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
+      </section>
 
-      <Card className="mx-auto mt-10 max-w-7xl">
+      <Card className="mx-auto mt-10">
         <CardHeader>
           <CardTitle>Lista de Condomínios</CardTitle>
         </CardHeader>
@@ -182,45 +180,33 @@ export default function CondominiosDashboard() {
               </thead>
               <tbody className="divide-y divide-border">
                 {condominios.map(condominio => (
-                  <tr key={condominio.id} className="hover:bg-muted/10 text-foreground">
+                  <tr key={condominio.condominio_id} className="hover:bg-muted/10 text-foreground">
                     <td className="px-4 py-2">
-                      <div className="text-sm font-semibold">{condominio.name}</div>
+                      <div className="text-sm font-semibold">{condominio.condominio_nome}</div>
                       <div className="text-xs text-foreground/80">{`${condominio.logradouro}, ${condominio.numero} - ${condominio.bairro}/${condominio.uf}`}</div>
-                      <div className="text-[10px] text-chart-1">Código {condominio.codigo_acesso}</div>
+                      <div className="text-[10px] text-chart-1">Código {condominio.condominio_codigo}</div>
                       <div className="text-[10px] text-foreground/60">
-                        Criado em {new Date(condominio.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        Criado em {new Date(condominio.data_criacao).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </div>
                     </td>
-                    <td className="px-4 py-2 text-sm">{"-"}</td>
-                    <td className="px-4 py-2 text-sm">{"-"}</td>
-                  
-                    <td className="text-sm font-bold flex items-center ml-7">
-                        <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${condominio.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={condominio.status} />
+                    <td className="px-4 py-2 text-sm">{condominio.numero_apartamentos}/300</td>
+                    <td className="px-4 py-2 text-sm">{condominio.numero_sensores}/300</td>
+                    <td className="text-sm font-bold flex items-center ml-7 py-9">
+                      <span className={`inline-block w-3 h-3 rounded-full px-3 ${condominio.condominio_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={condominio.condominio_status} />
                     </td>
-                   
+                    <td className="px-4 py-2 text-sm">{condominio.sindico_nome}</td>
+                    <td className="px-4 py-2 text-sm">-</td>
                     <td className="px-4 py-2 text-sm">
-
-                    </td>
-                    <td className="px-4 py-2 text-sm">{"-"}</td>
-                    <td className="px-4 py-2 text-sm">
-                  
                       <div className="flex items-center gap-1">
-                         <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(condominio)}>
-
-                        <div className="flex items-center gap-1">
-                          {condominio.status === "ativo" ? (
-                            <>
+                        <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(condominio)}>
+                          <div className="flex items-center gap-1">
+                            {condominio.condominio_status === "ativo" ? (
                               <Check className="text-green-500" size={14} />
-
-                            </>
-                          ) : (
-                            <>
+                            ) : (
                               <X className="text-red-500" size={14} />
-
-                            </>
-                          )}
-                        </div>
-                      </Button>
+                            )}
+                          </div>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -237,11 +223,11 @@ export default function CondominiosDashboard() {
             <DialogTitle>Confirmação</DialogTitle>
           </DialogHeader>
           <p className="py-4">
-            Deseja realmente {selectedCondominio?.ativo ? "inativar" : "ativar"} o condomínio <strong>{selectedCondominio?.name}</strong>?
+            Deseja realmente {selectedCondominio?.condominio_status === "ativo" ? "inativar" : "ativar"} o condomínio <strong>{selectedCondominio?.condominio_nome}</strong>?
           </p>
           <DialogFooter className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={toggleStatus}>{selectedCondominio?.ativo ? "Inativar" : "Ativar"}</Button>
+            <Button variant="destructive" onClick={toggleStatus}>{selectedCondominio?.condominio_status === "ativo" ? "Inativar" : "Ativar"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
