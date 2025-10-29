@@ -2,13 +2,16 @@ import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import sequelizePaginate from "sequelize-paginate";
 
-export default class CasaView extends Model { }
+export default class CasaView extends Model {}
 
 CasaView.init(
   {
     casa_id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
+    },
+    casa_codigo: { // novo campo
+      type: DataTypes.CHAR(10),
     },
     endereco: {
       type: DataTypes.STRING,
@@ -19,13 +22,17 @@ CasaView.init(
     numero_moradores: {
       type: DataTypes.INTEGER,
     },
+    responsavel_id: { 
+      type: DataTypes.CHAR(36),
+    },
     responsavel_nome: {
       type: DataTypes.STRING,
     },
-    responsavel_email:
-      { type: DataTypes.STRING },
+    responsavel_email: {
+      type: DataTypes.STRING,
+    },
     responsavel_cpf: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
     },
     sensor_id: {
       type: DataTypes.INTEGER,
