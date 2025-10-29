@@ -15,6 +15,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import useToggleConfirm from "@/hooks/useStatus";
+import UserFilter from "../Filters/Usuarios";
 
 
 const cardVariants = {
@@ -49,8 +50,8 @@ export default function UsersDashboard() {
         fetch(`${API_URL}`),
         fetch(`${API_URL}/count`),
         fetch(`${API_URL}/count-ativos`),
-        fetch(`${API_URL}/count-sindicos`),
-        fetch(`${API_URL}/count-moradores`),
+        fetch(`${API_URL}/sindicos`),
+        fetch(`${API_URL}/moradores`)
       ]);
 
       const [dataUsers, dataTotal, dataAtivos, dataSindicos, dataMoradores] = await Promise.all([
@@ -61,7 +62,7 @@ export default function UsersDashboard() {
         resMoradores.json(),
       ]);
 
-      setUsers(dataUsers.docs || dataUsers || []);
+      setUsers(dataUsers.docs ?? dataUsers ?? []);
       setUserStats({
         total: dataTotal ?? 0,
         ativos: dataAtivos ?? 0,
@@ -77,6 +78,8 @@ export default function UsersDashboard() {
   };
 
 
+
+
   const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
 
   useEffect(() => {
@@ -87,36 +90,57 @@ export default function UsersDashboard() {
   if (error) return <p className="text-red-500">Erro: {error}</p>;
 
   const cards = [
-    { title: "Todos os Usuários", value: userStats.total, icon: Users, bg: "bg-card", iconColor: "text-blue-700", textColor: "text-blue-800" },
-    { title: "Usuários Ativos", value: userStats.ativos, icon: UserCheck, bg: "bg-card", iconColor: "text-green-700", textColor: "text-green-800" },
-    { title: "Síndicos", value: userStats.sindicos, icon: UserCog, bg: "bg-card", iconColor: "text-yellow-700", textColor: "text-yellow-800" },
-    { title: "Alertas", value: userStats.moradores, icon: AlertTriangle, bg: "bg-card", iconColor: "text-red-700", textColor: "text-red-800" },
+    {
+      title: "Todos os Usuários",
+      value: userStats.total,
+      icon: Users,
+      iconColor: "text-blue-700", 
+    },
+    { title: "Usuários Ativos",
+       value: userStats.ativos,
+        icon: UserCheck, 
+     
+        iconColor: "text-green-700", 
+       },
+    { title: "Síndicos",
+       value: userStats.sindicos,
+        icon: UserCog,
+         iconColor: "text-yellow-500",
+         },
+    { title: "Alertas",
+       value: userStats.moradores,
+        icon: AlertTriangle,
+         iconColor: "text-red-700", 
+         },
   ];
 
   return (
     <div className="p-4">
       <Toaster position="top-right" richColors />
+    
 
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10">
         {cards.map((card, i) => {
           const Icon = card.icon;
           return (
             <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
               <Card>
                 <CardHeader>
-                    <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
+                  <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center">
-                  <Icon className={`w-10 h-10 mb-2 ${card.iconColor}`} />
-                  <p className="font-bold text-xl text-foreground" >{card.value ?? 0}</p>
+                <CardContent className="flex flex-row items-center justify-between -mt-6">
+                  <p className="font-bold text-4xl text-foreground ">{card.value ?? 0}</p>
+                  <Icon className={`w-10 h-10   ${card.iconColor}`}
+                  />
                 </CardContent>
+
               </Card>
             </motion.div>
           );
         })}
       </section>
 
-      <Card className="mx-auto mt-10 max-w-7xl">
+      <Card className="mx-auto mt-10 ">
         <CardHeader>
           <CardTitle>Lista de Usuários</CardTitle>
         </CardHeader>
@@ -133,7 +157,7 @@ export default function UsersDashboard() {
                   <th className="px-4 py-2 text-left text-xs font-medium uppercase">Função</th>
                   <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
                   <th className="px-4 py-2 text-left text-xs font-medium uppercase"> Último acesso</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Alertas</th>
+                  {/* <th className="px-4 py-2 text-left text-xs font-medium uppercase">Alertas</th> */}
                   <th className="px-4 py-2 text-left text-xs font-medium uppercase"> Ações</th>
                 </tr>
               </thead>
@@ -146,21 +170,47 @@ export default function UsersDashboard() {
                       <div className="text-xs text-foreground/80">{user.email}</div>
                       <div className="text-xs text-foreground/60">{user.cpf}</div>
                     </td>
-                    <td className="px-4 py-2 text-sm">{user.residencia}</td>
-                    <td className="px-4 py-2 text-sm">{user.type}</td>
-                    <td className="px-4 py-2 text-sm">{user.role}</td>
-                    <td className=" text-sm font-bold flex items-center ml-7">
+                    <td className="px-4 py-2 text-sm">{user.endereco}</td>
+                    <td className="px-4 py-2 text-sm">
+                      <span
+                        className={`px-2 py-1 rounded-full text-white font-semibold ${user.type === "casa"
+                            ? "bg-blue-700"
+                            : user.type === "condominio"
+                              ? "bg-purple-700"
+                              : "bg-gray-500"
+                          }`}
+                      >
+                        {user.type === "casa" ? "casa" : user.type === "condominio" ? "condomínio" : "Desconhecido"}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-2 text-sm">
+                      <span
+                        className={`px-2 py-1 rounded-full text-white font-semibold ${user.role === "morador"
+                            ? "bg-green-600"
+                            : user.role === "sindico"
+                              ? "bg-yellow-500"
+                              : "bg-gray-500"
+                          }`}
+                      >
+                        {user.role === "morador" ? "morador" : user.role === "sindico" ? "síndico" : "Desconhecido"}
+                      </span>
+                    </td>
+
+
+
+                    <td className=" text-sm font-bold flex items-center px-7 py-4">
                       <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${user.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={user.status} />
                     </td>
                     <td className="px-4 py-2 text-sm">
                       <div className="text-xs font-semibold">
-                        Último acesso {user.atualizado_em ? new Date(user.atualizado_em).toLocaleString("pt-BR") : "-"}
+                        {user.atualizado_em ? new Date(user.atualizado_em).toLocaleString("pt-BR") : "-"}
                       </div>
                       <div className="text-[10px] text-foreground/60">
                         Criado em {user.criado_em ? new Date(user.criado_em).toLocaleString("pt-BR") : "-"}
                       </div>
                     </td>
-                    <td className="px-4 py-2 text-sm"></td>
+                    {/* <td className="px-4 py-2 text-sm"></td> */}
                     <td className="px-4 py-2 text-sm text-center">
                       <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
                         <div className="flex items-center gap-1">

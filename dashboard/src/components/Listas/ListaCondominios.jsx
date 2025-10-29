@@ -105,34 +105,33 @@ export default function CondominiosDashboard() {
       title: "Total de Condomínios",
       value: condominioStats.total,
       icon: Building,
-      bg: "bg-card",
+    
       iconColor: "text-blue-700",
-      textColor: "text-blue-800"
+    
     },
     {
       title: "Condomínios Ativos",
       value: condominioStats.ativos,
       icon: UserCheck,
-      bg: "bg-card",
+    
       iconColor: "text-green-700",
-      textColor: "text-green-800"
+      
     },
     {
       title: "Sensores Ativos",
       value: condominioStats.inativos,
       icon: SignalHigh,
-       bg: "bg-card",
-      bg: "bg-card",
+   
       iconColor: "text-green-700",
-      textColor: "text-green-800"
+     
     },
     {
       title: "Alertas",
       value: condominioStats.alertas,
       icon: AlertTriangle,
-      bg: "bg-card",
+    
       iconColor: "text-red-600",
-      textColor: "text-red-800"
+     
     },
   ];
 
@@ -141,23 +140,25 @@ export default function CondominiosDashboard() {
       <Toaster position="top-right" richColors />
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {cards.map((card, i) => {
-          const Icon = card.icon;
-          return (
-            <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
-              <Card>
-                <CardHeader>
-                 <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center">
-                  <Icon className={`w-10 h-10 mb-2 ${card.iconColor}`} />
-                  <p className={`font-bold text-xl ${card.textColor}`}>{card.value}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          );
-        })}
-      </section>
+              {cards.map((card, i) => {
+                const Icon = card.icon;
+                return (
+                  <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex flex-row items-center justify-between -mt-6">
+                        <p className="font-bold text-4xl text-foreground ">{card.value ?? 0}</p>
+                        <Icon className={`w-10 h-10   ${card.iconColor}`}
+                        />
+                      </CardContent>
+      
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </section>
 
       <Card className="mx-auto mt-10 max-w-7xl">
         <CardHeader>
@@ -185,15 +186,14 @@ export default function CondominiosDashboard() {
                     <td className="px-4 py-2">
                       <div className="text-sm font-semibold">{condominio.name}</div>
                       <div className="text-xs text-foreground/80">{`${condominio.logradouro}, ${condominio.numero} - ${condominio.bairro}/${condominio.uf}`}</div>
-                      <div className="text-[10px] text-foreground/60">{condominio.cep}</div>
+                      <div className="text-[10px] text-chart-1">Código {condominio.codigo_acesso}</div>
                       <div className="text-[10px] text-foreground/60">
                         Criado em {new Date(condominio.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </div>
                     </td>
                     <td className="px-4 py-2 text-sm">{"-"}</td>
                     <td className="px-4 py-2 text-sm">{"-"}</td>
-                    <td className={`px-4 py-2 text-sm font-bold ${condominio.ativo ? "text-green-600" : "text-red-600"}`}>{condominio.ativo ? "Ativo" : "Inativo"}</td>
-                    <td className="px-4 py-2 text-sm"></td>
+                  
                     <td className="text-sm font-bold flex items-center ml-7">
                         <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${condominio.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={condominio.status} />
                     </td>

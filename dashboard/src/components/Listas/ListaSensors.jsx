@@ -112,20 +112,30 @@ export default function SensorsDashboard() {
     <div className="p-4">
       <Toaster position="top-right" richColors />
 
+
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {cards.map((card, i) => {
           const Icon = card.icon;
           return (
             <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
-              <Card >
+              <Card>
                 <CardHeader>
-                   <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
-                  
+                  <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center">
-                  <Icon className={`w-10 h-10 mb-2 ${card.iconColor}`} />
-                  <p className={`font-bold text-xl ${card.textColor}`}>{card.value ?? 0}</p>
+                <CardContent className="flex flex-row items-center justify-between -mt-6">
+                  <div className="flex flex-col">
+                    <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
+                    {card.valueAtivas && (
+                      <p className="text-green-600 text-sm mt-1">
+                        {card.valueAtivas} Ativas
+                      </p>
+                    )}
+                  </div>
+                  <Icon className={`w-10 h-10   ${card.iconColor}`}
+
+                  />
                 </CardContent>
+
               </Card>
             </motion.div>
           );
@@ -144,14 +154,18 @@ export default function SensorsDashboard() {
               <thead className="bg-muted">
                 <tr>
                   <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Sensor</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase"> Localização </th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase"> Status </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase"> Localização </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase"> Consumo </th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase"> Último envio </th>
+                                      <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase"> Ações </th>
               </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {sensores.map((sensor) => (
                   <tr key={sensor.id} className="hover:bg-muted/10 text-foreground">
                     <td className="px-4 py-2 text-sm font-bold">{sensor.codigo}</td>
+                                      <td className="px-4 py-2 text-sm font-bold"></td>
                     <td
                       className={`px-4 py-2 text-sm font-bold ${sensor.status === "ativo"
                           ? "text-green-600"

@@ -163,21 +163,25 @@ export default function CasasDashboard() {
                 <CardHeader>
                   <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center">
-                  <Icon className={`w-10 h-10 mb-2  ${card.iconColor}`} />
-                  <p className="font-bold text-xl text-foreground">{card.valueTotal} </p>
-                  {card.valueAtivas && (
-                    <p className="text-green-600 text-sm mt-1">
-                      {card.valueAtivas} Ativas
-                    </p>
-                  )}
+                <CardContent className="flex flex-row items-center justify-between -mt-6">
+                  <div className="flex flex-col">
+                    <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
+                    {card.valueAtivas && (
+                      <p className="text-green-600 text-sm mt-1">
+                        {card.valueAtivas} Ativas
+                      </p>
+                    )}
+                  </div>
+                  <Icon className={`w-10 h-10   ${card.iconColor}`}
+
+                  />
                 </CardContent>
+
               </Card>
             </motion.div>
           );
         })}
       </section>
-
       <Card className="mx-auto mt-10 max-w-7xl">
         <CardHeader>
           <CardTitle>Lista de Casas</CardTitle>
@@ -206,7 +210,8 @@ export default function CasasDashboard() {
                       <td className="px-4 py-2 ">
                         <div className="text-sm font-semibold">{`${casa.logradouro}, ${casa.numero} - ${casa.bairro}/${casa.uf}`}</div>
                         <div className="text-xs text-foreground/80">{`${casa.numero_moradores || 0} Moradores`}</div>
-                        <div className="text-[10px] text-foreground/60 ">{casa.cep}</div>
+                        <div className="text-[10px] text-foreground/60 ">CEP: {casa.cep}</div>
+                        <div className="text-[10px] text-accent">Código {casa.codigo_acesso}</div>
                         <div className="text-[10px] text-foreground/60 ">
                           Criado em {new Date(casa.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                         </div>

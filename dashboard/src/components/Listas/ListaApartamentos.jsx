@@ -149,24 +149,35 @@ export default function ApartamentosDashboard() {
         <div className="p-4">
             <Toaster position="top-right" richColors />
 
-            <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {cards.map((card, i) => {
-                    const Icon = card.icon;
-                    return (
+            
+                  <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {cards.map((card, i) => {
+                      const Icon = card.icon;
+                      return (
                         <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
-                            <Card>
-                                <CardHeader>
-                                       <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col items-center">
-                                    <Icon className={`w-10 h-10 mb-2 ${card.iconColor}`} />
-                                    <p className={`font-bold text-xl ${card.textColor}`}>{card.value}</p>
-                                </CardContent>
-                            </Card>
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex flex-row items-center justify-between -mt-6">
+                              <div className="flex flex-col">
+                                <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
+                                {card.valueAtivas && (
+                                  <p className="text-green-600 text-sm mt-1">
+                                    {card.valueAtivas} Ativas
+                                  </p>
+                                )}
+                              </div>
+                              <Icon className={`w-10 h-10   ${card.iconColor}`}
+            
+                              />
+                            </CardContent>
+            
+                          </Card>
                         </motion.div>
-                    );
-                })}
-            </section>
+                      );
+                    })}
+                  </section>
 
             <Card className="mx-auto mt-10 max-w-7xl">
                 <CardHeader>
