@@ -249,16 +249,6 @@ export default class AlertasService {
         }
     }
 
-    static async createAlerta({ sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel }) {
-        try {
-            const alerta = await Alertas.create({ sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel })
-            return alerta;
-        } catch (error) {
-            console.error('Erro ao emitir alerta', error);
-            throw error;
-        }
-    }
-
     static async removerAlerta(id) {
         try {
             const alerta = await Alertas.findByPk(id);

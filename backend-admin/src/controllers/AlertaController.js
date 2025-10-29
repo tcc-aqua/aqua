@@ -70,12 +70,6 @@ export default class AlertasController {
         return reply.status(200).send(alertas);
     }
 
-    static async create(req, reply) {
-        const { sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel } = req.body;
-        const alerta = await AlertasService.createAlerta({ sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel });
-        return reply.status(201).send(alerta);
-    }
-
     static async resolverAlerta(req, reply) {
         const { id } = req.params;
         const alerta = await AlertasService.removerAlerta(id);
