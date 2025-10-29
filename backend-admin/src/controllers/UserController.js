@@ -49,27 +49,27 @@ export default class UserController {
         return reply.status(200).send(users);
     }
 
-    static async countAtivos(req, reply){
+    static async countAtivos(req, reply) {
         const users = await UserService.countUsersAtivos();
         return reply.status(200).send(users);
     }
 
-    static async countSindicos(req, reply){
+    static async countSindicos(req, reply) {
         const sindicos = await UserService.countSindicos();
         return reply.status(200).send(sindicos);
     }
 
-    static async countMoradores(req, reply){
+    static async countMoradores(req, reply) {
         const moradores = await UserService.countMoradores();
         return reply.status(200).send(moradores);
     }
 
-    static async moradoresCasa(req, reply){
+    static async moradoresCasa(req, reply) {
         const moradores = await UserService.countMoradoresCasa();
         return reply.status(200).send(moradores);
     }
 
-    static async moradoresApartamentos(req, reply){
+    static async moradoresApartamentos(req, reply) {
         const moradores = await UserService.countMoradoresApartamentos();
         return reply.status(200).send(moradores);
     }
@@ -84,6 +84,12 @@ export default class UserController {
         const { id } = (req.params);
         const user = await UserService.ativarUser(id);
         return reply.status(200).send(user)
+    }
+
+    static async sindico(req, reply) {
+        const { id } = req.params;
+        const user = await UserService.setarSindico(id);
+        return reply.status(200).send(user);
     }
 
 }

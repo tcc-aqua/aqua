@@ -264,4 +264,23 @@ export default class UserService {
             throw error;
         }
     }
+
+    static async setarSindico(id){
+        try {
+            const user = await User.findByPk(id);
+            if(!user) throw new Error('Usuario nao encontrado');
+
+            if(user.type === 'casa') throw new Error('Esse usuário não faz parte de um condominio')
+            if(user.role === 'sindico') throw new Error('Esse usuário ja é sindico')
+
+                await user.update({
+                    role: "sindico"
+                })
+
+                return user;
+        } catch (error) {
+            console.error('Erro ao atualizar para sindico', error);
+            throw error;
+        }
+    }
 }

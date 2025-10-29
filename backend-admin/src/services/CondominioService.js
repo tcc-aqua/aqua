@@ -134,6 +134,24 @@ export default class CondominioService {
         }
     }
 
+    static async atribuirSindico(id, { sindico_id }) {
+        try {
+            const condominio = await Condominio.findByPk(id);
+            if (!condominio) throw new Error('Condomínio não encontrado');
+
+            if (condominio.sindico_id) {
+                throw new Error('Esse condomínio já possui um síndico.');
+            }
+
+            await condominio.update({ sindico_id });
+
+            return condominio;
+        } catch (error) {
+            console.error('Erro ao atribuir síndico', error);
+            throw error;
+        }
+    }
+
     static async inativarCondominio(id) {
         try {
             const condominio = await Condominio.findByPk(id);
