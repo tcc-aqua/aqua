@@ -94,6 +94,36 @@ export default class AlertasService {
         }
     }
 
+    static async countAlertasDeVazamento() {
+        try {
+            const total = await Alertas.count({
+                where: {
+                    tipo: 'vazamento'
+                }
+            });
+
+            return total;
+        } catch (error) {
+            console.error('Erro ao contar alertas gerais de vazamento:', error);
+            throw error;
+        }
+    }
+
+    static async countAlertasDeConsumoAlto() {
+        try {
+            const total = await Alertas.count({
+                where: {
+                    tipo: 'consumo_alto'
+                }
+            });
+
+            return total;
+        } catch (error) {
+            console.error('Erro ao contar alertas gerais de consumo alto:', error);
+            throw error;
+        }
+    }
+
     static async countTotalApartamento() {
         try {
             const total = await Alertas.count({
@@ -215,16 +245,6 @@ export default class AlertasService {
         }
         catch (error) {
             console.error('Erro ao listar count', error);
-            throw error;
-        }
-    }
-
-    static async createAlerta({ sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel }) {
-        try {
-            const alerta = await Alertas.create({ sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel })
-            return alerta;
-        } catch (error) {
-            console.error('Erro ao emitir alerta', error);
             throw error;
         }
     }

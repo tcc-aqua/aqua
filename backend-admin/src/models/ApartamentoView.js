@@ -10,7 +10,34 @@ ApartamentoView.init(
       type: DataTypes.INTEGER,
       primaryKey: true,
     },
+    condominio_id: {
+      type: DataTypes.INTEGER,
+    },
+    condominio_nome: {
+      type: DataTypes.STRING,
+    },
+    logradouro: {
+      type: DataTypes.STRING,
+    },
+    condominio_numero: {
+      type: DataTypes.STRING,
+    },
+    bairro: {
+      type: DataTypes.STRING,
+    },
+    cidade: {
+      type: DataTypes.STRING,
+    },
+    uf: {
+      type: DataTypes.STRING(2),
+    },
+    cep: {
+      type: DataTypes.STRING(9),
+    },
     endereco_completo: {
+      type: DataTypes.STRING,
+    },
+    endereco_condominio: {
       type: DataTypes.STRING,
     },
     numero_moradores: {
@@ -43,9 +70,6 @@ ApartamentoView.init(
     ultimo_envio: {
       type: DataTypes.DATE,
     },
-    condominio_nome: {
-      type: DataTypes.STRING,
-    },
   },
   {
     sequelize,
@@ -54,5 +78,4 @@ ApartamentoView.init(
   }
 );
 
-// Paginação
 sequelizePaginate.paginate(ApartamentoView);

@@ -40,6 +40,24 @@ CasaView.init(
     ultimo_envio: {
       type: DataTypes.DATE,
     },
+    cep: {
+      type: DataTypes.STRING(10),
+    },
+    estado: {
+      type: DataTypes.STRING(50),
+    },
+    cidade: {
+      type: DataTypes.STRING(100),
+    },
+    uf: {
+      type: DataTypes.STRING(2),
+    },
+    bairro: {
+      type: DataTypes.STRING(255),
+    },
+    numero: {
+      type: DataTypes.STRING(10),
+    },
   },
   {
     sequelize,

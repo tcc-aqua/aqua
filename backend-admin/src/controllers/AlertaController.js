@@ -33,6 +33,16 @@ export default class AlertasController {
         return reply.status(200).send(alertas);
     }
 
+    static async countVazamentos(req, reply) {
+        const alertas = await AlertasService.countAlertasDeVazamento();
+        return reply.status(200).send(alertas);
+    }
+
+    static async countConsumoAlto(req, reply) {
+        const alertas = await AlertasService.countAlertasDeConsumoAlto();
+        return reply.status(200).send(alertas);
+    }
+
     static async countTotalPorCasa(req, reply) {
         const alertas = await AlertasService.countTotalCasa();
         return reply.status(200).send(alertas);
@@ -58,12 +68,6 @@ export default class AlertasController {
         const { id } = req.params;
         const alertas = await AlertasService.countAlertasAtivosPorApartamento(id);
         return reply.status(200).send(alertas);
-    }
-
-    static async create(req, reply) {
-        const { sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel } = req.body;
-        const alerta = await AlertasService.createAlerta({ sensor_id, residencia_type, residencia_id, tipo, mensagem, nivel });
-        return reply.status(201).send(alerta);
     }
 
     static async resolverAlerta(req, reply) {
