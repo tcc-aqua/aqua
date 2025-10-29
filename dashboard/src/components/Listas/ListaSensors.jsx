@@ -17,7 +17,6 @@ const cardVariants = {
   }),
 };
 
-
 export default function SensorsDashboard() {
   const [sensores, setSensores] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,44 +26,54 @@ export default function SensorsDashboard() {
   const API_URL = "http://localhost:3333/api/sensores";
 
   const fetchData = async () => {
-    try {
+  try {
+    setLoading(true);
 
-      const [totalRes, ativosRes, inativosRes, allRes] = await Promise.all([
-        fetch(`${API_URL}/count`),
-        fetch(`${API_URL}/count-ativos`),
-        fetch(`${API_URL}/inativos`),
-        fetch(`${API_URL}/`),
-      ]);
+    const [totalRes, ativosRes, inativosRes, allRes] = await Promise.all([
+      fetch(`${API_URL}/count`),
+      fetch(`${API_URL}/count-ativos`),
+      fetch(`${API_URL}/inativos`),
+      fetch(`${API_URL}/`),
+    ]);
 
-      if (!totalRes.ok || !ativosRes.ok || !inativosRes.ok || !allRes.ok) {
-        throw new Error("Erro ao buscar dados dos sensores.");
-      }
-
-      const total = await totalRes.json();
-      const ativos = await ativosRes.json();
-      const inativos = await inativosRes.json();
-      const allSensores = await allRes.json();
-
-
-      const alertas = allSensores.docs?.filter(
-        (s) => !["ativo", "inativo"].includes(s.status)
-      ).length || 0;
-
-      setSensorStats({
-        total: total ?? 0,
-        ativos: ativos ?? 0,
-        inativos: inativos.docs?.length ?? 0,
-        alertas,
-      });
-
-      setSensores(allSensores.docs || []);
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    if (!totalRes.ok || !ativosRes.ok || !inativosRes.ok || !allRes.ok) {
+      throw new Error("Erro ao buscar dados dos sensores.");
     }
-  };
+
+    const total = await totalRes.json();
+    const ativos = await ativosRes.json();
+    const inativos = await inativosRes.json();
+    const allSensores = await allRes.json();
+    const sensoresArray = allSensores.docs || [];
+
+  
+    const sensorStatsData = sensoresArray.reduce(
+      (acc, s) => {
+        if (s.sensor_status === "ativo") acc.ativos += 1;
+        else if (s.sensor_status === "inativo") acc.inativos += 1;
+        else acc.alertas += 1; 
+
+        return acc;
+      },
+      { ativos: 0, inativos: 0, alertas: 0 }
+    );
+
+    setSensorStats({
+      total: total ?? sensoresArray.length,
+      ativos: sensorStatsData.ativos,
+      inativos: sensorStatsData.inativos,
+      alertas: sensorStatsData.alertas,
+    });
+
+    setSensores(sensoresArray);
+  } catch (err) {
+    console.error(err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchData();
@@ -102,7 +111,7 @@ export default function SensorsDashboard() {
       title: "Alertas",
       value: sensorStats.alertas,
       icon: AlertTriangle,
-      bg: "card",
+      bg: "bg-card",
       iconColor: "text-red-700",
       textColor: "text-red-800",
     },
@@ -111,7 +120,6 @@ export default function SensorsDashboard() {
   return (
     <div className="p-4">
       <Toaster position="top-right" richColors />
-
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {cards.map((card, i) => {
@@ -125,24 +133,16 @@ export default function SensorsDashboard() {
                 <CardContent className="flex flex-row items-center justify-between -mt-6">
                   <div className="flex flex-col">
                     <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
-                    {card.valueAtivas && (
-                      <p className="text-green-600 text-sm mt-1">
-                        {card.valueAtivas} Ativas
-                      </p>
-                    )}
                   </div>
-                  <Icon className={`w-10 h-10   ${card.iconColor}`}
-
-                  />
+                  <Icon className={`w-10 h-10 ${card.iconColor}`} />
                 </CardContent>
-
               </Card>
             </motion.div>
           );
         })}
       </section>
 
-      <Card className="mx-auto mt-10 max-w-7xl">
+      <Card className="mx-auto mt-10">
         <CardHeader>
           <CardTitle>Lista de Sensores</CardTitle>
         </CardHeader>
@@ -154,29 +154,42 @@ export default function SensorsDashboard() {
               <thead className="bg-muted">
                 <tr>
                   <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Sensor</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase"> Localização </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase"> Status </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase"> Consumo </th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase"> Último envio </th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase"> Ações </th>
-              </tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Localização</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Consumo</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Último envio</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Ações</th>
+                </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {sensores.map((sensor) => (
-                  <tr key={sensor.id} className="hover:bg-muted/10 text-foreground">
-                    <td className="px-4 py-2 text-sm font-bold">{sensor.codigo}</td>
-                                      <td className="px-4 py-2 text-sm font-bold"></td>
-                    <td
-                      className={`px-4 py-2 text-sm font-bold ${sensor.status === "ativo"
-                          ? "text-green-600"
-                          : sensor.status === "inativo"
-                            ? "text-red-600"
-                            : "text-yellow-600"
-                        }`}
-                    >
-                      {sensor.status}
+                  <tr key={sensor.sensor_id} className="hover:bg-muted/10 text-foreground">
+                    <td className="px-4 py-2">
+                      <div className="text-sm font-semibold">{sensor.sensor_codigo}</div>
+                      <div className="text-[10px] text-foreground/60">ID: {sensor.sensor_id}</div>
+                      <div className="text-[10px] text-accent">{sensor.residencia_type}</div>
                     </td>
                     <td className="px-4 py-2 text-sm">{sensor.localizacao || "-"}</td>
+                    <td
+                      className={`px-4 py-2 text-sm font-bold ${
+                        sensor.sensor_status === "ativo"
+                          ? "text-green-600"
+                          : sensor.sensor_status === "inativo"
+                          ? "text-red-600"
+                          : "text-yellow-600"
+                      }`}
+                    >
+                      {sensor.sensor_status || "-"}
+                    </td>
+                    <td className="px-4 py-2 text-sm font-bold">
+                      {sensor.consumo_total}/L
+                      <div className="text-[10px] text-foreground/60">Total Acumulado</div>
+                    </td>
+                    <td className="px-4 py-2 text-sm font-bold">
+                      {sensor.ultimo_envio
+                        ? new Date(sensor.ultimo_envio).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                        : "-"}
+                    </td>
                   </tr>
                 ))}
               </tbody>

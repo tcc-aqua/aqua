@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dialog";
 import useToggleConfirm from "@/hooks/useStatus";
 
-
 const cardVariants = {
   hidden: { y: -120, opacity: 0, zIndex: -1 },
   visible: (delay = 0) => ({
@@ -27,83 +26,67 @@ const cardVariants = {
   }),
 };
 
-
 export default function CasasDashboard() {
   const [casas, setCasas] = useState([]);
-  const [sensores, setSensores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [casaStats, setCasaStats] = useState({ total: 0, ativas: 0, inativas: 0, alertas: 0 });
   const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
 
-
   const API_CASAS = "http://localhost:3333/api/casas";
-  const API_SENSORES = "http://localhost:3333/api/sensores";
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
+const fetchData = async () => {
+  try {
+    setLoading(true);
 
+    // Faz requisições ao backend
+    const [resAll, resAtivos, resInativos, resCount, resCountAtivas] = await Promise.all([
+      fetch(`${API_CASAS}`),
+      fetch(`${API_CASAS}/ativos`),
+      fetch(`${API_CASAS}/inativos`),
+      fetch(`${API_CASAS}/count`),
+      fetch(`${API_CASAS}/count-ativas`)
+    ]);
 
-      const [
-        resCasas, resCasasAtivas, resCasasInativas, resCasasCount, resSensores, resSensoresAtivos, resSensoresCount,] = await Promise.all([
-          fetch(`${API_CASAS}`),
-          fetch(`${API_CASAS}/ativos`),
-          fetch(`${API_CASAS}/inativos`),
-          fetch(`${API_CASAS}/count`),
-          fetch(`${API_SENSORES}`),
-          fetch(`${API_SENSORES}/ativos`),
-          fetch(`${API_SENSORES}/count`),
-        ]);
-
-      const [
-        dataCasas, dataCasasAtivas, dataCasasInativas, dataCasasCount, dataSensores, dataSensoresAtivos, dataSensoresCount,] = await Promise.all([
-          resCasas.json(),
-          resCasasAtivas.json(),
-          resCasasInativas.json(),
-          resCasasCount.json(),
-          resSensores.json(),
-          resSensoresAtivos.json(),
-          resSensoresCount.json(),
-        ]);
-
-      const allCasas = dataCasas.docs || [];
-      const allSensores = dataSensores.docs || [];
-
-      setCasas(allCasas);
-      setSensores(allSensores);
-
-      const alertas = allCasas.filter(c => !c.numero_moradores || c.numero_moradores === 0);
-
-      setCasaStats({
-        total: dataCasasCount ?? 0,
-        ativas: dataCasasAtivas.docs?.length ?? 0,
-        inativas: dataCasasInativas.docs?.length ?? 0,
-        alertas: alertas.length,
-      });
-
-
-      const sensoresVinculados = allSensores.filter(s =>
-        allCasas.some(c => c.sensor_id === s.id)
-      );
-
-      const sensoresAtivos = sensoresVinculados.filter(s => s.status === "ativo");
-      const sensoresInativos = sensoresVinculados.filter(s => s.status === "inativo");
-      const sensoresComAlerta = sensoresVinculados.filter(s => s.consumo_total > 1000);
-
-      setSensorStats({
-        total: sensoresVinculados.length,
-        ativos: sensoresAtivos.length,
-        inativos: sensoresInativos.length,
-        alertas: sensoresComAlerta.length,
-      });
-    } catch (err) {
-      console.error("Erro ao buscar dados:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    if (!resAll.ok || !resAtivos.ok || !resInativos.ok || !resCount.ok || !resCountAtivas.ok) {
+      throw new Error("Erro ao buscar dados das casas.");
     }
-  };
+
+    const [allData, ativosData, inativosData, countData, countAtivasData] = await Promise.all([
+      resAll.json(),
+      resAtivos.json(),
+      resInativos.json(),
+      resCount.json(),
+      resCountAtivas.json()
+    ]);
+
+    setCasas(allData.docs || []);
+
+   
+
+setCasaStats({
+  total: countData.total ?? allData.docs.length,
+  ativas: countAtivasData.total ?? ativosData.docs?.length ?? 0,
+  inativas: inativosData.docs?.length ?? 0,
+  alertas: 0, // opcional, criar rota no backend se quiser alertas
+});
+
+const sensorStats = allData.docs.reduce((acc, casa) => {
+  if (casa.sensor_id) acc.total++;
+  if (casa.sensor_status === "ativo") acc.ativos++;
+  else if (casa.sensor_status) acc.inativos++;
+  return acc;
+}, { total: 0, ativos: 0, inativos: 0, alertas: 0 });
+
+setSensorStats(sensorStats);
+
+  } catch (err) {
+    console.error("Erro ao buscar dados:", err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
   const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } =
     useToggleConfirm(API_CASAS, fetchData);
 
@@ -114,41 +97,42 @@ export default function CasasDashboard() {
   if (loading) return <Loading />;
   if (error) return <p className="text-red-500">Erro: {error}</p>;
 
-  const cards = [
-    {
-      title: "Total de Casas",
-      valueTotal: casaStats.total,
-      valueAtivas: casaStats.ativas,
-      icon: Home,
-      bg: "bg-card",
-      iconColor: "text-blue-700",
-      textColor: "text-blue-800"
-    },
-    {
-      title: "Total de moradoes",
+const cards = [
+  {
+    title: "Total de Casas",
+    valueTotal: casaStats.total,
+    valueAtivas: casaStats.ativas,
+    icon: Home,
+    bg: "bg-card",
+    iconColor: "text-blue-700",
+    textColor: "text-blue-800"
+  },
+  {
+    title: "Total de Moradores",
+    valueTotal: casas.reduce((acc, c) => acc + (c.numero_moradores || 0), 0), // soma moradores
+    icon: HousePlug,
+    bg: "bg-card",
+    iconColor: "text-green-700",
+    textColor: "text-green-800"
+  },
+  {
+    title: "Sensores Ativos",
+    valueTotal: sensorStats.ativos,
+    icon: SignalHigh,
+    bg: "bg-card",
+    iconColor: "text-green-700",
+    textColor: "text-green-800"
+  },
+  {
+    title: "Alertas",
+    valueTotal: casaStats.alertas,
+    icon: AlertTriangle,
+    bg: "bg-card",
+    iconColor: "text-red-700",
+    textColor: "text-red-800"
+  },
+];
 
-      icon: HousePlug,
-      bg: "bg-card",
-      iconColor: "text-green-700",
-      textColor: "text-green-800"
-    },
-    {
-      title: "Sensores Ativos",
-      valueTotal: sensorStats.ativos,
-      icon: SignalHigh,
-      bg: "bg-card",
-      iconColor: "text-green-700",
-      textColor: "text-green-800"
-    },
-    {
-      title: "Alertas",
-      valueTotal: casaStats.alertas,
-      icon: AlertTriangle,
-      bg: "bg-card",
-      iconColor: "text-red-700",
-      textColor: "text-red-800"
-    },
-  ];
 
   return (
     <div className="p-4">
@@ -165,24 +149,22 @@ export default function CasasDashboard() {
                 </CardHeader>
                 <CardContent className="flex flex-row items-center justify-between -mt-6">
                   <div className="flex flex-col">
-                    <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
+                    <p className="font-bold text-4xl text-foreground">{card.valueTotal ?? 0}</p>
                     {card.valueAtivas && (
                       <p className="text-green-600 text-sm mt-1">
                         {card.valueAtivas} Ativas
                       </p>
                     )}
                   </div>
-                  <Icon className={`w-10 h-10   ${card.iconColor}`}
-
-                  />
+                  <Icon className={`w-10 h-10 ${card.iconColor}`} />
                 </CardContent>
-
               </Card>
             </motion.div>
           );
         })}
       </section>
-      <Card className="mx-auto mt-10 max-w-7xl">
+
+      <Card className="mx-auto mt-10">
         <CardHeader>
           <CardTitle>Lista de Casas</CardTitle>
         </CardHeader>
@@ -203,63 +185,50 @@ export default function CasasDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {casas.map(casa => {
-                  const sensor = sensores.find(s => s.id === casa.sensor_id);
-                  return (
-                    <tr key={casa.id} className="hover:bg-muted/10 text-foreground">
-                      <td className="px-4 py-2 ">
-                        <div className="text-sm font-semibold">{`${casa.logradouro}, ${casa.numero} - ${casa.bairro}/${casa.uf}`}</div>
-                        <div className="text-xs text-foreground/80">{`${casa.numero_moradores || 0} Moradores`}</div>
-                        <div className="text-[10px] text-foreground/60 ">CEP: {casa.cep}</div>
-                        <div className="text-[10px] text-accent">Código {casa.codigo_acesso}</div>
-                        <div className="text-[10px] text-foreground/60 ">
-                          Criado em {new Date(casa.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 text-sm">{casa.principal}</td>
-                      <td className="px-4 py-2 text-sm">
-                        <div>{sensor ? sensor.codigo : "-"}</div>
-                        {sensor && (
-                          <div className="ml-3 text-sm font-bold">
-                            <span className={sensor.status === "ativo" ? "text-green-600" : "text-red-600"}>
-                              {sensor.status === "ativo" ? "Ativo" : "Inativo"}
-                            </span>
-                          </div>
-                        )}
-                        <div className="text-[10px] text-foreground/60">
-                          Último envio: {sensor?.ultimo_envio
-                            ? new Date(sensor.ultimo_envio).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
-                            : "-"}
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 text-sm">{sensor?.consumo_total || 0}L/dia</td>
-                      <td className=" text-sm font-bold flex items-center ml-7">
-                        <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${casa.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={casa.status} />
-                      </td>
-                      <td className="px-4 py-2 text-sm">-</td>
-                      <td className="px-4 py-2 text-sm">
+                {casas.map(casa => (
+                  <tr key={casa.casa_id} className="hover:bg-muted/10 text-foreground">
+                    <td className="px-4 py-2">
+                      <div className="text-sm font-semibold">{casa.endereco_completo}</div>
+                      <div className="text-xs text-foreground/80">{`${casa.numero_moradores || 0} Moradores`}</div>
+                      <div className="text-[10px] text-foreground/60">CEP: {casa.casa_cep}</div>
+                      <div className="text-[10px] text-accent">Código {casa.codigo_acesso}</div>
+                      <div className="text-[10px] text-foreground/60">
+                        Criado em {new Date(casa.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                    </td>
+                    <td className="px-4 py-2 text-sm">{casa.responsavel_nome}</td>
+                    <td className="px-4 py-2 text-sm">
+                      <div>{casa.sensor_codigo}</div>
+                      <div className="ml-3 text-sm font-bold">
+                        <span className={casa.sensor_status === "ativo" ? "text-green-600" : "text-red-600"}>
+                          {casa.sensor_status === "ativo" ? "Ativo" : "Inativo"}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-foreground/60"> ID : {casa.sensor_id}</div>
+                      <div className="text-[10px] text-foreground/60">
+                        Último envio: {casa.ultimo_envio
+                          ? new Date(casa.ultimo_envio).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                          : "-"}
+                      </div>
+                    </td>
+                    <td className="px-4 py-2 text-sm">{casa.consumo_total || 0}L/dia</td>
+                    <td className="text-sm font-bold flex items-center ml-7">
+                      <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${casa.status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={casa.status} />
+                    </td>
+                    <td className="px-4 py-2 text-sm">-</td>
+                    <td className="px-4 py-2 text-sm">
+                      <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(casa)}>
                         <div className="flex items-center gap-1">
-                          <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(casa)}>
-
-                            <div className="flex items-center gap-1">
-                              {casa.status === "ativo" ? (
-                                <>
-                                  <Check className="text-green-500" size={14} />
-
-                                </>
-                              ) : (
-                                <>
-                                  <X className="text-red-500" size={14} />
-
-                                </>
-                              )}
-                            </div>
-                          </Button>
+                          {casa.status === "ativo" ? (
+                            <Check className="text-green-500" size={14} />
+                          ) : (
+                            <X className="text-red-500" size={14} />
+                          )}
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           )}
@@ -273,7 +242,7 @@ export default function CasasDashboard() {
           </DialogHeader>
           <p className="py-4">
             Deseja realmente {selectedItem?.status === "ativo" ? "inativar" : "ativar"} a casa{" "}
-            <strong>{selectedItem?.logradouro}, {selectedItem?.numero}</strong>?
+            <strong>{selectedItem?.endereco_completo}</strong>?
           </p>
           <DialogFooter className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
