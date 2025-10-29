@@ -10,6 +10,9 @@ ApartamentoView.init(
       type: DataTypes.INTEGER,
       primaryKey: true,
     },
+    apartamento_codigo: {      
+      type: DataTypes.CHAR(10),
+    },
     condominio_id: {
       type: DataTypes.INTEGER,
     },
@@ -42,6 +45,9 @@ ApartamentoView.init(
     },
     numero_moradores: {
       type: DataTypes.INTEGER,
+    },
+    responsavel_id: {        
+      type: DataTypes.CHAR(36),
     },
     responsavel_nome: {
       type: DataTypes.STRING,
