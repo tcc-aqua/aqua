@@ -2,39 +2,54 @@ import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import sequelizePaginate from "sequelize-paginate";
 
-export default class UserView extends Model {}
+export default class CasaView extends Model {}
 
-UserView.init(
+CasaView.init(
   {
-    user_id: {
-      type: DataTypes.CHAR(36),
+    casa_id: {
+      type: DataTypes.INTEGER,
       primaryKey: true,
     },
-    user_name: {
+    endereco: {
       type: DataTypes.STRING,
     },
-    user_email: {
+    endereco_completo: {
       type: DataTypes.STRING,
     },
-    user_cpf: {
-      type: DataTypes.STRING,
-    },
-    user_role: {
-      type: DataTypes.ENUM("morador", "sindico"),
-    },
-    user_type: {
-      type: DataTypes.ENUM("casa", "condominio"),
-    },
-    user_status: {
-      type: DataTypes.ENUM("ativo", "inativo"),
-    },
-    residencia_type: {
-      type: DataTypes.ENUM("casa", "apartamento"),
-    },
-    residencia_id: {
+    numero_moradores: {
       type: DataTypes.INTEGER,
     },
-    endereco: {
+    responsavel_nome: {
+      type: DataTypes.STRING,
+    },
+    responsavel_email: {
+      type: DataTypes.STRING,
+    },
+    responsavel_cpf: {
+      type: DataTypes.STRING,
+    },
+    sensor_id: {
+      type: DataTypes.INTEGER,
+    },
+    sensor_codigo: {
+      type: DataTypes.STRING,
+    },
+    consumo_total: {
+      type: DataTypes.DECIMAL(10, 2),
+    },
+    casa_status: {
+      type: DataTypes.ENUM("ativo", "inativo"),
+    },
+    sensor_status: {
+      type: DataTypes.ENUM("ativo", "inativo"),
+    },
+    ultimo_envio: {
+      type: DataTypes.DATE,
+    },
+    cep: {
+      type: DataTypes.STRING,
+    },
+    estado: {
       type: DataTypes.STRING,
     },
     cidade: {
@@ -43,12 +58,18 @@ UserView.init(
     uf: {
       type: DataTypes.CHAR(2),
     },
+    bairro: {
+      type: DataTypes.STRING,
+    },
+    numero: {
+      type: DataTypes.STRING,
+    },
   },
   {
     sequelize,
-    tableName: "vw_users",
+    tableName: "vw_casas",
     timestamps: false,
   }
 );
 
-sequelizePaginate.paginate(UserView);
+sequelizePaginate.paginate(CasaView);

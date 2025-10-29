@@ -2,7 +2,7 @@ import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import sequelizePaginate from "sequelize-paginate";
 
-export default class CasaView extends Model {}
+export default class CasaView extends Model { }
 
 CasaView.init(
   {
@@ -21,6 +21,11 @@ CasaView.init(
     },
     responsavel_nome: {
       type: DataTypes.STRING,
+    },
+    responsavel_email:
+      { type: DataTypes.STRING },
+    responsavel_cpf: {
+      type: DataTypes.STRING
     },
     sensor_id: {
       type: DataTypes.INTEGER,
