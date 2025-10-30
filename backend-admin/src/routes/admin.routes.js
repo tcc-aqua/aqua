@@ -1,4 +1,5 @@
 import AdminController from "../controllers/AdminController.js";
+import { autenticarAdmin } from "../middlewares/AuthMiddleware.js";
 
 export default async function adminRoutes(fastify){
 
@@ -9,5 +10,6 @@ export default async function adminRoutes(fastify){
         fastify.put('/:id', AdminController.update);
         fastify.patch('/:id/inativar', AdminController.inativar);
         fastify.patch('/:id/ativar', AdminController.ativar);
+        fastify.patch('/me', { preHandler: autenticarAdmin }, AdminController.updatePassword);
 
 }
