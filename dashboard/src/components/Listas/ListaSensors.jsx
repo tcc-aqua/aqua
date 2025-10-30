@@ -175,10 +175,12 @@ const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus
                   <tr key={sensor.sensor_id} className="hover:bg-muted/10 text-foreground">
                     <td className="px-4 py-2">
                       <div className="text-sm font-semibold">{sensor.sensor_codigo}</div>
-                      <div className="text-[10px] text-foreground/60">ID: {sensor.sensor_id}</div>
-                      <div className="text-[10px] text-accent">{sensor.residencia_type}</div>
+                      <div className="text-[10px] text-foreground/80">ID: {sensor.sensor_id}</div>
+                      <div className="text-[10px] text-accent">Tipo de residência: {sensor.residencia_type}</div>
                     </td>
-                    <td className="px-4 py-2 text-sm">{sensor.localizacao || "-"}</td>
+                    <td className="px-4 py-2 text-sm">{sensor.localizacao || "-"}
+                        <div className="text-[10px] text-foreground/60">Localização do Sensor</div>
+                    </td>
                     <td className="px-4 py-2 text-sm">
                       <span className={`inline-block w-3 h-3 rounded-full  px-3 ${sensor.sensor_status === "ativo" ? "bg-green-600" : sensor.sensor_status === "inativo" ? "bg-red-600" : "bg-yellow-600"}`} title={sensor.sensor_status} />
                     </td>
@@ -186,10 +188,11 @@ const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus
                       {sensor.consumo_total}/L
                       <div className="text-[10px] text-foreground/60">Total Acumulado</div>
                     </td>
-                    <td className="px-4 py-2 text-sm font-bold">
+                    <td className="px-4 py-2 text-sm font-semibold">
                       {sensor.ultimo_envio
                         ? new Date(sensor.ultimo_envio).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
                         : "-"}
+                         <div className="text-[10px] text-foreground/60">Horário do Último Envio</div>
                     </td>
                     <td className="px-4 py-2 text-sm text-center">
                                           <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(sensor)}>

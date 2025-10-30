@@ -18,13 +18,15 @@ import {
   Building,
   MessageCircle,
   Rows,
-  HousePlus
+  HousePlus,
+  Siren
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
 const navigationItems = [
   { id: "dashboard", name: "Dashboard", icon: Home, href: "/dashboard" },
   { id: "sensors", name: "Sensores", icon: Droplets, href: "/sensors" },
+  { id: "alerts", name: "Alertas", icon: Siren, href: "/alerts" },
   { id: "casas", name: "Casas", icon: HousePlus, href: "/casas" },
   { id: "condominios", name: "Condomínios", icon: Building, href: "/condominios" },
   { id: "apartamentos", name: "Apartamentos", icon: Rows, href: "/apartamentos" },
