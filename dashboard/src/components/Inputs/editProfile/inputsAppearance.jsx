@@ -36,7 +36,7 @@ export default function InputAppearance() {
           </div>
           <Switch
             checked={sidebarCompact}
-            onCheckedChange={(checked) => setSidebarCompact(!!checked)}
+      
           />
         </CardContent>
       </Card>

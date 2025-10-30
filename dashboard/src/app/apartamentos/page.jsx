@@ -1,6 +1,6 @@
 
 
-import CardTop from "@/components/Cards/CardTopPadrao";
+import CardTop from "@/components/Cards/CardTotaisDash";
 import Header from "@/components/Layout/Header/page";
 import LayoutDashboard from "@/components/Layout/LayoutDashboards/page";
 import ApartamentosDashboard from "@/components/Listas/ListaApartamentos";

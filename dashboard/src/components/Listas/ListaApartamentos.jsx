@@ -35,58 +35,58 @@ export default function ApartamentosDashboard() {
 
     const API_AP = "http://localhost:3333/api/apartamentos";
 
-     const fetchData = async () => {
-  try {
-    setLoading(true);
-
- 
-    const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
-      fetch(`${API_AP}`),
-      fetch(`${API_AP}/ativos`),
-      fetch(`${API_AP}/inativos`),
-      fetch(`${API_AP}/count`),
-    ]);
-
-    if (!resAll.ok || !resAtivos.ok || !resInativos.ok || !resCount.ok) {
-      throw new Error("Erro ao buscar dados dos apartamentos.");
-    }
-
-    const [allData, ativosData, inativosData, countData] = await Promise.all([
-      resAll.json(),
-      resAtivos.json(),
-      resInativos.json(),
-      resCount.json(),
-    ]);
+    const fetchData = async () => {
+        try {
+            setLoading(true);
 
 
-    setApartamentos(allData.docs || []);
+            const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
+                fetch(`${API_AP}`),
+                fetch(`${API_AP}/ativos`),
+                fetch(`${API_AP}/inativos`),
+                fetch(`${API_AP}/count`),
+            ]);
 
-  
-   const apStats = allData.docs.reduce((acc, a) => {
-  acc.total++;
-  if (a.apartamento_status === "ativo") acc.ativas++;
-  else acc.inativas++;
-  return acc;
-}, { total: 0, ativas: 0, inativas: 0, alertas: 0 });
-setApStats(apStats);
+            if (!resAll.ok || !resAtivos.ok || !resInativos.ok || !resCount.ok) {
+                throw new Error("Erro ao buscar dados dos apartamentos.");
+            }
+
+            const [allData, ativosData, inativosData, countData] = await Promise.all([
+                resAll.json(),
+                resAtivos.json(),
+                resInativos.json(),
+                resCount.json(),
+            ]);
 
 
-   
- const sensorStats = allData.docs.reduce((acc, a) => {
-  if (a.sensor_id) acc.total++;
-  if (a.sensor_status === "ativo") acc.ativos++;
-  else if (a.sensor_status) acc.inativos++;
-  return acc;
-}, { total: 0, ativos: 0, inativos: 0, alertas: 0 });
-    setSensorStats(sensorStats);
+            setApartamentos(allData.docs || []);
 
-  } catch (err) {
-    console.error("Erro ao buscar dados:", err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+
+            const apStats = allData.docs.reduce((acc, a) => {
+                acc.total++;
+                if (a.apartamento_status === "ativo") acc.ativas++;
+                else acc.inativas++;
+                return acc;
+            }, { total: 0, ativas: 0, inativas: 0, alertas: 0 });
+            setApStats(apStats);
+
+
+
+            const sensorStats = allData.docs.reduce((acc, a) => {
+                if (a.sensor_id) acc.total++;
+                if (a.sensor_status === "ativo") acc.ativos++;
+                else if (a.sensor_status) acc.inativos++;
+                return acc;
+            }, { total: 0, ativos: 0, inativos: 0, alertas: 0 });
+            setSensorStats(sensorStats);
+
+        } catch (err) {
+            console.error("Erro ao buscar dados:", err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const { showModal, setShowModal, selectedItem: selectedAp, confirmToggleStatus, toggleStatus } =
         useToggleConfirm(API_AP, fetchData);
@@ -187,11 +187,11 @@ setApStats(apStats);
                                     <tr key={ap.apartamento_id} className="hover:bg-muted/10 text-foreground">
                                         <td className="px-4 py-2 ">
                                             <div className="text-sm font-semibold">Bloco {ap.endereco_completo}</div>
-                                             <div className="text-xs text-foreground/80">{ap.endereco_condominio}</div>
+                                            <div className="text-xs text-foreground/80">{ap.endereco_condominio}</div>
                                             <div className="text-xs text-foreground/80">{`${ap.numero_moradores || 0} Moradores`}</div>
-                                              <div className="text-[10px] text-chart-1">Código {ap.codigo}</div>
-                                            
-                                            
+                                            <div className="text-[10px] text-chart-1">Código {ap.apartamento_codigo}</div>
+
+
                                         </td>
                                         <td className="px-4 py-2 text-sm">{ap.responsavel_nome}
                                             <div className="text-xs text-foreground/80">{ap.responsavel_email}</div>
@@ -204,9 +204,14 @@ setApStats(apStats);
                                                     {ap.sensor_status === "ativo" ? "Ativo" : "Inativo"}
                                                 </span>
                                             </div>
-                                             <div className="text-[10px] text-foreground/60">ID : {ap.sensor_id}</div>
-                                            
-                                           
+                                            <div className="text-[10px] text-foreground/60">ID : {ap.sensor_id}</div>
+                                            <div className="text-[10px] text-foreground/60">
+                                                Último envio: {ap.ultimo_envio
+                                                    ? new Date(ap.ultimo_envio).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                                                    : "-"}
+                                            </div>
+
+
                                         </td>
                                         <td className="px-4 py-2 text-sm">{ap.consumo_total || 0}L/dia</td>
                                         <td className="text-sm font-bold flex items-center ml-7 ">

@@ -61,7 +61,7 @@ const fetchData = async () => {
       resMoradores.json(),
     ]);
 
-    // Garantir que users sempre será um array
+ 
     let usersArray = [];
     if (Array.isArray(dataUsers)) {
       usersArray = dataUsers;
@@ -128,7 +128,7 @@ const fetchData = async () => {
       <Toaster position="top-right" richColors />
     
 
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10">
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
         {cards.map((card, i) => {
           const Icon = card.icon;
           return (

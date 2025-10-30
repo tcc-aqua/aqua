@@ -183,7 +183,7 @@ const fetchData = async () => {
                   <tr key={condominio.condominio_id} className="hover:bg-muted/10 text-foreground">
                     <td className="px-4 py-2">
                       <div className="text-sm font-semibold">{condominio.condominio_nome}</div>
-                      <div className="text-xs text-foreground/80">{`${condominio.logradouro}, ${condominio.numero} - ${condominio.bairro}/${condominio.uf}`}</div>
+                      <div className="text-xs text-foreground/80">{`${condominio.logradouro}, ${condominio.numero} - ${condominio.bairro} / ${condominio.uf}`}</div>
                       <div className="text-[10px] text-chart-1">Código {condominio.condominio_codigo}</div>
                       <div className="text-[10px] text-foreground/60">
                         Criado em {new Date(condominio.data_criacao).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}

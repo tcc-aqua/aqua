@@ -1,5 +1,5 @@
 
-import CardTop from "@/components/Cards/CardTopPadrao"
+import CardTop from "@/components/Cards/CardTotaisDash"
 import { ChartAreaInteractive } from "@/components/Charts/ChartArea"
 import { ChartBarHorizontal } from "@/components/Charts/ChartBarHorizontal"
 import { ChartPieSeparatorNone } from "@/components/Charts/ChartPie"

@@ -1,4 +1,4 @@
-import CardTop from "@/components/Cards/CardTopPadrao"
+import CardTop from "@/components/Cards/CardTotaisDash"
 import { Sidebar } from "@/components/modern-side-bar"
 import Header from "@/components/Layout/Header/page"
 export default function Plans(){

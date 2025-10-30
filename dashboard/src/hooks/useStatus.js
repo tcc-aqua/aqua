@@ -12,16 +12,46 @@ export default function useToggleConfirm(baseURL, refreshFn) {
 
   const toggleStatus = async () => {
     if (!selectedItem) return;
+
     try {
-      const action = selectedItem.status === "ativo" ? "inativar" : "ativar";
-      const res = await fetch(`${baseURL}/${selectedItem.id}/${action}`, {
+      // Detecta automaticamente o campo de ID
+      const idField =
+        selectedItem.id ||
+        selectedItem.user_id ||
+        selectedItem.casa_id ||
+        selectedItem.apartamento_id ||
+        selectedItem.condominio_id ||
+        selectedItem.sensor_id;
+
+      if (!idField) {
+        toast.error("Não foi possível identificar o ID do item.");
+        return;
+      }
+
+      // Detecta automaticamente o campo de status
+      const statusField =
+        selectedItem.status ||
+        selectedItem.user_status ||
+        selectedItem.casa_status ||
+        selectedItem.apartamento_status ||
+        selectedItem.condominio_status ||
+        selectedItem.sensor_status;
+
+      const status = (statusField || "").toLowerCase();
+
+      const action = status === "ativo" ? "inativar" : "ativar";
+
+      const res = await fetch(`${baseURL}/${idField}/${action}`, {
         method: "PATCH",
       });
+
       if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
+
       toast.success(
-        `Item ${selectedItem.status === "ativo" ? "inativado" : "ativado"} com sucesso!`
+        `Item ${status === "ativo" ? "inativado" : "ativado"} com sucesso!`
       );
-      refreshFn(); 
+
+      await refreshFn?.();
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -30,5 +60,11 @@ export default function useToggleConfirm(baseURL, refreshFn) {
     }
   };
 
-  return { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus };
+  return {
+    showModal,
+    setShowModal,
+    selectedItem,
+    confirmToggleStatus,
+    toggleStatus,
+  };
 }

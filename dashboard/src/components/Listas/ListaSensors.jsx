@@ -4,8 +4,17 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
-import { Cpu, SignalHigh, AlertTriangle, Wrench } from "lucide-react";
+import { Cpu, SignalHigh, AlertTriangle, Wrench, X, Check } from "lucide-react";
+import useToggleConfirm from "@/hooks/useStatus"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const cardVariants = {
   hidden: { y: -120, opacity: 0, zIndex: -1 },
@@ -73,7 +82,7 @@ export default function SensorsDashboard() {
     setLoading(false);
   }
 };
-
+const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
 
   useEffect(() => {
     fetchData();
@@ -190,6 +199,13 @@ export default function SensorsDashboard() {
                         ? new Date(sensor.ultimo_envio).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
                         : "-"}
                     </td>
+                    <td className="px-4 py-2 text-sm text-center">
+                                          <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(sensor)}>
+                                            <div className="flex items-center gap-1">
+                                              {sensor.sensor_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-red-500" size={14} />}
+                                            </div>
+                                          </Button>
+                                        </td>
                   </tr>
                 ))}
               </tbody>
@@ -197,6 +213,21 @@ export default function SensorsDashboard() {
           )}
         </CardContent>
       </Card>
+      
+            <Dialog open={showModal} onOpenChange={setShowModal}>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Confirmação</DialogTitle>
+                </DialogHeader>
+                <p className="py-4">
+                  Deseja realmente {selectedItem?.sensor_status === "ativo" ? "inativar" : "ativar"} o usuário <strong>{selectedItem?.sensor_codigo}</strong>?
+                </p>
+                <DialogFooter className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
+                  <Button variant="destructive" onClick={toggleStatus}>{selectedItem?.sensor_status === "ativo" ? "Inativar" : "Ativar"}</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
     </div>
   );
 }
