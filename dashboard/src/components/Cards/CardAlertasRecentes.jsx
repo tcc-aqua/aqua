@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Home, Building } from "lucide-react";
 
 const API_URL = "http://localhost:3333/api/alertas/recentes";
 
@@ -17,7 +17,7 @@ export default function CardAlertasRecentes() {
         const res = await fetch(API_URL);
         const data = await res.json();
 
-        // Garante que alertas seja um array
+
         setAlertas(Array.isArray(data) ? data : data.alertas ?? []);
       } catch (error) {
         console.error("Erro ao buscar alertas recentes:", error);
@@ -29,12 +29,49 @@ export default function CardAlertasRecentes() {
     fetchAlertas();
   }, []);
 
+
+  const renderIconeResidencia = (type) => {
+    const iconProps = { className: "w-4 h-4 mr-1", 'aria-label': type === 'Casa' ? 'Casa' : 'Condomínio/Apartamento' };
+
+    if (type && type.toLowerCase().includes('casa')) {
+      return <Home {...iconProps} />;
+    } else if (type && (type.toLowerCase().includes('apartamento') || type.toLowerCase().includes('condominio'))) {
+      return <Building {...iconProps} />;
+    }
+    return null;
+  };
+
+
+  const getAlertaLevelColorClasses = (nivel) => {
+    let spanBgClass = '';
+    let spanTextClass = 'text-white';
+
+    switch (nivel?.toLowerCase()) {
+      case 'baixo':
+        spanBgClass = 'bg-green-500';
+        break;
+      case 'medio':
+        spanBgClass = 'bg-yellow-500';
+        break;
+      case 'alto':
+        spanBgClass = 'bg-red-600';
+        break;
+      case 'critico':
+        spanBgClass = 'bg-red-800';
+        break;
+      default:
+        spanBgClass = 'bg-gray-500';
+    }
+    return { spanBgClass, spanTextClass };
+  };
+
+
   return (
     <Card className="w-full max-w-md mt-10">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-red-600" />
-      <h1 className="text-red-600">Alertas Recentes</h1>
+          <h1 className="text-red-600">Alertas Recentes</h1>
         </CardTitle>
         <CardDescription>
           Últimos alertas gerados no sistema
@@ -49,39 +86,46 @@ export default function CardAlertasRecentes() {
         ) : (
           <ScrollArea className="h-64">
             <div className="flex flex-col divide-y divide-border">
-              {alertas.map((alerta) => (
-                <div key={alerta.id} className="p-4 flex justify-between items-start gap-2">
-                  <div>
-                    <p className="font-semibold text-foreground">{alerta.residencia_type}</p>
-                    <p className="font-semibold text-foreground">{alerta.tipo}</p>
-                    <p className="text-sm text-muted-foreground">{alerta.mensagem}</p>
-                    <p className="font-semibold text-foreground">{alerta.sensor_id}</p>
-                    <p className="font-semibold text-foreground">{alerta.nivel}</p>
-                    <p className="font-semibold text-foreground">{alerta.resolvido}</p>
-                      <div className="text-[10px] text-foreground/60">
-                         {alerta.criado_em
+              {alertas.map((alerta) => {
+
+                const { spanBgClass, spanTextClass } = getAlertaLevelColorClasses(alerta.nivel);
+
+                return (
+                  <div key={alerta.id} className="p-4 flex justify-between m-2 bg-[#eff6ff] items-start w-100 rounded-lg gap-2">
+                    <div>
+
+                      <span className="font-semibold text-foreground bg-gray-200 p-1.5 rounded-full inline-flex items-center">
+                        {renderIconeResidencia(alerta.residencia_type)}
+                        {alerta.residencia_type}
+                      </span>
+
+
+                      <p className="font-semibold text-foreground mt-1">{alerta.tipo}</p>
+                      <p className="text-sm text-muted-foreground">{alerta.mensagem}</p>
+
+
+                      <div className="text-[10px] text-foreground/60 mt-1">
+                        {alerta.criado_em
                           ? new Date(alerta.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
-                          : "-"} Crado em
+                          : "-"} Criado em
                       </div>
-                      
-                      <div className="text-[10px] text-foreground/60">
-                         {alerta.atualizado_em
+
+                      {/* <div className="text-[10px] text-foreground/60">
+                        {alerta.atualizado_em
                           ? new Date(alerta.atualizado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
                           : "-"} Atualizado em
-                      </div>
-                    
+                      </div> */}
+
+                    </div>
+
+                    <span
+                      className={`px-2 py-1 text-xs font-bold rounded-full uppercase ${spanTextClass} ${spanBgClass}`}
+                    >
+                      {alerta.nivel}
+                    </span>
                   </div>
-                  <span
-                    className={`px-2 py-1 text-xs font-bold rounded-full uppercase ${
-                      alerta.status === "ativo"
-                        ? "bg-red-600 text-white"
-                        : "bg-gray-300 text-gray-800"
-                    }`}
-                  >
-                    {alerta.status}
-                  </span>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </ScrollArea>
         )}
