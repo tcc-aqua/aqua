@@ -215,7 +215,7 @@ const cards = [
                     <td className="text-sm font-bold flex items-center ml-7 py-10">
                       <span className={`inline-block w-3 h-3 rounded-full  px-3 ${casa.casa_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={casa.casa_status} />
                     </td>
-                    <td className="px-4 py-2 text-sm">-</td>
+                    <td className="px-4 py-2 text-sm">{casa.alertas}</td>
                     <td className="px-4 py-2 text-sm">
                       <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(casa)}>
                         <div className="flex items-center gap-1">
