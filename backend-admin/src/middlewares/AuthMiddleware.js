@@ -14,7 +14,12 @@ export const autenticarAdmin = async (req, reply) => {
             return reply.status(401).send({ message: 'Token inválido.' });
         }
 
-        const token = parts[1];
+        const token = parts[1].replace(/"/g, ''); 
+
+
+        console.log("Token recebido:", token);
+        console.log("JWT_SECRET:", process.env.JWT_SECRET);
+        console.log("Tamanho:", process.env.JWT_SECRET.length);
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 

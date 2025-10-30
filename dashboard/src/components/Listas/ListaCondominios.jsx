@@ -189,8 +189,12 @@ const fetchData = async () => {
                         Criado em {new Date(condominio.data_criacao).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </div>
                     </td>
-                    <td className="px-4 py-2 text-sm">{condominio.numero_apartamentos}/300</td>
-                    <td className="px-4 py-2 text-sm">{condominio.numero_sensores}/300</td>
+                    <td className="px-4 py-2 text-sm">{condominio.numero_apartamentos}/300
+                        <div className="text-[10px] text-foreground/60">Total Apartamentos</div>
+                    </td>
+                    <td className="px-4 py-2 text-sm">{condominio.numero_sensores}/300
+                        <div className="text-[10px] text-foreground/60">Total de Sensores</div>
+                    </td>
                     <td className="text-sm font-bold flex items-center ml-7 py-9">
                       <span className={`inline-block w-3 h-3 rounded-full px-3 ${condominio.condominio_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={condominio.condominio_status} />
                     </td>

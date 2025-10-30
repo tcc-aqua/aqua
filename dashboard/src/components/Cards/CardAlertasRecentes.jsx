@@ -67,7 +67,7 @@ export default function CardAlertasRecentes() {
 
 
   return (
-    <Card className="w-full max-w-md mt-10">
+    <Card className="w-full mt-10">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-red-600" />

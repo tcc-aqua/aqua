@@ -199,7 +199,7 @@ export default function ApartamentosDashboard() {
                                         </td>
                                         <td className="px-4 py-2 text-sm">
                                             <div>{ap.sensor_codigo}</div>
-                                            <div className="ml-3 text-sm font-bold">
+                                            <div className="text-sm font-bold">
                                                 <span className={ap.sensor_status === "ativo" ? "text-green-600" : "text-red-600"}>
                                                     {ap.sensor_status === "ativo" ? "Ativo" : "Inativo"}
                                                 </span>
@@ -213,8 +213,10 @@ export default function ApartamentosDashboard() {
 
 
                                         </td>
-                                        <td className="px-4 py-2 text-sm">{ap.consumo_total || 0}L/dia</td>
-                                        <td className="text-sm font-bold flex items-center ml-7 ">
+                                        <td className="px-4 py-2 text-sm">{ap.consumo_total || 0}L
+                                                                   <div className="text-[10px] text-foreground/60">Total Acumulado</div>
+                                        </td>
+                                        <td className="text-sm font-bold flex items-center ml-7 py-9 ">
                                             <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${ap.apartamento_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={ap.apartamento_status} />
                                         </td>
                                         <td className="px-4 py-2 text-sm">-</td>

@@ -191,13 +191,13 @@ const cards = [
                       <div className="text-sm font-semibold">{casa.endereco_completo}</div>
                       <div className="text-xs text-foreground/80">{`${casa.numero_moradores || 0} Moradores`}</div>
                       <div className="text-[10px] text-foreground/60">CEP: {casa.cep}</div>
-                      <div className="text-[10px] text-accent">Código {casa.codigo_acesso}</div>
+                      <div className="text-[10px] text-accent">Código {casa.casa_codigo}</div>
                      
                     </td>
                     <td className="px-4 py-2 text-sm">{casa.responsavel_nome}</td>
                     <td className="px-4 py-2 text-sm">
                       <div>{casa.sensor_codigo}</div>
-                      <div className="ml-3 text-sm font-bold">
+                      <div className=" text-sm font-bold">
                         <span className={casa.sensor_status === "ativo" ? "text-green-600" : "text-red-600"}>
                           {casa.sensor_status === "ativo" ? "Ativo" : "Inativo"}
                         </span>
@@ -209,9 +209,11 @@ const cards = [
                           : "-"}
                       </div>
                     </td>
-                    <td className="px-4 py-2 text-sm">{casa.consumo_total || 0}L/dia</td>
-                    <td className="text-sm font-bold flex items-center ml-7">
-                      <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${casa.casa_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={casa.casa_status} />
+                    <td className="px-6 py-2 text-sm">{casa.consumo_total || 0}L
+                       <div className="text-[10px] text-foreground/60">Total Acumulado</div>
+                    </td>
+                    <td className="text-sm font-bold flex items-center ml-7 py-10">
+                      <span className={`inline-block w-3 h-3 rounded-full  px-3 ${casa.casa_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={casa.casa_status} />
                     </td>
                     <td className="px-4 py-2 text-sm">-</td>
                     <td className="px-4 py-2 text-sm">
@@ -245,7 +247,7 @@ const cards = [
           <DialogFooter className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
             <Button variant="destructive" onClick={toggleStatus}>
-              {selectedItem?.status === "ativo" ? "Inativar" : "Ativar"}
+              {selectedItem?.casa_status === "ativo" ? "Inativar" : "Ativar"}
             </Button>
           </DialogFooter>
         </DialogContent>
