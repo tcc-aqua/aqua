@@ -19,7 +19,7 @@ const Main = ({
         },
     },
     image = {
-        src: "./interface-app.jpg",
+        src: "./interface-app.png",
         alt: "Placeholder",
     },
 }) => {

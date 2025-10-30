@@ -61,14 +61,14 @@ export default class AdminService {
         }
     }
 
-    static async updateAdmin(id, { email, password, type }) {
+    static async updateAdmin(id, { email, type }) {
         try {
             const admin = await Admin.findByPk(id);
             if (!admin) {
                 throw new Error('Administrador não encontrado');
             }
             await admin.update({
-                email, password, type
+                email, type
             })
             return admin;
         } catch (error) {
@@ -77,10 +77,10 @@ export default class AdminService {
         }
     }
 
-    static async inativarAdmin(id){
+    static async inativarAdmin(id) {
         try {
             const admin = await Admin.findByPk(id);
-              if (!admin) {
+            if (!admin) {
                 throw new Error('Administrador não encontrado');
             }
 
@@ -88,17 +88,17 @@ export default class AdminService {
                 status: 'inativo'
             })
 
-            return {message: 'Administrador inativado com sucesso!', admin}
+            return { message: 'Administrador inativado com sucesso!', admin }
         } catch (error) {
             console.error('Erro ao inativar administrador', error);
             throw error;
         }
-    } 
-    
-    static async ativarAdmin(id){
+    }
+
+    static async ativarAdmin(id) {
         try {
             const admin = await Admin.findByPk(id);
-              if (!admin) {
+            if (!admin) {
                 throw new Error('Administrador não encontrado');
             }
 
@@ -106,12 +106,26 @@ export default class AdminService {
                 status: 'ativo'
             })
 
-            return {message: 'Administrador ativado com sucesso!', admin}
+            return { message: 'Administrador ativado com sucesso!', admin }
         } catch (error) {
             console.error('Erro ao ativar administrador', error);
             throw error;
         }
     }
 
+    static async updateMe(adminId, data) {
+        try {
+            const admin = await Admin.findByPk(adminId);
+            if (!admin) throw new Error('Usuário não encontrado');
+
+            await admin.update(data);
+            const adminData = admin.toJSON();
+            delete adminData.password;
+            return adminData;
+        } catch (error) {
+            console.error('Erro ao atualizar usuário', error);
+            throw error;
+        }
+    }
 
 }
