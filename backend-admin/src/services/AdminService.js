@@ -61,14 +61,14 @@ export default class AdminService {
         }
     }
 
-    static async updateAdmin(id, { email, password, type }) {
+    static async updateAdmin(id, { email, type }) {
         try {
             const admin = await Admin.findByPk(id);
             if (!admin) {
                 throw new Error('Administrador não encontrado');
             }
             await admin.update({
-                email, password, type
+                email, type
             })
             return admin;
         } catch (error) {

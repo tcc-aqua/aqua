@@ -47,7 +47,7 @@ Alertas.init({
     tableName: 'alertas',
     timestamps: true,
     createdAt: 'criado_em',
-    updatedAt: 'atualizado_em'
+    updatedAt: false
 })
 
 Alertas.belongsTo(Casa, { as: 'casa', foreignKey: 'residencia_id' });

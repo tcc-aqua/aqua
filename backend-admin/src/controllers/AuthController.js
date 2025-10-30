@@ -40,4 +40,24 @@ export const Login = async (req, reply) => {
         console.error("Erro ao efetuar login:", error);
         return reply.status(500).send({ message: 'Erro ao efetuar login.' });
     }
+}
+export const getMe = async (req, reply) => {
+    try {
+        const admin = await Admin.findByPk(req.admin.id);
+
+        if (!admin) {
+            return reply.status(404).send({ message: 'Administrador não encontrado.' });
+        }
+
+        const adminData = admin.toJSON();
+        delete adminData.password;
+
+        // retornando sem a senha
+        return reply.status(200).send(adminData);
+
+    } catch (error) {
+        console.error("Erro ao listar dados do administrador:", error);
+        return reply.status(500).send({ message: 'Erro ao listar dados do administrador.' });
+    }
 };
+
