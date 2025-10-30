@@ -41,52 +41,52 @@ export default function UsersDashboard() {
   });
 
   const API_URL = "http://localhost:3333/api/users";
-const fetchData = async () => {
-  try {
-    setLoading(true);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
 
-    const [resUsers, resTotal, resAtivos, resSindicos, resMoradores] = await Promise.all([
-      fetch(`${API_URL}`),
-      fetch(`${API_URL}/count`),
-      fetch(`${API_URL}/count-ativos`),
-      fetch(`${API_URL}/sindicos`),
-      fetch(`${API_URL}/moradores`)
-    ]);
+      const [resUsers, resTotal, resAtivos, resSindicos, resMoradores] = await Promise.all([
+        fetch(`${API_URL}`),
+        fetch(`${API_URL}/count`),
+        fetch(`${API_URL}/count-ativos`),
+        fetch(`${API_URL}/sindicos`),
+        fetch(`${API_URL}/moradores`)
+      ]);
 
-    const [dataUsers, dataTotal, dataAtivos, dataSindicos, dataMoradores] = await Promise.all([
-      resUsers.json(),
-      resTotal.json(),
-      resAtivos.json(),
-      resSindicos.json(),
-      resMoradores.json(),
-    ]);
+      const [dataUsers, dataTotal, dataAtivos, dataSindicos, dataMoradores] = await Promise.all([
+        resUsers.json(),
+        resTotal.json(),
+        resAtivos.json(),
+        resSindicos.json(),
+        resMoradores.json(),
+      ]);
 
- 
-    let usersArray = [];
-    if (Array.isArray(dataUsers)) {
-      usersArray = dataUsers;
-    } else if (Array.isArray(dataUsers.docs)) {
-      usersArray = dataUsers.docs;
-    } else if (Array.isArray(dataUsers.users)) {
-      usersArray = dataUsers.users;
+
+      let usersArray = [];
+      if (Array.isArray(dataUsers)) {
+        usersArray = dataUsers;
+      } else if (Array.isArray(dataUsers.docs)) {
+        usersArray = dataUsers.docs;
+      } else if (Array.isArray(dataUsers.users)) {
+        usersArray = dataUsers.users;
+      }
+
+      setUsers(usersArray);
+
+      setUserStats({
+        total: dataTotal ?? 0,
+        ativos: dataAtivos ?? 0,
+        sindicos: dataSindicos ?? 0,
+        moradores: dataMoradores ?? 0,
+      });
+
+    } catch (err) {
+      console.error("Erro ao buscar dados:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    setUsers(usersArray);
-
-    setUserStats({
-      total: dataTotal ?? 0,
-      ativos: dataAtivos ?? 0,
-      sindicos: dataSindicos ?? 0,
-      moradores: dataMoradores ?? 0,
-    });
-
-  } catch (err) {
-    console.error("Erro ao buscar dados:", err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
@@ -103,30 +103,33 @@ const fetchData = async () => {
       title: "Todos os Usuários",
       value: userStats.total,
       icon: Users,
-      iconColor: "text-blue-700", 
+      iconColor: "text-blue-700",
     },
-    { title: "Usuários Ativos",
-       value: userStats.ativos,
-        icon: UserCheck, 
-     
-        iconColor: "text-green-700", 
-       },
-    { title: "Síndicos",
-       value: userStats.sindicos,
-        icon: UserCog,
-         iconColor: "text-yellow-500",
-         },
-    { title: "Alertas",
-       value: userStats.moradores,
-        icon: AlertTriangle,
-         iconColor: "text-red-700", 
-         },
+    {
+      title: "Usuários Ativos",
+      value: userStats.ativos,
+      icon: UserCheck,
+
+      iconColor: "text-green-700",
+    },
+    {
+      title: "Síndicos",
+      value: userStats.sindicos,
+      icon: UserCog,
+      iconColor: "text-yellow-500",
+    },
+    {
+      title: "Alertas",
+      value: userStats.moradores,
+      icon: AlertTriangle,
+      iconColor: "text-red-700",
+    },
   ];
 
   return (
     <div className="p-4">
       <Toaster position="top-right" richColors />
-    
+
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
         {cards.map((card, i) => {
@@ -165,8 +168,8 @@ const fetchData = async () => {
                   <th className="px-4 py-2 text-left text-xs font-medium uppercase">Tipo</th>
                   <th className="px-4 py-2 text-left text-xs font-medium uppercase">Função</th>
                   <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
-                
-                  
+
+
                   <th className="px-4 py-2 text-left text-xs font-medium uppercase"> Ações</th>
                 </tr>
               </thead>
@@ -179,14 +182,18 @@ const fetchData = async () => {
                       <div className="text-xs text-foreground/80">{user.user_email}</div>
                       <div className="text-xs text-foreground/60">{user.user_cpf}</div>
                     </td>
-                    <td className="px-4 py-2 text-sm">{user.user_endereco}</td>
+                    <td className="px-4 py-2 text-sm">{user.logradouro} - {user.numero}
+                      <div className="text-xs text-foreground/80">{user.bairro}, {user.cidade}/{user.uf}</div>
+                      <div className="text-xs text-foreground/80">CEP: {user.cep}</div>
+
+                    </td>
                     <td className=" text-sm">
                       <span
                         className={`px-2 py-1 rounded-full text-white font-semibold ${user.user_type === "casa"
-                            ? "bg-blue-700"
-                            : user.user_type === "condominio"
-                              ? "bg-purple-700"
-                              : "bg-gray-500"
+                          ? "bg-blue-700"
+                          : user.user_type === "condominio"
+                            ? "bg-purple-700"
+                            : "bg-gray-500"
                           }`}
                       >
                         {user.user_type === "casa" ? "casa" : user.user_type === "condominio" ? "condomínio" : "Desconhecido"}
@@ -196,10 +203,10 @@ const fetchData = async () => {
                     <td className="px-4 py-2 text-sm">
                       <span
                         className={`px-2 py-1 rounded-full text-white font-semibold ${user.user_role === "morador"
-                            ? "bg-green-600"
-                            : user.user_role === "sindico"
-                              ? "bg-yellow-500"
-                              : "bg-gray-500"
+                          ? "bg-green-600"
+                          : user.user_role === "sindico"
+                            ? "bg-yellow-500"
+                            : "bg-gray-500"
                           }`}
                       >
                         {user.user_role === "morador" ? "morador" : user.user_role === "sindico" ? "síndico" : "Desconhecido"}
@@ -211,7 +218,7 @@ const fetchData = async () => {
                     <td className=" text-sm font-bold flex items-center px-7 py-4">
                       <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${user.user_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={user.user_status} />
                     </td>
-                
+
                     <td className="px-4 py-2 text-sm text-center">
                       <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
                         <div className="flex items-center gap-1">

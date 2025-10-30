@@ -13,7 +13,7 @@ export default function Funcionarios() {
                 <Header />
             </header>
             <main className="container mx-auto pt-20">
-                <CardTop></CardTop>
+            
             </main>
         </div>
 

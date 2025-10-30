@@ -26,11 +26,15 @@ export default function Dashboard() {
 
           <main className="container mx-auto pt-20 ">
             <CardTopDash></CardTopDash>
-            <section className="container max-auto justify-center grid grid-cols-2 gap-10 ">
-              <div> <DistribuicaoPorRegiao></DistribuicaoPorRegiao></div>
-          <div>   <CardAlertasRecentes></CardAlertasRecentes></div>
-           
+            <section className="container mx-auto justify-center grid grid-cols-3 gap-10">
+              <div className="col-span-2">
+                <DistribuicaoPorRegiao />
+              </div>
+              <div>
+                <CardAlertasRecentes />
+              </div>
             </section>
+
           </main>
         </div>
       </LayoutDashboard>

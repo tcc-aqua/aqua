@@ -179,16 +179,8 @@ const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus
                       <div className="text-[10px] text-accent">{sensor.residencia_type}</div>
                     </td>
                     <td className="px-4 py-2 text-sm">{sensor.localizacao || "-"}</td>
-                    <td
-                      className={`px-4 py-2 text-sm font-bold ${
-                        sensor.sensor_status === "ativo"
-                          ? "text-green-600"
-                          : sensor.sensor_status === "inativo"
-                          ? "text-red-600"
-                          : "text-yellow-600"
-                      }`}
-                    >
-                      {sensor.sensor_status || "-"}
+                    <td className="px-4 py-2 text-sm">
+                      <span className={`inline-block w-3 h-3 rounded-full  px-3 ${sensor.sensor_status === "ativo" ? "bg-green-600" : sensor.sensor_status === "inativo" ? "bg-red-600" : "bg-yellow-600"}`} title={sensor.sensor_status} />
                     </td>
                     <td className="px-4 py-2 text-sm font-bold">
                       {sensor.consumo_total}/L

@@ -30,8 +30,9 @@ const navigationItems = [
   { id: "apartamentos", name: "Apartamentos", icon: Rows, href: "/apartamentos" },
   { id: "users", name: "Usuários", icon: Users, href: "/users" },
   { id: "tecnicos", name: "Técnicos", icon: IdCardLanyard, href: "/funcionarios" },
+    { id: "contact", name: "Contato", icon: MessageCircle, href: "/contact" },
   { id: "profile", name: "Perfil", icon: User, href: "/profile" },
-  { id: "contact", name: "Contato", icon: MessageCircle, href: "/contact" },
+
 ];
 
 export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
