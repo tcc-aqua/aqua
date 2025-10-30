@@ -48,16 +48,16 @@ export default function CardAlertasRecentes() {
 
     switch (nivel?.toLowerCase()) {
       case 'baixo':
-        spanBgClass = 'bg-green-500';
+        spanBgClass = 'bg-green-400';
         break;
       case 'medio':
-        spanBgClass = 'bg-yellow-500';
+        spanBgClass = 'bg-yellow-400';
         break;
       case 'alto':
-        spanBgClass = 'bg-red-600';
+        spanBgClass = 'bg-red-500';
         break;
       case 'critico':
-        spanBgClass = 'bg-red-800';
+        spanBgClass = 'bg-red-700';
         break;
       default:
         spanBgClass = 'bg-gray-500';
@@ -94,7 +94,10 @@ export default function CardAlertasRecentes() {
                   <div key={alerta.id} className="p-4 flex justify-between m-2 bg-[#eff6ff] items-start w-100 rounded-lg gap-2">
                     <div>
 
-                      <span className="font-semibold text-foreground bg-gray-200 p-1.5 rounded-full inline-flex items-center">
+                      <span
+                        className={`font-semibold p-1 rounded-full inline-flex items-center gap-1
+                ${alerta.residencia_type === "casa" ? "bg-blue-700 text-white" : "bg-purple-700 text-white"}`}
+                      >
                         {renderIconeResidencia(alerta.residencia_type)}
                         {alerta.residencia_type}
                       </span>
