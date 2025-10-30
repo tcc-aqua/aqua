@@ -52,11 +52,24 @@ export default function CardAlertasRecentes() {
               {alertas.map((alerta) => (
                 <div key={alerta.id} className="p-4 flex justify-between items-start gap-2">
                   <div>
-                    <p className="font-semibold text-foreground">{alerta.titulo}</p>
-                    <p className="text-sm text-muted-foreground">{alerta.descricao}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(alerta.created_at).toLocaleString()}
-                    </p>
+                    <p className="font-semibold text-foreground">{alerta.residencia_type}</p>
+                    <p className="font-semibold text-foreground">{alerta.tipo}</p>
+                    <p className="text-sm text-muted-foreground">{alerta.mensagem}</p>
+                    <p className="font-semibold text-foreground">{alerta.sensor_id}</p>
+                    <p className="font-semibold text-foreground">{alerta.nivel}</p>
+                    <p className="font-semibold text-foreground">{alerta.resolvido}</p>
+                      <div className="text-[10px] text-foreground/60">
+                         {alerta.criado_em
+                          ? new Date(alerta.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                          : "-"} Crado em
+                      </div>
+                      
+                      <div className="text-[10px] text-foreground/60">
+                         {alerta.atualizado_em
+                          ? new Date(alerta.atualizado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                          : "-"} Atualizado em
+                      </div>
+                    
                   </div>
                   <span
                     className={`px-2 py-1 text-xs font-bold rounded-full uppercase ${

@@ -39,7 +39,7 @@ const fetchData = async () => {
   try {
     setLoading(true);
 
-    // Faz requisições ao backend
+
     const [resAll, resAtivos, resInativos, resCount, resCountAtivas] = await Promise.all([
       fetch(`${API_CASAS}`),
       fetch(`${API_CASAS}/ativos`),
@@ -68,7 +68,7 @@ setCasaStats({
   total: countData.total ?? allData.docs.length,
   ativas: countAtivasData.total ?? ativosData.docs?.length ?? 0,
   inativas: inativosData.docs?.length ?? 0,
-  alertas: 0, // opcional, criar rota no backend se quiser alertas
+  alertas: 0, 
 });
 
 const sensorStats = allData.docs.reduce((acc, casa) => {
