@@ -1,174 +1,300 @@
 import React from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
-// 1. Limpei as importações não utilizadas (ProgressBar, MD3Colors)
-import { Avatar, Button, Card, Title, Paragraph } from 'react-native-paper'; 
+import { 
+  Provider as PaperProvider, 
+  DefaultTheme, 
+  Avatar, 
+  Button, 
+  Card, 
+  Title, 
+  Paragraph,
+  Text,
+  List,
+  ProgressBar,
+} from 'react-native-paper'; 
 import { LinearGradient } from 'expo-linear-gradient';
+import { MotiView, MotiText } from 'moti';
+import { MotiPressable } from 'moti/interactions';
+import * as Haptics from 'expo-haptics';
 
+// --- TEMA VISUAL CONSISTENTE ---
+const theme = {
+  ...DefaultTheme,
+  roundness: 12,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#0A84FF',
+    accent: '#005ecb',
+    background: '#F2F2F7',
+    surface: '#FFFFFF',
+    text: '#1C1C1E',
+    placeholder: '#8A8A8E',
+    success: '#34C759',
+    danger: '#FF3B30',
+    warning: '#FF9500',
+    gold: '#FFD700', // Cor para pontos e recompensas
+  },
+};
+
+// --- DADOS MOCKADOS (PARA VISUALIZAÇÃO) ---
+const generalProgress = {
+  active: 5,
+  completed: 10,
+  points: 1500,
+};
+
+const myGoals = [
+  { id: '1', title: 'Economizar 100L de água esta semana', progress: 0.75, status: 'Em andamento', icon: 'water-percent' },
+  { id: '2', title: 'Reduzir o tempo de banho para 5 minutos', progress: 1, status: 'Concluída', icon: 'clock-check-outline' },
+  { id: '3', title: 'Consertar o vazamento da torneira', progress: 0, status: 'Pendente', icon: 'wrench-outline' },
+];
+
+const communityChallenge = {
+  title: 'Desafio Coletivo de Dezembro',
+  description: 'Todo o condomínio unido para reduzir o consumo em 15% e ganhar uma recompensa especial!',
+  progress: 0.6,
+};
+
+const ranking = [
+  { id: '1', name: 'Apto 12B', points: 2000, avatar: 'numeric-1-circle' },
+  { id: '2', name: 'Você', points: 1500, avatar: 'account-circle' },
+  { id: '3', name: 'Apto 8A', points: 1200, avatar: 'numeric-3-circle' },
+];
+
+
+// --- COMPONENTE PRINCIPAL ---
 const MetasScreen = () => {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      
-      {/* Card de Progresso Geral - VERSÃO OTIMIZADA */}
-      <LinearGradient
-        colors={['#4c669f', '#3b5998', '#C8A2C8']}
-        start={{x: 0, y: 0}}
-        end={{x: 1, y: 0}}
-        style={styles.gradientCard}
-      >
-        {/* 2. Substituí Card.Title por um View e um Title padrão */}
-        <View style={styles.cardHeader}>
-          <Title style={styles.cardTitleWhite}>Progresso Geral</Title>
-        </View>
-
-        {/* 3. Substituí Card.Content por um View padrão */}
-        <View style={styles.cardContent}>
-          {/* Seção da mensagem de rendimento com ícone */}
-          <View style={styles.rendimentoContainer}>
-            <Paragraph style={styles.textoBranco}>
-              Seu rendimento este mês está ótimo!
-            </Paragraph>
-            <Avatar.Icon 
-              size={40} 
-              icon="rocket-launch" 
-              style={styles.rendimentoIcon} 
-              color="#4c669f"
-              backgroundColor="#FFF"
-            />
-          </View>
-
-          {/* Seção das 3 informações lado a lado */}
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Title style={styles.statNumeroBranco}>5</Title>
-              <Paragraph style={styles.statLabelBranco}>Ativas</Paragraph>
+    <PaperProvider theme={theme}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        
+        {/* Card de Progresso Geral */}
+        <MotiView from={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'timing', duration: 500 }}>
+          <LinearGradient
+            colors={['#4A00E0', '#8E2DE2']} // Gradiente Roxo para destaque
+            start={{x: 0, y: 0}}
+            end={{x: 1, y: 1}}
+            style={styles.gradientCard}
+          >
+            <View style={styles.cardHeader}>
+              <Title style={styles.cardTitleWhite}>Seu Progresso</Title>
+              <Avatar.Icon size={40} icon="trophy-award" color={theme.colors.gold} style={{ backgroundColor: 'rgba(255,255,255,0.1)' }} />
             </View>
-            <View style={styles.statItem}>
-              <Title style={styles.statNumeroBranco}>10</Title>
-              <Paragraph style={styles.statLabelBranco}>Concluídas</Paragraph>
+
+            <View style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <Title style={styles.statNumeroBranco}>{generalProgress.active}</Title>
+                <Paragraph style={styles.statLabelBranco}>Ativas</Paragraph>
+              </View>
+              <View style={styles.statItem}>
+                <Title style={styles.statNumeroBranco}>{generalProgress.completed}</Title>
+                <Paragraph style={styles.statLabelBranco}>Concluídas</Paragraph>
+              </View>
+              <View style={styles.statItem}>
+                <Title style={styles.statNumeroBranco}>{generalProgress.points}</Title>
+                <Paragraph style={styles.statLabelBranco}>Pontos</Paragraph>
+              </View>
             </View>
-            <View style={styles.statItem}>
-              <Title style={styles.statNumeroBranco}>1500</Title>
-              <Paragraph style={styles.statLabelBranco}>Pontos</Paragraph>
-            </View>
-          </View>
-        </View>
-      </LinearGradient>
+          </LinearGradient>
+        </MotiView>
 
-      {/* O resto do seu código permanece exatamente o mesmo */}
-      <Card style={styles.card}>
-        <Card.Title title="Minhas Metas" />
-        <Card.Content>
-          <Paragraph>Meta 1: Correr 5km - Em andamento</Paragraph>
-          <Paragraph>Meta 2: Ler 1 livro por mês - Concluída</Paragraph>
-        </Card.Content>
-      </Card>
-      {/* ... outros cards e botões ... */}
-       <Card style={styles.card}>
-        <Card.Title title="Desafio da Comunidade" />
-        <Card.Content>
-          <Paragraph>Participe do desafio de economizar R$100 neste mês e ganhe pontos extras!</Paragraph>
-        </Card.Content>
-      </Card>
+        {/* Botões de Ação Rápida */}
+        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 100 }} style={styles.actionsContainer}>
+            <MotiPressable 
+              style={styles.actionButton}
+              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+              animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })}
+            >
+                <List.Icon icon="plus-circle-outline" color={theme.colors.primary} />
+                <Text style={styles.actionText}>Criar Nova Meta</Text>
+            </MotiPressable>
+            <MotiPressable 
+              style={[styles.actionButton, { backgroundColor: '#FFFBE6' }]}
+              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+              animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })}
+            >
+                <List.Icon icon="gift-outline" color={theme.colors.gold} />
+                <Text style={[styles.actionText, { color: theme.colors.gold }]}>Recompensas</Text>
+            </MotiPressable>
+        </MotiView>
 
-      <Card style={styles.card}>
-        <Card.Title title="Ranking do Condomínio" />
-        <Card.Content>
-          <Paragraph>1. Vizinho 1 - 2000 pontos</Paragraph>
-          <Paragraph>2. Você - 1500 pontos</Paragraph>
-          <Paragraph>3. Vizinho 2 - 1200 pontos</Paragraph>
-        </Card.Content>
-      </Card>
+        {/* Card "Minhas Metas" */}
+        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 200 }}>
+          <Card style={styles.card} elevation={2}>
+            <Card.Title title="Minhas Metas Atuais" titleStyle={styles.cardTitle} />
+            <Card.Content>
+              {myGoals.map((meta, index) => (
+                <View key={meta.id} style={styles.goalItem}>
+                  <List.Icon icon={meta.icon} color={meta.progress === 1 ? theme.colors.success : theme.colors.primary} style={{ marginLeft: -10 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.goalTitle}>{meta.title}</Text>
+                    <ProgressBar progress={meta.progress} color={meta.progress === 1 ? theme.colors.success : theme.colors.primary} style={styles.goalProgressBar} />
+                  </View>
+                  <Text style={[styles.goalStatus, { color: meta.progress === 1 ? theme.colors.success : theme.colors.placeholder }]}>
+                    {meta.status}
+                  </Text>
+                </View>
+              ))}
+            </Card.Content>
+          </Card>
+        </MotiView>
+        
+        {/* Card "Desafio da Comunidade" */}
+        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 300 }}>
+          <Card style={styles.card} elevation={2}>
+            <Card.Title title={communityChallenge.title} subtitle="Participe com seus vizinhos!" titleStyle={styles.cardTitle} />
+            <Card.Content>
+              <Paragraph style={styles.challengeDescription}>{communityChallenge.description}</Paragraph>
+              <View style={{ marginTop: 10 }}>
+                <Text style={styles.goalText}>Progresso do Condomínio:</Text>
+                <ProgressBar progress={communityChallenge.progress} color={theme.colors.success} style={styles.goalProgressBar} />
+              </View>
+            </Card.Content>
+          </Card>
+        </MotiView>
 
-      <View style={styles.buttonContainer}>
-        <Button icon="plus" mode="contained" onPress={() => console.log('Criar nova meta')} style={styles.button}>
-          Criar Meta
-        </Button>
-        <Button icon="gift" mode="contained" onPress={() => console.log('Resgatar recompensas')} style={styles.button}>
-          Recompensas
-        </Button>
-      </View>
-    </ScrollView>
+        {/* Card "Ranking" */}
+        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 400 }}>
+          <Card style={styles.card} elevation={2}>
+            <Card.Title title="Ranking de Pontos" titleStyle={styles.cardTitle} />
+            <Card.Content>
+              {ranking.map((item, index) => (
+                <List.Item
+                  key={item.id}
+                  title={item.name}
+                  titleStyle={item.name === 'Você' ? styles.rankingYou : styles.rankingOthers}
+                  left={() => <Avatar.Icon size={40} icon={item.avatar} color={item.name === 'Você' ? theme.colors.primary : theme.colors.placeholder} style={{backgroundColor: 'transparent'}} />}
+                  right={() => <Text style={styles.rankingPoints}>{item.points} pts</Text>}
+                />
+              ))}
+            </Card.Content>
+          </Card>
+        </MotiView>
+      </ScrollView>
+    </PaperProvider>
   );
 };
 
 const styles = StyleSheet.create({
-  // ... (container, contentContainer, card)
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
   contentContainer: {
-    padding: 10,
+    padding: 16,
+    paddingBottom: 48,
   },
   card: {
-    marginBottom: 15,
+    marginBottom: 20,
+    borderRadius: theme.roundness * 1.5,
+    backgroundColor: theme.colors.surface,
+  },
+  cardTitle: {
+    fontWeight: 'bold',
   },
   gradientCard: {
-    marginBottom: 15,
-    borderRadius: 12,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    marginBottom: 20,
+    borderRadius: theme.roundness * 1.5,
+    elevation: 8,
+    shadowColor: '#4A00E0',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
-  // 4. Adicionei estilos para o header e content customizados
   cardHeader: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  cardContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  cardTitleWhite: {
-    color: '#FFFFFF',
-    fontSize: 20, // Tamanho padrão do Card.Title
-  },
-  textoBranco: {
-    color: '#FFFFFF',
-    flex: 1,
-    fontSize: 16,
-    marginRight: 10,
-  },
-  statNumeroBranco: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  statLabelBranco: {
-    fontSize: 12,
-    color: '#E0E0E0',
-  },
-  rendimentoIcon: {},
-  rendimentoContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+  },
+  cardTitleWhite: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 22,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
-    marginBottom: 15,
+    paddingBottom: 20,
   },
   statItem: {
     alignItems: 'center',
   },
-  // 5. Removi os estilos não utilizados (statNumero, statLabel)
-  buttonContainer: {
+  statNumeroBranco: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  statLabelBranco: {
+    fontSize: 14,
+    color: '#E0E0E0',
+  },
+  actionsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 10,
+    justifyContent: 'space-between',
+    gap: 16,
+    marginBottom: 20,
   },
-  button: {
-    width: '48%',
-    justifyContent: 'center',
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.roundness,
     paddingVertical: 10,
+    elevation: 2,
   },
+  actionText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: theme.colors.text,
+  },
+  goalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  goalTitle: {
+    fontSize: 15,
+    color: theme.colors.text,
+    marginBottom: 6,
+  },
+  goalProgressBar: {
+    height: 8,
+    borderRadius: 4,
+  },
+  goalStatus: {
+    marginLeft: 16,
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  challengeDescription: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: theme.colors.placeholder,
+  },
+  goalText: {
+    marginBottom: 8,
+    fontSize: 14,
+    color: theme.colors.placeholder,
+  },
+  rankingYou: {
+    fontWeight: 'bold',
+    color: theme.colors.primary,
+  },
+  rankingOthers: {
+    color: theme.colors.text,
+  },
+  rankingPoints: {
+    alignSelf: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: theme.colors.gold,
+  }
 });
 
 export default MetasScreen;
