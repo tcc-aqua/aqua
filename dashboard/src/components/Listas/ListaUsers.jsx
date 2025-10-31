@@ -41,52 +41,56 @@ export default function UsersDashboard() {
   });
 
   const API_URL = "http://localhost:3333/api/users";
-  const fetchData = async () => {
-    try {
-      setLoading(true);
+const fetchData = async (filters = {}) => {
+  try {
+    setLoading(true);
 
-      const [resUsers, resTotal, resAtivos, resSindicos, resMoradores] = await Promise.all([
-        fetch(`${API_URL}`),
-        fetch(`${API_URL}/count`),
-        fetch(`${API_URL}/count-ativos`),
-        fetch(`${API_URL}/sindicos`),
-        fetch(`${API_URL}/moradores`)
-      ]);
+    const res = await fetch(`${API_URL}`);
+    const data = await res.json();
 
-      const [dataUsers, dataTotal, dataAtivos, dataSindicos, dataMoradores] = await Promise.all([
-        resUsers.json(),
-        resTotal.json(),
-        resAtivos.json(),
-        resSindicos.json(),
-        resMoradores.json(),
-      ]);
+    // Pega o array correto
+    const usersArray = Array.isArray(data) ? data : data.users ?? data.docs ?? [];
+
+    // Aplica os filtros no frontend
+    const filteredUsers = usersArray.filter((user) => {
+      const matchesSearch = filters.search
+        ? user.user_name.toLowerCase().includes(filters.search.toLowerCase())
+        : true;
+      const matchesStatus = filters.status
+        ? user.user_status === filters.status
+        : true;
+      const matchesRole = filters.role
+        ? user.user_role === filters.role
+        : true;
+      const matchesType = filters.type
+        ? user.user_type === filters.type
+        : true;
+
+      return matchesSearch && matchesStatus && matchesRole && matchesType;
+    });
+
+    setUsers(filteredUsers);
+
+    // Atualiza stats
+    setUserStats({
+      total: filteredUsers.length,
+      ativos: filteredUsers.filter(u => u.user_status === "ativo").length,
+      inativos: filteredUsers.filter(u => u.user_status === "inativo").length,
+      sindicos: filteredUsers.filter(u => u.user_role === "sindico").length,
+      moradores: filteredUsers.filter(u => u.user_role === "morador").length,
+      casas: filteredUsers.filter(u => u.user_type === "casa").length,
+      condominios: filteredUsers.filter(u => u.user_type === "condominio").length,
+    });
+
+  } catch (err) {
+    console.error("Erro ao buscar dados:", err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
 
-      let usersArray = [];
-      if (Array.isArray(dataUsers)) {
-        usersArray = dataUsers;
-      } else if (Array.isArray(dataUsers.docs)) {
-        usersArray = dataUsers.docs;
-      } else if (Array.isArray(dataUsers.users)) {
-        usersArray = dataUsers.users;
-      }
-
-      setUsers(usersArray);
-
-      setUserStats({
-        total: dataTotal ?? 0,
-        ativos: dataAtivos ?? 0,
-        sindicos: dataSindicos ?? 0,
-        moradores: dataMoradores ?? 0,
-      });
-
-    } catch (err) {
-      console.error("Erro ao buscar dados:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
 
   const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
@@ -129,7 +133,10 @@ export default function UsersDashboard() {
   return (
     <div className="p-4">
       <Toaster position="top-right" richColors />
-
+ 
+ <div className="mb-10">
+      <UserFilter onApply={(filters) => fetchData(filters)} />
+    </div>
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
         {cards.map((card, i) => {
@@ -151,7 +158,7 @@ export default function UsersDashboard() {
           );
         })}
       </section>
-
+     
       <Card className="mx-auto mt-10 ">
         <CardHeader>
           <CardTitle>Lista de Usuários</CardTitle>

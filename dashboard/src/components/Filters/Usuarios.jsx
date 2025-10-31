@@ -51,61 +51,62 @@ export default function UserFilter({ onApply }) {
       custom={0.5}
     >
       <Card className="container mx-auto p-4 rounded-md shadow-sm">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-end">
-          
-          {/* Pesquisa */}
-          <div className="flex flex-col w-full">
-            <label className="text-sm font-medium mb-1">Pesquisar</label>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Pesquisar usuário..."
-              className="w-full h-9 border border-border rounded px-2"
-            />
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+  {/* Pesquisa (maior) */}
+  <div className="flex flex-col col-span-1 sm:col-span-2">
+    <label className="text-sm font-medium mb-1">Pesquisar</label>
+    <input
+      type="text"
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      placeholder="Pesquisar usuário..."
+      className="w-full h-9 border border-border rounded px-2"
+    />
+  </div>
 
-          {/* Status */}
-          <div className="flex flex-col w-full">
-            <label className="text-sm font-medium mb-1">Status</label>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="w-full h-9">
-                <SelectValue placeholder="Todos" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="ativo">Ativo</SelectItem>
-                <SelectItem value="pendente">Pendente</SelectItem>
-                <SelectItem value="cancelado">Cancelado</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+  {/* Status (menor) */}
+  <div className="flex flex-col">
+    <label className="text-sm font-medium mb-1">Status</label>
+    <Select value={status} onValueChange={setStatus}>
+      <SelectTrigger className="w-full h-9">
+        <SelectValue placeholder="Todos" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">Todos</SelectItem>
+        <SelectItem value="ativo">Ativo</SelectItem>
+        <SelectItem value="inativo">Inativo</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
 
-          {/* Função */}
-          <div className="flex flex-col w-full">
-            <label className="text-sm font-medium mb-1">Função</label>
-            <Select value={funcao} onValueChange={setFuncao}>
-              <SelectTrigger className="w-full h-9">
-                <SelectValue placeholder="Todos" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="sindico">Síndico</SelectItem>
-                <SelectItem value="morador">Morador</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+  {/* Função (menor) */}
+  <div className="flex flex-col">
+    <label className="text-sm font-medium mb-1">Função</label>
+    <Select value={funcao} onValueChange={setFuncao}>
+      <SelectTrigger className="w-full h-9">
+        <SelectValue placeholder="Todos" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">Todos</SelectItem>
+        <SelectItem value="sindico">Síndico</SelectItem>
+        <SelectItem value="morador">Morador</SelectItem>
+      </SelectContent>
+    </Select>
 
-          {/* Botões */}
-          <div className="flex gap-2 justify-end w-full mt-2 lg:mt-0 col-span-full lg:col-auto">
-            <Button variant="destructive" onClick={handleResetFilters} className="h-9 w-full lg:w-auto">
-              Limpar
-            </Button>
-            <Button onClick={handleApplyFilters} className="h-9 w-full lg:w-auto">
-              Aplicar
-            </Button>
-          </div>
-        </div>
+    
+  </div>
+
+  {/* Botões */}
+  <div className="flex gap-2 justify-end w-full mt-2 lg:mt-0">
+    <Button variant="destructive" onClick={handleResetFilters} className="h-9 w-full lg:w-auto">
+      Limpar
+    </Button>
+    <Button onClick={handleApplyFilters} className="h-9 w-full lg:w-auto">
+      Aplicar
+    </Button>
+  </div>
+</div>
+
       </Card>
     </motion.div>
   );
