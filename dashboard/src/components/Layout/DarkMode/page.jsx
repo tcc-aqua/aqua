@@ -1,41 +1,40 @@
 "use client"
 
 import * as React from "react"
+import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 
-export function ModeToggle() {
-  const { theme, setTheme } = useTheme()
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
-  const themes = [
-    { id: "light", label: "Light", img: "/themes/light-preview.png" },
-    { id: "dark", label: "Dark", img: "/themes/dark-preview.png" },
-    { id: "system", label: "System", img: "/themes/system-preview.png" }, 
-  ]
+export function ModeToggle() {
+  const { setTheme } = useTheme()
 
   return (
-    <div className="flex gap-4">
-      {themes.map((t) => {
-        const isActive = theme === t.id || (t.id === "system" && theme === "system")
-
-        return (
-          <button
-            key={t.id}
-            onClick={() => setTheme(t.id)}
-            className={`relative border rounded-md overflow-hidden shadow-md transition-transform hover:scale-105 ${
-              isActive ? "ring-2 ring-primary" : "border-gray-300"
-            }`}
-          >
-            <img
-              src={t.img}
-              alt={t.label}
-              className="w-32 h-20 object-cover"
-            />
-            <span className="absolute bottom-1 left-1 right-1 text-xs text-center bg-black/50 text-white rounded-sm">
-              {t.label}
-            </span>
-          </button>
-        )
-      })}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button  size="icon" variant="ghost" >
+          <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setTheme("light")}>
+          Light
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("dark")}>
+          Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+          System
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

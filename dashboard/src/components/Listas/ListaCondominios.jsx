@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-
 import { Building, UserCheck, AlertTriangle, SignalHigh, X, Check } from "lucide-react";
 import {
   Dialog,
@@ -15,11 +13,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import CondominioFilter from "../Filters/CondominioFilter";
+import AnimationWrapper from "../Layout/Animation/Animation";
 
-const cardVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
-};
 
 export default function CondominiosDashboard() {
   const [condominios, setCondominios] = useState([]);
@@ -29,55 +25,60 @@ export default function CondominiosDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [selectedCondominio, setSelectedCondominio] = useState(null);
 
-  const API = "http://localhost:3333/api/condominios";
+  const API_URL = "http://localhost:3333/api/condominios";
 
-const fetchData = async () => {
-  try {
-    setLoading(true);
+  const fetchData = async (filters = {}) => {
+    try {
+      setLoading(true);
 
-    const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
-      fetch(`${API}`),
-      fetch(`${API}/ativos`),
-      fetch(`${API}/inativos`),
-      fetch(`${API}/count`),
-    ]);
+      const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
+        fetch(`${API_URL}`),
+        fetch(`${API_URL}/ativos`),
+        fetch(`${API_URL}/inativos`),
+        fetch(`${API_URL}/count`),
+      ]);
 
-    const [dataAll, dataAtivos, dataInativos, dataCount] = await Promise.all([
-      resAll.json(),
-      resAtivos.json(),
-      resInativos.json(),
-      resCount.json(),
-    ]);
+      const [dataAll, dataAtivos, dataInativos, dataCount] = await Promise.all([
+        resAll.json(),
+        resAtivos.json(),
+        resInativos.json(),
+        resCount.json(),
+      ]);
 
-    const allCondominios = dataAll.docs || [];
-    setCondominios(allCondominios);
+      let allCondominios = dataAll.docs || [];
 
- 
-    const alertas = allCondominios.filter(c => !c.responsavel_id).length;
+      // Filtragem local
+      const filteredCondominios = allCondominios.filter(c => {
+        const matchesStatus = filters.status ? c.condominio_status === filters.status : true;
+        const matchesNome = filters.nome ? c.condominio_nome.toLowerCase().includes(filters.nome.toLowerCase()) : true;
+        return matchesStatus && matchesNome;
+      });
 
+      setCondominios(filteredCondominios);
 
-    const sensorStats = allCondominios.reduce((acc, c) => {
-      acc.sensoresAtivos += c.numero_sensores_ativos || 0;
-      acc.sensoresInativos += c.numero_sensores_inativos || 0;
-      return acc;
-    }, { sensoresAtivos: 0, sensoresInativos: 0 });
+      const alertas = filteredCondominios.filter(c => !c.responsavel_id).length;
 
-    setCondominioStats({
-      total: dataCount ?? allCondominios.length,
-      ativos: dataAtivos.docs?.length ?? 0,
-      inativos: dataInativos.docs?.length ?? 0,
-      alertas: alertas,
-      sensoresAtivos: sensorStats.sensoresAtivos,
-      sensoresInativos: sensorStats.sensoresInativos,
-    });
+      const sensorStats = filteredCondominios.reduce((acc, c) => {
+        acc.sensoresAtivos += c.numero_sensores_ativos || 0;
+        acc.sensoresInativos += c.numero_sensores_inativos || 0;
+        return acc;
+      }, { sensoresAtivos: 0, sensoresInativos: 0 });
 
-  } catch (err) {
-    console.error("Erro ao buscar dados dos condomínios:", err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+      setCondominioStats({
+        total: dataCount ?? filteredCondominios.length,
+        ativos: dataAtivos.docs?.length ?? 0,
+        inativos: dataInativos.docs?.length ?? 0,
+        alertas,
+        sensoresAtivos: sensorStats.sensoresAtivos,
+        sensoresInativos: sensorStats.sensoresInativos,
+      });
+    } catch (err) {
+      console.error("Erro ao buscar dados dos condomínios:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   useEffect(() => {
@@ -138,12 +139,16 @@ const fetchData = async () => {
   return (
     <div className="p-4">
       <Toaster position="top-right" richColors />
+      <div className="mb-10">
+        <CondominioFilter onApply={(filters) => fetchData(filters)} />
+      </div>
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {cards.map((card, i) => {
           const Icon = card.icon;
           return (
-            <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
+
+            <AnimationWrapper key={card.title} delay={i * 0.2}>
               <Card>
                 <CardHeader>
                   <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
@@ -153,10 +158,12 @@ const fetchData = async () => {
                   <Icon className={`w-10 h-10 ${card.iconColor}`} />
                 </CardContent>
               </Card>
-            </motion.div>
+            </AnimationWrapper>
           );
         })}
       </section>
+      
+ <AnimationWrapper delay={0.3}>
 
       <Card className="mx-auto mt-10">
         <CardHeader>
@@ -190,10 +197,10 @@ const fetchData = async () => {
                       </div>
                     </td>
                     <td className="px-4 py-2 text-sm">{condominio.numero_apartamentos}/300
-                        <div className="text-[10px] text-foreground/60">Total Apartamentos</div>
+                      <div className="text-[10px] text-foreground/60">Total Apartamentos</div>
                     </td>
                     <td className="px-4 py-2 text-sm">{condominio.numero_sensores}/300
-                        <div className="text-[10px] text-foreground/60">Total de Sensores</div>
+                      <div className="text-[10px] text-foreground/60">Total de Sensores</div>
                     </td>
                     <td className="text-sm font-bold flex items-center ml-7 py-9">
                       <span className={`inline-block w-3 h-3 rounded-full px-3 ${condominio.condominio_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={condominio.condominio_status} />
@@ -220,6 +227,7 @@ const fetchData = async () => {
           )}
         </CardContent>
       </Card>
+      </AnimationWrapper>
 
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-[425px]">

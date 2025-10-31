@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,16 +14,8 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import useToggleConfirm from "@/hooks/useStatus";
-
-const cardVariants = {
-    hidden: { y: -120, opacity: 0, zIndex: -1 },
-    visible: (delay = 0) => ({
-        y: 0,
-        opacity: 1,
-        zIndex: 10,
-        transition: { duration: 0.8, ease: "easeOut", delay },
-    }),
-};
+import ApartamentoFilter from "../Filters/Apartamentos";
+import AnimationWrapper from "../Layout/Animation/Animation";
 
 export default function ApartamentosDashboard() {
     const [apartamentos, setApartamentos] = useState([]);
@@ -35,10 +26,9 @@ export default function ApartamentosDashboard() {
 
     const API_AP = "http://localhost:3333/api/apartamentos";
 
-    const fetchData = async () => {
+    const fetchData = async (filters = {}) => {
         try {
             setLoading(true);
-
 
             const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
                 fetch(`${API_AP}`),
@@ -47,9 +37,8 @@ export default function ApartamentosDashboard() {
                 fetch(`${API_AP}/count`),
             ]);
 
-            if (!resAll.ok || !resAtivos.ok || !resInativos.ok || !resCount.ok) {
+            if (!resAll.ok || !resAtivos.ok || !resInativos.ok || !resCount.ok)
                 throw new Error("Erro ao buscar dados dos apartamentos.");
-            }
 
             const [allData, ativosData, inativosData, countData] = await Promise.all([
                 resAll.json(),
@@ -58,28 +47,47 @@ export default function ApartamentosDashboard() {
                 resCount.json(),
             ]);
 
+            // Filtragem local
+            let filteredAps = allData.docs || [];
+            if (filters.status) {
+                filteredAps = filteredAps.filter(ap => ap.apartamento_status === filters.status);
+            }
+            if (filters.search) {
+                const search = filters.search.toLowerCase();
+                filteredAps = filteredAps.filter(ap =>
+                    ap.endereco_completo.toLowerCase().includes(search) ||
+                    (ap.responsavel_nome?.toLowerCase().includes(search))
+                );
+            }
 
-            setApartamentos(allData.docs || []);
+            setApartamentos(filteredAps);
 
-
-            const apStats = allData.docs.reduce((acc, a) => {
-                acc.total++;
-                if (a.apartamento_status === "ativo") acc.ativas++;
-                else acc.inativas++;
-                return acc;
-            }, { total: 0, ativas: 0, inativas: 0, alertas: 0 });
+            // Estatísticas apartamentos
+            const apStats = filteredAps.reduce(
+                (acc, a) => {
+                    acc.total++;
+                    if (a.apartamento_status === "ativo") acc.ativas++;
+                    else acc.inativas++;
+                    if (!a.responsavel_id) acc.alertas++;
+                    return acc;
+                },
+                { total: 0, ativas: 0, inativas: 0, alertas: 0 }
+            );
             setApStats(apStats);
 
-
-
-            const sensorStats = allData.docs.reduce((acc, a) => {
-                if (a.sensor_id) acc.total++;
-                if (a.sensor_status === "ativo") acc.ativos++;
-                else if (a.sensor_status) acc.inativos++;
-                return acc;
-            }, { total: 0, ativos: 0, inativos: 0, alertas: 0 });
+            // Estatísticas sensores
+            const sensorStats = filteredAps.reduce(
+                (acc, ap) => {
+                    if (ap.sensor_id) acc.total++;
+                    if (ap.sensor_status === "ativo") acc.ativos++;
+                    else if (ap.sensor_status) acc.inativos++;
+                    if (!ap.sensor_id) acc.alertas++;
+                    return acc;
+                },
+                { total: 0, ativos: 0, inativos: 0, alertas: 0 }
+            );
             setSensorStats(sensorStats);
-
+   
         } catch (err) {
             console.error("Erro ao buscar dados:", err);
             setError(err.message);
@@ -87,7 +95,6 @@ export default function ApartamentosDashboard() {
             setLoading(false);
         }
     };
-
     const { showModal, setShowModal, selectedItem: selectedAp, confirmToggleStatus, toggleStatus } =
         useToggleConfirm(API_AP, fetchData);
 
@@ -137,12 +144,16 @@ export default function ApartamentosDashboard() {
     return (
         <div className="p-4">
             <Toaster position="top-right" richColors />
+            <div className="mb-10">
+                <ApartamentoFilter onApply={(filters) => fetchData(filters)} />
+            </div>
 
             <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {cards.map((card, i) => {
                     const Icon = card.icon;
                     return (
-                        <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible" custom={i * 0.1}>
+
+                        <AnimationWrapper key={card.title} delay={i * 0.2}>
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
@@ -157,88 +168,90 @@ export default function ApartamentosDashboard() {
                                     <Icon className={`w-10 h-10 ${card.iconColor}`} />
                                 </CardContent>
                             </Card>
-                        </motion.div>
+                        </AnimationWrapper>
                     );
                 })}
             </section>
-
-            <Card className="mx-auto mt-10 ">
-                <CardHeader>
-                    <CardTitle>Lista de Apartamentos</CardTitle>
-                </CardHeader>
-                <CardContent className="overflow-x-auto">
-                    {apartamentos.length === 0 ? (
-                        <p>Nenhum apartamento encontrado.</p>
-                    ) : (
-                        <table className="min-w-full divide-y divide-border">
-                            <thead className="bg-muted">
-                                <tr>
-                                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Unidade</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Morador Principal</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Sensor</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Consumo</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Alertas</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                                {apartamentos.map(ap => (
-                                    <tr key={ap.apartamento_id} className="hover:bg-muted/10 text-foreground">
-                                        <td className="px-4 py-2 ">
-                                            <div className="text-sm font-semibold">Bloco {ap.endereco_completo}</div>
-                                            <div className="text-xs text-foreground/80">{ap.endereco_condominio}</div>
-                                            <div className="text-xs text-foreground/80">{`${ap.numero_moradores || 0} Moradores`}</div>
-                                            <div className="text-[10px] text-chart-1">Código {ap.apartamento_codigo}</div>
+            <AnimationWrapper delay={0.3}>
 
 
-                                        </td>
-                                        <td className="px-4 py-2 text-sm">{ap.responsavel_nome}
-                                            <div className="text-xs text-foreground/80">{ap.responsavel_email}</div>
-                                            <div className="text-xs text-foreground/60">{ap.responsavel_cpf}</div>
-                                        </td>
-                                        <td className="px-4 py-2 text-sm">
-                                            <div>{ap.sensor_codigo}</div>
-                                            <div className="text-sm font-bold">
-                                                <span className={ap.sensor_status === "ativo" ? "text-green-600" : "text-red-600"}>
-                                                    {ap.sensor_status === "ativo" ? "Ativo" : "Inativo"}
-                                                </span>
-                                            </div>
-                                            <div className="text-[10px] text-foreground/60">ID : {ap.sensor_id}</div>
-                                            <div className="text-[10px] text-foreground/60">
-                                                Último envio: {ap.ultimo_envio
-                                                    ? new Date(ap.ultimo_envio).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
-                                                    : "-"}
-                                            </div>
-
-
-                                        </td>
-                                        <td className="px-4 py-2 text-sm">{ap.consumo_total || 0}L
-                                                                   <div className="text-[10px] text-foreground/60">Total Acumulado</div>
-                                        </td>
-                                        <td className="text-sm font-bold flex items-center ml-7 py-9 ">
-                                            <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${ap.apartamento_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={ap.apartamento_status} />
-                                        </td>
-                                        <td className="px-4 py-2 text-sm">-</td>
-                                        <td className="px-4 py-2 text-sm">
-                                            <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(ap)}>
-                                                <div className="flex items-center gap-1">
-                                                    {ap.apartamento_status === "ativo" ? (
-                                                        <Check className="text-green-500" size={14} />
-                                                    ) : (
-                                                        <X className="text-red-500" size={14} />
-                                                    )}
-                                                </div>
-                                            </Button>
-                                        </td>
+                <Card className="mx-auto mt-10 ">
+                    <CardHeader>
+                        <CardTitle>Lista de Apartamentos</CardTitle>
+                    </CardHeader>
+                    <CardContent className="overflow-x-auto">
+                        {apartamentos.length === 0 ? (
+                            <p>Nenhum apartamento encontrado.</p>
+                        ) : (
+                            <table className="min-w-full divide-y divide-border">
+                                <thead className="bg-muted">
+                                    <tr>
+                                        <th className="px-4 py-2 text-left text-xs font-medium uppercase">Unidade</th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium uppercase">Morador Principal</th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium uppercase">Sensor</th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium uppercase">Consumo</th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium uppercase">Alertas</th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium uppercase">Ações</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </CardContent>
-            </Card>
+                                </thead>
+                                <tbody className="divide-y divide-border">
+                                    {apartamentos.map(ap => (
+                                        <tr key={ap.apartamento_id} className="hover:bg-muted/10 text-foreground">
+                                            <td className="px-4 py-2 ">
+                                                <div className="text-sm font-semibold">Bloco {ap.endereco_completo}</div>
+                                                <div className="text-xs text-foreground/80">{ap.endereco_condominio}</div>
+                                                <div className="text-xs text-foreground/80">{`${ap.numero_moradores || 0} Moradores`}</div>
+                                                <div className="text-[10px] text-chart-1">Código {ap.apartamento_codigo}</div>
 
+
+                                            </td>
+                                            <td className="px-4 py-2 text-sm">{ap.responsavel_nome}
+                                                <div className="text-xs text-foreground/80">{ap.responsavel_email}</div>
+                                                <div className="text-xs text-foreground/60">{ap.responsavel_cpf}</div>
+                                            </td>
+                                            <td className="px-4 py-2 text-sm">
+                                                <div>{ap.sensor_codigo}</div>
+                                                <div className="text-sm font-bold">
+                                                    <span className={ap.sensor_status === "ativo" ? "text-green-600" : "text-red-600"}>
+                                                        {ap.sensor_status === "ativo" ? "Ativo" : "Inativo"}
+                                                    </span>
+                                                </div>
+                                                <div className="text-[10px] text-foreground/60">ID : {ap.sensor_id}</div>
+                                                <div className="text-[10px] text-foreground/60">
+                                                    Último envio: {ap.ultimo_envio
+                                                        ? new Date(ap.ultimo_envio).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                                                        : "-"}
+                                                </div>
+
+
+                                            </td>
+                                            <td className="px-4 py-2 text-sm">{ap.consumo_total || 0}L
+                                                <div className="text-[10px] text-foreground/60">Total Acumulado</div>
+                                            </td>
+                                            <td className="text-sm font-bold flex items-center ml-7 py-9 ">
+                                                <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${ap.apartamento_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={ap.apartamento_status} />
+                                            </td>
+                                            <td className="px-4 py-2 text-sm">-</td>
+                                            <td className="px-4 py-2 text-sm">
+                                                <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(ap)}>
+                                                    <div className="flex items-center gap-1">
+                                                        {ap.apartamento_status === "ativo" ? (
+                                                            <Check className="text-green-500" size={14} />
+                                                        ) : (
+                                                            <X className="text-red-500" size={14} />
+                                                        )}
+                                                    </div>
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </CardContent>
+                </Card>
+            </AnimationWrapper>
             <Dialog open={showModal} onOpenChange={setShowModal}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>

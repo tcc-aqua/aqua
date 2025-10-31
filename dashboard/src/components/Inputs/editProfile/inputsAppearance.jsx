@@ -14,14 +14,7 @@ export default function InputAppearance() {
   return (
     <div className="mx-auto max-w-lg  space-y-4">
 
-      <Card className="shadow-md hover:shadow-lg transition-shadow">
-        <CardContent className="flex flex-col space-y-3">
-          <p className="text-sm font-semibold flex items-center gap-2">
-            <Sun size={16} /> Tema
-          </p>
-          <ModeToggle />
-        </CardContent>
-      </Card>
+     
 
  
       <Card className="shadow-md hover:shadow-lg transition-shadow">
@@ -59,7 +52,7 @@ export default function InputAppearance() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-md hover:shadow-lg transition-shadow">
+      <Card className="shadow-md hover:shadow-lg transition-shadow mt-3">
         <CardContent className="flex justify-between items-center">
           <div className="flex flex-col">
             <p className="text-sm font-semibold flex items-center gap-2">
