@@ -16,13 +16,6 @@ Para executar o sistema completo em seu ambiente de desenvolvimento, siga os pas
 
 O backend precisa de um banco de dados MySQL para funcionar.
 
-1.  **Crie o Banco de Dados:**
-    -   Abra seu cliente MySQL (MySQL Workbench, DBeaver, etc.).
-    -   Execute o seguinte comando para criar a database do projeto:
-        ```sql
-        CREATE DATABASE IF NOT EXISTS aqua;
-        ```
-
 ---
 
 ### ⚙️ 2. Configuração do Backend
