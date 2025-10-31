@@ -75,19 +75,32 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
     };
     
     // --- FUNÇÕES DE LÓGICA E API ---
+
+    // A função agora retorna os dados do endereço para uso posterior.
     const fetchAddressFromCep = async (cepValue) => {
         const unmaskedCep = cepValue.replace(/\D/g, '');
-        if (unmaskedCep.length !== 8) return;
+        if (unmaskedCep.length !== 8) return null;
         
         setIsLoading(true);
         try {
             const response = await axios.get(`${API_BASE_URL}/api/cep/${unmaskedCep}`);
-            const { logradouro, bairro, localidade, uf, estado } = response.data;
-            if (logradouro) setLogradouro(logradouro);
-            if (bairro) setBairro(bairro);
-            if (localidade) setCidade(localidade);
-            if (uf) setUf(uf);
-            if (estado) setEstado(estado);
+            const addressData = response.data;
+            
+            // Atualiza os estados para a UI refletir as mudanças.
+            setLogradouro(addressData.logradouro || '');
+            setBairro(addressData.bairro || '');
+            setCidade(addressData.localidade || '');
+            setUf(addressData.uf || '');
+            setEstado(addressData.estado || '');
+
+            // Retorna os dados para serem usados na lógica de registro.
+            return {
+                logradouro: addressData.logradouro,
+                bairro: addressData.bairro,
+                cidade: addressData.localidade,
+                uf: addressData.uf,
+                estado: addressData.estado
+            };
         } catch (error) {
             console.error("Erro ao buscar CEP:", error);
             showSnackbar('CEP não encontrado ou inválido.');
@@ -96,6 +109,7 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
             setCidade('');
             setUf('');
             setEstado('');
+            return null; // Retorna null em caso de erro.
         } finally {
             setIsLoading(false);
         }
@@ -124,36 +138,49 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
 
     const handleRegister = async () => {
         setIsLoading(true);
-        try {
-            const residenciaType = registrationType === 'condominio' ? 'apartamento' : 'casa';
-            
-            // --- CORREÇÃO FINAL: Enviando todos os campos que o backend precisa ---
-            const userData = {
-                // Usuário
-                name,
-                email,
-                password: senha,
-                cpf,
-                residencia_type: residenciaType,
-                
-                // Residência
-                cep: cep.replace(/\D/g, ''),
-                logradouro,
-                numero,
-                bairro,
-                cidade,
-                uf,
-                estado,
-                bloco,
-                codigo_acesso: codigoAcesso,
-                numero_moradores: parseInt(numeroMoradores, 10) || 1,
-            };
-            
-            await axios.post(`${API_BASE_URL}/api/auth/register`, userData);
+        
+        const residenciaType = registrationType === 'condominio' ? 'apartamento' : 'casa';
+        let userData = {
+            name,
+            email,
+            password: senha,
+            cpf,
+            residencia_type: residenciaType,
+            numero_moradores: parseInt(numeroMoradores, 10) || 1,
+        };
 
+        // --- LÓGICA CORRIGIDA PARA GARANTIR OS DADOS DE ENDEREÇO ---
+        if (residenciaType === 'casa') {
+            // Re-busca os dados do CEP no momento do clique para garantir que estão atualizados.
+            const addressData = await fetchAddressFromCep(cep);
+
+            // Se a busca de CEP falhar ou os dados essenciais não vierem, mostra um erro e para.
+            if (!addressData || !addressData.logradouro || !addressData.cidade) {
+                showSnackbar('Endereço inválido. Verifique o CEP e tente novamente.');
+                setIsLoading(false);
+                return; // Para a execução do cadastro.
+            }
+            
+            // Adiciona os dados de endereço e casa ao objeto userData.
+            Object.assign(userData, {
+                ...addressData,
+                cep: cep.replace(/\D/g, ''),
+                numero,
+            });
+        } 
+        else { // Para apartamento
+            Object.assign(userData, {
+                codigo_acesso: codigoAcesso,
+                bloco,
+                numero,
+            });
+        }
+        
+        // Com o userData garantidamente completo, envia a requisição de registro.
+        try {
+            await axios.post(`${API_BASE_URL}/api/auth/register`, userData);
             showSnackbar('Cadastro realizado com sucesso! Faça o login.');
             setFormType('login');
-
         } catch (error) {
             console.error("Detalhes do erro de cadastro:", error.response?.data || error);
             if (error.response?.data?.errors) {
