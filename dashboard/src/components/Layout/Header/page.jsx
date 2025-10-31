@@ -2,6 +2,7 @@
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Search, Bell } from 'lucide-react';
+import { ModeToggle } from '../DarkMode/page';
 
 const headerInfos = [
   {
@@ -22,7 +23,8 @@ export default function Header() {
           } flex items-center justify-end relative space-x-3`}>
 
 
-        <div className="flex items-center space-x-5 ml-auto">
+        <div className="flex items-center space-x-6 ml-auto px-3 py-3">
+          <ModeToggle></ModeToggle>
           <Bell className="h-4 w-4 text-muted-foreground cursor-pointer" />
 
           {headerInfos.map((header, index) => (

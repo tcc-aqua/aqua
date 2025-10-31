@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,18 +14,9 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import useToggleConfirm from "@/hooks/useStatus";
-import UserFilter from "../Filters/Usuarios";
+import UserFilter from "../Filters/Users";
+import AnimationWrapper from "../Layout/Animation/Animation";
 
-
-const cardVariants = {
-  hidden: { y: -120, opacity: 0, zIndex: -1 },
-  visible: (delay = 0) => ({
-    y: 0,
-    opacity: 1,
-    zIndex: 10,
-    transition: { duration: 0.8, ease: "easeOut", delay },
-  }),
-};
 
 
 export default function UsersDashboard() {
@@ -45,23 +35,48 @@ const fetchData = async (filters = {}) => {
   try {
     setLoading(true);
 
-    const res = await fetch(`${API_URL}`);
-    const data = await res.json();
+   
+    const [resAll, resAtivos, resInativos, resCount, resCountAtivas, resSindicos, resMoradores] = await Promise.all([
+      fetch(`${API_URL}`),
+      fetch(`${API_URL}/ativos`),
+      fetch(`${API_URL}/inativos`),
+      fetch(`${API_URL}/count`),
+      fetch(`${API_URL}/count-ativos`),
+      fetch(`${API_URL}/sindicos`),
+      fetch(`${API_URL}/moradores`)
+    ]);
 
-    // Pega o array correto
-    const usersArray = Array.isArray(data) ? data : data.users ?? data.docs ?? [];
+    if (!resAll.ok || !resAtivos.ok || !resInativos.ok || !resCount.ok || !resCountAtivas.ok || !resSindicos.ok || !resMoradores.ok) {
+      throw new Error("Erro ao buscar dados dos usuários.");
+    }
 
-    // Aplica os filtros no frontend
-    const filteredUsers = usersArray.filter((user) => {
+    const [allData, ativosData, inativosData, countData, countAtivasData, sindicosData, moradoresData] = await Promise.all([
+      resAll.json(),
+      resAtivos.json(),
+      resInativos.json(),
+      resCount.json(),
+      resCountAtivas.json(),
+      resSindicos.json(),
+      resMoradores.json()
+    ]);
+
+    const usersArray = allData.docs || allData.users || [];
+
+
+    const filteredUsers = usersArray.filter(user => {
       const matchesSearch = filters.search
-        ? user.user_name.toLowerCase().includes(filters.search.toLowerCase())
+        ? user.user_name.toLowerCase().includes(filters.search.toLowerCase()) ||
+          (user.user_email?.toLowerCase().includes(filters.search.toLowerCase()))
         : true;
+
       const matchesStatus = filters.status
         ? user.user_status === filters.status
         : true;
+
       const matchesRole = filters.role
         ? user.user_role === filters.role
         : true;
+
       const matchesType = filters.type
         ? user.user_type === filters.type
         : true;
@@ -71,13 +86,13 @@ const fetchData = async (filters = {}) => {
 
     setUsers(filteredUsers);
 
-    // Atualiza stats
+  
     setUserStats({
-      total: filteredUsers.length,
-      ativos: filteredUsers.filter(u => u.user_status === "ativo").length,
-      inativos: filteredUsers.filter(u => u.user_status === "inativo").length,
-      sindicos: filteredUsers.filter(u => u.user_role === "sindico").length,
-      moradores: filteredUsers.filter(u => u.user_role === "morador").length,
+      total: countData.total ?? usersArray.length,
+      ativos: countAtivasData.total ?? ativosData.docs?.length ?? filteredUsers.filter(u => u.user_status === "ativo").length,
+      inativos: inativosData.docs?.length ?? 0,
+      sindicos: sindicosData.total ?? 0,
+      moradores: moradoresData.total ?? 0,
       casas: filteredUsers.filter(u => u.user_type === "casa").length,
       condominios: filteredUsers.filter(u => u.user_type === "condominio").length,
     });
@@ -89,7 +104,6 @@ const fetchData = async (filters = {}) => {
     setLoading(false);
   }
 };
-
 
 
 
@@ -142,7 +156,8 @@ const fetchData = async (filters = {}) => {
         {cards.map((card, i) => {
           const Icon = card.icon;
           return (
-            <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
+       
+    <AnimationWrapper key={card.title} delay={i * 0.2}>
               <Card>
                 <CardHeader>
                   <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
@@ -154,11 +169,14 @@ const fetchData = async (filters = {}) => {
                 </CardContent>
 
               </Card>
-            </motion.div>
+             </AnimationWrapper>
           );
         })}
       </section>
      
+    <AnimationWrapper delay={0.3}>
+
+   
       <Card className="mx-auto mt-10 ">
         <CardHeader>
           <CardTitle>Lista de Usuários</CardTitle>
@@ -250,6 +268,7 @@ const fetchData = async (filters = {}) => {
           )}
         </CardContent>
       </Card>
+       </AnimationWrapper>
 
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-[425px]">

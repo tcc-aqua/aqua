@@ -28,94 +28,94 @@ const cardVariants = {
 export default function ProfileCards() {
   return (
     <>
-      
-
-        <main className="container mx-auto ">
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-            <motion.div
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              custom={0}
-            >
-              <Card className="bg-card rounded-md shadow-md h-auto">
-                <CardHeader>
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <User size={18} /> Profile Settings
-                  </CardTitle>
-                </CardHeader>
-                <Separator />
-                <CardContent className="space-y-4">
-                  <FotoPerfil />
-
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              custom={0}
-            >
-              <Card className="bg-card rounded-md shadow-md h-auto">
-                <CardHeader>
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <Bell size={18} /> Notifications
-                  </CardTitle>
-                </CardHeader>
-                <Separator />
-                <CardContent className="space-y-4">
-                  <InputNotifications />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </section>
-
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-
-            <motion.div
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              custom={0.6}
-            >
-              <Card className="bg-card rounded-md shadow-md h-auto   ">
-                <CardHeader>
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <ShieldCheck size={18} /> Account & Security
-                  </CardTitle>
-                </CardHeader>
-                <Separator />
-                <CardContent className='space-y-2'>
-                  <Inputpassword />
-                </CardContent>
-              </Card>
-            </motion.div>
-            <motion.div
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              custom={0.6}
-            >
-              <Card className="bg-card rounded-md shadow-md h-auto md:-mt-27 ">
-                {/* w-[33rem] md:w-[90rem] */}
-                <CardHeader>
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <Brush size={18} /> Appearance
-                  </CardTitle>
-                </CardHeader>
-                <Separator />
-                <CardContent>
-                  <InputAppearance></InputAppearance>
-                </CardContent>
-              </Card>
-            </motion.div>
 
 
-          </section>
-        </main>
-      
+      <main className="container mx-auto ">
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+          <motion.div
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
+            custom={0}
+          >
+            <Card className="bg-card rounded-md shadow-md h-auto">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <User size={18} /> Profile Settings
+                </CardTitle>
+              </CardHeader>
+              <Separator />
+              <CardContent className="space-y-4">
+                <FotoPerfil />
+
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
+            custom={0}
+          >
+            <Card className="bg-card rounded-md shadow-md h-auto">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Bell size={18} /> Notifications
+                </CardTitle>
+              </CardHeader>
+              <Separator />
+              <CardContent className="space-y-4">
+                <InputNotifications />
+              </CardContent>
+            </Card>
+          </motion.div>
+        </section>
+
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+          <motion.div
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
+            custom={0.6}
+          >
+            <Card className="bg-card rounded-md shadow-md h-auto  ">
+              {/* w-[33rem] md:w-[90rem] */}
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Brush size={18} /> Appearance
+                </CardTitle>
+              </CardHeader>
+              <Separator />
+              <CardContent>
+                <InputAppearance></InputAppearance>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+
+          <motion.div
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
+            custom={0.6}
+          >
+            <Card className="bg-card rounded-md shadow-md h-auto md:h-131  md:-mt-27 ">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <ShieldCheck size={18} /> Account & Security
+                </CardTitle>
+              </CardHeader>
+              <Separator />
+              <CardContent className='space-y-2'>
+                <Inputpassword />
+              </CardContent>
+            </Card>
+          </motion.div>
+
+        </section>
+      </main>
+
     </>
   );
 }

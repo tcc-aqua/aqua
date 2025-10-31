@@ -91,7 +91,7 @@ export default function CardAlertasRecentes() {
                 const { spanBgClass, spanTextClass } = getAlertaLevelColorClasses(alerta.nivel);
 
                 return (
-                  <div key={alerta.id} className="p-4 flex justify-between m-2 bg-[#eff6ff] items-start w-100 rounded-lg gap-2">
+                  <div key={alerta.id} className="p-4 flex justify-between m-2 bg-muted/10 items-start w-100 rounded-lg gap-2">
                     <div>
 
                       <span

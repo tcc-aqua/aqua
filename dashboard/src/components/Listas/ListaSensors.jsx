@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,16 +14,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-const cardVariants = {
-  hidden: { y: -120, opacity: 0, zIndex: -1 },
-  visible: (delay = 0) => ({
-    y: 0,
-    opacity: 1,
-    zIndex: 10,
-    transition: { duration: 0.8, ease: "easeOut", delay },
-  }),
-};
+import SensorFilter from "../Filters/Sensors";
+import AnimationWrapper from "../Layout/Animation/Animation";
 
 export default function SensorsDashboard() {
   const [sensores, setSensores] = useState([]);
@@ -34,55 +25,62 @@ export default function SensorsDashboard() {
 
   const API_URL = "http://localhost:3333/api/sensores";
 
-  const fetchData = async () => {
-  try {
-    setLoading(true);
+  const fetchData = async (filters = {}) => {
+    try {
+      setLoading(true);
 
-    const [totalRes, ativosRes, inativosRes, allRes] = await Promise.all([
-      fetch(`${API_URL}/count`),
-      fetch(`${API_URL}/count-ativos`),
-      fetch(`${API_URL}/inativos`),
-      fetch(`${API_URL}/`),
-    ]);
+      const [totalRes, ativosRes, inativosRes, allRes] = await Promise.all([
+        fetch(`${API_URL}/count`),
+        fetch(`${API_URL}/count-ativos`),
+        fetch(`${API_URL}/inativos`),
+        fetch(`${API_URL}/`),
+      ]);
 
-    if (!totalRes.ok || !ativosRes.ok || !inativosRes.ok || !allRes.ok) {
-      throw new Error("Erro ao buscar dados dos sensores.");
+      if (!totalRes.ok || !ativosRes.ok || !inativosRes.ok || !allRes.ok) {
+        throw new Error("Erro ao buscar dados dos sensores.");
+      }
+
+      const total = await totalRes.json();
+      const ativos = await ativosRes.json();
+      const inativos = await inativosRes.json();
+      const allSensores = await allRes.json();
+      const sensoresArray = allSensores.docs || [];
+
+      // Filtragem local
+      const filteredSensores = sensoresArray.filter(sensor => {
+        const matchesStatus = filters.status ? sensor.sensor_status === filters.status : true;
+        const matchesLocation = filters.location ? sensor.localizacao?.toLowerCase().includes(filters.location.toLowerCase()) : true;
+        const matchesType = filters.type ? sensor.residencia_type === filters.type : true;
+        return matchesStatus && matchesLocation && matchesType;
+      });
+
+      // Recalcula estatísticas
+      const sensorStatsData = filteredSensores.reduce(
+        (acc, s) => {
+          if (s.sensor_status === "ativo") acc.ativos += 1;
+          else if (s.sensor_status === "inativo") acc.inativos += 1;
+          else acc.alertas += 1;
+          return acc;
+        },
+        { ativos: 0, inativos: 0, alertas: 0 }
+      );
+
+      setSensorStats({
+        total: total ?? filteredSensores.length,
+        ativos: sensorStatsData.ativos,
+        inativos: sensorStatsData.inativos,
+        alertas: sensorStatsData.alertas,
+      });
+
+      setSensores(filteredSensores);
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    const total = await totalRes.json();
-    const ativos = await ativosRes.json();
-    const inativos = await inativosRes.json();
-    const allSensores = await allRes.json();
-    const sensoresArray = allSensores.docs || [];
-
-  
-    const sensorStatsData = sensoresArray.reduce(
-      (acc, s) => {
-        if (s.sensor_status === "ativo") acc.ativos += 1;
-        else if (s.sensor_status === "inativo") acc.inativos += 1;
-        else acc.alertas += 1; 
-
-        return acc;
-      },
-      { ativos: 0, inativos: 0, alertas: 0 }
-    );
-
-    setSensorStats({
-      total: total ?? sensoresArray.length,
-      ativos: sensorStatsData.ativos,
-      inativos: sensorStatsData.inativos,
-      alertas: sensorStatsData.alertas,
-    });
-
-    setSensores(sensoresArray);
-  } catch (err) {
-    console.error(err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
+  };
+  const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
 
   useEffect(() => {
     fetchData();
@@ -129,12 +127,16 @@ const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus
   return (
     <div className="p-4">
       <Toaster position="top-right" richColors />
+      <div className="mb-10">
+        <SensorFilter onApply={(filters) => fetchData(filters)} />
+      </div>
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {cards.map((card, i) => {
           const Icon = card.icon;
           return (
-            <motion.div key={i} variants={cardVariants} initial="hidden" animate="visible">
+
+            <AnimationWrapper key={card.title} delay={i * 0.2}>
               <Card>
                 <CardHeader>
                   <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
@@ -146,83 +148,87 @@ const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus
                   <Icon className={`w-10 h-10 ${card.iconColor}`} />
                 </CardContent>
               </Card>
-            </motion.div>
+            </AnimationWrapper>
           );
         })}
       </section>
 
-      <Card className="mx-auto mt-10">
-        <CardHeader>
-          <CardTitle>Lista de Sensores</CardTitle>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          {sensores.length === 0 ? (
-            <p>Nenhum sensor encontrado.</p>
-          ) : (
-            <table className="min-w-full divide-y divide-border">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Sensor</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Localização</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Consumo</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Último envio</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {sensores.map((sensor) => (
-                  <tr key={sensor.sensor_id} className="hover:bg-muted/10 text-foreground">
-                    <td className="px-4 py-2">
-                      <div className="text-sm font-semibold">{sensor.sensor_codigo}</div>
-                      <div className="text-[10px] text-foreground/80">ID: {sensor.sensor_id}</div>
-                      <div className="text-[10px] text-accent">Tipo de residência: {sensor.residencia_type}</div>
-                    </td>
-                    <td className="px-4 py-2 text-sm">{sensor.localizacao || "-"}
-                        <div className="text-[10px] text-foreground/60">Localização do Sensor</div>
-                    </td>
-                    <td className="px-4 py-2 text-sm">
-                      <span className={`inline-block w-3 h-3 rounded-full  px-3 ${sensor.sensor_status === "ativo" ? "bg-green-600" : sensor.sensor_status === "inativo" ? "bg-red-600" : "bg-yellow-600"}`} title={sensor.sensor_status} />
-                    </td>
-                    <td className="px-4 py-2 text-sm font-bold">
-                      {sensor.consumo_total}/L
-                      <div className="text-[10px] text-foreground/60">Total Acumulado</div>
-                    </td>
-                    <td className="px-4 py-2 text-sm font-semibold">
-                      {sensor.ultimo_envio
-                        ? new Date(sensor.ultimo_envio).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
-                        : "-"}
-                         <div className="text-[10px] text-foreground/60">Horário do Último Envio</div>
-                    </td>
-                    <td className="px-4 py-2 text-sm text-center">
-                                          <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(sensor)}>
-                                            <div className="flex items-center gap-1">
-                                              {sensor.sensor_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-red-500" size={14} />}
-                                            </div>
-                                          </Button>
-                                        </td>
+
+      <AnimationWrapper delay={0.3}>
+
+        <Card className="mx-auto mt-10">
+          <CardHeader>
+            <CardTitle>Lista de Sensores</CardTitle>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            {sensores.length === 0 ? (
+              <p>Nenhum sensor encontrado.</p>
+            ) : (
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Sensor</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Localização</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Consumo</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Último envio</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Ações</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
-      
-            <Dialog open={showModal} onOpenChange={setShowModal}>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Confirmação</DialogTitle>
-                </DialogHeader>
-                <p className="py-4">
-                  Deseja realmente {selectedItem?.sensor_status === "ativo" ? "inativar" : "ativar"} o usuário <strong>{selectedItem?.sensor_codigo}</strong>?
-                </p>
-                <DialogFooter className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
-                  <Button variant="destructive" onClick={toggleStatus}>{selectedItem?.sensor_status === "ativo" ? "Inativar" : "Ativar"}</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {sensores.map((sensor) => (
+                    <tr key={sensor.sensor_id} className="hover:bg-muted/10 text-foreground">
+                      <td className="px-4 py-2">
+                        <div className="text-sm font-semibold">{sensor.sensor_codigo}</div>
+                        <div className="text-[10px] text-foreground/80">ID: {sensor.sensor_id}</div>
+                        <div className="text-[10px] text-accent">Tipo de residência: {sensor.residencia_type}</div>
+                      </td>
+                      <td className="px-4 py-2 text-sm">{sensor.localizacao || "-"}
+                        <div className="text-[10px] text-foreground/60">Localização do Sensor</div>
+                      </td>
+                      <td className="px-4 py-2 text-sm">
+                        <span className={`inline-block w-3 h-3 rounded-full  px-3 ${sensor.sensor_status === "ativo" ? "bg-green-600" : sensor.sensor_status === "inativo" ? "bg-red-600" : "bg-yellow-600"}`} title={sensor.sensor_status} />
+                      </td>
+                      <td className="px-4 py-2 text-sm font-bold">
+                        {sensor.consumo_total}/L
+                        <div className="text-[10px] text-foreground/60">Total Acumulado</div>
+                      </td>
+                      <td className="px-4 py-2 text-sm font-semibold">
+                        {sensor.ultimo_envio
+                          ? new Date(sensor.ultimo_envio).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                          : "-"}
+                        <div className="text-[10px] text-foreground/60">Horário do Último Envio</div>
+                      </td>
+                      <td className="px-4 py-2 text-sm text-center">
+                        <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(sensor)}>
+                          <div className="flex items-center gap-1">
+                            {sensor.sensor_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-red-500" size={14} />}
+                          </div>
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </CardContent>
+        </Card>
+      </AnimationWrapper>
+
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirmação</DialogTitle>
+          </DialogHeader>
+          <p className="py-4">
+            Deseja realmente {selectedItem?.sensor_status === "ativo" ? "inativar" : "ativar"} o usuário <strong>{selectedItem?.sensor_codigo}</strong>?
+          </p>
+          <DialogFooter className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={toggleStatus}>{selectedItem?.sensor_status === "ativo" ? "Inativar" : "Ativar"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
