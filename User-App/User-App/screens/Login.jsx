@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { 
+    StyleSheet, 
+    View, 
+    ScrollView, 
+    TouchableOpacity,
+    KeyboardAvoidingView,
+    Platform,
+    LayoutAnimation,
+    UIManager
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import {
@@ -16,41 +25,52 @@ import {
     HelperText,
     Avatar,
     Checkbox,
-    Snackbar
+    Snackbar,
+    Text,
+    Modal,
+    Divider,
+    Subheading
 } from 'react-native-paper';
 import { mask } from 'react-native-mask-text';
+import { LinearGradient } from 'expo-linear-gradient';
 
-// URL base da sua API backend
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 const API_BASE_URL = 'http://192.168.56.1:3334';
 
-// Tema visual do Paper
 const theme = {
     ...DefaultTheme,
-    roundness: 12,
+    roundness: 10,
     colors: {
         ...DefaultTheme.colors,
-        primary: '#007BFF',
-        accent: '#0056b3',
-        background: '#F0F8FF',
+        primary: '#0A84FF',
+        accent: '#005ecb',
+        background: '#F2F2F7',
         surface: '#FFFFFF',
-        text: '#333333',
-        placeholder: '#888888',
-        error: '#B00020',
+        text: '#1C1C1E',
+        placeholder: '#8A8A8E',
+        error: '#FF3B30',
+        success: '#34C759'
     },
 };
 
 export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
-    // --- CONTROLE DE ESTADO DA TELA ---
+    // --- ESTADOS ---
     const [formType, setFormType] = useState('login');
     const [registrationType, setRegistrationType] = useState('casa');
     const [dialogVisible, setDialogVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const [agreeToTerms, setAgreeToTerms] = useState(false);
-    const [snackbarVisible, setSnackbarVisible] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbar, setSnackbar] = useState({ visible: false, message: '', type: 'default' });
 
-    // --- ESTADOS UNIFICADOS PARA OS CAMPOS DO FORMULÁRIO ---
+    // --- ESTADOS DOS TERMOS E CONDIÇÕES ---
+    const [termsVisible, setTermsVisible] = useState(false);
+    const [agreeToTerms, setAgreeToTerms] = useState(false);
+    const [scrolledToBottom, setScrolledToBottom] = useState(false);
+
+    // Formulários
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
@@ -66,17 +86,19 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
     const [bloco, setBloco] = useState('');
     const [numeroMoradores, setNumeroMoradores] = useState('1');
 
-    // --- FUNÇÕES AUXILIARES ---
+    // --- FUNÇÕES ---
     const showDialog = () => setDialogVisible(true);
     const hideDialog = () => setDialogVisible(false);
-    const showSnackbar = (message) => {
-        setSnackbarMessage(message);
-        setSnackbarVisible(true);
-    };
     
-    // --- FUNÇÕES DE LÓGICA E API ---
+    const showSnackbar = (message, type = 'default') => {
+        setSnackbar({ visible: true, message, type });
+    };
 
-    // A função agora retorna os dados do endereço para uso posterior.
+    const handleFormTypeChange = (newType) => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setFormType(newType);
+    };
+
     const fetchAddressFromCep = async (cepValue) => {
         const unmaskedCep = cepValue.replace(/\D/g, '');
         if (unmaskedCep.length !== 8) return null;
@@ -86,14 +108,12 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
             const response = await axios.get(`${API_BASE_URL}/api/cep/${unmaskedCep}`);
             const addressData = response.data;
             
-            // Atualiza os estados para a UI refletir as mudanças.
             setLogradouro(addressData.logradouro || '');
             setBairro(addressData.bairro || '');
             setCidade(addressData.localidade || '');
             setUf(addressData.uf || '');
             setEstado(addressData.estado || '');
 
-            // Retorna os dados para serem usados na lógica de registro.
             return {
                 logradouro: addressData.logradouro,
                 bairro: addressData.bairro,
@@ -103,13 +123,13 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
             };
         } catch (error) {
             console.error("Erro ao buscar CEP:", error);
-            showSnackbar('CEP não encontrado ou inválido.');
+            showSnackbar('CEP não encontrado ou inválido.', 'error');
             setLogradouro('');
             setBairro('');
             setCidade('');
             setUf('');
             setEstado('');
-            return null; // Retorna null em caso de erro.
+            return null;
         } finally {
             setIsLoading(false);
         }
@@ -117,7 +137,7 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
 
     const handleLogin = async () => {
         if (!email || !senha) {
-            showSnackbar('Por favor, preencha e-mail e senha.');
+            showSnackbar('Por favor, preencha e-mail e senha.', 'error');
             return;
         }
         setIsLoading(true);
@@ -125,12 +145,12 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
             const response = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password: senha });
             const { token, user } = response.data;
             await AsyncStorage.setItem('token', token);
-            showSnackbar('Login realizado com sucesso!');
+            showSnackbar('Login realizado com sucesso!', 'success');
             onSuccessfulLogin(user);
         } catch (error) {
             console.error("Erro no login:", error.response?.data || error.message);
             const errorMessage = error.response?.data?.error || 'Credenciais inválidas ou erro no servidor.';
-            showSnackbar(`Erro: ${errorMessage}`);
+            showSnackbar(`Erro: ${errorMessage}`, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -149,26 +169,20 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
             numero_moradores: parseInt(numeroMoradores, 10) || 1,
         };
 
-        // --- LÓGICA CORRIGIDA PARA GARANTIR OS DADOS DE ENDEREÇO ---
         if (residenciaType === 'casa') {
-            // Re-busca os dados do CEP no momento do clique para garantir que estão atualizados.
             const addressData = await fetchAddressFromCep(cep);
-
-            // Se a busca de CEP falhar ou os dados essenciais não vierem, mostra um erro e para.
             if (!addressData || !addressData.logradouro || !addressData.cidade) {
-                showSnackbar('Endereço inválido. Verifique o CEP e tente novamente.');
+                showSnackbar('Endereço inválido. Verifique o CEP e tente novamente.', 'error');
                 setIsLoading(false);
-                return; // Para a execução do cadastro.
+                return;
             }
-            
-            // Adiciona os dados de endereço e casa ao objeto userData.
             Object.assign(userData, {
                 ...addressData,
                 cep: cep.replace(/\D/g, ''),
                 numero,
             });
         } 
-        else { // Para apartamento
+        else {
             Object.assign(userData, {
                 codigo_acesso: codigoAcesso,
                 bloco,
@@ -176,29 +190,55 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
             });
         }
         
-        // Com o userData garantidamente completo, envia a requisição de registro.
         try {
             await axios.post(`${API_BASE_URL}/api/auth/register`, userData);
-            showSnackbar('Cadastro realizado com sucesso! Faça o login.');
-            setFormType('login');
+            showSnackbar('Cadastro realizado com sucesso! Faça o login.', 'success');
+            handleFormTypeChange('login');
         } catch (error) {
             console.error("Detalhes do erro de cadastro:", error.response?.data || error);
             if (error.response?.data?.errors) {
                 const errorMessages = error.response.data.errors.map(e => e.message).join('\n');
-                showSnackbar(`Erros de validação:\n${errorMessages}`);
+                showSnackbar(`Erros de validação:\n${errorMessages}`, 'error');
             } else if (error.response?.data?.error) {
-                showSnackbar(`Erro: ${error.response.data.error}`);
+                showSnackbar(`Erro: ${error.response.data.error}`, 'error');
             } else {
-                showSnackbar('Não foi possível conectar ao servidor.');
+                showSnackbar('Não foi possível conectar ao servidor.', 'error');
             }
         } finally {
             setIsLoading(false);
         }
     };
 
-    // --- RENDERIZAÇÃO DOS FORMULÁRIOS ---
+    // --- FUNÇÕES DOS TERMOS E CONDIÇÕES ---
+    const handleOpenTerms = () => setTermsVisible(true);
+    const handleCloseTerms = () => setTermsVisible(false);
+
+    const handleAcceptTerms = () => {
+        setAgreeToTerms(true);
+        handleCloseTerms();
+    };
+
+    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+        const paddingToBottom = 20;
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+    };
+
+    // Componente de Botão com Gradiente
+    const GradientButton = ({ onPress, loading, disabled, children }) => (
+        <TouchableOpacity onPress={onPress} disabled={disabled || loading} style={styles.gradientButtonContainer}>
+            <LinearGradient
+                colors={disabled ? ['#B0B0B0', '#C0C0C0'] : ['#0A84FF', '#005ecb']}
+                style={styles.gradientButton}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+            >
+                <Text style={styles.gradientButtonText}>{loading ? 'Aguarde...' : children}</Text>
+            </LinearGradient>
+        </TouchableOpacity>
+    );
+
     const renderLoginForm = () => (
-        <>
+        <View>
             <Paragraph style={styles.paragraph}>Bem-vindo! Faça login para continuar.</Paragraph>
             <TextInput 
                 label="Email" 
@@ -220,33 +260,25 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                 left={<TextInput.Icon icon="lock-outline" />}
                 right={<TextInput.Icon icon={passwordVisible ? "eye-off" : "eye"} onPress={() => setPasswordVisible(!passwordVisible)} />}
             />
-            <Button 
-                mode="contained" 
-                onPress={handleLogin} 
-                style={styles.mainButton} 
-                labelStyle={styles.mainButtonText} 
-                icon="login-variant" 
-                loading={isLoading} 
-                disabled={isLoading}
-            >
-                {isLoading ? 'Entrando...' : 'Login'}
-            </Button>
-            <Button mode="text" onPress={() => setFormType('register')} style={styles.switchButton}>
+            <GradientButton onPress={handleLogin} loading={isLoading} disabled={isLoading}>
+                Login
+            </GradientButton>
+            <Button mode="text" onPress={() => handleFormTypeChange('register')} style={styles.switchButton}>
                 Novo por aqui? Crie uma conta
             </Button>
-        </>
+        </View>
     );
 
     const renderRegisterForm = () => (
-        <>
+        <View>
             <Paragraph style={styles.paragraph}>Crie sua conta para começar.</Paragraph>
             <SegmentedButtons
                 value={registrationType}
                 onValueChange={setRegistrationType}
                 style={styles.segmentedButtons}
                 buttons={[
-                    { value: 'casa', label: 'Casa', icon: 'home-variant-outline' },
-                    { value: 'condominio', label: 'Condomínio', icon: 'office-building-outline' },
+                    { value: 'casa', label: 'Casa', icon: 'home-variant-outline', style: styles.segmentButton },
+                    { value: 'condominio', label: 'Condomínio', icon: 'office-building-outline', style: styles.segmentButton },
                 ]}
             />
             <TextInput label="Nome Completo" style={styles.input} value={name} onChangeText={setName} mode="outlined" />
@@ -293,39 +325,126 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                 </>
             )}
 
-            <Checkbox.Item
-                label="Eu li e aceito os Termos e Condições"
-                status={agreeToTerms ? 'checked' : 'unchecked'}
-                onPress={() => setAgreeToTerms(!agreeToTerms)}
-                labelStyle={{ fontSize: 14, color: theme.colors.placeholder }}
-                style={styles.checkbox}
-            />
-            <Button 
-                mode="contained" 
-                onPress={handleRegister} 
-                style={styles.mainButton} 
-                labelStyle={styles.mainButtonText} 
-                icon="account-plus-outline" 
-                loading={isLoading} 
-                disabled={isLoading || !agreeToTerms}
-            >
-                {isLoading ? 'Cadastrando...' : 'Cadastrar'}
-            </Button>
-            <Button mode="text" onPress={() => setFormType('login')} style={styles.switchButton}>
+            <TouchableOpacity onPress={handleOpenTerms} style={styles.checkboxContainer}>
+                <Checkbox.Android status={agreeToTerms ? 'checked' : 'unchecked'} color={theme.colors.primary} />
+                <Text style={styles.checkboxLabel}>Eu li e aceito os <Text style={styles.checkboxLink}>Termos e Condições</Text></Text>
+            </TouchableOpacity>
+
+            <GradientButton onPress={handleRegister} loading={isLoading} disabled={isLoading || !agreeToTerms}>
+                Cadastrar
+            </GradientButton>
+            <Button mode="text" onPress={() => handleFormTypeChange('login')} style={styles.switchButton}>
                 Já tem uma conta? Faça login
             </Button>
-        </>
+        </View>
     );
 
-    // --- ESTRUTURA PRINCIPAL DO COMPONENTE ---
+    const TermsAndConditionsModal = () => (
+        <Portal>
+            <Modal visible={termsVisible} onDismiss={handleCloseTerms} contentContainerStyle={styles.modalContainer}>
+                <View style={styles.modalHeader}>
+                    <Title style={styles.modalTitle}>Termos e Condições de Uso</Title>
+                    <Paragraph style={styles.modalSubtitle}>Aqua Services</Paragraph>
+                </View>
+                <Divider />
+                <ScrollView 
+                    style={styles.modalScrollView}
+                    onScroll={({ nativeEvent }) => {
+                        if (isCloseToBottom(nativeEvent)) {
+                            if (!scrolledToBottom) setScrolledToBottom(true);
+                        }
+                    }}
+                    scrollEventThrottle={400}
+                >
+                    <Paragraph style={styles.termsText}>
+                        Bem-vindo ao Aqua! Agradecemos por escolher nossa solução para o monitoramento inteligente do consumo de água. Antes de prosseguir, por favor, leia atentamente nossos Termos e Condições.
+                    </Paragraph>
+
+                    <Subheading style={styles.termsSubheading}>1. O Serviço Aqua</Subheading>
+                    <Paragraph style={styles.termsText}>
+                        O projeto Aqua consiste em um sistema de assinaturas para monitoramento de água em condomínios e residências individuais. Nossa plataforma é composta por um Aplicativo Android, voltado para moradores e síndicos, e um Dashboard Administrativo para nossa equipe interna. O objetivo é fornecer uma ferramenta centralizada para acompanhar o consumo estimado de água, criar metas de economia e facilitar a comunicação com nossos clientes.
+                    </Paragraph>
+
+                    <Subheading style={styles.termsSubheading}>2. Cadastro e Conta do Usuário</Subheading>
+                    <Paragraph style={styles.termsText}>
+                        Ao se cadastrar, você concorda em fornecer informações verdadeiras, precisas e completas, como nome, e-mail e CPF. Você é o único responsável pela segurança de sua senha e por todas as atividades que ocorrem em sua conta.
+                    </Paragraph>
+
+                    <Subheading style={styles.termsSubheading}>3. Coleta e Uso de Dados</Subheading>
+                    <Paragraph style={styles.termsText}>
+                        Para fornecer nossos serviços, coletamos dois tipos principais de dados:
+                        {"\n\n"}
+                        a) **Dados Pessoais:** Informações fornecidas durante o cadastro (nome, e-mail, CPF, endereço) são utilizadas para identificação, faturamento e comunicação.
+                        {"\n\n"}
+                        b) **Dados de Consumo:** Nossos sensores IOT coletam dados sobre o fluxo de água em sua residência. Esses dados são processados para gerar relatórios de consumo estimado, identificar possíveis vazamentos e auxiliar na criação de metas.
+                        {"\n\n"}
+                        Todos os dados são armazenados de forma segura em nossa infraestrutura na nuvem (AWS) e tratados com a máxima confidencialidade. Não compartilharemos seus dados pessoais com terceiros sem seu consentimento explícito, exceto quando exigido por lei.
+                    </Paragraph>
+                    
+                    <Subheading style={styles.termsSubheading}>4. Propriedade Intelectual</Subheading>
+                    <Paragraph style={styles.termsText}>
+                        Todo o conteúdo, design, código-fonte, e elementos visuais do aplicativo Aqua, incluindo nosso mascote "Pingo", são de propriedade exclusiva da equipe de desenvolvimento do projeto Aqua. É proibida a reprodução, cópia ou redistribuição de qualquer parte do serviço sem nossa permissão prévia por escrito.
+                    </Paragraph>
+
+                    <Subheading style={styles.termsSubheading}>5. Limitação de Responsabilidade</Subheading>
+                    <Paragraph style={styles.termsText}>
+                        O sistema Aqua fornece dados de consumo de forma **estimada** e para fins de monitoramento. Embora nos esforcemos para a máxima precisão, não nos responsabilizamos por discrepâncias entre os dados apresentados e sua fatura oficial de água. O serviço é uma ferramenta de apoio à gestão do consumo, e não substitui a verificação de profissionais qualificados para problemas hidráulicos.
+                    </Paragraph>
+
+                    <Subheading style={styles.termsSubheading}>6. Agradecimentos</Subheading>
+                    <Paragraph style={styles.termsText}>
+                        Este projeto foi desenvolvido como Trabalho de Conclusão de Curso por: Davi Rodrigues, Felipe Lopes, Davi Chagas, Ana Carollini e Thiago Henrique. Agradecemos por fazer parte desta jornada conosco.
+                    </Paragraph>
+                </ScrollView>
+                <Divider />
+                <View style={styles.modalFooter}>
+                    <Button 
+                        mode="contained" 
+                        onPress={handleAcceptTerms}
+                        disabled={!scrolledToBottom}
+                        style={scrolledToBottom ? {} : { backgroundColor: theme.colors.placeholder }}
+                    >
+                        {scrolledToBottom ? "Eu Li e Aceito os Termos" : "Role até o final para aceitar"}
+                    </Button>
+                </View>
+            </Modal>
+        </Portal>
+    );
+
     return (
         <PaperProvider theme={theme}>
+            <KeyboardAvoidingView 
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={styles.keyboardAvoidingView}
+            >
+                <ScrollView 
+                    contentContainerStyle={styles.scrollContainer} 
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <View style={styles.container}>
+                        <Card style={styles.card}>
+                            <Card.Content style={styles.cardContent}>
+                                <View style={styles.logoContainer}>
+                                    <Avatar.Image size={80} source={require('../assets/aqua-logo.png')} style={{ backgroundColor: 'transparent' }} />
+                                    <Title style={styles.title}>Aqua Services</Title>
+                                </View>
+                                {formType === 'login' ? renderLoginForm() : renderRegisterForm()}
+                            </Card.Content>
+                        </Card>
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
+
+            <TermsAndConditionsModal />
+
             <Portal>
-                <Dialog visible={dialogVisible} onDismiss={hideDialog}>
+                <Dialog visible={dialogVisible} onDismiss={hideDialog} style={styles.dialog}>
                     <Dialog.Icon icon="information-outline" size={48} color={theme.colors.primary} />
-                    <Dialog.Title style={{ textAlign: 'center' }}>Código de Acesso</Dialog.Title>
+                    <Dialog.Title style={{textAlign: 'center', color: theme.colors.text }}>Código de Acesso</Dialog.Title>
                     <Dialog.Content>
-                        <Paragraph>O código de acesso do condomínio é um identificador único. Você pode encontrá-lo na sua fatura ou consultar a administração do condomínio.</Paragraph>
+                        <Paragraph style={{textAlign: 'center', color: theme.colors.placeholder}}>
+                            O código de acesso do condomínio é um identificador único. Você pode encontrá-lo na sua fatura ou consultar a administração.
+                        </Paragraph>
                     </Dialog.Content>
                     <Dialog.Actions>
                         <Button onPress={hideDialog} mode="contained">Entendi</Button>
@@ -333,84 +452,161 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                 </Dialog>
             </Portal>
 
-            <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-                <View style={styles.container}>
-                    <Card style={styles.card}>
-                        <Card.Content>
-                            <View style={styles.logoContainer}>
-                                <Avatar.Image size={80} source={require('../assets/aqua-logo.png')} style={{ backgroundColor: 'transparent' }} />
-                                <Title style={styles.title}>Aqua Services 2025</Title>
-                            </View>
-                            {formType === 'login' ? renderLoginForm() : renderRegisterForm()}
-                        </Card.Content>
-                    </Card>
-                </View>
-            </ScrollView>
-
             <Snackbar
-                visible={snackbarVisible}
-                onDismiss={() => setSnackbarVisible(false)}
-                duration={Snackbar.DURATION_LONG}
-                style={{ backgroundColor: snackbarMessage.startsWith('Erro') ? theme.colors.error : '#323232' }}
+                visible={snackbar.visible}
+                onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+                duration={Snackbar.DURATION_MEDIUM}
+                style={{
+                    backgroundColor: snackbar.type === 'error' ? theme.colors.error :
+                                     snackbar.type === 'success' ? theme.colors.success :
+                                     '#323232'
+                }}
             >
-                {snackbarMessage}
+                {snackbar.message}
             </Snackbar>
         </PaperProvider>
     );
 }
 
-// --- ESTILOS DO COMPONENTE ---
 const styles = StyleSheet.create({
+    keyboardAvoidingView: {
+        flex: 1,
+        backgroundColor: theme.colors.background,
+    },
     scrollContainer: { 
         flexGrow: 1, 
         justifyContent: 'center', 
-        backgroundColor: theme.colors.background 
+        paddingVertical: 20,
     },
     container: { 
-        padding: 20 
+        paddingHorizontal: 20,
     },
     card: { 
         width: '100%', 
         maxWidth: 420, 
         alignSelf: 'center', 
-        paddingVertical: 8 
+        borderRadius: theme.roundness * 1.5,
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+    },
+    cardContent: {
+        paddingHorizontal: 24,
+        paddingVertical: 32,
     },
     logoContainer: { 
         alignItems: 'center', 
-        marginBottom: 16 
+        marginBottom: 24,
     },
     title: { 
-        fontSize: 24, 
+        fontSize: 28, 
         fontWeight: 'bold', 
         color: theme.colors.primary, 
-        marginTop: 8 
+        marginTop: 12,
+        letterSpacing: 0.5,
     },
     paragraph: { 
         fontSize: 16, 
         color: theme.colors.placeholder, 
         textAlign: 'center', 
-        marginBottom: 20, 
+        marginBottom: 24,
+        lineHeight: 22,
     },
     input: { 
-        marginBottom: 12 
+        marginBottom: 16,
+        backgroundColor: theme.colors.background,
     },
-    mainButton: { 
-        marginTop: 16, 
-        paddingVertical: 8 
+    gradientButtonContainer: {
+        marginTop: 24,
+        borderRadius: theme.roundness * 5,
+        elevation: 4,
+        shadowColor: '#0A84FF',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
     },
-    mainButtonText: { 
-        fontSize: 16, 
-        fontWeight: 'bold' 
+    gradientButton: {
+        paddingVertical: 14,
+        alignItems: 'center',
+    },
+    gradientButtonText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        letterSpacing: 0.5,
     },
     switchButton: { 
-        marginTop: 12 
+        marginTop: 16,
     },
     segmentedButtons: { 
-        marginBottom: 20 
+        marginBottom: 24,
     },
-    checkbox: { 
-        backgroundColor: theme.colors.surface, 
-        marginTop: 10, 
-        borderRadius: theme.roundness 
+    segmentButton: {
+        borderRadius: theme.roundness,
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 16,
+        backgroundColor: 'transparent',
+        paddingVertical: 8,
+    },
+    checkboxLabel: {
+        marginLeft: 6,
+        color: theme.colors.placeholder,
+        flex: 1, // Permite que o texto quebre a linha se necessário
+    },
+    checkboxLink: {
+        fontWeight: 'bold',
+        color: theme.colors.primary,
+        textDecorationLine: 'underline',
+    },
+    dialog: {
+        borderRadius: theme.roundness * 1.5,
+    },
+    modalContainer: {
+        backgroundColor: 'white',
+        margin: 20,
+        borderRadius: theme.roundness * 1.5,
+        height: '85%',
+        elevation: 10,
+    },
+    modalHeader: {
+        paddingVertical: 20,
+        paddingHorizontal: 20,
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: theme.colors.text,
+    },
+    modalSubtitle: {
+        fontSize: 14,
+        color: theme.colors.placeholder,
+    },
+    modalScrollView: {
+        paddingHorizontal: 24,
+    },
+    termsText: {
+        fontSize: 14,
+        lineHeight: 22,
+        marginBottom: 16,
+        textAlign: 'justify',
+        color: theme.colors.text,
+    },
+    termsSubheading: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginTop: 8,
+        marginBottom: 8,
+        color: theme.colors.text,
+    },
+    modalFooter: {
+        padding: 20,
+        borderTopWidth: 1,
+        borderTopColor: '#EEEEEE',
     },
 });
