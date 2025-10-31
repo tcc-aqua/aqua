@@ -3,7 +3,7 @@ import { View, StyleSheet, StatusBar } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 // Componentes
-import Login from './screens/Login'; // <-- seu Login.jsx
+import Login from './screens/Login'; 
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Inicio from './screens/Inicio';

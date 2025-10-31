@@ -3,259 +3,387 @@ import { StyleSheet, View, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import {
-  TextInput,
-  Button,
-  Card,
-  Title,
-  Paragraph,
-  Provider as PaperProvider,
-  DefaultTheme,
-  SegmentedButtons,
-  Portal,
-  Dialog,
-  HelperText,
-  Avatar,
-  Checkbox,
-  Snackbar
+    TextInput,
+    Button,
+    Card,
+    Title,
+    Paragraph,
+    Provider as PaperProvider,
+    DefaultTheme,
+    SegmentedButtons,
+    Portal,
+    Dialog,
+    HelperText,
+    Avatar,
+    Checkbox,
+    Snackbar
 } from 'react-native-paper';
+import { mask } from 'react-native-mask-text';
 
-// ALTERAÇÃO IMPORTANTE: Corrigido a URL para incluir o prefixo /api que provavelmente está configurado no seu backend.
-const BACKEND_URL = 'http://10.0.2.2:3334/api/auth';
+// URL base da sua API backend
+const API_BASE_URL = 'http://192.168.56.1:3334';
 
+// Tema visual do Paper
 const theme = {
-  ...DefaultTheme,
-  roundness: 12,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: '#007BFF',
-    accent: '#0056b3',
-    background: '#F0F8FF',
-    surface: '#FFFFFF',
-    text: '#333333',
-    placeholder: '#888888',
-    error: '#B00020',
-  },
+    ...DefaultTheme,
+    roundness: 12,
+    colors: {
+        ...DefaultTheme.colors,
+        primary: '#007BFF',
+        accent: '#0056b3',
+        background: '#F0F8FF',
+        surface: '#FFFFFF',
+        text: '#333333',
+        placeholder: '#888888',
+        error: '#B00020',
+    },
 };
 
 export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
-  const [formType, setFormType] = useState('login');
-  const [registrationType, setRegistrationType] = useState('casa');
-  const [dialogVisible, setDialogVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+    // --- CONTROLE DE ESTADO DA TELA ---
+    const [formType, setFormType] = useState('login');
+    const [registrationType, setRegistrationType] = useState('casa');
+    const [dialogVisible, setDialogVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [agreeToTerms, setAgreeToTerms] = useState(false);
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  // Estados para os campos do formulário
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [cpf, setCpf] = useState('');
-  const [telefone, setTelefone] = useState('');
-  const [cep, setCep] = useState('');
-  const [cidade, setCidade] = useState('');
-  const [numCondominio, setNumCondominio] = useState('');
-  const [numero, setNumero] = useState('');
+    // --- ESTADOS UNIFICADOS PARA OS CAMPOS DO FORMULÁRIO ---
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [senha, setSenha] = useState('');
+    const [cpf, setCpf] = useState('');
+    const [cep, setCep] = useState('');
+    const [logradouro, setLogradouro] = useState('');
+    const [numero, setNumero] = useState('');
+    const [bairro, setBairro] = useState('');
+    const [cidade, setCidade] = useState('');
+    const [uf, setUf] = useState('');
+    const [estado, setEstado] = useState('');
+    const [codigoAcesso, setCodigoAcesso] = useState('');
+    const [bloco, setBloco] = useState('');
+    const [numeroMoradores, setNumeroMoradores] = useState('1');
 
-  const showDialog = () => setDialogVisible(true);
-  const hideDialog = () => setDialogVisible(false);
-  const showSnackbar = (message) => {
-    setSnackbarMessage(message);
-    setSnackbarVisible(true);
-  };
+    // --- FUNÇÕES AUXILIARES ---
+    const showDialog = () => setDialogVisible(true);
+    const hideDialog = () => setDialogVisible(false);
+    const showSnackbar = (message) => {
+        setSnackbarMessage(message);
+        setSnackbarVisible(true);
+    };
+    
+    // --- FUNÇÕES DE LÓGICA E API ---
+    const fetchAddressFromCep = async (cepValue) => {
+        const unmaskedCep = cepValue.replace(/\D/g, '');
+        if (unmaskedCep.length !== 8) return;
+        
+        setIsLoading(true);
+        try {
+            const response = await axios.get(`${API_BASE_URL}/api/cep/${unmaskedCep}`);
+            const { logradouro, bairro, localidade, uf, estado } = response.data;
+            if (logradouro) setLogradouro(logradouro);
+            if (bairro) setBairro(bairro);
+            if (localidade) setCidade(localidade);
+            if (uf) setUf(uf);
+            if (estado) setEstado(estado);
+        } catch (error) {
+            console.error("Erro ao buscar CEP:", error);
+            showSnackbar('CEP não encontrado ou inválido.');
+            setLogradouro('');
+            setBairro('');
+            setCidade('');
+            setUf('');
+            setEstado('');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-  const handleLogin = async () => {
-    setIsLoading(true);
-    try {
-      const response = await axios.post(`${BACKEND_URL}/login`, { email, password: senha });
-      const { token, user } = response.data;
-      await AsyncStorage.setItem('token', token);
-      showSnackbar('Login realizado com sucesso!');
-      onSuccessfulLogin(user);
-    } catch (error) {
-      console.error("Erro no login:", error.response?.data || error.message);
-      const errorMessage = error.response?.data?.error || 'Erro ao conectar com o servidor.';
-      showSnackbar(`Erro: ${errorMessage}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const handleLogin = async () => {
+        if (!email || !senha) {
+            showSnackbar('Por favor, preencha e-mail e senha.');
+            return;
+        }
+        setIsLoading(true);
+        try {
+            const response = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password: senha });
+            const { token, user } = response.data;
+            await AsyncStorage.setItem('token', token);
+            showSnackbar('Login realizado com sucesso!');
+            onSuccessfulLogin(user);
+        } catch (error) {
+            console.error("Erro no login:", error.response?.data || error.message);
+            const errorMessage = error.response?.data?.error || 'Credenciais inválidas ou erro no servidor.';
+            showSnackbar(`Erro: ${errorMessage}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-  const handleRegister = async () => {
-    setIsLoading(true);
-    try {
-      const residenciaType = registrationType === 'condominio' ? 'apartamento' : 'casa';
+    const handleRegister = async () => {
+        setIsLoading(true);
+        try {
+            const residenciaType = registrationType === 'condominio' ? 'apartamento' : 'casa';
+            
+            // --- CORREÇÃO FINAL: Enviando todos os campos que o backend precisa ---
+            const userData = {
+                // Usuário
+                name,
+                email,
+                password: senha,
+                cpf,
+                residencia_type: residenciaType,
+                
+                // Residência
+                cep: cep.replace(/\D/g, ''),
+                logradouro,
+                numero,
+                bairro,
+                cidade,
+                uf,
+                estado,
+                bloco,
+                codigo_acesso: codigoAcesso,
+                numero_moradores: parseInt(numeroMoradores, 10) || 1,
+            };
+            
+            await axios.post(`${API_BASE_URL}/api/auth/register`, userData);
 
-      const userData = {
-        name: name,
-        email: email,
-        password: senha,
-        cpf: cpf,
-        residencia_type: residenciaType,
-      };
+            showSnackbar('Cadastro realizado com sucesso! Faça o login.');
+            setFormType('login');
 
-      if (residenciaType === 'casa') {
-        userData.cep = cep;
-        userData.numero = numero;
-        userData.sensor_id = 1; // IMPORTANTE: Valor fixo para teste. Você precisa definir a lógica para obter isso.
-      }
+        } catch (error) {
+            console.error("Detalhes do erro de cadastro:", error.response?.data || error);
+            if (error.response?.data?.errors) {
+                const errorMessages = error.response.data.errors.map(e => e.message).join('\n');
+                showSnackbar(`Erros de validação:\n${errorMessages}`);
+            } else if (error.response?.data?.error) {
+                showSnackbar(`Erro: ${error.response.data.error}`);
+            } else {
+                showSnackbar('Não foi possível conectar ao servidor.');
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-      if (residenciaType === 'apartamento') {
-        userData.codigo_acesso = numCondominio;
-        userData.numero = numero;
-      }
-      
-      await axios.post(`${BACKEND_URL}/register`, userData);
-
-      showSnackbar('Cadastro realizado com sucesso! Faça o login.');
-      setFormType('login');
-
-    } catch (error) {
-      console.error("Detalhes do erro de cadastro:", error.response?.data || error);
-      if (error.response?.data?.errors) {
-        const errorMessages = error.response.data.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('\n');
-        showSnackbar(`Erros de validação:\n${errorMessages}`);
-      } else if (error.response?.data?.error) {
-        showSnackbar(`Erro: ${error.response.data.error}`);
-      } else if (error.response?.status === 404) {
-        showSnackbar('Erro: Rota de cadastro não encontrada no servidor. Verifique a URL.');
-      }
-      else {
-        showSnackbar('Erro ao conectar com o servidor.');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const renderLoginForm = () => (
-    <>
-      <Paragraph style={styles.paragraph}>Bem-vindo! Faça login para continuar.</Paragraph>
-      <TextInput label="Email" value={email} onChangeText={setEmail} style={styles.input} mode="outlined" left={<TextInput.Icon icon="account-circle-outline" />} />
-      <TextInput
-        label="Senha"
-        value={senha}
-        onChangeText={setSenha}
-        secureTextEntry={!passwordVisible}
-        style={styles.input}
-        mode="outlined"
-        left={<TextInput.Icon icon="lock-outline" />}
-        right={<TextInput.Icon icon={passwordVisible ? "eye-off" : "eye"} onPress={() => setPasswordVisible(!passwordVisible)} />}
-      />
-      <Button mode="contained" onPress={handleLogin} style={styles.mainButton} labelStyle={styles.mainButtonText} icon="login-variant" loading={isLoading} disabled={isLoading}>
-        {isLoading ? 'Entrando...' : 'Login'}
-      </Button>
-      <Button mode="text" onPress={() => setFormType('register')} style={styles.switchButton}>
-        Novo por aqui? Crie uma conta
-      </Button>
-    </>
-  );
-
-  const renderRegisterForm = () => (
-    <>
-      <Paragraph style={styles.paragraph}>Crie sua conta para começar.</Paragraph>
-      <SegmentedButtons
-        value={registrationType}
-        onValueChange={setRegistrationType}
-        style={styles.segmentedButtons}
-        buttons={[
-          { value: 'casa', label: 'Casa', icon: 'home-variant-outline' },
-          { value: 'condominio', label: 'Condomínio', icon: 'office-building-outline' },
-        ]}
-      />
-      <TextInput label="Nome Completo" style={styles.input} value={name} onChangeText={setName} mode="outlined" />
-      <TextInput label="Email" style={styles.input} value={email} onChangeText={setEmail} mode="outlined" keyboardType="email-address" />
-      <TextInput label="Senha" style={styles.input} value={senha} onChangeText={setSenha} secureTextEntry mode="outlined" />
-      <TextInput label="CPF (000.000.000-00)" style={styles.input} value={cpf} onChangeText={setCpf} mode="outlined" keyboardType="numeric" />
-      <TextInput label="Número de Telefone" style={styles.input} value={telefone} onChangeText={setTelefone} mode="outlined" keyboardType="phone-pad" />
-      
-      {registrationType === 'casa' && (
+    // --- RENDERIZAÇÃO DOS FORMULÁRIOS ---
+    const renderLoginForm = () => (
         <>
-          <TextInput label="CEP" style={styles.input} value={cep} onChangeText={setCep} mode="outlined" keyboardType="numeric" />
-          <TextInput label="Número da Casa" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" keyboardType="numeric" />
-          <TextInput label="Cidade/Estado" style={styles.input} value={cidade} onChangeText={setCidade} mode="outlined" />
+            <Paragraph style={styles.paragraph}>Bem-vindo! Faça login para continuar.</Paragraph>
+            <TextInput 
+                label="Email" 
+                value={email} 
+                onChangeText={setEmail} 
+                style={styles.input} 
+                mode="outlined" 
+                keyboardType="email-address"
+                autoCapitalize="none"
+                left={<TextInput.Icon icon="account-circle-outline" />} 
+            />
+            <TextInput
+                label="Senha"
+                value={senha}
+                onChangeText={setSenha}
+                secureTextEntry={!passwordVisible}
+                style={styles.input}
+                mode="outlined"
+                left={<TextInput.Icon icon="lock-outline" />}
+                right={<TextInput.Icon icon={passwordVisible ? "eye-off" : "eye"} onPress={() => setPasswordVisible(!passwordVisible)} />}
+            />
+            <Button 
+                mode="contained" 
+                onPress={handleLogin} 
+                style={styles.mainButton} 
+                labelStyle={styles.mainButtonText} 
+                icon="login-variant" 
+                loading={isLoading} 
+                disabled={isLoading}
+            >
+                {isLoading ? 'Entrando...' : 'Login'}
+            </Button>
+            <Button mode="text" onPress={() => setFormType('register')} style={styles.switchButton}>
+                Novo por aqui? Crie uma conta
+            </Button>
         </>
-      )}
+    );
 
-      {registrationType === 'condominio' && (
+    const renderRegisterForm = () => (
         <>
-          <TextInput label="Código de Acesso do Condomínio" style={styles.input} value={numCondominio} onChangeText={setNumCondominio} mode="outlined" />
-          <TextInput label="Número do Apartamento" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" />
-          <HelperText type="info" visible={true} style={{textAlign: 'center'}}>
-            Não sabe o código? <Button mode="text" compact onPress={showDialog} labelStyle={{fontSize: 12}}>Clique aqui</Button>
-          </HelperText>
+            <Paragraph style={styles.paragraph}>Crie sua conta para começar.</Paragraph>
+            <SegmentedButtons
+                value={registrationType}
+                onValueChange={setRegistrationType}
+                style={styles.segmentedButtons}
+                buttons={[
+                    { value: 'casa', label: 'Casa', icon: 'home-variant-outline' },
+                    { value: 'condominio', label: 'Condomínio', icon: 'office-building-outline' },
+                ]}
+            />
+            <TextInput label="Nome Completo" style={styles.input} value={name} onChangeText={setName} mode="outlined" />
+            <TextInput label="Email" style={styles.input} value={email} onChangeText={setEmail} mode="outlined" keyboardType="email-address" autoCapitalize="none"/>
+            <TextInput label="Senha" style={styles.input} value={senha} onChangeText={setSenha} secureTextEntry mode="outlined" />
+            <TextInput 
+                label="CPF" 
+                style={styles.input} 
+                value={cpf} 
+                onChangeText={(text) => setCpf(mask(text, '999.999.999-99'))} 
+                mode="outlined" 
+                keyboardType="numeric" 
+            />
+            
+            {registrationType === 'casa' && (
+                <>
+                    <TextInput 
+                        label="CEP" 
+                        style={styles.input} 
+                        value={cep} 
+                        onChangeText={(text) => setCep(mask(text, '99999-999'))} 
+                        onBlur={() => fetchAddressFromCep(cep)}
+                        mode="outlined" 
+                        keyboardType="numeric" 
+                    />
+                    <TextInput label="Logradouro" style={styles.input} value={logradouro} onChangeText={setLogradouro} mode="outlined" disabled={isLoading} />
+                    <TextInput label="Bairro" style={styles.input} value={bairro} onChangeText={setBairro} mode="outlined" disabled={isLoading} />
+                    <TextInput label="Cidade" style={styles.input} value={cidade} onChangeText={setCidade} mode="outlined" disabled={isLoading} />
+                    <TextInput label="UF" style={styles.input} value={uf} onChangeText={setUf} mode="outlined" disabled={isLoading} />
+                    <TextInput label="Número da Casa" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" keyboardType="numeric" />
+                    <TextInput label="Número de Moradores" style={styles.input} value={numeroMoradores} onChangeText={setNumeroMoradores} mode="outlined" keyboardType="numeric" />
+                </>
+            )}
+
+            {registrationType === 'condominio' && (
+                <>
+                    <TextInput label="Código de Acesso do Condomínio" style={styles.input} value={codigoAcesso} onChangeText={setCodigoAcesso} mode="outlined" />
+                    <TextInput label="Bloco" style={styles.input} value={bloco} onChangeText={setBloco} mode="outlined" />
+                    <TextInput label="Número do Apartamento" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" keyboardType="numeric" />
+                    <TextInput label="Número de Moradores" style={styles.input} value={numeroMoradores} onChangeText={setNumeroMoradores} mode="outlined" keyboardType="numeric" />
+                    <HelperText type="info" visible={true} style={{ textAlign: 'center' }}>
+                        Não sabe o código? <Button mode="text" compact onPress={showDialog} labelStyle={{ fontSize: 12 }}>Clique aqui</Button>
+                    </HelperText>
+                </>
+            )}
+
+            <Checkbox.Item
+                label="Eu li e aceito os Termos e Condições"
+                status={agreeToTerms ? 'checked' : 'unchecked'}
+                onPress={() => setAgreeToTerms(!agreeToTerms)}
+                labelStyle={{ fontSize: 14, color: theme.colors.placeholder }}
+                style={styles.checkbox}
+            />
+            <Button 
+                mode="contained" 
+                onPress={handleRegister} 
+                style={styles.mainButton} 
+                labelStyle={styles.mainButtonText} 
+                icon="account-plus-outline" 
+                loading={isLoading} 
+                disabled={isLoading || !agreeToTerms}
+            >
+                {isLoading ? 'Cadastrando...' : 'Cadastrar'}
+            </Button>
+            <Button mode="text" onPress={() => setFormType('login')} style={styles.switchButton}>
+                Já tem uma conta? Faça login
+            </Button>
         </>
-      )}
+    );
 
-      <Checkbox.Item
-        label="Eu li e aceito os Termos e Condições"
-        status={agreeToTerms ? 'checked' : 'unchecked'}
-        onPress={() => setAgreeToTerms(!agreeToTerms)}
-        labelStyle={{fontSize: 14, color: theme.colors.placeholder}}
-        style={styles.checkbox}
-      />
-      <Button mode="contained" onPress={handleRegister} style={styles.mainButton} labelStyle={styles.mainButtonText} icon="account-plus-outline" loading={isLoading} disabled={isLoading || !agreeToTerms}>
-        {isLoading ? 'Cadastrando...' : 'Cadastrar'}
-      </Button>
-      <Button mode="text" onPress={() => setFormType('login')} style={styles.switchButton}>
-        Já tem uma conta? Faça login
-      </Button>
-    </>
-  );
+    // --- ESTRUTURA PRINCIPAL DO COMPONENTE ---
+    return (
+        <PaperProvider theme={theme}>
+            <Portal>
+                <Dialog visible={dialogVisible} onDismiss={hideDialog}>
+                    <Dialog.Icon icon="information-outline" size={48} color={theme.colors.primary} />
+                    <Dialog.Title style={{ textAlign: 'center' }}>Código de Acesso</Dialog.Title>
+                    <Dialog.Content>
+                        <Paragraph>O código de acesso do condomínio é um identificador único. Você pode encontrá-lo na sua fatura ou consultar a administração do condomínio.</Paragraph>
+                    </Dialog.Content>
+                    <Dialog.Actions>
+                        <Button onPress={hideDialog} mode="contained">Entendi</Button>
+                    </Dialog.Actions>
+                </Dialog>
+            </Portal>
 
-  return (
-    <PaperProvider theme={theme}>
-      <Portal>
-        <Dialog visible={dialogVisible} onDismiss={hideDialog}>
-          <Dialog.Icon icon="information-outline" size={48} color={theme.colors.primary} />
-          <Dialog.Title style={{textAlign: 'center'}}>Código de Acesso</Dialog.Title>
-          <Dialog.Content>
-            <Paragraph>O código de acesso do condomínio é um identificador único. Você pode encontrá-lo na sua fatura ou consultar a administração.</Paragraph>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={hideDialog} mode="contained">Entendi</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+            <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+                <View style={styles.container}>
+                    <Card style={styles.card}>
+                        <Card.Content>
+                            <View style={styles.logoContainer}>
+                                <Avatar.Image size={80} source={require('../assets/aqua-logo.png')} style={{ backgroundColor: 'transparent' }} />
+                                <Title style={styles.title}>Aqua Services 2025</Title>
+                            </View>
+                            {formType === 'login' ? renderLoginForm() : renderRegisterForm()}
+                        </Card.Content>
+                    </Card>
+                </View>
+            </ScrollView>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-        <View style={styles.container}>
-          <Card style={styles.card}>
-            <Card.Content>
-              <View style={styles.logoContainer}>
-                <Avatar.Image size={80} source={require('../assets/aqua-logo.png')} style={{backgroundColor: 'transparent'}} />
-                <Title style={styles.title}>Aqua Services 2025</Title>
-              </View>
-              {formType === 'login' ? renderLoginForm() : renderRegisterForm()}
-            </Card.Content>
-          </Card>
-        </View>
-      </ScrollView>
-
-      <Snackbar
-        visible={snackbarVisible}
-        onDismiss={() => setSnackbarVisible(false)}
-        duration={Snackbar.DURATION_LONG}
-        style={{backgroundColor: theme.colors.error}}
-      >
-        {snackbarMessage}
-      </Snackbar>
-    </PaperProvider>
-  );
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={() => setSnackbarVisible(false)}
+                duration={Snackbar.DURATION_LONG}
+                style={{ backgroundColor: snackbarMessage.startsWith('Erro') ? theme.colors.error : '#323232' }}
+            >
+                {snackbarMessage}
+            </Snackbar>
+        </PaperProvider>
+    );
 }
 
+// --- ESTILOS DO COMPONENTE ---
 const styles = StyleSheet.create({
-  scrollContainer: { flexGrow: 1, justifyContent: 'center', backgroundColor: theme.colors.background },
-  container: { padding: 20 },
-  card: { width: '100%', maxWidth: 420, alignSelf: 'center', paddingVertical: 8 },
-  logoContainer: { alignItems: 'center', marginBottom: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.primary, marginTop: 8 },
-  paragraph: { fontSize: 16, color: theme.colors.placeholder, textAlign: 'center', marginBottom: 20, },
-  input: { marginBottom: 12 },
-  mainButton: { marginTop: 16, paddingVertical: 8 },
-  mainButtonText: { fontSize: 16, fontWeight: 'bold' },
-  switchButton: { marginTop: 12 },
-  segmentedButtons: { marginBottom: 20 },
-  checkbox: { backgroundColor: theme.colors.surface, marginTop: 10, borderRadius: theme.roundness },
+    scrollContainer: { 
+        flexGrow: 1, 
+        justifyContent: 'center', 
+        backgroundColor: theme.colors.background 
+    },
+    container: { 
+        padding: 20 
+    },
+    card: { 
+        width: '100%', 
+        maxWidth: 420, 
+        alignSelf: 'center', 
+        paddingVertical: 8 
+    },
+    logoContainer: { 
+        alignItems: 'center', 
+        marginBottom: 16 
+    },
+    title: { 
+        fontSize: 24, 
+        fontWeight: 'bold', 
+        color: theme.colors.primary, 
+        marginTop: 8 
+    },
+    paragraph: { 
+        fontSize: 16, 
+        color: theme.colors.placeholder, 
+        textAlign: 'center', 
+        marginBottom: 20, 
+    },
+    input: { 
+        marginBottom: 12 
+    },
+    mainButton: { 
+        marginTop: 16, 
+        paddingVertical: 8 
+    },
+    mainButtonText: { 
+        fontSize: 16, 
+        fontWeight: 'bold' 
+    },
+    switchButton: { 
+        marginTop: 12 
+    },
+    segmentedButtons: { 
+        marginBottom: 20 
+    },
+    checkbox: { 
+        backgroundColor: theme.colors.surface, 
+        marginTop: 10, 
+        borderRadius: theme.roundness 
+    },
 });
