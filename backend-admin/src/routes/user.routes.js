@@ -6,7 +6,7 @@ export default async function userRoutes(fastify) {
         schema: {
             summary: 'Listar Usuários',
             description: 'Lista todos os usuários do sistema',
-            tags: ['users'],
+            tags: ['usuários'],
             description: 'List Users',
         }
     }, UserController.getAll);
@@ -15,7 +15,7 @@ export default async function userRoutes(fastify) {
         {
             schema: {
                 summary: 'Listar Usuários ativos',
-                tags: ['users'],
+                tags: ['usuários'],
                 description: "Listando todos os usuários ativos do sistema",
             }
         }, UserController.getAllActives);
@@ -24,7 +24,7 @@ export default async function userRoutes(fastify) {
         {
             schema: {
                 summary: 'Listar Usuários inativos',
-                tags: ['users'],
+                tags: ['usuários'],
                 description: "Listando todos os usuários inativos do sistema",
             }
         }, UserController.getAllDeactivated);
@@ -34,7 +34,7 @@ export default async function userRoutes(fastify) {
         {
             schema: {
                 summary: 'Listando Usuários que moram em uma casa',
-                tags: ['users'],
+                tags: ['usuários'],
                 description: "Listando todos os usuários do tipo 'casa' do sistema"
             }
         }, UserController.getAllMoramEmCasa);
@@ -43,7 +43,7 @@ export default async function userRoutes(fastify) {
         {
             schema: {
                 summary: 'Listando Usuários que moram em condominio',
-                tags: ['users'],
+                tags: ['usuários'],
                 description: "Listando todos os usuários do tipo condominio do sistema"
             }
         }, UserController.getAllMoramCondominio);
@@ -51,7 +51,7 @@ export default async function userRoutes(fastify) {
     fastify.get('/count', {
         schema: {
             summary: 'Fazendo contagem de usuários do sistema',
-            tags: ['users'],
+            tags: ['usuários'],
             description: "Contagem de usuários do sistema",
         }
     }, UserController.count);
@@ -60,7 +60,7 @@ export default async function userRoutes(fastify) {
         {
             schema: {
                 summary: 'Fazendo contagem de usuários ativos do sistema',
-                tags: ['users'],
+                tags: ['usuários'],
                 description: "Contagem de usuários ativos do sistema",
             }
         }, UserController.countAtivos);
@@ -68,7 +68,7 @@ export default async function userRoutes(fastify) {
     fastify.get('/sindicos', {
         schema: {
             summary: 'Listando todos os sindicos do sistema',
-            tags: ['users'],
+            tags: ['usuários'],
             description: "Sindicos do sistema",
         }
     }, UserController.getAllSindicos);
@@ -76,7 +76,7 @@ export default async function userRoutes(fastify) {
     fastify.get('/count/sindicos', {
         schema: {
             summary: 'Fazendo contagem de sindicos do sistema',
-            tags: ['users'],
+            tags: ['usuários'],
             description: "Contagem de sindicos do sistema",
         }
     }, UserController.countSindicos);
@@ -84,7 +84,7 @@ export default async function userRoutes(fastify) {
     fastify.get('/moradores', {
         schema: {
             summary: 'Fazendo contagem de moradores do sistema',
-            tags: ['users'],
+            tags: ['usuários'],
             description: "Contagem de moradores do sistema",
         }
     }, UserController.countMoradores);
@@ -93,7 +93,7 @@ export default async function userRoutes(fastify) {
         {
             schema: {
                 summary: "Fazendo contagem de moradores do sistema que são do tipo casa",
-                tags: ['users'],
+                tags: ['usuários'],
                 description: "Contagem de moradores do sistema",
             }
         }, UserController.moradoresCasa);
@@ -103,7 +103,7 @@ export default async function userRoutes(fastify) {
         {
             schema: {
                 summary: "Fazendo contagem de moradores do sistema que moram em apartamento",
-                tags: ['users'], 
+                tags: ['usuários'], 
                 description: "Contagem de moradores de apto do sistema",
             }
         }, UserController.moradoresApartamentos);
@@ -111,7 +111,7 @@ export default async function userRoutes(fastify) {
     fastify.get('/:id', {
         schema: {
             summary: 'Get de um user pelo Id',
-            tags: ['users'],
+            tags: ['usuários'],
             description: "puxando dados do usuário pelo id",
         }
     }, UserController.getById);
@@ -120,7 +120,7 @@ export default async function userRoutes(fastify) {
         {
             schema: {
                 summary: 'Inativando o usuário',
-                tags: ['users'],
+                tags: ['usuários'],
                 description: "Inativando o usuário pelo id no sistema",
             }
         }, UserController.deactivate);
@@ -129,7 +129,7 @@ export default async function userRoutes(fastify) {
         {
             schema: {
                 summary: "Ativando o usuário",
-                tags: ['users'],
+                tags: ['usuários'],
                 description: "Ativando o usuário pelo ID no sistema",
             }
         }, UserController.ativar);
@@ -138,7 +138,7 @@ export default async function userRoutes(fastify) {
         {
             schema: {
                 summary: "Tornando um usuário comum em sindico",
-                tags: ['users'],
+                tags: ['usuários'],
                 description: "Atribuindo como sindico",
             }
         }, UserController.sindico);
