@@ -7,7 +7,8 @@ export default class AdminService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em', 'DESC']]
+                order: [['criado_em', 'DESC']],
+                attributes: { exclude: ['password'] },
             }
             const admins = Admin.paginate(options);
             return admins;
@@ -22,8 +23,10 @@ export default class AdminService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['criado_em'], 'DESC'],
+                 order: [['criado_em', 'DESC']],
+                attributes: { exclude: ['password'] },
                 where: { status: 'ativo' }
+
             }
             const admins = await Admin.paginate(options);
             return admins;
@@ -39,6 +42,7 @@ export default class AdminService {
                 page,
                 paginate: limit,
                 order: [['criado_em', 'DESC']],
+                attributes: { exclude: ['password'] },
                 where: { status: 'inativo' }
             }
             const admins = await Admin.paginate(options);
