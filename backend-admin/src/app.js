@@ -39,7 +39,7 @@ await fastify.register(fastifySwagger, {
         info: {
             title: 'Aqua API',
             version: '1.0.0',
-            description: 'Documentação do nosso TCC Aqua.'
+            description: 'Documentação da nossa API administrativa do Sistema Aqua.'
         },
     }
 });
