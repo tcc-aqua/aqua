@@ -1,6 +1,7 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
-import Sensor from "./Sensor";
+import Sensor from "./Sensor.js";
+import sequelizePaginate from 'sequelize-paginate'
 
 export default class LeituraSensor extends Model {}
 
@@ -32,3 +33,6 @@ LeituraSensor.init({
     tableName: 'leituras_sensores',
     timestamps: false
 })
+
+
+sequelizePaginate.paginate(LeituraSensor);

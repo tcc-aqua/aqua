@@ -27,7 +27,7 @@ Sensor.init({
     },
     ultimo_envio: {
         type: DataTypes.DATE,
-        allowNull: false
+        allowNull: true
     }
 }, {
     sequelize,
