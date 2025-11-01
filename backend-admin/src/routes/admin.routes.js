@@ -67,9 +67,9 @@ export default async function adminRoutes(fastify) {
         fastify.patch('/me',
                 {
                         schema: {
-                                summary: 'Get de informações do administrador conectado via token',
+                                summary: 'Alterar informações do administrador conectado via token',
                                 tags: ['administradores'],
-                                description: 'Get do administrador'
+                                description: 'Alterar infos do administrador'
                         },
                         preHandler: autenticarAdmin
                 },
