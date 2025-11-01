@@ -51,12 +51,6 @@ export default class SensorController {
         return reply.status(200).send(sensores);
     }
 
-    static async create(req, reply) {
-        const validateSensor = createSensorSchema.parse(req.body);
-        const sensor = await SensorService.createSensor(validateSensor);
-        return reply.status(201).send(sensor);
-    }
-
     static async inativar(req, reply) {
         const { id } = req.params;
         const sensor = await SensorService.inativarSensor(id);
