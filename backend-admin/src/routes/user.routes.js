@@ -7,26 +7,139 @@ export default async function userRoutes(fastify) {
             summary: 'Listar Usuários',
             description: 'Lista todos os usuários do sistema',
             tags: ['users'],
-            description: 'List Users' ,
-            
-    
+            description: 'List Users',
         }
-    },   UserController.getAll
-    );
+    }, UserController.getAll);
 
-    fastify.get('/ativos', UserController.getAllActives);
-    fastify.get('/inativos', UserController.getAllDeactivated);
-    fastify.get('/casa', UserController.getAllMoramEmCasa);
-    fastify.get('/condominio', UserController.getAllMoramCondominio);
-    fastify.get('/count', UserController.count);
-    fastify.get('/count-ativos', UserController.countAtivos);
-    fastify.get('/sindicos', UserController.countSindicos);
-    fastify.get('/moradores', UserController.countMoradores);
-    fastify.get('/moradores/casas', UserController.moradoresCasa);
-    fastify.get('/moradores/apartamentos', UserController.moradoresApartamentos);
-    fastify.get('/:id', UserController.getById);
-    fastify.patch('/:id/inativar', UserController.deactivate);
-    fastify.patch('/:id/ativar', UserController.ativar);
-    fastify.patch('/:id/sindico', UserController.sindico);
+    fastify.get('/ativos',
+        {
+            schema: {
+                summary: 'Listar Usuários ativos',
+                tags: ['users'],
+                description: "Listando todos os usuários ativos do sistema",
+            }
+        }, UserController.getAllActives);
 
+    fastify.get('/inativos',
+        {
+            schema: {
+                summary: 'Listar Usuários inativos',
+                tags: ['users'],
+                description: "Listando todos os usuários inativos do sistema",
+            }
+        }, UserController.getAllDeactivated);
+
+
+    fastify.get('/casa',
+        {
+            schema: {
+                summary: 'Listando Usuários que moram em uma casa',
+                tags: ['users'],
+                description: "Listando todos os usuários do tipo 'casa' do sistema"
+            }
+        }, UserController.getAllMoramEmCasa);
+
+    fastify.get('/condominio',
+        {
+            schema: {
+                summary: 'Listando Usuários que moram em condominio',
+                tags: ['users'],
+                description: "Listando todos os usuários do tipo condominio do sistema"
+            }
+        }, UserController.getAllMoramCondominio);
+
+    fastify.get('/count', {
+        schema: {
+            summary: 'Fazendo contagem de usuários do sistema',
+            tags: ['users'],
+            description: "Contagem de usuários do sistema",
+        }
+    }, UserController.count);
+
+    fastify.get('/count-ativos',
+        {
+            schema: {
+                summary: 'Fazendo contagem de usuários ativos do sistema',
+                tags: ['users'],
+                description: "Contagem de usuários ativos do sistema",
+            }
+        }, UserController.countAtivos);
+
+    fastify.get('/sindicos', {
+        schema: {
+            summary: 'Listando todos os sindicos do sistema',
+            tags: ['users'],
+            description: "Sindicos do sistema",
+        }
+    }, UserController.getAllSindicos);
+
+    fastify.get('/count/sindicos', {
+        schema: {
+            summary: 'Fazendo contagem de sindicos do sistema',
+            tags: ['users'],
+            description: "Contagem de sindicos do sistema",
+        }
+    }, UserController.countSindicos);
+
+    fastify.get('/moradores', {
+        schema: {
+            summary: 'Fazendo contagem de moradores do sistema',
+            tags: ['users'],
+            description: "Contagem de moradores do sistema",
+        }
+    }, UserController.countMoradores);
+
+    fastify.get('/moradores/casas',
+        {
+            schema: {
+                summary: "Fazendo contagem de moradores do sistema que são do tipo casa",
+                tags: ['users'],
+                description: "Contagem de moradores do sistema",
+            }
+        }, UserController.moradoresCasa);
+
+
+    fastify.get('/moradores/apartamentos',
+        {
+            schema: {
+                summary: "Fazendo contagem de moradores do sistema que moram em apartamento",
+                tags: ['users'], 
+                description: "Contagem de moradores de apto do sistema",
+            }
+        }, UserController.moradoresApartamentos);
+
+    fastify.get('/:id', {
+        schema: {
+            summary: 'Get de um user pelo Id',
+            tags: ['users'],
+            description: "puxando dados do usuário pelo id",
+        }
+    }, UserController.getById);
+
+    fastify.patch('/:id/inativar',
+        {
+            schema: {
+                summary: 'Inativando o usuário',
+                tags: ['users'],
+                description: "Inativando o usuário pelo id no sistema",
+            }
+        }, UserController.deactivate);
+
+    fastify.patch('/:id/ativar',
+        {
+            schema: {
+                summary: "Ativando o usuário",
+                tags: ['users'],
+                description: "Ativando o usuário pelo ID no sistema",
+            }
+        }, UserController.ativar);
+
+    fastify.patch('/:id/sindico',
+        {
+            schema: {
+                summary: "Tornando um usuário comum em sindico",
+                tags: ['users'],
+                description: "Atribuindo como sindico",
+            }
+        }, UserController.sindico);
 }

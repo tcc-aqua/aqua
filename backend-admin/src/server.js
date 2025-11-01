@@ -4,22 +4,23 @@ dotenv.config({ path: resolve("..", ".env") });
 
 import app from "./app.js";
 import { connectDB } from "./config/sequelize.js";
-import Admin from "./models/Admin.js"; // ✅ importe o model
+import Admin from "./models/Admin.js"; 
 
 const PORT = 3333;
 
+// dados mockados de um admin padrão...
 const criarSuperadminPadrao = async () => {
     const existe = await Admin.findOne({ where: { email: 'admin@empresa.com' } });
 
     if (!existe) {
         await Admin.create({
             email: 'admin@empresa.com',
-            password: 'admin123', // o hook no model já vai criptografar
+            password: 'admin123', 
             type: 'superadmin',
         });
-        console.log('✅ Superadmin criado automaticamente!');
+        console.log(' Superadmin criado automaticamente!');
     } else {
-        console.log('ℹ️ Superadmin já existe.');
+        console.log(' Superadmin já existe.');
     }
 };
 
@@ -33,9 +34,9 @@ const start = async () => {
             port: PORT
         });
 
-        console.log(`🚀 HTTP Server rodando na porta ${PORT}`);
+        console.log(`HTTP Server rodando na porta ${PORT}`);
     } catch (error) {
-        console.error('❌ Erro ao iniciar servidor:', error);
+        console.error(' Erro ao iniciar servidor:', error);
         process.exit(1);
     }
 };

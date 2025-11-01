@@ -22,6 +22,22 @@ export default class UserService {
                 throw error;
             }
         }
+
+         static async getAllUsersSindicos(page = 1, limit = 10) {
+            try {
+                const options = {
+                    page,
+                    paginate: limit,
+                    where: {role: 'sindico'},
+                    order: [['user_id', 'DESC']]
+                }
+                const sindicos = await UserView.paginate(options);
+                return sindicos;
+            } catch (error) {
+                console.error("Erro ao listar todas as sindicos", error);
+                throw error;
+            }
+        }
     
 
     static async getAllUserActives(page = 1, limit = 10) {
@@ -159,6 +175,7 @@ export default class UserService {
             throw error;
         }
     }
+
 
     static async countUsers() {
         try {

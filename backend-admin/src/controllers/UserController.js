@@ -9,6 +9,13 @@ export default class UserController {
         const users = await UserService.getAllUsers(page, limit);
         return reply.send(users);
     }
+    static async getAllSindicos(req, reply) {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const sindicos = await UserService.getAllUsersSindicos(page, limit);
+        return reply.send(sindicos);
+    }
 
     static async getAllActives(req, reply) {
         const page = parseInt(req.query.page) || 1;
