@@ -2,11 +2,59 @@ import ApartamentoController from "../controllers/ApartamentoController.js";
 
 export default async function unidadeRoutes(fastify) {
 
-    fastify.get('/', ApartamentoController.getAll);
-    fastify.get('/ativos', ApartamentoController.getAllAtivos);
-    fastify.get('/inativos', ApartamentoController.getAllInativos);
-    fastify.get('/count', ApartamentoController.count);
-    fastify.patch('/:id/inativar', ApartamentoController.inativar);
-    fastify.patch('/:id/ativar', ApartamentoController.ativar);
+    fastify.get('/',
+        {
+            schema: {
+                summary: 'Todos os apartamentos',
+                tags: ['apartamentos'],
+                description: 'Listando todos os apartamentos do sistema'
+            }
+        }, ApartamentoController.getAll);
+
+    fastify.get('/ativos',
+        {
+            schema: {
+                summary: 'Todos os apartamentos ativo',
+                tags: ['apartamentos'],
+                description: 'Listando todos os apartamentos ativos do sistema'
+            }
+        }, ApartamentoController.getAllAtivos);
+
+    fastify.get('/inativos',
+        {
+            schema: {
+                summary: 'Todos os apartamentos inativos',
+                tags: ['apartamentos'],
+                description: 'Listando todos os apartamentos inativos do sistema'
+            }
+        },
+        ApartamentoController.getAllInativos);
+
+    fastify.get('/count',
+        {
+            schema: {
+                summary: 'Contagem de apartamentos no sistema',
+                tags: ['apartamentos'],
+                description: 'Fazendo contagem de apartamentos no sistema'
+            }
+        },   ApartamentoController.count);
+
+    fastify.patch('/:id/inativar',
+        {
+            schema :{
+                summary: 'Inativando um apartamento',
+                tags: ['apartamentos'],
+                description: 'Inativando um apartamento especifico do sistema'
+            }
+        }, ApartamentoController.inativar);
+        
+    fastify.patch('/:id/ativar',
+        {
+            schema: {
+                summary: 'Ativando um apartamento',
+                tags: ['apartamentos'],
+                description: 'Ativando um apartamento especifico do sistema'
+            }
+        },      ApartamentoController.ativar);
 
 }
