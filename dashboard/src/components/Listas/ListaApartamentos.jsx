@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Building2, UserCheck, AlertTriangle, SignalHigh, X, Check } from "lucide-react";
+import { Building2, UserCheck, AlertTriangle, SignalHigh, X, Check, Pencil } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -16,6 +16,7 @@ import {
 import useToggleConfirm from "@/hooks/useStatus";
 import ApartamentoFilter from "../Filters/Apartamentos";
 import AnimationWrapper from "../Layout/Animation/Animation";
+
 
 export default function ApartamentosDashboard() {
     const [apartamentos, setApartamentos] = useState([]);
@@ -87,7 +88,7 @@ export default function ApartamentosDashboard() {
                 { total: 0, ativos: 0, inativos: 0, alertas: 0 }
             );
             setSensorStats(sensorStats);
-   
+
         } catch (err) {
             console.error("Erro ao buscar dados:", err);
             setError(err.message);
@@ -101,6 +102,7 @@ export default function ApartamentosDashboard() {
     useEffect(() => {
         fetchData();
     }, []);
+ 
 
     if (loading) return <Loading />;
     if (error) return <p className="text-red-500">Erro: {error}</p>;
@@ -243,6 +245,14 @@ export default function ApartamentosDashboard() {
                                                         )}
                                                     </div>
                                                 </Button>
+
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() => setSelectedApartamento(ap)}
+                                                >
+                                                    <Pencil size={14} className="text-blue-500" />
+                                                </Button>
                                             </td>
                                         </tr>
                                     ))}
@@ -266,6 +276,8 @@ export default function ApartamentosDashboard() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            
         </div>
     );
 }

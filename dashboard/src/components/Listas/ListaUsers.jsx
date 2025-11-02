@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Users, UserCheck, UserCog, AlertTriangle, X, Check } from "lucide-react";
+import { Users, UserCheck, UserCog, AlertTriangle, X, Check, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -31,83 +31,85 @@ export default function UsersDashboard() {
   });
 
   const API_URL = "http://localhost:3333/api/users";
-const fetchData = async (filters = {}) => {
-  try {
-    setLoading(true);
-
-   
-    const [resAll, resAtivos, resInativos, resCount, resCountAtivas, resSindicos, resMoradores] = await Promise.all([
-      fetch(`${API_URL}`),
-      fetch(`${API_URL}/ativos`),
-      fetch(`${API_URL}/inativos`),
-      fetch(`${API_URL}/count`),
-      fetch(`${API_URL}/count-ativos`),
-      fetch(`${API_URL}/sindicos`),
-      fetch(`${API_URL}/moradores`)
-    ]);
-
-    if (!resAll.ok || !resAtivos.ok || !resInativos.ok || !resCount.ok || !resCountAtivas.ok || !resSindicos.ok || !resMoradores.ok) {
-      throw new Error("Erro ao buscar dados dos usuários.");
-    }
-
-    const [allData, ativosData, inativosData, countData, countAtivasData, sindicosData, moradoresData] = await Promise.all([
-      resAll.json(),
-      resAtivos.json(),
-      resInativos.json(),
-      resCount.json(),
-      resCountAtivas.json(),
-      resSindicos.json(),
-      resMoradores.json()
-    ]);
-
-    const usersArray = allData.docs || allData.users || [];
+  const fetchData = async (filters = {}) => {
+    try {
+      setLoading(true);
 
 
-    const filteredUsers = usersArray.filter(user => {
-      const matchesSearch = filters.search
-        ? user.user_name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      const [resAll, resAtivos, resInativos, resCount, resCountAtivas, resSindicos, resMoradores] = await Promise.all([
+        fetch(`${API_URL}`),
+        fetch(`${API_URL}/ativos`),
+        fetch(`${API_URL}/inativos`),
+        fetch(`${API_URL}/count`),
+        fetch(`${API_URL}/count-ativos`),
+        fetch(`${API_URL}/sindicos`),
+        fetch(`${API_URL}/moradores`)
+      ]);
+
+      if (!resAll.ok || !resAtivos.ok || !resInativos.ok || !resCount.ok || !resCountAtivas.ok || !resSindicos.ok || !resMoradores.ok) {
+        throw new Error("Erro ao buscar dados dos usuários.");
+      }
+
+      const [allData, ativosData, inativosData, countData, countAtivasData, sindicosData, moradoresData] = await Promise.all([
+        resAll.json(),
+        resAtivos.json(),
+        resInativos.json(),
+        resCount.json(),
+        resCountAtivas.json(),
+        resSindicos.json(),
+        resMoradores.json()
+      ]);
+
+    const usersArray = Array.isArray(allData) ? allData : allData.docs || allData.users || [];
+console.log("usersArray:", usersArray);
+
+
+
+      const filteredUsers = usersArray.filter(user => {
+        const matchesSearch = filters.search
+          ? user.user_name.toLowerCase().includes(filters.search.toLowerCase()) ||
           (user.user_email?.toLowerCase().includes(filters.search.toLowerCase()))
-        : true;
+          : true;
 
-      const matchesStatus = filters.status
-        ? user.user_status === filters.status
-        : true;
+        const matchesStatus = filters.status
+          ? user.user_status === filters.status
+          : true;
 
-      const matchesRole = filters.role
-        ? user.user_role === filters.role
-        : true;
+        const matchesRole = filters.role
+          ? user.user_role === filters.role
+          : true;
 
-      const matchesType = filters.type
-        ? user.user_type === filters.type
-        : true;
+        const matchesType = filters.type
+          ? user.user_type === filters.type
+          : true;
 
-      return matchesSearch && matchesStatus && matchesRole && matchesType;
-    });
+        return matchesSearch && matchesStatus && matchesRole && matchesType;
+      });
 
-    setUsers(filteredUsers);
-
-  
-    setUserStats({
-      total: countData.total ?? usersArray.length,
-      ativos: countAtivasData.total ?? ativosData.docs?.length ?? filteredUsers.filter(u => u.user_status === "ativo").length,
-      inativos: inativosData.docs?.length ?? 0,
-      sindicos: sindicosData.total ?? 0,
-      moradores: moradoresData.total ?? 0,
-      casas: filteredUsers.filter(u => u.user_type === "casa").length,
-      condominios: filteredUsers.filter(u => u.user_type === "condominio").length,
-    });
-
-  } catch (err) {
-    console.error("Erro ao buscar dados:", err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+      setUsers(filteredUsers);
 
 
+      setUserStats({
+        total: countData.total ?? usersArray.length,
+        ativos: countAtivasData.total ?? ativosData.docs?.length ?? filteredUsers.filter(u => u.user_status === "ativo").length,
+        inativos: inativosData.docs?.length ?? 0,
+        sindicos: sindicosData.total ?? 0,
+        moradores: moradoresData.total ?? 0,
+        casas: filteredUsers.filter(u => u.user_type === "casa").length,
+        condominios: filteredUsers.filter(u => u.user_type === "condominio").length,
+      });
 
-  const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
+    } catch (err) {
+      console.error("Erro ao buscar dados:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+ 
 
   useEffect(() => {
     fetchData();
@@ -147,17 +149,17 @@ const fetchData = async (filters = {}) => {
   return (
     <div className="p-4">
       <Toaster position="top-right" richColors />
- 
- <div className="mb-10">
-      <UserFilter onApply={(filters) => fetchData(filters)} />
-    </div>
+
+      <div className="mb-10">
+        <UserFilter onApply={(filters) => fetchData(filters)} />
+      </div>
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
         {cards.map((card, i) => {
           const Icon = card.icon;
           return (
-       
-    <AnimationWrapper key={card.title} delay={i * 0.2}>
+
+            <AnimationWrapper key={card.title} delay={i * 0.2}>
               <Card>
                 <CardHeader>
                   <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
@@ -169,106 +171,111 @@ const fetchData = async (filters = {}) => {
                 </CardContent>
 
               </Card>
-             </AnimationWrapper>
+            </AnimationWrapper>
           );
         })}
       </section>
-     
-    <AnimationWrapper delay={0.3}>
 
-   
-      <Card className="mx-auto mt-10 ">
-        <CardHeader>
-          <CardTitle>Lista de Usuários</CardTitle>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          {users.length === 0 ? (
-            <p>Nenhum usuário encontrado.</p>
-          ) : (
-            <table className="min-w-full divide-y divide-border">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Usuário</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase"> Residência </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Tipo</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Função</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
+      <AnimationWrapper delay={0.3}>
 
 
-                  <th className="px-4 py-2 text-left text-xs font-medium uppercase"> Ações</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-border">
-                {users.map((user) => (
-                  <tr key={user.user_id} className="hover:bg-muted/10 text-foreground">
-                    <td className="px-4 py-2">
-                      <div className="text-sm font-semibold">{user.user_name}</div>
-                      <div className="text-xs text-foreground/80">{user.user_email}</div>
-                      <div className="text-xs text-foreground/60">{user.user_cpf}</div>
-                    </td>
-                    <td className="px-4 py-2 text-sm">
-                      {user.user_type === "casa" ? (
-                        <>
-                         {user.logradouro}, {user.numero}
-                        </>
-                      ) : (
-                        <>
-                        Bloco {user.logradouro}, {user.numero}
-                        </>
-                      )
-                      }
-                      <div className="text-xs text-foreground/80">{user.bairro}, {user.cidade} / {user.uf}</div>
-                      <div className="text-[10px] text-foreground/60">CEP: {user.cep}</div>
-
-                    </td>
-                    <td className=" text-sm">
-                      <span
-                        className={`px-2 py-1 rounded-full text-white font-semibold ${user.user_type === "casa"
-                          ? "bg-blue-700"
-                          : user.user_type === "condominio"
-                            ? "bg-purple-700"
-                            : "bg-gray-500"
-                          }`}
-                      >
-                        {user.user_type === "casa" ? "casa" : user.user_type === "condominio" ? "condomínio" : "Desconhecido"}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-2 text-sm">
-                      <span
-                        className={`px-2 py-1 rounded-full text-white font-semibold  ${user.user_role === "morador"
-                          ? "bg-green-600"
-                          : user.user_role === "sindico"
-                            ? "bg-yellow-500"
-                            : "bg-gray-500"
-                          }`}
-                      >
-                        {user.user_role === "morador" ? "morador" : user.user_role === "sindico" ? "síndico" : "Desconhecido"}
-                      </span>
-                    </td>
+        <Card className="mx-auto mt-10 ">
+          <CardHeader>
+            <CardTitle>Lista de Usuários</CardTitle>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            {users.length === 0 ? (
+              <p>Nenhum usuário encontrado.</p>
+            ) : (
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Usuário</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium uppercase"> Residência </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Tipo</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Função</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
 
 
-
-                    <td className=" text-sm font-bold flex items-center px-7 py-4">
-                      <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${user.user_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={user.user_status} />
-                    </td>
-
-                    <td className="px-4 py-2 text-sm text-center">
-                      <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
-                        <div className="flex items-center gap-1">
-                          {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-red-500" size={14} />}
-                        </div>
-                      </Button>
-                    </td>
+                    <th className="px-4 py-2 text-left text-xs font-medium uppercase"> Ações</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
-       </AnimationWrapper>
+                </thead>
+
+                <tbody className="divide-y divide-border">
+                  {users.map((user) => (
+                    <tr key={user.user_id} className="hover:bg-muted/10 text-foreground">
+                      <td className="px-4 py-2">
+                        <div className="text-sm font-semibold">{user.user_name}</div>
+                        <div className="text-xs text-foreground/80">{user.user_email}</div>
+                        <div className="text-xs text-foreground/60">{user.user_cpf}</div>
+                      </td>
+                      <td className="px-4 py-2 text-sm">
+                        {user.user_type === "casa" ? (
+                          <>
+                            {user.logradouro}, {user.numero}
+                          </>
+                        ) : (
+                          <>
+                            Bloco {user.logradouro}, {user.numero}
+                          </>
+                        )
+                        }
+                        <div className="text-xs text-foreground/80">{user.bairro}, {user.cidade} / {user.uf}</div>
+                        <div className="text-[10px] text-foreground/60">CEP: {user.cep}</div>
+
+                      </td>
+                      <td className=" text-sm">
+                        <span
+                          className={`px-2 py-1 rounded-full text-white font-semibold ${user.user_type === "casa"
+                            ? "bg-blue-700"
+                            : user.user_type === "condominio"
+                              ? "bg-purple-700"
+                              : "bg-gray-500"
+                            }`}
+                        >
+                          {user.user_type === "casa" ? "casa" : user.user_type === "condominio" ? "condomínio" : "Desconhecido"}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-2 text-sm">
+                        <span
+                          className={`px-2 py-1 rounded-full text-white font-semibold  ${user.user_role === "morador"
+                            ? "bg-green-600"
+                            : user.user_role === "sindico"
+                              ? "bg-yellow-500"
+                              : "bg-gray-500"
+                            }`}
+                        >
+                          {user.user_role === "morador" ? "morador" : user.user_role === "sindico" ? "síndico" : "Desconhecido"}
+                        </span>
+                      </td>
+
+
+
+                      <td className=" text-sm font-bold flex items-center px-7 py-4">
+                        <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${user.user_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={user.user_status} />
+                      </td>
+
+                      <td className="px-4 py-2 text-sm text-center">
+                        <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
+                          <div className="flex items-center gap-1">
+                            {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-red-500" size={14} />}
+                          </div>
+                        </Button>
+                        <Button size="sm" variant='ghost' onClick={() => editItem(user)}>
+                          <div className="flex items-center gap-1">
+                            <Pencil className="text-blue-500" size={14} />
+                          </div>
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </CardContent>
+        </Card>
+      </AnimationWrapper>
 
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-[425px]">

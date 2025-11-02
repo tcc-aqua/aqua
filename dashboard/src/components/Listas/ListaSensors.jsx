@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
-import { Cpu, SignalHigh, AlertTriangle, Wrench, X, Check } from "lucide-react";
+import { Cpu, SignalHigh, AlertTriangle, Wrench, X, Check, Droplet } from "lucide-react";
 import useToggleConfirm from "@/hooks/useStatus"
 import {
   Dialog,
@@ -24,67 +24,79 @@ export default function SensorsDashboard() {
   const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
 
   const API_URL = "http://localhost:3333/api/sensores";
+const fetchData = async (filters = {}) => {
+  try {
+    setLoading(true);
 
-  const fetchData = async (filters = {}) => {
-    try {
-      setLoading(true);
+    const [totalRes, ativosRes, inativosRes, allRes] = await Promise.all([
+      fetch(`${API_URL}/count`),
+      fetch(`${API_URL}/count-ativos`),
+      fetch(`${API_URL}/inativos`),
+      fetch(`${API_URL}/`),
+    ]);
 
-      const [totalRes, ativosRes, inativosRes, allRes] = await Promise.all([
-        fetch(`${API_URL}/count`),
-        fetch(`${API_URL}/count-ativos`),
-        fetch(`${API_URL}/inativos`),
-        fetch(`${API_URL}/`),
-      ]);
-
-      if (!totalRes.ok || !ativosRes.ok || !inativosRes.ok || !allRes.ok) {
-        throw new Error("Erro ao buscar dados dos sensores.");
-      }
-
-      const total = await totalRes.json();
-      const ativos = await ativosRes.json();
-      const inativos = await inativosRes.json();
-      const allSensores = await allRes.json();
-      const sensoresArray = allSensores.docs || [];
-
-      // Filtragem local
-      const filteredSensores = sensoresArray.filter(sensor => {
-        const matchesStatus = filters.status ? sensor.sensor_status === filters.status : true;
-        const matchesLocation = filters.location ? sensor.localizacao?.toLowerCase().includes(filters.location.toLowerCase()) : true;
-        const matchesType = filters.type ? sensor.residencia_type === filters.type : true;
-        return matchesStatus && matchesLocation && matchesType;
-      });
-
-      // Recalcula estatísticas
-      const sensorStatsData = filteredSensores.reduce(
-        (acc, s) => {
-          if (s.sensor_status === "ativo") acc.ativos += 1;
-          else if (s.sensor_status === "inativo") acc.inativos += 1;
-          else acc.alertas += 1;
-          return acc;
-        },
-        { ativos: 0, inativos: 0, alertas: 0 }
-      );
-
-      setSensorStats({
-        total: total ?? filteredSensores.length,
-        ativos: sensorStatsData.ativos,
-        inativos: sensorStatsData.inativos,
-        alertas: sensorStatsData.alertas,
-      });
-
-      setSensores(filteredSensores);
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    if (!totalRes.ok || !ativosRes.ok || !inativosRes.ok || !allRes.ok) {
+      throw new Error("Erro ao buscar dados dos sensores.");
     }
-  };
-  const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+    const total = await totalRes.json();
+    const ativos = await ativosRes.json();
+    const inativos = await inativosRes.json();
+    const allSensores = await allRes.json();
+    const sensoresArray = allSensores.docs || [];
+
+    // Filtragem local
+    const filteredSensores = sensoresArray.filter(sensor => {
+      const matchesStatus = filters.status ? sensor.sensor_status === filters.status : true;
+      const matchesLocation = filters.location ? sensor.localizacao?.toLowerCase().includes(filters.location.toLowerCase()) : true;
+      const matchesType = filters.type ? sensor.residencia_type === filters.type : true;
+      return matchesStatus && matchesLocation && matchesType;
+    });
+const sensorStatsData = filteredSensores.reduce(
+  (acc, s) => {
+    // Soma o consumo total garantindo número
+    acc.litrosTotais += parseFloat(s.consumo_total) || 0;
+
+    // Conta tipo de residência
+    if (s.residencia_type === "casa") acc.casas += 1;
+    if (s.residencia_type === "apartamento") acc.apartamentos += 1;
+
+    // Conta status do sensor
+    if (s.sensor_status === "ativo") acc.ativos += 1;
+    else if (s.sensor_status === "inativo") acc.inativos += 1;
+    else acc.alertas += 1;
+
+    return acc;
+  },
+  { ativos: 0, inativos: 0, alertas: 0, litrosTotais: 0, casas: 0, apartamentos: 0 }
+);
+
+
+    setSensorStats({
+      total: total ?? filteredSensores.length,
+      ativos: sensorStatsData.ativos,
+      inativos: sensorStatsData.inativos,
+      alertas: sensorStatsData.alertas,
+      litrosTotais: sensorStatsData.litrosTotais,
+      casas: sensorStatsData.casas,
+      apartamentos: sensorStatsData.apartamentos
+    });
+
+    setSensores(filteredSensores);
+  } catch (err) {
+    console.error(err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
+
+useEffect(() => {
+  fetchData();
+}, []);
+
 
   if (loading) return <Loading />;
   if (error) return <p className="text-red-500">Erro: {error}</p>;
@@ -93,6 +105,7 @@ export default function SensorsDashboard() {
     {
       title: "Total de Sensores",
       value: sensorStats.total,
+      valueAtivos: { casas: sensorStats.casas, apartamentos: sensorStats.apartamentos },
       icon: Cpu,
       bg: "bg-card",
       iconColor: "text-blue-700",
@@ -101,29 +114,37 @@ export default function SensorsDashboard() {
     {
       title: "Sensores Ativos",
       value: sensorStats.ativos,
-      icon: SignalHigh,
+      icon: Check,
       bg: "bg-card",
       iconColor: "text-green-700",
       textColor: "text-green-800",
+      porcentagem: ((sensorStats.ativos / sensorStats.total) * 100).toFixed(0) + "%" + " operacionais",
     },
     {
-      title: "Em manutenção",
+      title: "Sensores Inativos",
       value: sensorStats.inativos,
-      icon: Wrench,
+      icon: X,
       bg: "bg-card",
-      iconColor: "text-yellow-600",
-      textColor: "text-yellow-600",
+      iconColor: "text-red-600",
+      textColor: "text-red-600",
+      subTitle: "Precisa de atenção"
     },
-    {
-      title: "Alertas",
-      value: sensorStats.alertas,
-      icon: AlertTriangle,
-      bg: "bg-card",
-      iconColor: "text-red-700",
-      textColor: "text-red-800",
-    },
+{
+  title: "Litros Totais",
+  value: (() => {
+    const litros = Number(sensorStats.litrosTotais) || 0;
+    if (litros >= 1_000_000) return (litros / 1_000_000).toFixed(1) + "M";
+    if (litros >= 1_000) return (litros / 1_000).toFixed(1) + "K";
+    return litros.toFixed(1);
+  })(),
+  icon: Droplet,
+  bg: "bg-card",
+  iconColor: "text-purple-700",
+  textColor: "text-purple-800",
+  subTitle2: "Total acumulado"
+}
   ];
-
+  
   return (
     <div className="p-4">
       <Toaster position="top-right" richColors />
@@ -131,11 +152,10 @@ export default function SensorsDashboard() {
         <SensorFilter onApply={(filters) => fetchData(filters)} />
       </div>
 
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+         <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {cards.map((card, i) => {
           const Icon = card.icon;
           return (
-
             <AnimationWrapper key={card.title} delay={i * 0.2}>
               <Card>
                 <CardHeader>
@@ -143,16 +163,31 @@ export default function SensorsDashboard() {
                 </CardHeader>
                 <CardContent className="flex flex-row items-center justify-between -mt-6">
                   <div className="flex flex-col">
+                   
                     <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
+                    {card.valueAtivos && (
+                      <p className="text-blue-600 text-sm mt-1">
+                        {card.valueAtivos.casas} casas + {card.valueAtivos.apartamentos} apartamentos
+                      </p>
+                    )}
+                    {card.porcentagem && !card.valueAtivos && (
+                      <p className="text-sm mt-1 text-green-600">{card.porcentagem}</p>
+                    )}
+                    {card.subTitle && (
+                      <p className="text-sm mt-1 text-red-600">{card.subTitle}</p>
+                    )}
+                    
+                    {card.subTitle2 && (
+                      <p className="text-sm mt-1 text-purple-600">{card.subTitle2}</p>
+                    )}
                   </div>
-                  <Icon className={`w-10 h-10 ${card.iconColor}`} />
+                  <Icon className={`w-8 h-8 bg-${card.iconColor} ${card.iconColor}`} />
                 </CardContent>
               </Card>
             </AnimationWrapper>
           );
         })}
       </section>
-
 
       <AnimationWrapper delay={0.3}>
 

@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Home, HousePlug, AlertTriangle, SignalHigh, X, Check } from "lucide-react";
+import { Home, HousePlug, AlertTriangle, SignalHigh, X, Check, User, Droplet } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +25,7 @@ export default function CasasDashboard() {
   const [casaStats, setCasaStats] = useState({ total: 0, ativas: 0, inativas: 0, alertas: 0 });
   const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
 
-  const API_CASAS = "http://localhost:3333/api/casas";
+  const API_CASAS = `${process.env.NEXT_PUBLIC_API_URL}/casas`;
 
   const fetchData = async (filters = {}) => {
     try {
@@ -81,16 +81,24 @@ export default function CasasDashboard() {
         inativas: inativosData.docs?.length ?? 0,
         alertas: filteredCasas.reduce((acc, c) => acc + (c.alertas || 0), 0),
       });
-
       const sensorStats = filteredCasas.reduce(
         (acc, casa) => {
-          if (casa.sensor_id) acc.total++;
-          if (casa.sensor_status === "ativo") acc.ativos++;
-          else if (casa.sensor_status === "inativo") acc.inativos++;
+
+          if (!casa.sensor_status) return acc;
+
+          acc.litrosTotais += parseFloat(casa.consumo_total) || 0;
+
+          if (casa.sensor_status === "ativo") acc.ativos += 1;
+          else if (casa.sensor_status === "inativo") acc.inativos += 1;
+          else acc.alertas += 1;
+
+          acc.total += 1;
+
           return acc;
         },
-        { total: 0, ativos: 0, inativos: 0, alertas: 0 }
+        { total: 0, ativos: 0, inativos: 0, alertas: 0, litrosTotais: 0 }
       );
+
       setSensorStats(sensorStats);
 
     } catch (err) {
@@ -115,8 +123,8 @@ export default function CasasDashboard() {
   const cards = [
     {
       title: "Total de Casas",
-      valueTotal: casaStats.total,
-      valueAtivas: casaStats.ativas,
+      value: casaStats.total,
+      valueAtivos: { casas: casaStats.ativas },
       icon: Home,
       bg: "bg-card",
       iconColor: "text-blue-700",
@@ -124,28 +132,40 @@ export default function CasasDashboard() {
     },
     {
       title: "Total de Moradores",
-      valueTotal: casas.reduce((acc, c) => acc + (c.numero_moradores || 0), 0), // soma moradores
-      icon: HousePlug,
+      value: casas.reduce((acc, c) => acc + (Number(c.numero_moradores) || 0), 0),
+      icon: User,
       bg: "bg-card",
-      iconColor: "text-green-700",
-      textColor: "text-green-800"
+      iconColor: "text-purple-700",
+      textColor: "text-green-800",
+      subTitle: casas.length > 0
+        ? `Média de ${(casas.reduce((acc, c) => acc + (Number(c.numero_moradores) || 0), 0) / casas.length).toFixed(0)} por casa`
+        : "0"
     },
     {
       title: "Sensores Ativos",
-      valueTotal: sensorStats.ativos,
-      icon: SignalHigh,
+      value: sensorStats.ativos,
+      icon: Check,
       bg: "bg-card",
       iconColor: "text-green-700",
-      textColor: "text-green-800"
+      textColor: "text-green-800",
+      porcentagem: sensorStats.total > 0
+        ? ((sensorStats.ativos / sensorStats.total) * 100).toFixed(0) + "% operacionais"
+        : "0% operacionais"
     },
     {
-      title: "Alertas",
-      valueTotal: casaStats.alertas,
-      icon: AlertTriangle,
+      title: "Consumo total",
+      value: (() => {
+        const litros = Number(sensorStats.litrosTotais) || 0;
+        if (litros >= 1_000_000) return (litros / 1_000_000).toFixed(1) + "M";
+        if (litros >= 1_000) return (litros / 1_000).toFixed(1) + "K";
+        return litros.toFixed(1);
+      })(),
+      icon: Droplet,
       bg: "bg-card",
-      iconColor: "text-red-700",
-      textColor: "text-red-800"
-    },
+      iconColor: "text-orange-300",
+      textColor: "text-orange-800",
+      subTitle2: "Litros acumulados"
+    }
   ];
 
 
@@ -168,14 +188,25 @@ export default function CasasDashboard() {
                 </CardHeader>
                 <CardContent className="flex flex-row items-center justify-between -mt-6">
                   <div className="flex flex-col">
-                    <p className="font-bold text-4xl text-foreground">{card.valueTotal ?? 0}</p>
-                    {card.valueAtivas && (
-                      <p className="text-green-600 text-sm mt-1">
-                        {card.valueAtivas} Ativas
+
+                    <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
+                    {card.valueAtivos && (
+                      <p className="text-blue-600 text-sm mt-1">
+                        {card.valueAtivos.casas} ativas
                       </p>
                     )}
+                    {card.porcentagem && !card.valueAtivos && (
+                      <p className="text-sm mt-1 text-green-600">{card.porcentagem}</p>
+                    )}
+                    {card.subTitle && (
+                      <p className="text-sm mt-1 text-purple-600">{card.subTitle}</p>
+                    )}
+
+                    {card.subTitle2 && (
+                      <p className="text-sm mt-1 text-orange-300">{card.subTitle2}</p>
+                    )}
                   </div>
-                  <Icon className={`w-10 h-10 ${card.iconColor}`} />
+                  <Icon className={`w-8 h-8 bg-${card.iconColor} ${card.iconColor}`} />
                 </CardContent>
               </Card>
             </AnimationWrapper>
