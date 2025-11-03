@@ -28,7 +28,7 @@ export default class UserService {
                 const options = {
                     page,
                     paginate: limit,
-                    where: {role: 'sindico'},
+                    where: {user_role: 'sindico'},
                     order: [['user_id', 'DESC']]
                 }
                 const sindicos = await UserView.paginate(options);

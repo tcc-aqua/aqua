@@ -40,7 +40,7 @@ export default function EmailLogin() {
                 <div className="flex flex-col justify-center flex-grow">
 
                     <div className="mb-4">
-                        <Link href="../login" className="text-[#0372c6] font-bold flex justify-center">
+                        <Link href="../" className="text-[#0372c6] font-bold flex justify-center">
                             {'< '} Voltar
                         </Link>
                     </div>
