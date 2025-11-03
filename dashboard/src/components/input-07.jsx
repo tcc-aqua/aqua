@@ -20,26 +20,35 @@ export default function InputWithAdornmentDemo() {
   const router = useRouter();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+  e.preventDefault();
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Erro ao fazer login");
+
+   
+    if (data.token) {
+      Cookies.set("token", data.token, {
+        expires: 1,
+        secure: true,
+        sameSite: "strict",
       });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Erro ao fazer login");
-
-      if (data.accessToken) {
-        Cookies.set("token", data.accessToken, { expires: 1, secure: true, sameSite: "strict" });
-        toast.success("Login bem-sucedido!"); 
-        router.push("/dashboard");
-      }
-    } catch (error) {
-      toast.error(error.message || "Login mal-sucedido"); 
+      toast.success(data.message || "Login bem-sucedido!");
+      setTimeout(() => router.push("/dashboard"), 100);
+    } else {
+      throw new Error("Token não recebido do servidor");
     }
-  };
+  } catch (error) {
+    console.error("Erro no login:", error);
+    toast.error(error.message || "Login mal-sucedido");
+  }
+};
 
   return (
     <>

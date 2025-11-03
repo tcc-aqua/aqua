@@ -425,7 +425,7 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                         <Card style={styles.card}>
                             <Card.Content style={styles.cardContent}>
                                 <View style={styles.logoContainer}>
-                                    <Avatar.Image size={80} source={require('../assets/aqua-logo.png')} style={{ backgroundColor: 'transparent' }} />
+                                    <Avatar.Image size={80} source={require('../assets/logo.png')} style={{ backgroundColor: 'transparent' }} />
                                     <Title style={styles.title}>Aqua Services</Title>
                                 </View>
                                 {formType === 'login' ? renderLoginForm() : renderRegisterForm()}

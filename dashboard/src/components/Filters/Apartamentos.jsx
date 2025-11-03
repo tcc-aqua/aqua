@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Card } from "../ui/card";
 import { motion } from "framer-motion";
+import { Check, Eraser } from "lucide-react";
 
 export default function ApartamentoFilter({ onApply }) {
   const [search, setSearch] = useState("");
@@ -95,21 +96,23 @@ export default function ApartamentoFilter({ onApply }) {
           </div>
 
           {/* Botões */}
-          <div className="flex gap-2 mt-2 sm:mt-0">
-            <Button
-              variant="destructive"
-              onClick={handleResetFilters}
-              className="h-10 w-full sm:w-auto"
-            >
-              Limpar
-            </Button>
-            <Button
-              onClick={handleApplyFilters}
-              className="h-10 w-full sm:w-auto bg-accent/70"
-            >
-              Aplicar
-            </Button>
-          </div>
+       <div className="flex gap-2 mt-2 sm:mt-0">
+
+              <Button
+                variant="destructive"
+                onClick={handleResetFilters}
+                className="h-10 w-full sm:w-auto rounded-full"
+              >
+                <Eraser />
+              </Button>
+              <Button
+                onClick={handleApplyFilters}
+                className="h-10 w-full sm:w-auto rounded-full text-green-700 bg-green-200 hover:bg-green-200"
+              >
+                <Check ></Check>Aplicar
+              </Button>
+           
+            </div>
         </div>
       </Card>
     </motion.div>

@@ -13,7 +13,7 @@ export default function Users() {
         </header>
         <main className="container mx-auto pt-20">
           <AnimationWrapper delay={0.1}>
-            <h1 className="font-bold text-5xl  mt-10">Painel de Usuários</h1>
+            <h1 className="font-bold text-5xl  mt-10">Gestão de Usuários</h1>
             <h2 className="font-semibold text-foreground/60 mt-3 mb-10 ml-3">Painel de controle de usuários</h2>
           </AnimationWrapper>
           <div className="">

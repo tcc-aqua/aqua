@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useCondominios } from "@/hooks/useCondominios";
-import { Plus, Eraser, Check  } from 'lucide-react';
+import { Plus, Eraser, Check } from 'lucide-react';
 import { api } from "@/lib/api";
 
 export default function CondominioFilter({ onApply }) {
@@ -61,6 +61,7 @@ export default function CondominioFilter({ onApply }) {
         cidade: data.localidade || "",
         estado: data.uf || "",
       }));
+
       toast.success("Endereço preenchido automaticamente!");
     } catch (err) {
       toast.error("Erro ao buscar CEP!");
@@ -84,39 +85,39 @@ export default function CondominioFilter({ onApply }) {
     if (onApply) onApply({});
   };
 
-const handleCreateCondominio = async (e) => {
-  e.preventDefault();
-  if (!formData.nome || !formData.cep) {
-    toast.error("Preencha o nome e o CEP!");
-    return;
-  }
+  const handleCreateCondominio = async (e) => {
+    e.preventDefault();
+    if (!formData.nome || !formData.cep) {
+      toast.error("Preencha o nome e o CEP!");
+      return;
+    }
 
-  const payload = {
-    name: formData.nome,
-    cep: formData.cep,
-    logradouro: formData.logradouro,
-    bairro: formData.bairro,
-    cidade: formData.cidade,
-    estado: formData.estado,
-    numero: formData.numero,
-    complemento: formData.complemento,
-    status: formData.status,
+    const payload = {
+      name: formData.nome,
+      cep: formData.cep,
+      logradouro: formData.logradouro,
+      bairro: formData.bairro,
+      cidade: formData.cidade,
+      estado: formData.estado,
+      numero: formData.numero,
+      complemento: formData.complemento,
+      status: formData.status,
+    };
+
+    await addCondominio(payload);
+    setIsOpen(false);
+    setFormData({
+      nome: "",
+      cep: "",
+      logradouro: "",
+      bairro: "",
+      cidade: "",
+      estado: "",
+      numero: "",
+      complemento: "",
+      status: "ativo",
+    });
   };
-
-  await addCondominio(payload); 
-  setIsOpen(false);
-  setFormData({
-    nome: "",
-    cep: "",
-    logradouro: "",
-    bairro: "",
-    cidade: "",
-    estado: "",
-    numero: "",
-    complemento: "",
-    status: "ativo",
-  });
-};
 
 
   const cardVariants = {
@@ -169,29 +170,29 @@ const handleCreateCondominio = async (e) => {
               </Select>
             </div>
 
-           
+
             <div className="flex gap-2 mt-2 sm:mt-0">
-     
+
               <Button
                 variant="destructive"
                 onClick={handleResetFilters}
                 className="h-10 w-full sm:w-auto rounded-full"
               >
-               <Eraser /> 
+                <Eraser />
               </Button>
               <Button
                 onClick={handleApplyFilters}
                 className="h-10 w-full sm:w-auto rounded-full text-green-700 bg-green-200 hover:bg-green-200"
               >
-              <Check ></Check>Aplicar
+                <Check ></Check>Aplicar
               </Button>
-                            <Button
+              <Button
                 onClick={() => setIsOpen(true)}
                 className="h-10 w-full sm:w-auto rounded-full"
               >
-             <Plus/> Adicionar
+                <Plus /> Adicionar
               </Button>
-         
+
             </div>
           </div>
         </Card>
@@ -271,6 +272,7 @@ const handleCreateCondominio = async (e) => {
                   placeholder="Cidade"
                 />
               </div>
+
 
               <div>
                 <label className="text-sm font-medium mb-1">Estado</label>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { toast, Toaster } from "sonner";
+import { Toaster } from "sonner";
 import { Building2, UserCheck, AlertTriangle, SignalHigh, X, Check, Pencil } from "lucide-react";
 import {
     Dialog,
@@ -102,7 +102,7 @@ export default function ApartamentosDashboard() {
     useEffect(() => {
         fetchData();
     }, []);
- 
+
 
     if (loading) return <Loading />;
     if (error) return <p className="text-red-500">Erro: {error}</p>;
@@ -213,7 +213,7 @@ export default function ApartamentosDashboard() {
                                                 <div className="text-xs text-foreground/60">{ap.responsavel_cpf}</div>
                                             </td>
                                             <td className="px-4 py-2 text-sm">
-                                                <div>{ap.sensor_codigo}</div>
+                                                <div className="font-bold">{ap.sensor_codigo}</div>
                                                 <div className="text-sm font-bold">
                                                     <span className={ap.sensor_status === "ativo" ? "text-green-600" : "text-red-600"}>
                                                         {ap.sensor_status === "ativo" ? "Ativo" : "Inativo"}
@@ -228,7 +228,7 @@ export default function ApartamentosDashboard() {
 
 
                                             </td>
-                                            <td className="px-4 py-2 text-sm">{ap.consumo_total || 0}L
+                                            <td className="px-4 py-2 text-sm font-bold">{ap.consumo_total || 0}L
                                                 <div className="text-[10px] text-foreground/60">Total Acumulado</div>
                                             </td>
                                             <td className="text-sm font-bold flex items-center ml-7 py-9 ">
@@ -277,7 +277,7 @@ export default function ApartamentosDashboard() {
                 </DialogContent>
             </Dialog>
 
-            
+
         </div>
     );
 }

@@ -12,7 +12,7 @@ export default function Casas() {
                 </header>
                 <main className="container mx-auto pt-20 ">
                     <AnimationWrapper delay={0.1}>
-                        <h1 className="font-bold text-5xl  mt-10">Painel de Casas</h1>
+                        <h1 className="font-bold text-5xl  mt-10">Gestão de Casas</h1>
                         <h2 className="font-semibold text-foreground/60 mt-3 mb-10 ml-3">Painel de controle de casas.</h2>
                     </AnimationWrapper>
                     <div className="">
