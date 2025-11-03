@@ -108,9 +108,9 @@ export default function CardAlertasRecentes() {
 
 
                       <div className="text-[10px] text-foreground/60 mt-1">
-                        {alerta.criado_em
+                      Criado em: {alerta.criado_em
                           ? new Date(alerta.criado_em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
-                          : "-"} Criado em
+                          : "-"} 
                       </div>
 
                       {/* <div className="text-[10px] text-foreground/60">

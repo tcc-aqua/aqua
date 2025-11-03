@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { toast, Toaster } from "sonner";
-import { Home, HousePlug, AlertTriangle, SignalHigh, X, Check, User, Droplet } from "lucide-react";
+import { Toaster } from "sonner";
+import { Home, X, Check, User, Droplet } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -246,7 +246,7 @@ export default function CasasDashboard() {
                       </td>
                       <td className="px-4 py-2 text-sm">{casa.responsavel_nome}</td>
                       <td className="px-4 py-2 text-sm">
-                        <div>{casa.sensor_codigo}</div>
+                        <div className="font-bold">{casa.sensor_codigo}</div>
                         <div className=" text-sm font-bold">
                           <span className={casa.sensor_status === "ativo" ? "text-green-600" : "text-red-600"}>
                             {casa.sensor_status === "ativo" ? "Ativo" : "Inativo"}
@@ -259,7 +259,7 @@ export default function CasasDashboard() {
                             : "-"}
                         </div>
                       </td>
-                      <td className="px-6 py-2 text-sm">{casa.consumo_total || 0}L
+                      <td className="px-6 py-2 text-sm font-bold">{casa.consumo_total || 0}L
                         <div className="text-[10px] text-foreground/60">Total Acumulado</div>
                       </td>
                       <td className="text-sm font-bold flex items-center ml-7 py-10">

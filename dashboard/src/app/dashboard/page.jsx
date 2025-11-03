@@ -7,6 +7,7 @@ import CardTopDash from "@/components/Cards/CardTotaisDash";
 import CardAlertasRecentes from "@/components/Cards/CardAlertasRecentes";
 
 export default function Dashboard() {
+  
   return (<>
       <LayoutDashboard>
         <div className="flex-1 ">

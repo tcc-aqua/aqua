@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { toast, Toaster } from "sonner";
+import { Toaster } from "sonner";
 import { Users, UserCheck, UserCog, AlertTriangle, X, Check, Pencil } from "lucide-react";
 import {
   Dialog,
@@ -24,6 +24,7 @@ export default function UsersDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userStats, setUserStats] = useState({
+
     total: 0,
     ativos: 0,
     sindicos: 0,
@@ -34,7 +35,6 @@ export default function UsersDashboard() {
   const fetchData = async (filters = {}) => {
     try {
       setLoading(true);
-
 
       const [resAll, resAtivos, resInativos, resCount, resCountAtivas, resSindicos, resMoradores] = await Promise.all([
         fetch(`${API_URL}`),
@@ -60,10 +60,8 @@ export default function UsersDashboard() {
         resMoradores.json()
       ]);
 
-    const usersArray = Array.isArray(allData) ? allData : allData.docs || allData.users || [];
-console.log("usersArray:", usersArray);
-
-
+      const usersArray = Array.isArray(allData) ? allData : allData.docs || allData.users || [];
+      console.log("usersArray:", usersArray);
 
       const filteredUsers = usersArray.filter(user => {
         const matchesSearch = filters.search
@@ -107,16 +105,14 @@ console.log("usersArray:", usersArray);
     }
   };
 
-
-
- 
-
+  const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
   useEffect(() => {
     fetchData();
   }, []);
 
   if (loading) return <Loading />;
   if (error) return <p className="text-red-500">Erro: {error}</p>;
+
 
   const cards = [
     {
