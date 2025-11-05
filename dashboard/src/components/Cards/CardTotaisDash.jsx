@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,7 @@ export default function CardTopDash() {
     totalCasas: 0,
     totalApartamentos: 0,
     sensoresAtivos: 0,
+    sensoresTotal: 0,
     usuariosAtivos: 0,
     alertasAtivos: 0,
   });
@@ -28,49 +29,71 @@ export default function CardTopDash() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const [
-          dataResidencias,
-          dataSensores,
-          dataUsers,
-          dataAlertas
-        ] = await Promise.all([
-          fetch("http://localhost:3333/api/residencias").then(res => res.json()),
-          fetch("http://localhost:3333/api/sensores/count-ativos").then(res => res.json()),
-          fetch("http://localhost:3333/api/users/count-ativos").then(res => res.json()),
-          fetch("http://localhost:3333/api/alertas/count-ativos").then(res => res.json())
+        const [residenciasRes, sensoresRes, usersRes, alertasRes] = await Promise.all([
+          fetch("http://localhost:3333/api/residencias"),
+          fetch("http://localhost:3333/api/sensores/count-ativos"),
+          fetch("http://localhost:3333/api/users/count-ativos"),
+          fetch("http://localhost:3333/api/alertas/count/ativos"),
         ]);
 
-        // Log para depuração
-        console.log("Residencias:", dataResidencias);
-        console.log("Sensores:", dataSensores);
-        console.log("Users:", dataUsers);
-        console.log("Alertas:", dataAlertas);
+        const [dataResidencias, dataSensores, dataUsers, dataAlertas] = await Promise.all([
+          residenciasRes.json(),
+          sensoresRes.json(),
+          usersRes.json(),
+          alertasRes.json(),
+        ]);
 
-        const totalResidencias = dataResidencias.totalResidencias ?? 0;
-        const totalCasas = dataResidencias.totalCasas ?? 0;
-        const totalApartamentos = dataResidencias.totalApartamentos ?? 0;
+        console.log("API Sensores:", dataSensores);
 
-        const sensoresAtivos = Array.isArray(dataSensores)
-          ? dataSensores.length
-          : dataSensores.sensoresAtivos ?? 0;
+        const totalResidencias =
+          dataResidencias?.totalResidencias ??
+          dataResidencias?.count ??
+          dataResidencias?.docs?.length ??
+          0;
 
-        const usuariosAtivos = Array.isArray(dataUsers)
-          ? dataUsers.filter(u => u.role === "sindico").length
-          : dataUsers.sindicosAtivos ?? 0;
+        const totalCasas =
+          dataResidencias?.totalCasas ??
+          dataResidencias?.casas ??
+          dataResidencias?.docs?.filter?.((r) => r.tipo === "casa")?.length ??
+          0;
 
-        const alertasAtivos = Array.isArray(dataAlertas)
-          ? dataAlertas.length
-          : dataAlertas.totalAlertas ?? 0;
+        const totalApartamentos =
+          dataResidencias?.totalApartamentos ??
+          dataResidencias?.apartamentos ??
+          dataResidencias?.docs?.filter?.((r) => r.tipo === "apartamento")?.length ??
+          0;
+
+        const sensoresAtivos =
+          dataSensores?.sensoresAtivos ??
+          dataSensores?.ativos ??
+          dataSensores?.count ??
+          (Array.isArray(dataSensores) ? dataSensores.length : 0);
+
+        const sensoresTotal =
+          dataSensores?.totalSensores ??
+          dataSensores?.total ??
+          sensoresAtivos;
+
+        const usuariosAtivos =
+          dataUsers?.sindicosAtivos ??
+          dataUsers?.usuariosAtivos ??
+          dataUsers?.count ??
+          (Array.isArray(dataUsers) ? dataUsers.length : 0);
+
+        const alertasAtivos =
+          dataAlertas?.totalAlertas ??
+          dataAlertas?.count ??
+          (Array.isArray(dataAlertas) ? dataAlertas.length : 0);
 
         setUserStats({
           totalResidencias,
           totalCasas,
           totalApartamentos,
           sensoresAtivos,
+          sensoresTotal,
           usuariosAtivos,
-          alertasAtivos
+          alertasAtivos,
         });
-
       } catch (error) {
         console.error("Erro ao buscar estatísticas:", error);
       }
@@ -88,27 +111,30 @@ export default function CardTopDash() {
       detalhe: `${userStats.totalCasas} casas + ${userStats.totalApartamentos} aptos`,
     },
     {
-      title: "Sensores Ativos",
+      title: "Sensores ativos", 
       value: userStats.sensoresAtivos,
       icon: Cpu,
       iconColor: "text-green-700",
+      detalhe: `${userStats.sensoresAtivos} de ${userStats.sensoresTotal} operacionais`, // 🔹 alterado
     },
     {
       title: "Usuários ativos",
       value: userStats.usuariosAtivos,
       icon: UserPlus,
       iconColor: "text-yellow-500",
+      detalhe: `${userStats.totalCasas} moradores + ${userStats.totalApartamentos} síndicos`,
     },
     {
-      title: "Alertas Ativos",
+      title: "Alertas ativos",
       value: userStats.alertasAtivos,
       icon: AlertTriangle,
       iconColor: "text-red-700",
+      detalhe: "Precisa de atenção"
     },
   ];
 
   return (
-    <section className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
+    <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {cards.map((card, i) => {
         const Icon = card.icon;
         return (
@@ -127,9 +153,12 @@ export default function CardTopDash() {
               </CardHeader>
               <CardContent className="flex flex-col justify-between -mt-6">
                 <div className="flex items-center justify-between">
-                  <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
+                  <p className="font-bold text-4xl text-foreground">
+                    {card.value ?? 0}
+                  </p>
                   <Icon className={`w-10 h-10 ${card.iconColor}`} />
                 </div>
+
                 {card.detalhe && (
                   <p className="text-sm text-blue-600 mt-2">{card.detalhe}</p>
                 )}

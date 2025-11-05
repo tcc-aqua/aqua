@@ -25,7 +25,7 @@ export default function CasasDashboard() {
   const [casaStats, setCasaStats] = useState({ total: 0, ativas: 0, inativas: 0, alertas: 0 });
   const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
 
-  const API_CASAS = `${process.env.NEXT_PUBLIC_API_URL}/casas`;
+  const API_CASAS = "http://localhost:3333/api/casas";
 
   const fetchData = async (filters = {}) => {
     try {

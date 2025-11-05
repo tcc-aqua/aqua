@@ -1,65 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 
-/**
- * Hook para CRUD de condomínios
- * @param {Array} initialCondominios - Lista inicial de condomínios
- * @param {Function} refreshFn - Função para atualizar a lista após mudanças
- * @param {string} baseURL - URL base da API (padrão: /api/condominios)
- */
-export function useCondominios(
-  initialCondominios = [],
-  refreshFn,
-  baseURL = "/condominios"
-) {
-  const [condominios, setCondominios] = useState(initialCondominios);
+export function useCondominios() {
+  const [condominios, setCondominios] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Criar condomínio
-  const addCondominio = async (novoCondominio) => {
+  // Buscar todos os condomínios
+  const fetchCondominios = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.post(baseURL, novoCondominio);
-      if (res?.error) throw new Error(res.error);
-
-      setCondominios((prev) => [...prev, res]);
-      toast.success("Condomínio criado com sucesso!");
-      await refreshFn?.();
-      return res;
+      const res = await api.get("/condominios");
+      const data = Array.isArray(res) ? res : res?.data || [];
+      setCondominios(data);
     } catch (err) {
-      const msg = err?.message || "Erro ao criar condomínio!";
+      const msg = err?.message || "Erro ao buscar condomínios!";
       toast.error(msg);
       setError(msg);
-      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCondominios();
+  }, []);
+
+  // Criar condomínio
+  const addCondominio = async (novo) => {
+    setLoading(true);
+    try {
+      const res = await api.post("/condominios", novo);
+      const data = res?.data || res; // depende do formato da API
+      if (!data || data.error) throw new Error(data?.error || "Erro ao criar");
+
+      setCondominios((prev) => Array.isArray(prev) ? [...prev, data] : [data]);
+      toast.success("Condomínio criado com sucesso!");
+    } catch (err) {
+      toast.error(err?.message || "Erro ao criar condomínio!");
     } finally {
       setLoading(false);
     }
   };
 
   // Editar condomínio
-  const editCondominio = async (id, dadosAtualizados) => {
+  const editCondominio = async (id, dados) => {
     setLoading(true);
-    setError(null);
     try {
-      const res = await api.put(`${baseURL}/${id}`, dadosAtualizados);
-      if (res?.error) throw new Error(res.error);
+      const res = await api.put(`/condominios/${id}`, dados);
+      const data = res?.data || res;
+      if (!data || data.error) throw new Error(data?.error || "Erro ao atualizar");
 
       setCondominios((prev) =>
-        prev.map((c) => (c.id === id ? res : c))
+        Array.isArray(prev) ? prev.map((c) => (c.id === id ? data : c)) : [data]
       );
       toast.success("Condomínio atualizado com sucesso!");
-      await refreshFn?.();
-      return res;
     } catch (err) {
-      const msg = err?.message || "Erro ao editar condomínio!";
-      toast.error(msg);
-      setError(msg);
-      return null;
+      toast.error(err?.message || "Erro ao atualizar condomínio!");
     } finally {
       setLoading(false);
     }
@@ -68,20 +69,16 @@ export function useCondominios(
   // Excluir condomínio
   const removeCondominio = async (id) => {
     setLoading(true);
-    setError(null);
     try {
-      const res = await api.del(`${baseURL}/${id}`);
+      const res = await api.del(`/condominios/${id}`);
       if (res?.error) throw new Error(res.error);
 
-      setCondominios((prev) => prev.filter((c) => c.id !== id));
+      setCondominios((prev) =>
+        Array.isArray(prev) ? prev.filter((c) => c.id !== id) : []
+      );
       toast.success("Condomínio excluído com sucesso!");
-      await refreshFn?.();
-      return true;
     } catch (err) {
-      const msg = err?.message || "Erro ao excluir condomínio!";
-      toast.error(msg);
-      setError(msg);
-      return false;
+      toast.error(err?.message || "Erro ao excluir condomínio!");
     } finally {
       setLoading(false);
     }
@@ -89,9 +86,9 @@ export function useCondominios(
 
   return {
     condominios,
-    setCondominios,
     loading,
     error,
+    fetchCondominios,
     addCondominio,
     editCondominio,
     removeCondominio,

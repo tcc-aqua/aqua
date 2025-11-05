@@ -25,7 +25,8 @@ export default function ApartamentosDashboard() {
     const [apStats, setApStats] = useState({ total: 0, ativas: 0, inativas: 0, alertas: 0 });
     const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
 
-    const API_AP = "http://localhost:3333/api/apartamentos";
+const API_AP = `${process.env.NEXT_PUBLIC_API_URL}/apartamentos`;
+
 
     const fetchData = async (filters = {}) => {
         try {

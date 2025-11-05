@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Building, X, Check,  UserStar, Droplet } from "lucide-react";
+import { Building, X, Check, UserStar, Droplet, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +29,8 @@ export default function CondominiosDashboard() {
 
 
   const API_URL = "http://localhost:3333/api/condominios";
+
+
 
   const fetchData = async (filters = {}) => {
     try {
@@ -98,16 +100,16 @@ export default function CondominiosDashboard() {
       );
 
 
-      setCondominioStats({
-        total: dataCount.total ?? filteredCondominios.length,
-        ativos: dataAtivos.docs?.length ?? 0,
-        inativos: dataInativos.docs?.length ?? 0,
-        alertas,
-        sensoresAtivos: sensorStats.ativos,
-        sensoresInativos: sensorStats.inativos,
-        sensoresTotal: sensorStats.total,
-        litrosTotais: sensorStats.litrosTotais
-      });
+setCondominioStats({
+  total: dataCount.total ?? filteredCondominios.length,
+  ativos: dataAtivos.docs?.length ?? 0,
+  inativos: dataInativos.docs?.length ?? 0,
+  alertas,
+  sensoresAtivos: sensorStats.sensoresAtivos,
+  sensoresInativos: sensorStats.sensoresInativos,
+  sensoresTotal: sensorStats.sensoresTotal,
+});
+
 
     } catch (err) {
       console.error("Erro ao buscar dados dos condomínios:", err);
@@ -116,8 +118,6 @@ export default function CondominiosDashboard() {
       setLoading(false);
     }
   };
-
-
 
   useEffect(() => {
     fetchData();
@@ -302,7 +302,14 @@ export default function CondominiosDashboard() {
 
                           </Button>
 
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                         onClick={() => setSelectedCondominio(condominio)}
 
+                          >
+                            <Pencil size={14} className="text-blue-500" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
