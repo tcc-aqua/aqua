@@ -32,92 +32,78 @@ export default function CondominiosDashboard() {
 
 
 
-  const fetchData = async (filters = {}) => {
-    try {
-      setLoading(true);
+ const fetchData = async (filters = {}) => {
+  try {
+    setLoading(true);
 
-      const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
-        fetch(`${API_URL}`),
-        fetch(`${API_URL}/ativos`),
-        fetch(`${API_URL}/inativos`),
-        fetch(`${API_URL}/count`),
-      ]);
+    const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
+      fetch(`${API_URL}`),
+      fetch(`${API_URL}/ativos`),
+      fetch(`${API_URL}/inativos`),
+      fetch(`${API_URL}/count`)
+    ]);
 
-      const [dataAll, dataAtivos, dataInativos, dataCount] = await Promise.all([
-        resAll.json(),
-        resAtivos.json(),
-        resInativos.json(),
-        resCount.json(),
-      ]);
-
-      let allCondominios = dataAll.docs || [];
-
-      // Filtragem local
-      const filteredCondominios = allCondominios.filter(c => {
-        const matchesStatus = filters.status ? c.condominio_status === filters.status : true;
-        const matchesNome = filters.nome ? c.condominio_nome.toLowerCase().includes(filters.nome.toLowerCase()) : true;
-        return matchesStatus && matchesNome;
-      });
-
-      setCondominios(filteredCondominios);
-
-      const alertas = filteredCondominios.filter(c => !c.responsavel_id).length;
-
-      const sensorStats = filteredCondominios.reduce(
-        (acc, cond) => {
-          // Sensores
-          if (cond.sensor_status) {
-            acc.sensoresTotal += 1;
-            if (cond.sensor_status === "ativo") acc.sensoresAtivos += 1;
-            else if (cond.sensor_status === "inativo") acc.sensoresInativos += 1;
-            else acc.sensoresAlertas += 1;
-          }
-
-          // Total de apartamentos
-          acc.apartamentosTotal += cond.numero_apartamentos || 0;
-          if (cond.condominio_status === "ativo") {
-            acc.apartamentosAtivos += cond.numero_apartamentos || 0;
-          }
-
-          // Síndicos
-          if (cond.sindico_nome) acc.sindicosAtivos += 1;
-
-          // Total de condomínios
-          acc.total += 1;
-
-          return acc;
-        },
-        {
-          total: 0,
-          sensoresTotal: 0,
-          sensoresAtivos: 0,
-          sensoresInativos: 0,
-          sensoresAlertas: 0,
-          apartamentosTotal: 0,
-          apartamentosAtivos: 0,
-          sindicosAtivos: 0
-        }
-      );
-
-
-setCondominioStats({
-  total: dataCount.total ?? filteredCondominios.length,
-  ativos: dataAtivos.docs?.length ?? 0,
-  inativos: dataInativos.docs?.length ?? 0,
-  alertas,
-  sensoresAtivos: sensorStats.sensoresAtivos,
-  sensoresInativos: sensorStats.sensoresInativos,
-  sensoresTotal: sensorStats.sensoresTotal,
-});
-
-
-    } catch (err) {
-      console.error("Erro ao buscar dados dos condomínios:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    if (!resAll.ok || !resAtivos.ok || !resInativos.ok || !resCount.ok) {
+      throw new Error("Erro ao buscar dados dos condomínios.");
     }
-  };
+
+    const [dataAll, dataAtivos, dataInativos, dataCount] = await Promise.all([
+      resAll.json(),
+      resAtivos.json(),
+      resInativos.json(),
+      resCount.json(),
+    ]);
+
+    let allCondominios = dataAll.docs || [];
+
+    // Aplica filtros locais
+    const filteredCondominios = allCondominios.filter(c => {
+      const matchesStatus = filters.status ? c.condominio_status === filters.status : true;
+      const matchesNome = filters.nome ? c.condominio_nome.toLowerCase().includes(filters.nome.toLowerCase()) : true;
+      return matchesStatus && matchesNome;
+    });
+
+    setCondominios(filteredCondominios);
+
+    // Estatísticas básicas
+    const stats = {
+      total: dataCount.total ?? filteredCondominios.length,
+      ativos: dataAtivos.docs?.length ?? 0,
+      inativos: dataInativos.docs?.length ?? 0,
+      alertas: filteredCondominios.filter(c => !c.responsavel_id).length,
+    };
+
+    // Calcula sensores e apartamentos de forma segura
+    const sensores = filteredCondominios.reduce(
+      (acc, c) => {
+        acc.totalSensores += Number(c.numero_sensores) || 0;
+        if (c.sensor_status === "ativo") acc.sensoresAtivos += 1;
+        else if (c.sensor_status === "inativo") acc.sensoresInativos += 1;
+        else if (c.sensor_status === "alerta") acc.sensoresAlertas += 1;
+
+        acc.totalApartamentos += Number(c.numero_apartamentos) || 0;
+        return acc;
+      },
+      { totalSensores: 0, sensoresAtivos: 0, sensoresInativos: 0, sensoresAlertas: 0, totalApartamentos: 0 }
+    );
+
+    setCondominioStats({
+      ...stats,
+      sensoresTotal: sensores.totalSensores,
+      sensoresAtivos: sensores.sensoresAtivos,
+      sensoresInativos: sensores.sensoresInativos,
+      sensoresAlertas: sensores.sensoresAlertas,
+      apartamentosTotais: sensores.totalApartamentos,
+    });
+
+  } catch (err) {
+    console.error("Erro ao buscar dados dos condomínios:", err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchData();
@@ -161,7 +147,7 @@ setCondominioStats({
     {
       title: "Apartamentos Totais",
       value: condominios.reduce((acc, c) => acc + (c.numero_apartamentos || 0), 0),
-      valueAtivos: { casas: condominios.reduce((acc, c) => acc + ((c.condominio_status === "ativo") ? c.numero_apartamentos : 0), 0) },
+      valueAtivos: { casas: condominios.reduce((acc, c) => acc + (c.apartamentosAtivos || 0), 0) },
       icon: Droplet,
       bg: "bg-card",
       iconColor: "text-orange-300",
@@ -178,7 +164,7 @@ setCondominioStats({
         : "0% operacionais"
     },
     {
-      title: "Síndicos Ativos",
+      title: "Total de Síndicos",
       value: condominios.reduce((acc, c) => acc + (c.sindico_nome ? 1 : 0), 0),
       icon: UserStar,
       bg: "bg-card",
@@ -260,7 +246,7 @@ setCondominioStats({
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Sensores</th>
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Síndicos</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Alertas</th>
+                    {/* <th className="px-4 py-2 text-left text-xs font-medium uppercase">Alertas</th> */}
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Ações</th>
                   </tr>
                 </thead>
@@ -287,7 +273,7 @@ setCondominioStats({
                         <span className={`inline-block w-3 h-3 rounded-full px-3 ${condominio.condominio_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={condominio.condominio_status} />
                       </td>
                       <td className="px-4 py-2 text-sm">{condominio.sindico_nome}</td>
-                      <td className="px-4 py-2 text-sm">-</td>
+        
                       <td className="px-4 py-2 text-sm">
                         <div className="flex items-center gap-1">
                           <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(condominio)}>
@@ -305,7 +291,7 @@ setCondominioStats({
                           <Button
                             size="sm"
                             variant="ghost"
-                         onClick={() => setSelectedCondominio(condominio)}
+                            onClick={() => setSelectedCondominio(condominio)}
 
                           >
                             <Pencil size={14} className="text-blue-500" />

@@ -127,8 +127,7 @@ export default function CasasDashboard() {
       valueAtivos: { casas: casaStats.ativas },
       icon: Home,
       bg: "bg-card",
-      iconColor: "text-blue-700",
-      textColor: "text-blue-800"
+      iconColor: "text-orange-300",
     },
     {
       title: "Total de Moradores",
@@ -136,7 +135,6 @@ export default function CasasDashboard() {
       icon: User,
       bg: "bg-card",
       iconColor: "text-purple-700",
-      textColor: "text-green-800",
       subTitle: casas.length > 0
         ? `Média de ${(casas.reduce((acc, c) => acc + (Number(c.numero_moradores) || 0), 0) / casas.length).toFixed(0)} por casa`
         : "0"
@@ -147,13 +145,12 @@ export default function CasasDashboard() {
       icon: Check,
       bg: "bg-card",
       iconColor: "text-green-700",
-      textColor: "text-green-800",
       porcentagem: sensorStats.total > 0
         ? ((sensorStats.ativos / sensorStats.total) * 100).toFixed(0) + "% operacionais"
         : "0% operacionais"
     },
     {
-      title: "Consumo total",
+      title: "Consumo Total",
       value: (() => {
         const litros = Number(sensorStats.litrosTotais) || 0;
         if (litros >= 1_000_000) return (litros / 1_000_000).toFixed(1) + "M";
@@ -162,8 +159,7 @@ export default function CasasDashboard() {
       })(),
       icon: Droplet,
       bg: "bg-card",
-      iconColor: "text-orange-300",
-      textColor: "text-orange-800",
+      iconColor: "text-blue-500",
       subTitle2: "Litros acumulados"
     }
   ];
@@ -191,7 +187,7 @@ export default function CasasDashboard() {
 
                     <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
                     {card.valueAtivos && (
-                      <p className="text-blue-600 text-sm mt-1">
+                      <p className="text-orange-300 text-sm mt-1">
                         {card.valueAtivos.casas} ativas
                       </p>
                     )}
@@ -203,7 +199,7 @@ export default function CasasDashboard() {
                     )}
 
                     {card.subTitle2 && (
-                      <p className="text-sm mt-1 text-orange-300">{card.subTitle2}</p>
+                      <p className="text-sm mt-1 text-blue-500">{card.subTitle2}</p>
                     )}
                   </div>
                   <Icon className={`w-8 h-8 bg-${card.iconColor} ${card.iconColor}`} />
@@ -230,7 +226,7 @@ export default function CasasDashboard() {
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Sensor</th>
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Consumo</th>
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Alertas</th>
+                    {/* <th className="px-4 py-2 text-left text-xs font-medium uppercase">Alertas</th> */}
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Ações</th>
                   </tr>
                 </thead>
@@ -265,7 +261,6 @@ export default function CasasDashboard() {
                       <td className="text-sm font-bold flex items-center ml-7 py-10">
                         <span className={`inline-block w-3 h-3 rounded-full  px-3 ${casa.casa_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={casa.casa_status} />
                       </td>
-                      <td className="px-4 py-2 text-sm">{casa.alertas}</td>
                       <td className="px-4 py-2 text-sm">
                         <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(casa)}>
                           <div className="flex items-center gap-1">

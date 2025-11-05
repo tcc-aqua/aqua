@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Building, Home } from "lucide-react";
 import Loading from "../Layout/Loading/page";
+import AnimationWrapper from "../Layout/Animation/Animation";
 
 export default function DistribuicaoPorRegiao() {
   const [dados, setDados] = useState([]);
@@ -52,7 +53,9 @@ export default function DistribuicaoPorRegiao() {
   if (loading) return <p className="text-muted-foreground"></p>;
 
   return (
-    
+    <AnimationWrapper  delay={0.2}>
+
+  
     <section className="container mx-auto mt-10 ">
       <Card className="w-full">
       <CardHeader>
@@ -92,6 +95,7 @@ export default function DistribuicaoPorRegiao() {
   
 
     </section>
+      </AnimationWrapper>
     
   );
 }

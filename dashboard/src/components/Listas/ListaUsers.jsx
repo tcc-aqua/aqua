@@ -191,8 +191,6 @@ export default function UsersDashboard() {
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Tipo</th>
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Função</th>
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
-
-
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase"> Ações</th>
                   </tr>
                 </thead>
@@ -218,7 +216,6 @@ export default function UsersDashboard() {
                         }
                         <div className="text-xs text-foreground/80">{user.bairro}, {user.cidade} / {user.uf}</div>
                         <div className="text-[10px] text-foreground/60">CEP: {user.cep}</div>
-
                       </td>
                       <td className=" text-sm">
                         <span
@@ -232,7 +229,6 @@ export default function UsersDashboard() {
                           {user.user_type === "casa" ? "casa" : user.user_type === "condominio" ? "condomínio" : "Desconhecido"}
                         </span>
                       </td>
-
                       <td className="px-4 py-2 text-sm">
                         <span
                           className={`px-2 py-1 rounded-full text-white font-semibold  ${user.user_role === "morador"
@@ -245,9 +241,6 @@ export default function UsersDashboard() {
                           {user.user_role === "morador" ? "morador" : user.user_role === "sindico" ? "síndico" : "Desconhecido"}
                         </span>
                       </td>
-
-
-
                       <td className=" text-sm font-bold flex items-center px-7 py-4">
                         <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${user.user_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={user.user_status} />
                       </td>

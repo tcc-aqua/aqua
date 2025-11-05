@@ -106,8 +106,7 @@ export default function SensorsDashboard() {
       valueAtivos: { casas: sensorStats.casas, apartamentos: sensorStats.apartamentos },
       icon: Cpu,
       bg: "bg-card",
-      iconColor: "text-blue-700",
-      textColor: "text-blue-800",
+      iconColor: "text-purple-700",
     },
     {
       title: "Sensores Ativos",
@@ -115,7 +114,6 @@ export default function SensorsDashboard() {
       icon: Check,
       bg: "bg-card",
       iconColor: "text-green-700",
-      textColor: "text-green-800",
       porcentagem: ((sensorStats.ativos / sensorStats.total) * 100).toFixed(0) + "%" + " operacionais",
     },
     {
@@ -124,7 +122,6 @@ export default function SensorsDashboard() {
       icon: X,
       bg: "bg-card",
       iconColor: "text-red-600",
-      textColor: "text-red-600",
       subTitle: "Precisa de atenção"
     },
     {
@@ -137,8 +134,7 @@ export default function SensorsDashboard() {
       })(),
       icon: Droplet,
       bg: "bg-card",
-      iconColor: "text-purple-700",
-      textColor: "text-purple-800",
+      iconColor: "text-blue-500",
       subTitle2: "Total acumulado"
     }
   ];
@@ -164,7 +160,7 @@ export default function SensorsDashboard() {
 
                     <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
                     {card.valueAtivos && (
-                      <p className="text-blue-600 text-sm mt-1">
+                      <p className="text-purple-700 text-sm mt-1">
                         {card.valueAtivos.casas} casas + {card.valueAtivos.apartamentos} apartamentos
                       </p>
                     )}
@@ -176,7 +172,7 @@ export default function SensorsDashboard() {
                     )}
 
                     {card.subTitle2 && (
-                      <p className="text-sm mt-1 text-purple-600">{card.subTitle2}</p>
+                      <p className="text-sm mt-1 text-blue-500">{card.subTitle2}</p>
                     )}
                   </div>
                   <Icon className={`w-8 h-8 bg-${card.iconColor} ${card.iconColor}`} />
