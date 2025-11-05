@@ -16,6 +16,7 @@ import residenciaRoutes from './routes/residencia.routes.js';
 import alertasRoutes from './routes/alertas.routes.js';
 import cepRoutes from './routes/cep.routes.js';
 import leituraRoutes from './routes/leitura.routes.js';
+import suporteRoutes from './routes/suporte.routes.js';
 
 
 const fastify = Fastify({
@@ -80,6 +81,7 @@ await fastify.register(authRoutes, { prefix: '/api/auth' });
 await fastify.register(residenciaRoutes, { prefix: '/api/residencias' });
 await fastify.register(alertasRoutes, { prefix: '/api/alertas' });
 await fastify.register(leituraRoutes, { prefix: '/api/leituras' });
+await fastify.register(suporteRoutes, { prefix: '/api/suporte' });
 await fastify.register(cepRoutes, { prefix: '/api/cep' });
 await fastify.register(errorHandler);
 
