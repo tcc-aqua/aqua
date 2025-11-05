@@ -14,14 +14,14 @@ export default class CondominioController {
     static async getAllActives(req, reply) {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const condominios = await CondominioService.getAllActives(page, limit);
+        const condominios = await CondominioService.getAllActivesCondominios(page, limit);
         return reply.status(200).send(condominios);
     }
 
     static async getAllInativos(req, reply) {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const condominios = await CondominioService.getAllInativos(page, limit);
+        const condominios = await CondominioService.getAllDeactivetedCondominios(page, limit);
         return reply.status(200).send(condominios);
     }
 
