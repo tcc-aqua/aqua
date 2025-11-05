@@ -39,14 +39,18 @@ export default function InputWithAdornmentDemo() {
       if (!response.ok) throw new Error(data.message || "Erro ao fazer login");
 
       if (data.token) {
-        Cookies.set("token", data.token, {
-          expires: 1,
-          secure: true,
-          sameSite: "strict",
-        });
+        if (data.token) {
+          Cookies.set("token", data.token, {
+            expires: 1,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+          });
 
-        toast.success(data.message || "Login bem-sucedido!");
-        setTimeout(() => router.push("/dashboard"), 100);
+          toast.success(data.message || "Login bem-sucedido!");
+          setTimeout(() => router.push("/dashboard"), 50);
+        }
+
       } else {
         throw new Error("Token não recebido do servidor");
       }
@@ -61,7 +65,7 @@ export default function InputWithAdornmentDemo() {
       <Toaster position="top-right" richColors />
 
       <form onSubmit={handleLogin} className="w-full max-w-xs space-y-2">
-  
+
         <div className="relative flex items-center rounded-full border focus-within:ring-1 focus-within:ring-ring pl-2">
           <MailIcon className="h-5 w-5 text-muted-foreground" />
           <Input
@@ -74,7 +78,7 @@ export default function InputWithAdornmentDemo() {
           />
         </div>
 
-   
+
         <div className="relative flex items-center rounded-full border focus-within:ring-1 focus-within:ring-ring px-2">
           <LockIcon className="h-5 w-5 text-muted-foreground" />
           <Input

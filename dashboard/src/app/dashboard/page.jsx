@@ -1,4 +1,4 @@
-"use client";
+
 
 import Header from "@/components/Layout/Header/page";
 import LayoutDashboard from "@/components/Layout/LayoutDashboard/page";
