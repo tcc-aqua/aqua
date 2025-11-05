@@ -139,7 +139,9 @@ const Contact02Page = () => (
                     <Input
                       placeholder="Seu nome"
                       id="firstName"
-                      className="mt-2 bg-white h-10 shadow-none placeholder-opacity-100" />
+                      className="mt-2 bg-white h-10 shadow-none placeholder:text-gray-400 placeholder:text-opacity-60"
+                    />
+
                   </motion.div>
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
@@ -152,7 +154,7 @@ const Contact02Page = () => (
                     <Input
                       placeholder="Seu sobrenome"
                       id="lastName"
-                      className="mt-2 bg-white h-10 shadow-none placeholder-opacity-100" />
+                      className="mt-2 bg-white h-10 shadow-none placeholder:text-gray-400 placeholder:text-opacity-60" />
                   </motion.div>
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -166,7 +168,7 @@ const Contact02Page = () => (
                       type="email"
                       placeholder="seuemail@exemplo.com"
                       id="email"
-                      className="mt-2 bg-white h-10 shadow-none placeholder-opacity-100" />
+                      className="mt-2 bg-white h-10 shadow-none placeholder:text-gray-400 placeholder:text-opacity-60" />
                   </motion.div>
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -179,7 +181,7 @@ const Contact02Page = () => (
                     <Textarea
                       id="message"
                       placeholder="Nos diga mais sobre sua residência ou condomínio. Nossa equipe entrará em contato."
-                      className="mt-2 bg-white shadow-none placeholder-opacity-100"
+                      className="mt-2 bg-white shadow-none placeholder:text-gray-400 placeholder:text-opacity-60"
                       rows={6} />
                   </motion.div>
                   <motion.div

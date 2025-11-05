@@ -108,7 +108,6 @@ const Features04Page = () => {
                   </AccordionTrigger>
                   <AccordionContent className="text-[17px] leading-relaxed text-muted-foreground">
                     {description}
-                    <div className="mt-6 mb-2 md:hidden aspect-video w-full bg-muted rounded-xl" />
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -126,7 +125,7 @@ const Features04Page = () => {
               <CardContent className="p-8">
                 <div className="flex items-start gap-4 mb-6">
                   <div className="w-12 h-12 bg-blue-100 dark:bg-[#0a5280] rounded-full flex items-center justify-center">
-                    <QuoteIcon className="w-6 h-6 text-blue-600 dark:text-card" />
+                    <QuoteIcon className="w-6 h-6  text-blue-600 dark:text-card" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-slate-900 mb-2 dark:text-white">

@@ -23,8 +23,7 @@ export default function Home() {
           <Navbar04Page />
         </header>
 
-        <main className="container  mx-auto" id="home">
-
+        <main className="container mx-auto" id="home">
           <Main />
         </main>
 
