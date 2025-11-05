@@ -1,6 +1,4 @@
-import { GalleryVerticalEnd } from "lucide-react";
-import { LoginForm } from "@/components/login-form";
-import { Instruction } from "@/components/blocks/instruction";
+
 import InputWithAdornmentDemo from "@/components/input-07";
 import Link from "next/link";
 
