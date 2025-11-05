@@ -2,6 +2,7 @@ import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import User from "./User.js";
 import Admin from "./Admin.js";
+import sequelizePaginate from 'sequelize-paginate'
 
 export default class Suporte extends  Model {}
 
@@ -44,3 +45,5 @@ Suporte.init({
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em'
 })
+
+sequelizePaginate.paginate(Suporte);
