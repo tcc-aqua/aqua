@@ -195,22 +195,20 @@ export default function CondominiosDashboard() {
                 </CardHeader>
                 <CardContent className="flex flex-row items-center justify-between -mt-6">
                   <div className="flex flex-col">
-                    {/* Total */}
+               
                     <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
 
-                    {/* Ativos */}
                     {card.valueAtivos && (
                       <p className="text-sm mt-1 text-accent">
                         {card.valueAtivos.casas} ativos
                       </p>
                     )}
 
-                    {/* Porcentagem */}
                     {card.porcentagem && (
                       <p className="text-sm mt-1 text-green-600">{card.porcentagem}</p>
                     )}
 
-                    {/* Subtítulos adicionais */}
+            
                     {card.subTitle && (
                       <p className="text-sm mt-1 text-purple-600">{card.subTitle}</p>
                     )}
@@ -280,7 +278,7 @@ export default function CondominiosDashboard() {
                               {condominio.condominio_status === "ativo" ? (
                                 <Check className="text-green-500" size={14} />
                               ) : (
-                                <X className="text-red-500" size={14} />
+                                <X className="text-destructive" size={14} />
                               )}
                             </div>
 

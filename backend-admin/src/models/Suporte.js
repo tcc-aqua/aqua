@@ -29,11 +29,6 @@ Suporte.init({
         type: DataTypes.STRING,
         allowNull: false
     },
-    respondido_por: {
-        type: DataTypes.CHAR(36),
-        allowNull: false,
-        references: {model: Admin, key: 'id'}
-    },
     status: {
         type: DataTypes.ENUM('pendente', 'respondido'),
         defaultValue: 'pendente',

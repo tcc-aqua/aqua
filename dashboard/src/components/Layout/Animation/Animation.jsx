@@ -9,7 +9,7 @@ const cardVariants = {
     y: 0,
     opacity: 1,
     zIndex: 10,
-    transition: { duration: 0.8, ease: "easeOut", delay },
+    transition: { duration: 0.5, ease: "easeOut", delay },
   }),
 };
 

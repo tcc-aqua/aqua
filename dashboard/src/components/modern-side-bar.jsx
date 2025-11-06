@@ -19,7 +19,9 @@ import {
   MessageCircle,
   Rows,
   HousePlus,
-  Siren
+  Siren,
+  Headset,
+  Grid
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -27,12 +29,12 @@ const navigationItems = [
   { id: "dashboard", name: "Dashboard", icon: Home, href: "/dashboard" },
   { id: "users", name: "Usuários", icon: Users, href: "/users" },
   { id: "condominios", name: "Condomínios", icon: Building, href: "/condominios" },
-  { id: "apartamentos", name: "Apartamentos", icon: Rows, href: "/apartamentos" },
+  { id: "apartamentos", name: "Apartamentos", icon: Grid, href: "/apartamentos" },
   { id: "casas", name: "Casas", icon: HousePlus, href: "/casas" },
   { id: "sensors", name: "Sensores", icon: Droplets, href: "/sensors" },
   { id: "alerts", name: "Alertas", icon: Siren, href: "/alerts" },
   // { id: "tecnicos", name: "Técnicos", icon: IdCardLanyard, href: "/funcionarios" },
-  //   { id: "contact", name: "Contato", icon: MessageCircle, href: "/contact" },
+    { id: "suporte", name: "Suporte", icon: Headset, href: "/suporte" },
   { id: "profile", name: "Perfil", icon: User, href: "/profile" },
 
 ];
@@ -83,7 +85,7 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
       <div
         className={`fixed top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border z-50 transition-all duration-300 ease-in-out flex flex-col
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          ${isCollapsed ? "w-24" : "w-55"}
+          ${isCollapsed ? "w-20" : "w-55"}
           md:translate-x-0 overflow-hidden
           ${className}`}
       >
@@ -106,7 +108,7 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
             className="hidden md:flex p-1 rounded-md hover:bg-muted transition-all duration-200"
             aria-label={isCollapsed ? "Expandir menu" : "Colapsar menu"}
           >
-            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
           </button>
         </div>
 

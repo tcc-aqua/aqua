@@ -85,27 +85,33 @@ export default function CondominioFilter({ onApply }) {
     if (onApply) onApply({});
   };
 
-  const handleCreateCondominio = async (e) => {
-    e.preventDefault();
-    if (!formData.nome || !formData.cep) {
-      toast.error("Preencha o nome e o CEP!");
-      return;
-    }
+const handleCreateCondominio = async (e) => {
+  e.preventDefault();
+  if (!formData.nome || !formData.cep) {
+    toast.error("Preencha o nome e o CEP!");
+    return;
+  }
 
-    const payload = {
-      name: formData.nome,
-      cep: formData.cep,
-      logradouro: formData.logradouro,
-      bairro: formData.bairro,
-      cidade: formData.cidade,
-      estado: formData.estado,
-      numero: formData.numero,
-      complemento: formData.complemento,
-      status: formData.status,
-    };
+  const payload = {
+    name: formData.nome,
+    cep: formData.cep,
+    logradouro: formData.logradouro,
+    bairro: formData.bairro,
+    cidade: formData.cidade,
+    estado: formData.estado,
+    numero: formData.numero,
+    complemento: formData.complemento,
+    status: formData.status,
+  };
 
+  try {
+    // adiciona no backend
     await addCondominio(payload);
+
+    // fecha modal
     setIsOpen(false);
+
+    // limpa formulário
     setFormData({
       nome: "",
       cep: "",
@@ -117,7 +123,16 @@ export default function CondominioFilter({ onApply }) {
       complemento: "",
       status: "ativo",
     });
-  };
+
+    // recarrega a tabela chamando a função onApply sem filtros
+    if (onApply) onApply({});
+    
+    toast.success("Condomínio criado com sucesso!");
+  } catch (err) {
+    console.error(err);
+    toast.error("Erro ao criar condomínio!");
+  }
+};
 
 
   const cardVariants = {
@@ -173,22 +188,22 @@ export default function CondominioFilter({ onApply }) {
 
             <div className="flex gap-2 mt-2 sm:mt-0">
 
-              <Button
-                variant="destructive"
+                    <Button
+               
                 onClick={handleResetFilters}
-                className="h-10 w-full sm:w-auto rounded-full"
+                className="h-7 w-full sm:w-auto rounded-md bg-destructive/20 hover:bg-destructive/40 text-destructive "
               >
                 <Eraser />
               </Button>
               <Button
                 onClick={handleApplyFilters}
-                className="h-10 w-full sm:w-auto rounded-full text-green-700 bg-green-200 hover:bg-green-200"
+                className="h-7 w-full sm:w-auto rounded-md text-accent-foreground bg-accent/60 hover:bg-accent/80"
               >
                 <Check ></Check>Aplicar
               </Button>
               <Button
                 onClick={() => setIsOpen(true)}
-                className="h-10 w-full sm:w-auto rounded-full"
+                className="h-7 w-full sm:w-auto rounded-md bg-accent/80"
               >
                 <Plus /> Adicionar
               </Button>

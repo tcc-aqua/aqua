@@ -18,7 +18,7 @@ export default function LayoutDashboard({ children }) {
       />
       <main
         className={`flex-1 transition-all duration-300 p-6 ${
-          sidebarCollapsed ? "md:ml-14" : "md:ml-44"
+          sidebarCollapsed ? "md:ml-5" : "md:ml-44"
         }`}
       >
         {children}

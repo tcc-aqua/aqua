@@ -95,19 +95,17 @@ export default function ApartamentoFilter({ onApply }) {
             </Select>
           </div>
 
-          {/* Botões */}
+       
        <div className="flex gap-2 mt-2 sm:mt-0">
-
-              <Button
-                variant="destructive"
+         <Button
                 onClick={handleResetFilters}
-                className="h-10 w-full sm:w-auto rounded-full"
+                className="h-7 w-full sm:w-auto rounded-md bg-destructive/20 hover:bg-destructive/40 text-destructive "
               >
                 <Eraser />
               </Button>
               <Button
                 onClick={handleApplyFilters}
-                className="h-10 w-full sm:w-auto rounded-full text-green-700 bg-green-200 hover:bg-green-200"
+                className="h-7 w-full sm:w-auto rounded-md text-accent-foreground bg-accent/60 hover:bg-accent/80"
               >
                 <Check ></Check>Aplicar
               </Button>

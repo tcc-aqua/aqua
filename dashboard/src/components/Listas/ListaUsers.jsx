@@ -162,7 +162,7 @@ export default function UsersDashboard() {
                 </CardHeader>
                 <CardContent className="flex flex-row items-center justify-between -mt-6">
                   <p className="font-bold text-4xl text-foreground ">{card.value ?? 0}</p>
-                  <Icon className={`w-10 h-10   ${card.iconColor}`}
+                  <Icon className={`w-8 h-8 ${card.iconColor}`}
                   />
                 </CardContent>
 
@@ -220,9 +220,9 @@ export default function UsersDashboard() {
                       <td className=" text-sm">
                         <span
                           className={`px-2 py-1 rounded-full text-white font-semibold ${user.user_type === "casa"
-                            ? "bg-blue-700"
+                            ? "bg-accent/60"
                             : user.user_type === "condominio"
-                              ? "bg-purple-700"
+                              ? "bg-purple-600"
                               : "bg-gray-500"
                             }`}
                         >
@@ -232,7 +232,7 @@ export default function UsersDashboard() {
                       <td className="px-4 py-2 text-sm">
                         <span
                           className={`px-2 py-1 rounded-full text-white font-semibold  ${user.user_role === "morador"
-                            ? "bg-green-600"
+                            ? "bg-popover-foreground/70"
                             : user.user_role === "sindico"
                               ? "bg-yellow-500"
                               : "bg-gray-500"
@@ -253,7 +253,7 @@ export default function UsersDashboard() {
                         </Button>
                         <Button size="sm" variant='ghost' onClick={() => editItem(user)}>
                           <div className="flex items-center gap-1">
-                            <Pencil className="text-blue-500" size={14} />
+                            <Pencil className="text-accent" size={14} />
                           </div>
                         </Button>
                       </td>

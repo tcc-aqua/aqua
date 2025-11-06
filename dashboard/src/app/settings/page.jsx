@@ -21,9 +21,12 @@ export default function Settings() {
               <h1 className="font-bold text-5xl mt-10">Configurações do Sistema</h1>
               <h2 className="font-semibold text-foreground/60 mt-3 mb-10 ml-3">Painel de controle de logs.</h2>
             </AnimationWrapper>
-            <div className="">
+              <AnimationWrapper delay={0.2}>
+                 <div className="">
               <SettingsDashboard></SettingsDashboard>
             </div>
+              </AnimationWrapper>
+           
           </main>
 
         </div>

@@ -88,7 +88,7 @@ export default function AlertasDashboard() {
       const res = await fetch(`${API_ALERTAS}/${selectedAlerta.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resolvido: true }), // enviar se a API esperar
+        body: JSON.stringify({ resolvido: true }), 
       });
 
       if (!res.ok) {

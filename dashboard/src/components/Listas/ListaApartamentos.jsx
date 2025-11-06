@@ -13,6 +13,7 @@ import {
   Check,
   Pencil,
   Droplet,
+  Grid,
 } from "lucide-react";
 import {
   Dialog,
@@ -139,7 +140,7 @@ export default function ApartamentosDashboard() {
       title: "Total de Apartamentos",
       value: apStats.total,
       valueAtivas: apStats.ativas,
-      icon: Building2,
+      icon: Grid,
       iconColor: "text-orange-300",
     },
     {
@@ -347,7 +348,7 @@ export default function ApartamentosDashboard() {
                           className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${
                             ap.apartamento_status === "ativo"
                               ? "bg-green-600"
-                              : "bg-red-600"
+                              : "bg-rdestructive"
                           }`}
                           title={ap.apartamento_status}
                         />
