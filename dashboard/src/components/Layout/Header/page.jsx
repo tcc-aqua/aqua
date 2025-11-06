@@ -1,7 +1,8 @@
 'use client';
 
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Search, Bell } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Bell } from 'lucide-react';
 import { ModeToggle } from '../DarkMode/page';
 
 const headerInfos = [
@@ -9,22 +10,44 @@ const headerInfos = [
     nome: "Thiago",
     sobrenome: "Henrique",
     image: "./perfilImage/default-avatar.png",
-    cargo: "Adm é Top",
   },
 ];
 
 export default function Header() {
   const isMobile = useIsMobile();
+  const pathname = usePathname();
+
+
+  const getTituloByPath = () => {
+    if (pathname.startsWith('/dashboard')) return 'Painel Administrativo';
+    if (pathname.startsWith('/users')) return 'Gerenciamento de Usuários';
+    if (pathname.startsWith('/condominios')) return 'Gerenciamento de Vagas';
+    if (pathname.startsWith('/suporte')) return 'Central de Suporte';
+    if (pathname.startsWith('/settings')) return 'Configurações do Sistema';
+     if (pathname.startsWith('/apartamentos')) return 'Configurações do Sistema';
+      if (pathname.startsWith('/alerts')) return 'Configurações do Sistema';
+    return 'Bem-vindo(a)';
+  };
+
+  const titulo = getTituloByPath();
 
   return (
     <header className="fixed top-0 left-0 w-full h-20 z-50 bg-card dark:bg-sidebar border-b border-border dark:border-sidebar-border">
       <div
         className={`${isMobile ? 'py-3 px-2' : 'p-3'
-          } flex items-center justify-end relative space-x-3`}>
+          } flex items-center justify-between relative`}
+      >
 
+       
+        {!isMobile && (
+          <h1 className="text-lg font-semibold text-foreground ml-6">
+            {titulo}
+          </h1>
+        )}
 
-        <div className="flex items-center space-x-6 ml-auto px-3 py-3">
-          <ModeToggle></ModeToggle>
+      
+        <div className="flex items-center space-x-6 px-3 py-3">
+          <ModeToggle />
           <Bell className="h-4 w-4 text-muted-foreground cursor-pointer" />
 
           {headerInfos.map((header, index) => (
@@ -54,9 +77,6 @@ export default function Header() {
                 <div className="min-w-0 pr-2">
                   <p className="text-sm font-medium text-foreground truncate">
                     {header.nome} {header.sobrenome}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {header.cargo}
                   </p>
                 </div>
               )}

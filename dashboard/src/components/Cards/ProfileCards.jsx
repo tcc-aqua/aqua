@@ -1,6 +1,5 @@
-"use client"
 
-import { motion } from "framer-motion";
+
 import {
   Card,
   CardHeader,
@@ -13,17 +12,8 @@ import Inputpassword from "@/components/Inputs/editProfile/InputSecurity";
 import InputNotifications from "@/components/Inputs/editProfile/inputConfigNotifications";
 import { User, Bell, ShieldCheck, Brush } from "lucide-react";
 import InputAppearance from "@/components/Inputs/editProfile/inputsAppearance";
+import AnimationWrapper from "../Layout/Animation/Animation";
 
-
-const cardVariants = {
-  hidden: { y: -120, opacity: 0, zIndex: -1 },
-  visible: (delay = 0) => ({
-    y: 0,
-    opacity: 1,
-    zIndex: 10,
-    transition: { duration: 0.8, ease: "easeOut", delay },
-  }),
-}
 
 export default function ProfileCards() {
   return (
@@ -32,12 +22,9 @@ export default function ProfileCards() {
 
       <main className="container mx-auto ">
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-          <motion.div
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
-            custom={0}
-          >
+          <AnimationWrapper delay={0.1}>
+
+
             <Card className="bg-card rounded-md shadow-md h-auto">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -50,14 +37,11 @@ export default function ProfileCards() {
 
               </CardContent>
             </Card>
-          </motion.div>
+          </AnimationWrapper>
 
-          <motion.div
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
-            custom={0}
-          >
+          <AnimationWrapper delay={0.1} >
+
+
             <Card className="bg-card rounded-md shadow-md h-auto">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -69,16 +53,12 @@ export default function ProfileCards() {
                 <InputNotifications />
               </CardContent>
             </Card>
-          </motion.div>
+          </AnimationWrapper>
+
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-          <motion.div
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
-            custom={0.6}
-          >
+          <AnimationWrapper delay={0.2}>
             <Card className="bg-card rounded-md shadow-md h-auto  ">
               {/* w-[33rem] md:w-[90rem] */}
               <CardHeader>
@@ -91,15 +71,9 @@ export default function ProfileCards() {
                 <InputAppearance></InputAppearance>
               </CardContent>
             </Card>
-          </motion.div>
+          </AnimationWrapper>
 
-
-          <motion.div
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
-            custom={0.6}
-          >
+          <AnimationWrapper delay={0.2} >
             <Card className="bg-card rounded-md shadow-md h-auto md:h-131  md:-mt-27 ">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -111,7 +85,7 @@ export default function ProfileCards() {
                 <Inputpassword />
               </CardContent>
             </Card>
-          </motion.div>
+          </AnimationWrapper>
 
         </section>
       </main>
