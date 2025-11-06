@@ -132,7 +132,7 @@ export default function CondominiosDashboard() {
   };
 
   if (loading) return <Loading />;
-  if (error) return <p className="text-red-500">Erro: {error}</p>;
+  if (error) return <p className="text-destructive">Erro: {error}</p>;
 
   const cards = [
     {
@@ -141,8 +141,8 @@ export default function CondominiosDashboard() {
       valueAtivos: { casas: condominioStats.ativos },
       icon: Building,
       bg: "bg-card",
-      iconColor: "text-blue-700",
-      textColor: "text-blue-800"
+      iconColor: "text-accent",
+
     },
     {
       title: "Apartamentos Totais",
@@ -169,7 +169,6 @@ export default function CondominiosDashboard() {
       icon: UserStar,
       bg: "bg-card",
       iconColor: "text-purple-700",
-      textColor: "text-green-800",
       subTitle: condominios.length > 0
         ? `Média de ${(condominios.reduce((acc, c) => acc + (c.sindico_nome ? 1 : 0), 0) / condominios.length).toFixed(0)} por condomínio`
         : "0"
@@ -201,7 +200,7 @@ export default function CondominiosDashboard() {
 
                     {/* Ativos */}
                     {card.valueAtivos && (
-                      <p className="text-sm mt-1 text-blue-600">
+                      <p className="text-sm mt-1 text-accent">
                         {card.valueAtivos.casas} ativos
                       </p>
                     )}
@@ -270,7 +269,7 @@ export default function CondominiosDashboard() {
                         <div className="text-[10px] text-foreground/60">Total de Sensores</div>
                       </td>
                       <td className="text-sm font-bold flex items-center ml-7 py-9">
-                        <span className={`inline-block w-3 h-3 rounded-full px-3 ${condominio.condominio_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={condominio.condominio_status} />
+                        <span className={`inline-block w-3 h-3 rounded-full px-3 ${condominio.condominio_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={condominio.condominio_status} />
                       </td>
                       <td className="px-4 py-2 text-sm">{condominio.sindico_nome}</td>
         
@@ -294,7 +293,7 @@ export default function CondominiosDashboard() {
                             onClick={() => setSelectedCondominio(condominio)}
 
                           >
-                            <Pencil size={14} className="text-blue-500" />
+                            <Pencil size={14} className="text-accent" />
                           </Button>
                         </div>
                       </td>

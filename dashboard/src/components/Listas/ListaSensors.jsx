@@ -97,7 +97,7 @@ export default function SensorsDashboard() {
 
 
   if (loading) return <Loading />;
-  if (error) return <p className="text-red-500">Erro: {error}</p>;
+  if (error) return <p className="text-destructive">Erro: {error}</p>;
 
   const cards = [
     {
@@ -168,7 +168,7 @@ export default function SensorsDashboard() {
                       <p className="text-sm mt-1 text-green-600">{card.porcentagem}</p>
                     )}
                     {card.subTitle && (
-                      <p className="text-sm mt-1 text-red-600">{card.subTitle}</p>
+                      <p className="text-sm mt-1 text-destructive">{card.subTitle}</p>
                     )}
 
                     {card.subTitle2 && (
@@ -216,7 +216,7 @@ export default function SensorsDashboard() {
                         <div className="text-[10px] text-foreground/60">Localização do Sensor</div>
                       </td>
                       <td className="px-4 py-2 text-sm">
-                        <span className={`inline-block w-3 h-3 rounded-full  px-3 ${sensor.sensor_status === "ativo" ? "bg-green-600" : sensor.sensor_status === "inativo" ? "bg-red-600" : "bg-yellow-600"}`} title={sensor.sensor_status} />
+                        <span className={`inline-block w-3 h-3 rounded-full  px-3 ${sensor.sensor_status === "ativo" ? "bg-green-600" : sensor.sensor_status === "inativo" ? "bg-destructive" : "bg-yellow-600"}`} title={sensor.sensor_status} />
                       </td>
                       <td className="px-4 py-2 text-sm font-bold">
                         {sensor.consumo_total}/L
@@ -231,7 +231,7 @@ export default function SensorsDashboard() {
                       <td className="px-4 py-2 text-sm text-center">
                         <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(sensor)}>
                           <div className="flex items-center gap-1">
-                            {sensor.sensor_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-red-500" size={14} />}
+                            {sensor.sensor_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
                           </div>
                         </Button>
                       </td>

@@ -111,7 +111,7 @@ export default function UsersDashboard() {
   }, []);
 
   if (loading) return <Loading />;
-  if (error) return <p className="text-red-500">Erro: {error}</p>;
+  if (error) return <p className="text-destructive">Erro: {error}</p>;
 
 
   const cards = [
@@ -119,7 +119,7 @@ export default function UsersDashboard() {
       title: "Todos os Usuários",
       value: userStats.total,
       icon: Users,
-      iconColor: "text-blue-700",
+      iconColor: "text-accent",
     },
     {
       title: "Usuários Ativos",
@@ -138,7 +138,7 @@ export default function UsersDashboard() {
       title: "Alertas",
       value: userStats.moradores,
       icon: AlertTriangle,
-      iconColor: "text-red-700",
+      iconColor: "text-destructive",
     },
   ];
 
@@ -242,13 +242,13 @@ export default function UsersDashboard() {
                         </span>
                       </td>
                       <td className=" text-sm font-bold flex items-center px-7 py-4">
-                        <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${user.user_status === "ativo" ? "bg-green-600" : "bg-red-600"}`} title={user.user_status} />
+                        <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${user.user_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={user.user_status} />
                       </td>
 
                       <td className="px-4 py-2 text-sm text-center">
                         <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
                           <div className="flex items-center gap-1">
-                            {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-red-500" size={14} />}
+                            {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
                           </div>
                         </Button>
                         <Button size="sm" variant='ghost' onClick={() => editItem(user)}>

@@ -132,7 +132,7 @@ export default function ApartamentosDashboard() {
   }, []);
 
   if (loading) return <Loading />;
-  if (error) return <p className="text-red-500">Erro: {error}</p>;
+  if (error) return <p className="text-destructive">Erro: {error}</p>;
 
   const cards = [
     {
@@ -163,7 +163,7 @@ export default function ApartamentosDashboard() {
     {
       title: "Sensores Ativos",
       value: sensorStats.ativos,
-      icon: SignalHigh,
+      icon: Check,
       iconColor: "text-green-700",
       porcentagem:
         sensorStats.total > 0
@@ -180,7 +180,7 @@ export default function ApartamentosDashboard() {
         return litros.toFixed(1);
       })(),
       icon: Droplet,
-      iconColor: "text-blue-500",
+      iconColor: "text-accent",
       subTitle2: "Litros acumulados",
     },
   ];
@@ -225,7 +225,7 @@ export default function ApartamentosDashboard() {
                       </p>
                     )}
                     {card.subTitle2 && (
-                      <p className="text-sm mt-1 text-blue-500">
+                      <p className="text-sm mt-1 text-accent">
                         {card.subTitle2}
                       </p>
                     )}
@@ -238,7 +238,6 @@ export default function ApartamentosDashboard() {
         })}
       </section>
 
-      {/* === TABELA === */}
       <AnimationWrapper delay={0.3}>
         <Card className="mx-auto mt-10">
           <CardHeader>
@@ -310,7 +309,7 @@ export default function ApartamentosDashboard() {
                             className={
                               ap.sensor_status === "ativo"
                                 ? "text-green-600"
-                                : "text-red-600"
+                                : "text-destructive"
                             }
                           >
                             {ap.sensor_status === "ativo"
@@ -363,7 +362,7 @@ export default function ApartamentosDashboard() {
                             {ap.apartamento_status === "ativo" ? (
                               <Check className="text-green-500" size={14} />
                             ) : (
-                              <X className="text-red-500" size={14} />
+                              <X className="text-destructive" size={14} />
                             )}
                           </div>
                         </Button>
@@ -375,7 +374,7 @@ export default function ApartamentosDashboard() {
                             console.log("Editar apartamento:", ap)
                           }
                         >
-                          <Pencil size={14} className="text-blue-500" />
+                          <Pencil size={14} className="text-accent" />
                         </Button>
                       </td>
                     </tr>

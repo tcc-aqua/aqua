@@ -25,14 +25,14 @@ import { useTheme } from "next-themes";
 
 const navigationItems = [
   { id: "dashboard", name: "Dashboard", icon: Home, href: "/dashboard" },
-  { id: "sensors", name: "Sensores", icon: Droplets, href: "/sensors" },
-  { id: "alerts", name: "Alertas", icon: Siren, href: "/alerts" },
-  { id: "casas", name: "Casas", icon: HousePlus, href: "/casas" },
+  { id: "users", name: "Usuários", icon: Users, href: "/users" },
   { id: "condominios", name: "Condomínios", icon: Building, href: "/condominios" },
   { id: "apartamentos", name: "Apartamentos", icon: Rows, href: "/apartamentos" },
-  { id: "users", name: "Usuários", icon: Users, href: "/users" },
-  { id: "tecnicos", name: "Técnicos", icon: IdCardLanyard, href: "/funcionarios" },
-    { id: "contact", name: "Contato", icon: MessageCircle, href: "/contact" },
+  { id: "casas", name: "Casas", icon: HousePlus, href: "/casas" },
+  { id: "sensors", name: "Sensores", icon: Droplets, href: "/sensors" },
+  { id: "alerts", name: "Alertas", icon: Siren, href: "/alerts" },
+  // { id: "tecnicos", name: "Técnicos", icon: IdCardLanyard, href: "/funcionarios" },
+  //   { id: "contact", name: "Contato", icon: MessageCircle, href: "/contact" },
   { id: "profile", name: "Perfil", icon: User, href: "/profile" },
 
 ];
@@ -55,7 +55,7 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  
+
   useEffect(() => {
     navigationItems.forEach(item => router.prefetch(item.href));
   }, [router]);
