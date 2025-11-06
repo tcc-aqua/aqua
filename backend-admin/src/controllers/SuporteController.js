@@ -8,5 +8,10 @@ export default class SuporteController{
         return reply.status(200).send(mensagens)
     }
 
+    static async enviarMensagem(req, reply){
+        const mensagem = await SuporteService.responderMensagem(req.body);
+        return reply.status(200).send(mensagem);
+    }
+
 
 }

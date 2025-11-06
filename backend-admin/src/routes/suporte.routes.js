@@ -10,4 +10,13 @@ export default async function suporteRoutes(fastify) {
                 description: 'Listando todas as mensagens'
             }
         }, SuporteController.getAll);
+
+    fastify.post('/',
+        {
+            schema: {
+                summary: 'Respondendo mensagem de cliente',
+                tags: ['suporte'],
+                description: 'Enviando mensagem para o cliente'
+            }
+        }, SuporteController.enviarMensagem);
 }
