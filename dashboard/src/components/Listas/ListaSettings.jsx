@@ -116,7 +116,7 @@ export default function SettingsDashboard() {
       <Toaster position="top-right" richColors />
 
       <aside className="w-64 bg-sidebar border-r border-border flex flex-col h-full rounded-md">
-        <div className="flex items-center gap-2 p-6 text-lg font-semibold border-b border-border">
+        <div className="flex items-center gap-2 p-6 text-lg font-semibold border-b border-border text-accent">
           <Settings className="text-accent" size={20} />
           Configurações
         </div>
@@ -222,7 +222,7 @@ export default function SettingsDashboard() {
                           <td className="px-4 py-2">
                             <span
                               className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${
-                                status === "ativo" ? "bg-green-600" : "bg-red-600"
+                                status === "ativo" ? "bg-green-600" : "bg-destructive"
                               }`}
                             />
                           </td>

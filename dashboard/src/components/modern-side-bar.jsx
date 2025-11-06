@@ -19,7 +19,8 @@ import {
   MessageCircle,
   Rows,
   HousePlus,
-  Siren
+  Siren,
+  Headset
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -32,7 +33,7 @@ const navigationItems = [
   { id: "sensors", name: "Sensores", icon: Droplets, href: "/sensors" },
   { id: "alerts", name: "Alertas", icon: Siren, href: "/alerts" },
   // { id: "tecnicos", name: "Técnicos", icon: IdCardLanyard, href: "/funcionarios" },
-  //   { id: "contact", name: "Contato", icon: MessageCircle, href: "/contact" },
+    { id: "suporte", name: "Suporte", icon: Headset, href: "/suporte" },
   { id: "profile", name: "Perfil", icon: User, href: "/profile" },
 
 ];
