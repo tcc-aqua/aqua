@@ -85,27 +85,33 @@ export default function CondominioFilter({ onApply }) {
     if (onApply) onApply({});
   };
 
-  const handleCreateCondominio = async (e) => {
-    e.preventDefault();
-    if (!formData.nome || !formData.cep) {
-      toast.error("Preencha o nome e o CEP!");
-      return;
-    }
+const handleCreateCondominio = async (e) => {
+  e.preventDefault();
+  if (!formData.nome || !formData.cep) {
+    toast.error("Preencha o nome e o CEP!");
+    return;
+  }
 
-    const payload = {
-      name: formData.nome,
-      cep: formData.cep,
-      logradouro: formData.logradouro,
-      bairro: formData.bairro,
-      cidade: formData.cidade,
-      estado: formData.estado,
-      numero: formData.numero,
-      complemento: formData.complemento,
-      status: formData.status,
-    };
+  const payload = {
+    name: formData.nome,
+    cep: formData.cep,
+    logradouro: formData.logradouro,
+    bairro: formData.bairro,
+    cidade: formData.cidade,
+    estado: formData.estado,
+    numero: formData.numero,
+    complemento: formData.complemento,
+    status: formData.status,
+  };
 
+  try {
+    // adiciona no backend
     await addCondominio(payload);
+
+    // fecha modal
     setIsOpen(false);
+
+    // limpa formulário
     setFormData({
       nome: "",
       cep: "",
@@ -117,7 +123,16 @@ export default function CondominioFilter({ onApply }) {
       complemento: "",
       status: "ativo",
     });
-  };
+
+    // recarrega a tabela chamando a função onApply sem filtros
+    if (onApply) onApply({});
+    
+    toast.success("Condomínio criado com sucesso!");
+  } catch (err) {
+    console.error(err);
+    toast.error("Erro ao criar condomínio!");
+  }
+};
 
 
   const cardVariants = {
