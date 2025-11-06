@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { ScrollView, StyleSheet, View, Platform, Dimensions } from 'react-native';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { ScrollView, StyleSheet, View, Platform, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { 
   Provider as PaperProvider, 
   DefaultTheme, 
@@ -14,242 +14,288 @@ import {
 } from 'react-native-paper';
 import { LineChart } from 'react-native-gifted-charts';
 import 'react-native-svg';
-import { MotiView, MotiText, useAnimationState, AnimatePresence } from 'moti';
+import { MotiView, MotiText } from 'moti';
 import { MotiPressable } from 'moti/interactions';
 import * as Haptics from 'expo-haptics';
 
-// --- CONFIGURAÇÕES ---
+const API_URL = 'http://192.168.56.1:3334/api';
+
 const { width: screenWidth } = Dimensions.get('window');
 const chartWidth = screenWidth - 80;
 
-// --- TEMA VISUAL APRIMORADO ---
 const theme = {
   ...DefaultTheme,
   roundness: 12,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: '#0A84FF',
-    accent: '#005ecb',
-    background: '#F2F2F7',
-    surface: '#FFFFFF',
-    text: '#1C1C1E',
-    placeholder: '#8A8A8E',
-    success: '#34C759',
-    danger: '#FF3B30',
-    warning: '#FF9500',
-    cardBlue: '#E3F2FD',
-    cardGreen: '#E8F5E9',
+  colors: { 
+    ...DefaultTheme.colors, 
+    primary: '#0A84FF', 
+    accent: '#005ecb', 
+    background: '#F2F2F7', 
+    surface: '#FFFFFF', 
+    text: '#1C1C1E', 
+    placeholder: '#8A8A8E', 
+    success: '#34C759', 
+    danger: '#FF3B30', 
+    warning: '#FF9500', 
+    cardBlue: '#E3F2FD', 
+    cardGreen: '#E8F5E9' 
   },
 };
 
-// --- DADOS MOCKADOS ---
-const dailyGoal = 120;
-const consumptionData = { current: 15.7, comparison: -12.5, todayConsumption: 89.4, todaySavings: 11.2 };
-const chartData = {
+const mockChartData = {
     hoje: [ { value: 10, label: '0h' }, { value: 12, label: '3h' }, { value: 20, label: '6h' }, { value: 18, label: '9h' }, { value: 25, label: '12h' }, { value: 15.7, label: 'Agora', dataPointText: '15.7' } ],
     semana: [ { value: 110, label: 'Seg' }, { value: 105, label: 'Ter' }, { value: 120, label: 'Qua' }, { value: 115, label: 'Qui' }, { value: 95, label: 'Sex' }, { value: 90, label: 'Sáb' }, { value: 89, label: 'Dom', dataPointText: '89' } ],
     mes: [ { value: 800, label: 'S1' }, { value: 750, label: 'S2' }, { value: 820, label: 'S3' }, { value: 790, label: 'S4', dataPointText: '790' } ]
 };
-const recentHistory = [
+const mockRecentHistory = [
     { id: '1', icon: 'shower-head', description: 'Banho (Ducha Principal)', time: '14:32', value: '-25 L', type: 'expense' },
     { id: '2', icon: 'alert-decagram', description: 'Pequeno vazamento detectado', time: '12:15', value: 'Verificar', type: 'alert' },
     { id: '3', icon: 'leaf-circle', description: 'Meta de economia diária', time: '08:00', value: '+5 L', type: 'saving' },
-    { id: '4', icon: 'washing-machine', description: 'Máquina de Lavar (Ciclo Rápido)', time: '07:45', value: '-40 L', type: 'expense' },
 ];
 
-// --- COMPONENTE DE TEXTO ANIMADO (CORRIGIDO) ---
-const AnimatedCounter = ({ targetValue }) => {
-  const [displayedValue, setDisplayedValue] = useState(0);
+export default function Inicio() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+  const [residenciaId, setResidenciaId] = useState(null);
 
-  const animationState = useAnimationState({
-    from: { value: 0 },
-    to: { value: targetValue },
-  });
+  const [consumptionData, setConsumptionData] = useState({ todayConsumption: 0, todaySavings: 0, comparison: 0 });
+  const [dailyGoal, setDailyGoal] = useState(0);
+  const [chartData, setChartData] = useState(mockChartData);
+  const [recentHistory, setRecentHistory] = useState(mockRecentHistory);
+  const [dicaDoPingo, setDicaDoPingo] = useState("Carregando dica...");
+
+  const [filter, setFilter] = useState('hoje');
 
   useEffect(() => {
-    // Inicia a animação quando o targetValue muda
-    animationState.transitionTo('to');
-  }, [targetValue, animationState]);
+    const loadUserData = async () => {
+      const id = '1';
+      setResidenciaId(id);
+    };
+    loadUserData();
+  }, []);
 
-  return (
-    <MotiText
-      state={animationState}
-      transition={{ type: 'timing', duration: 1000 }}
-      style={styles.innerCardValue}
-    >
-      {/* O MotiText não pode animar o conteúdo de texto diretamente,
-          então criamos um "reanimator" para atualizar o estado do React. */}
-      {(props) => {
-        useEffect(() => {
-          setDisplayedValue(props.value);
-        }, [props.value]);
-        return displayedValue.toFixed(1) + ' L';
-      }}
-    </MotiText>
-  );
-};
+  const fetchDashboardData = useCallback(async () => {
+    if (!residenciaId) return;
 
+    setIsLoading(true);
+    try {
+      const consumoUrl = `${API_URL}/apartamentos/${residenciaId}/consumo-total`;
 
-// --- COMPONENTE PRINCIPAL ---
-export default function Inicio() {
-  const [filter, setFilter] = useState('hoje');
+      const responses = await Promise.all([
+        fetch(consumoUrl),
+        fetch(`${API_URL}/metas`),
+        fetch(`${API_URL}/dica`),
+        Promise.resolve({ json: () => mockChartData }),
+        Promise.resolve({ json: () => mockRecentHistory }),
+      ]);
+
+      const [consumoResult, metasResult, dicaResult, chartResult, historyResult] = await Promise.all(responses.map(res => res.json()));
+
+      if (consumoResult) {
+        setConsumptionData({
+          todayConsumption: consumoResult.consumoTotal || 0,
+          todaySavings: 11.2,
+          comparison: -12.5,
+        });
+      }
+
+      if (metasResult && metasResult.length > 0) {
+        setDailyGoal(metasResult[0].limite_consumo); 
+      }
+      
+      if (dicaResult && dicaResult.mensagem) {
+        setDicaDoPingo(dicaResult.mensagem);
+      }
+
+      setChartData(chartResult);
+      setRecentHistory(historyResult);
+
+    } catch (err) {
+      setError(err.message);
+      console.error("Erro ao buscar dados do dashboard:", err);
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
+    }
+  }, [residenciaId]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
   
-  const comparisonColor = consumptionData.comparison <= 0 ? theme.colors.success : theme.colors.danger;
-  const comparisonText = useMemo(() => (
-    consumptionData.comparison <= 0 
-      ? `${consumptionData.comparison}% em relação a ontem` 
-      : `+${consumptionData.comparison}% em relação a ontem`
-  ), [consumptionData.comparison]);
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const comparisonColor = useMemo(() => (consumptionData?.comparison <= 0 ? theme.colors.success : theme.colors.danger), [consumptionData?.comparison]);
+  const comparisonText = useMemo(() => { if (consumptionData?.comparison == null) return ''; return consumptionData.comparison <= 0 ? `${consumptionData.comparison}% em relação a ontem` : `+${consumptionData.comparison}% em relação a ontem`; }, [consumptionData?.comparison]);
+  const consumptionProgress = useMemo(() => (dailyGoal > 0 ? Math.min(consumptionData.todayConsumption / dailyGoal, 1) : 0), [consumptionData?.todayConsumption, dailyGoal]);
 
   const handleFilterChange = (newFilter) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setFilter(newFilter);
   };
-
-  const consumptionProgress = Math.min(consumptionData.todayConsumption / dailyGoal, 1);
+  
+  if (!residenciaId) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+  
+  if (error) {
+     return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Text>Ocorreu um erro ao carregar os dados.</Text>
+        <Text>Verifique sua conexão e tente novamente.</Text>
+      </View>
+    );
+  }
 
   return (
     <PaperProvider theme={theme}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
-        
-        {/* Card Principal do Dia */}
-        <MotiView from={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'timing', duration: 500 }}>
-          <Card style={styles.card} elevation={4}>
-            <Card.Content>
-              <View style={styles.dailyCardHeader}>
-                <Title style={styles.dailyCardTitle}>Resumo de Hoje</Title>
-                <MotiText from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 300 }} style={[styles.comparisonText, { color: comparisonColor }]}>
-                  {comparisonText}
-                </MotiText>
-              </View>
+      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        {isLoading && !refreshing ? <ActivityIndicator style={{ margin: 20 }} size="large" color={theme.colors.primary} /> : (
+          <>
+            <MotiView from={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'timing', duration: 500 }}>
+              <Card style={styles.card} elevation={4}>
+                  <Card.Content>
+                    <View style={styles.dailyCardHeader}>
+                      <Title style={styles.dailyCardTitle}>Resumo de Hoje</Title>
+                      <MotiText from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 300 }} style={[styles.comparisonText, { color: comparisonColor }]}>
+                        {comparisonText}
+                      </MotiText>
+                    </View>
 
-              <View style={styles.innerCardsContainer}>
-                <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardBlue }]}>
-                  <List.Icon icon="water-outline" color={theme.colors.primary} style={styles.innerCardIcon} />
-                  <View>
-                    <AnimatedCounter targetValue={consumptionData.todayConsumption} />
-                    <Text style={styles.innerCardLabel}>Consumido</Text>
-                  </View>
-                </Surface>
-                <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardGreen }]}>
-                  <List.Icon icon="leaf-circle-outline" color={theme.colors.success} style={styles.innerCardIcon}/>
-                  <View>
-                    <AnimatedCounter targetValue={consumptionData.todaySavings} />
-                    <Text style={styles.innerCardLabel}>Economizado</Text>
-                  </View>
-                </Surface>
-              </View>
-              
-              <View style={styles.goalContainer}>
-                <Text style={styles.goalText}>Meta Diária: {consumptionData.todayConsumption.toFixed(0)}L / {dailyGoal}L</Text>
-                <ProgressBar progress={consumptionProgress} color={theme.colors.primary} style={styles.progressBar} />
-              </View>
-
-              <View style={styles.insightContainer}>
-                  <List.Icon icon="lightbulb-on-outline" color={theme.colors.warning} style={styles.innerCardIcon} />
-                  <Paragraph style={styles.insightText}>
-                      <Text style={{fontWeight: 'bold'}}>Dica do Pingo:</Text> Seu maior consumo hoje foi no banho. Tente reduzir em 2 minutos para economizar!
-                  </Paragraph>
-              </View>
-
-            </Card.Content>
-          </Card>
-        </MotiView>
-        
-        {/* Card do Gráfico */}
-        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 150 }}>
-          <Card style={styles.card} elevation={2}>
-            <Card.Content>
-              <SegmentedButtons value={filter} onValueChange={handleFilterChange} style={styles.filterButtons} buttons={[ { value: 'hoje', label: 'Hoje' }, { value: 'semana', label: '7d' }, { value: 'mes', label: '30d' }, ]} />
-              <AnimatePresence>
-                <MotiView key={filter} from={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 220 }} exit={{ opacity: 0, height: 0 }} transition={{ type: 'timing', duration: 300 }}>
-                  <LineChart 
-                    data={chartData[filter]}
-                    width={chartWidth}
-                    height={180}
-                    color1={theme.colors.primary} 
-                    dataPointsColor1={theme.colors.primary} 
-                    thickness1={3} 
-                    curved
-                    yAxisTextStyle={{ color: theme.colors.placeholder, fontSize: 10 }} 
-                    xAxisLabelTextStyle={{ color: theme.colors.placeholder, fontSize: 10, paddingTop: 5 }} 
-                    startFillColor1={theme.colors.primary} 
-                    endFillColor1={theme.colors.background}
-                    areaChart
-                    initialSpacing={15}
-                    endSpacing={15}
-                    noOfSections={4}
-                    yAxisThickness={0}
-                    rulesType="dashed"
-                    rulesColor="#EAEAEA"
-                    pointerConfig={{
-                      pointerStripHeight: 160,
-                      pointerStripColor: theme.colors.primary,
-                      pointerStripWidth: 2,
-                      pointerColor: theme.colors.primary,
-                      radius: 6,
-                      pointerLabelWidth: 100,
-                      pointerLabelHeight: 90,
-                      activatePointersOnLongPress: true,
-                      autoAdjustPointerLabelPosition: true,
-                      pointerLabelComponent: items => (
-                        <View style={styles.pointerLabel}>
-                          <Text style={styles.pointerLabelValue}>{items[0].value} L</Text>
-                          <Text style={styles.pointerLabelDate}>{items[0].label}</Text>
+                    <View style={styles.innerCardsContainer}>
+                      <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardBlue }]}>
+                        <List.Icon icon="water-outline" color={theme.colors.primary} style={styles.innerCardIcon} />
+                        <View>
+                          <MotiText style={styles.innerCardValue}>{consumptionData?.todayConsumption.toFixed(1)} L</MotiText>
+                          <Text style={styles.innerCardLabel}>Consumido</Text>
                         </View>
-                      ),
-                    }}
-                  />
-                </MotiView>
-              </AnimatePresence>
-            </Card.Content>
-          </Card>
-        </MotiView>
-        
-        {/* Atalhos Rápidos */}
-        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 300 }} style={styles.actionsContainer}>
-            <MotiPressable animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })} style={styles.actionButton} onPress={() => console.log('Relatórios')}>
-                <List.Icon icon="file-chart-outline" color={theme.colors.primary} />
-                <Text style={styles.actionText}>Ver Relatórios</Text>
-            </MotiPressable>
-            <MotiPressable animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })} style={styles.actionButton} onPress={() => console.log('Metas')}>
-                <List.Icon icon="target-arrow" color={theme.colors.success} />
-                <Text style={styles.actionText}>Ajustar Metas</Text>
-            </MotiPressable>
-        </MotiView>
-        
-        {/* Histórico Recente */}
-        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 450 }}>
-          <Card style={styles.card} elevation={2}>
-            <Card.Content>
-              <Title>Histórico Recente</Title>
-              {recentHistory.map((item, index) => {
-                const itemColor = item.type === 'expense' ? theme.colors.danger : 
-                                  item.type === 'saving' ? theme.colors.success : 
-                                  theme.colors.warning;
-                return (
-                  <MotiView key={item.id} from={{ opacity: 0, translateX: -20 }} animate={{ opacity: 1, translateX: 0 }} transition={{ type: 'timing', delay: 100 + index * 100 }}>
-                    <List.Item 
-                      title={item.description} 
-                      description={item.time} 
-                      titleNumberOfLines={1} 
-                      left={props => <List.Icon {...props} icon={item.icon} color={itemColor} />} 
-                      right={() => <Text style={[styles.historyValue, { color: itemColor }]}>{item.value}</Text>} 
-                      style={[styles.listItem, index === 0 && styles.firstListItem]} 
+                      </Surface>
+                      <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardGreen }]}>
+                        <List.Icon icon="leaf-circle-outline" color={theme.colors.success} style={styles.innerCardIcon}/>
+                        <View>
+                          <MotiText style={styles.innerCardValue}>{consumptionData?.todaySavings.toFixed(1)} L</MotiText>
+                          <Text style={styles.innerCardLabel}>Economizado</Text>
+                        </View>
+                      </Surface>
+                    </View>
+                    
+                    <View style={styles.goalContainer}>
+                      <Text style={styles.goalText}>Meta Diária: {consumptionData?.todayConsumption.toFixed(0)}L / {dailyGoal}L</Text>
+                      <ProgressBar progress={consumptionProgress} color={theme.colors.primary} style={styles.progressBar} />
+                    </View>
+
+                    <View style={styles.insightContainer}>
+                        <List.Icon icon="lightbulb-on-outline" color={theme.colors.warning} style={styles.innerCardIcon} />
+                        <Paragraph style={styles.insightText}>
+                            <Text style={{fontWeight: 'bold'}}>Dica do Pingo:</Text> {dicaDoPingo}
+                        </Paragraph>
+                    </View>
+                  </Card.Content>
+              </Card>
+            </MotiView>
+            
+            <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 150 }}>
+              <Card style={styles.card} elevation={2}>
+                <Card.Content>
+                  <SegmentedButtons value={filter} onValueChange={handleFilterChange} style={styles.filterButtons} buttons={[ { value: 'hoje', label: 'Hoje' }, { value: 'semana', label: '7d' }, { value: 'mes', label: '30d' }, ]} />
+                  <MotiView key={filter} from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ type: 'timing', duration: 300 }}>
+                    <LineChart 
+                      data={chartData[filter]}
+                      width={chartWidth}
+                      height={180}
+                      color1={theme.colors.primary} 
+                      dataPointsColor1={theme.colors.primary} 
+                      thickness1={3} 
+                      curved
+                      yAxisTextStyle={{ color: theme.colors.placeholder, fontSize: 10 }} 
+                      xAxisLabelTextStyle={{ color: theme.colors.placeholder, fontSize: 10, paddingTop: 5 }} 
+                      startFillColor1={theme.colors.primary} 
+                      endFillColor1={theme.colors.background}
+                      areaChart
+                      initialSpacing={15}
+                      endSpacing={15}
+                      noOfSections={4}
+                      yAxisThickness={0}
+                      rulesType="dashed"
+                      rulesColor="#EAEAEA"
+                      pointerConfig={{
+                        pointerStripHeight: 160,
+                        pointerStripColor: theme.colors.primary,
+                        pointerStripWidth: 2,
+                        pointerColor: theme.colors.primary,
+                        radius: 6,
+                        pointerLabelWidth: 100,
+                        pointerLabelHeight: 90,
+                        activatePointersOnLongPress: true,
+                        autoAdjustPointerLabelPosition: true,
+                        pointerLabelComponent: items => (
+                          <View style={styles.pointerLabel}>
+                            <Text style={styles.pointerLabelValue}>{items[0].value} L</Text>
+                            <Text style={styles.pointerLabelDate}>{items[0].label}</Text>
+                          </View>
+                        ),
+                      }}
                     />
                   </MotiView>
-                )
-              })}
-            </Card.Content>
-          </Card>
-        </MotiView>
-
+                </Card.Content>
+              </Card>
+            </MotiView>
+            
+            <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 300 }} style={styles.actionsContainer}>
+                <MotiPressable animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })} style={styles.actionButton} onPress={() => console.log('Relatórios')}>
+                    <List.Icon icon="file-chart-outline" color={theme.colors.primary} />
+                    <Text style={styles.actionText}>Ver Relatórios</Text>
+                </MotiPressable>
+                <MotiPressable animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })} style={styles.actionButton} onPress={() => console.log('Metas')}>
+                    <List.Icon icon="target-arrow" color={theme.colors.success} />
+                    <Text style={styles.actionText}>Ajustar Metas</Text>
+                </MotiPressable>
+            </MotiView>
+            
+            <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 450 }}>
+              <Card style={styles.card} elevation={2}>
+                <Card.Content>
+                  <Title>Histórico Recente</Title>
+                  {recentHistory.map((item, index) => {
+                    const itemColor = item.type === 'expense' ? theme.colors.danger : 
+                                      item.type === 'saving' ? theme.colors.success : 
+                                      theme.colors.warning;
+                    return (
+                      <MotiView key={item.id} from={{ opacity: 0, translateX: -20 }} animate={{ opacity: 1, translateX: 0 }} transition={{ type: 'timing', delay: 100 + index * 100 }}>
+                        <List.Item 
+                          title={item.description} 
+                          description={item.time} 
+                          titleNumberOfLines={1} 
+                          left={props => <List.Icon {...props} icon={item.icon} color={itemColor} />} 
+                          right={() => <Text style={[styles.historyValue, { color: itemColor }]}>{item.value}</Text>} 
+                          style={[styles.listItem, index === 0 && styles.firstListItem]} 
+                        />
+                      </MotiView>
+                    )
+                  })}
+                </Card.Content>
+              </Card>
+            </MotiView>
+          </>
+        )}
       </ScrollView>
     </PaperProvider>
   );
 }
 
-// --- ESTILOS APRIMORADOS ---
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
