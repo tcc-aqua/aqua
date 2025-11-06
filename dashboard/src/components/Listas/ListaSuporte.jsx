@@ -5,6 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster, toast } from "sonner";
+import SuporteFilter from "../Filters/Suporte";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import AnimationWrapper from "../Layout/Animation/Animation";
 
@@ -62,6 +63,12 @@ export default function SuporteDashboard() {
   return (
     <div className="p-4">
       <Toaster position="top-right" richColors />
+      
+      <div className="mb-10">
+              <SuporteFilter onApply={(filters) => fetchData(filters)} />
+            </div>
+
+
 
       <div className="flex flex-col gap-4">
         {tickets.length === 0 ? (
