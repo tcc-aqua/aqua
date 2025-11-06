@@ -2,57 +2,77 @@ import { z } from "zod";
 
 export const registerUserSchema = z
   .object({
-    // Campos de usuário
+    // Dados básicos do usuário
     name: z.string().min(3, "O nome é obrigatório."),
     email: z.string().email("Formato de e-mail inválido."),
     cpf: z
       .string()
       .regex(/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/, "CPF inválido. Use o formato 000.000.000-00"),
     password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
+
+    // Tipo de residência
     residencia_type: z.enum(["casa", "apartamento"], {
       required_error: "O tipo de residência é obrigatório.",
     }),
-    
-    // Campos de residência (completos)
-    codigo_acesso: z.string().optional(), 
-    cep: z.string().optional(),           
-    numero: z.string().optional(),      
-    bloco: z.string().optional(),
-    logradouro: z.string().optional(),
-    bairro: z.string().optional(),
-    cidade: z.string().optional(),
-    uf: z.string().optional(),
-    estado: z.string().optional(),
-    numero_moradores: z.number().optional(),
+
+    // Campos de residência (simplificados)
+    codigo_acesso: z.string().optional(), // usado para dependentes ou para criar apê em condomínio
+    cep: z.string().optional(), // obrigatório apenas para casa nova
+    numero: z.string().optional(), // número da casa ou do apê
+    bloco: z.string().optional(), // opcional para apê
+    numero_moradores: z.coerce.number().optional(),
   })
-  // Validação para CADASTRO DE CASA NOVA
+  // 🔹 Regra 1: CASA NOVA (sem código de acesso)
   .refine(
     (data) => {
-      // Se for uma casa e NÃO tiver código de acesso, é uma casa nova.
-      // Portanto, CEP, número, logradouro e cidade são obrigatórios.
       if (data.residencia_type === "casa" && !data.codigo_acesso) {
-        return !!data.cep && !!data.numero && !!data.logradouro && !!data.cidade;
+        // casa nova precisa de cep e número
+        return !!data.cep && !!data.numero;
       }
-      return true; // Para outros casos, essa validação passa.
+      return true;
     },
     {
-      message: "Para cadastrar uma nova casa, todos os campos de endereço são necessários.",
-      path: ["cep"], // Mostra o erro associado ao campo CEP.
+      message: "Para cadastrar uma nova casa, informe o CEP e o número da residência.",
+      path: ["cep"],
     }
   )
-  // Validação para CADASTRO DE APARTAMENTO NOVO
+  // 🔹 Regra 2: DEPENDENTE DE CASA (com código de acesso)
   .refine(
     (data) => {
-      // Se for um apartamento e tiver código de acesso (do condomínio), é um apê novo.
-      // Portanto, o número do apê é obrigatório.
+      if (data.residencia_type === "casa" && data.codigo_acesso) {
+        return true; // só precisa do código
+      }
+      return true;
+    },
+    {
+      message: "Informe o código de acesso da casa do responsável.",
+      path: ["codigo_acesso"],
+    }
+  )
+  // 🔹 Regra 3: NOVO APARTAMENTO (código do condomínio + número do apê)
+  .refine(
+    (data) => {
       if (data.residencia_type === "apartamento" && data.codigo_acesso) {
         return !!data.numero;
       }
-      return true; // Para outros casos, essa validação passa.
+      return true;
     },
     {
-      message: "Para criar um novo apartamento, o número é obrigatório.",
-      path: ["numero"], // Mostra o erro associado ao campo Número.
+      message: "Para criar um novo apartamento, o número do apê é obrigatório.",
+      path: ["numero"],
+    }
+  )
+  // 🔹 Regra 4: DEPENDENTE DE APARTAMENTO (código do apê existente)
+  .refine(
+    (data) => {
+      if (data.residencia_type === "apartamento" && !data.codigo_acesso) {
+        return false; // não pode cadastrar sem o código do apê
+      }
+      return true;
+    },
+    {
+      message: "Para entrar como dependente em um apartamento, informe o código de acesso.",
+      path: ["codigo_acesso"],
     }
   );
 

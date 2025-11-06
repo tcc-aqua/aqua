@@ -5,27 +5,20 @@ export default class CepService {
     try {
       const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
 
-      // Se a resposta contém a propriedade "erro", significa que o CEP é inválido.
-      // Em vez de lançar um erro, retornamos null para indicar "não encontrado".
       if (response.data.erro) {
-        console.log(`CEP Service: CEP ${cep} não encontrado no ViaCEP.`);
-        return null;
+        throw new Error('CEP não encontrado');
       }
 
-      // Se encontrou, retorna o objeto de endereço formatado.
       return {
-        cep: response.data.cep,
         logradouro: response.data.logradouro,
         bairro: response.data.bairro,
-        localidade: response.data.localidade, // Mantive localidade para consistência com o que você já usa
+        cidade: response.data.localidade,
         uf: response.data.uf,
-        estado: '' // A API ViaCEP não retorna o nome do estado, apenas a sigla.
+        cep: response.data.cep
       };
     } catch (error) {
-      // Se ocorrer um erro de rede ou qualquer outra falha na consulta,
-      // logamos o erro e retornamos null.
-      console.error(`Erro ao consultar a API do ViaCEP para o CEP ${cep}:`, error.message);
-      return null;
+      console.error('Erro ao buscar CEP:', error.message);
+      throw new Error('Não foi possível consultar o CEP');
     }
   }
 }
