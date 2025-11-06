@@ -91,6 +91,14 @@ export default class CondominioService {
         try {
             const endereco = await CepService.buscarCep(cep);
 
+            const condominioExistente = await Condominio.findOne({
+                where: { cep: endereco.cep },
+            });
+
+            if (condominioExistente) {
+                throw new Error(`Já existe um condomínio cadastrado com o CEP ${endereco.cep}`);
+            }
+
             const condominio = await Condominio.create({
                 name,
                 numero,
@@ -102,7 +110,9 @@ export default class CondominioService {
                 sindico_id,
             });
 
-            return condominio;
+            if (condominio.cep)
+
+                return condominio;
         } catch (error) {
             console.error("Erro ao criar condomínio:", error);
             throw error;
@@ -117,6 +127,14 @@ export default class CondominioService {
             const condominio = await Condominio.findByPk(id);
             if (!condominio) {
                 throw new Error('Condominio não encontrado.')
+            }
+
+            const condominioExistente = await Condominio.findOne({
+                where: { cep: endereco.cep },
+            });
+
+            if (condominioExistente) {
+                throw new Error(`Já existe um condomínio cadastrado com o CEP ${endereco.cep}`);
             }
 
             await condominio.update({
