@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
-import { Users, UserCheck, UserCog, AlertTriangle, X, Check, Pencil } from "lucide-react";
+import { Users, UserCheck, UserCog, AlertTriangle, X, Check, Pencil, XCircle, CheckCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -191,7 +191,7 @@ export default function UsersDashboard() {
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Tipo</th>
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Função</th>
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium uppercase"> Ações</th>
+                    <th className="px-4 py-2 text-center text-xs font-medium uppercase"> Ações</th>
                   </tr>
                 </thead>
 
@@ -222,11 +222,11 @@ export default function UsersDashboard() {
                           className={`px-2 py-1 rounded-full text-white font-semibold ${user.user_type === "casa"
                             ? "bg-accent/60"
                             : user.user_type === "condominio"
-                              ? "bg-purple-600"
+                              ? "bg-purple-500"
                               : "bg-gray-500"
                             }`}
                         >
-                          {user.user_type === "casa" ? "casa" : user.user_type === "condominio" ? "condomínio" : "Desconhecido"}
+                          {user.user_type === "casa" ? "casa" : user.user_type === "condominio" ? "condomínio" : "desconhecido"}
                         </span>
                       </td>
                       <td className="px-4 py-2 text-sm">
@@ -241,11 +241,11 @@ export default function UsersDashboard() {
                           {user.user_role === "morador" ? "morador" : user.user_role === "sindico" ? "síndico" : "Desconhecido"}
                         </span>
                       </td>
-                      <td className=" text-sm font-bold flex items-center px-7 py-4">
-                        <span className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${user.user_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={user.user_status} />
+                      <td className=" text-sm font-bold flex items-center px-9 py-4">
+                        <span className={`inline-block w-3 h-3 rounded-full mt-3  ${user.user_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={user.user_status} />
                       </td>
 
-                      <td className="px-4 py-2 text-sm text-center">
+                      <td className="px-4 py-2 text-sm text-center -">
                         <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
                           <div className="flex items-center gap-1">
                             {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
@@ -265,18 +265,54 @@ export default function UsersDashboard() {
           </CardContent>
         </Card>
       </AnimationWrapper>
-
+      
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Confirmação</DialogTitle>
+        <DialogContent className="sm:max-w-[450px] rounded-2xl shadow-2xl p-6 ">
+
+          <DialogHeader className="flex flex-col items-center text-center space-y-4">
+            <div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded-full">
+              <AlertTriangle className="h-10 w-10 text-yellow-500 dark:text-yellow-400" />
+            </div>
+            <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+              Confirmação
+            </DialogTitle>
           </DialogHeader>
-          <p className="py-4">
-            Deseja realmente {selectedItem?.user_status === "ativo" ? "inativar" : "ativar"} o usuário <strong>{selectedItem?.user_name}</strong>?
+
+          <p className="py-6 text-gray-700 dark:text-gray-300 text-center text-lg">
+            Deseja realmente{" "}
+            <span
+              className={`font-semibold ${selectedItem?.user_status === "ativo"
+                  ? "text-red-600 "
+                  : "text-green-600 dark:text-green-400"
+                }`}
+            >
+              {selectedItem?.user_status === "ativo" ? "inativar" : "ativar"}
+            </span>{" "}
+            o usuário <strong>{selectedItem?.user_name}</strong>?
           </p>
-          <DialogFooter className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={toggleStatus}>{selectedItem?.user_status === "ativo" ? "Inativar" : "Ativar"}</Button>
+
+          <DialogFooter className="flex justify-center gap-4">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              onClick={() => setShowModal(false)}
+            >
+              <XCircle className="h-5 w-5" />
+              Cancelar
+            </Button>
+
+            <Button
+              className={`flex items-center gap-2 px-6 py-3 text-white transition
+          ${selectedItem?.user_status === "ativo"
+                  ? "bg-red-600 hover:bg-red-700 dark:hover:bg-red-600"
+                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                }
+        `}
+              onClick={toggleStatus}
+            >
+              <CheckCircle className="h-5 w-5" />
+              {selectedItem?.user_status === "ativo" ? "Inativar" : "Ativar"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

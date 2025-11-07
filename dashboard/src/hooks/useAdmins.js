@@ -18,9 +18,8 @@ export function useAdmins() {
       const data = Array.isArray(res) ? res : res?.data || [];
       setAdmins(data);
     } catch (err) {
-      const msg = err?.message || "Erro ao buscar administradores!";
-      toast.error(msg);
-      setError(msg);
+      toast.error(err?.message || "Erro ao buscar administradores!");
+      setError(err?.message || "Erro ao buscar administradores!");
     } finally {
       setLoading(false);
     }
@@ -58,11 +57,17 @@ export function useAdmins() {
     fetchAdmins();
   }, []);
 
-  // 🔹 Criar novo administrador
+  // 🔹 Criar novo administrador (sem o campo name)
   const addAdmin = async (novo) => {
     setLoading(true);
     try {
-      const res = await api.post("/admins", novo);
+      const payload = {
+        email: novo.email,
+        password: novo.password,
+        role: novo.role,
+      };
+
+      const res = await api.post("/admins", payload);
       const data = res?.data || res;
       if (!data || data.error) throw new Error(data?.error || "Erro ao criar administrador!");
 
@@ -75,7 +80,7 @@ export function useAdmins() {
     }
   };
 
-  // 🔹 Atualizar dados de administrador (email, etc.)
+  // 🔹 Atualizar dados de administrador (email, role, etc.)
   const editAdmin = async (id, dados) => {
     setLoading(true);
     try {

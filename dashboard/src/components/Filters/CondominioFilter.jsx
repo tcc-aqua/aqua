@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useCondominios } from "@/hooks/useCondominios";
-import { Plus, Eraser, Check } from 'lucide-react';
+import { Plus, Eraser, Check, Building, PlusCircle } from 'lucide-react';
 import { api } from "@/lib/api";
 
 export default function CondominioFilter({ onApply }) {
@@ -156,7 +156,7 @@ const handleCreateCondominio = async (e) => {
       >
         <Card className="container mx-auto p-4 rounded-md shadow-sm mb-6">
           <div className="flex flex-wrap gap-4 items-end">
-            {/* Pesquisa */}
+
             <div className="flex flex-col flex-1 min-w-[200px]">
               <label className="text-sm font-medium mb-1">
                 Pesquisar Condomínio
@@ -170,7 +170,7 @@ const handleCreateCondominio = async (e) => {
               />
             </div>
 
-            {/* Status */}
+  
             <div className="flex flex-col min-w-[120px]">
               <label className="text-sm font-medium mb-1">Status</label>
               <Select value={status} onValueChange={setStatus}>
@@ -213,120 +213,151 @@ const handleCreateCondominio = async (e) => {
         </Card>
       </motion.div>
 
-      {/* Modal de criação */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader>
-            <DialogTitle>Cadastrar Novo Condomínio</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCreateCondominio} className="space-y-3 mt-2">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2">
-                <label className="text-sm font-medium mb-1">Nome</label>
-                <Input
-                  value={formData.nome}
-                  onChange={(e) =>
-                    setFormData({ ...formData, nome: e.target.value })
-                  }
-                  placeholder="Nome do condomínio"
-                />
-              </div>
+     <Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogContent className="sm:max-w-[550px] p-6 rounded-2xl shadow-xl  text-card-foreground">
 
-              <div>
-                <label className="text-sm font-medium mb-1">CEP</label>
-                <Input
-                  value={formData.cep}
-                  onChange={(e) =>
-                    setFormData({ ...formData, cep: e.target.value })
-                  }
-                  onBlur={() => buscarCep(formData.cep)}
-                  placeholder="Digite o CEP"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-1">Número</label>
-                <Input
-                  value={formData.numero}
-                  onChange={(e) =>
-                    setFormData({ ...formData, numero: e.target.value })
-                  }
-                  placeholder="Nº"
-                />
-              </div>
-
-              <div className="col-span-2">
-                <label className="text-sm font-medium mb-1">Logradouro</label>
-                <Input
-                  value={formData.logradouro}
-                  onChange={(e) =>
-                    setFormData({ ...formData, logradouro: e.target.value })
-                  }
-                  placeholder="Rua, avenida..."
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-1">Bairro</label>
-                <Input
-                  value={formData.bairro}
-                  onChange={(e) =>
-                    setFormData({ ...formData, bairro: e.target.value })
-                  }
-                  placeholder="Bairro"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-1">Cidade</label>
-                <Input
-                  value={formData.cidade}
-                  onChange={(e) =>
-                    setFormData({ ...formData, cidade: e.target.value })
-                  }
-                  placeholder="Cidade"
-                />
-              </div>
+    <DialogHeader className="flex items-center space-x-2 pb-2">
+      <Building className="h-5 w-5 text-primary" />
+      <DialogTitle className="text-xl font-bold text-accent">
+        Cadastrar Novo Condomínio
+      </DialogTitle>
+    </DialogHeader>
 
 
-              <div>
-                <label className="text-sm font-medium mb-1">Estado</label>
-                <Input
-                  value={formData.estado}
-                  onChange={(e) =>
-                    setFormData({ ...formData, estado: e.target.value })
-                  }
-                  placeholder="UF"
-                />
-              </div>
+    <form onSubmit={handleCreateCondominio} className="space-y-4 mt-2">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="col-span-2 flex flex-col">
+          <label className="text-sm font-medium text-foreground mb-1">
+            Nome
+          </label>
+          <Input
+            value={formData.nome}
+            onChange={(e) =>
+              setFormData({ ...formData, nome: e.target.value })
+            }
+            placeholder="Nome do condomínio"
+            className="text-foreground border border-border rounded-md focus:border-primary focus:ring focus:ring-primary/20 transition"
+          />
+        </div>
 
-              <div>
-                <label className="text-sm font-medium mb-1">Complemento</label>
-                <Input
-                  value={formData.complemento}
-                  onChange={(e) =>
-                    setFormData({ ...formData, complemento: e.target.value })
-                  }
-                  placeholder="Apartamento, bloco..."
-                />
-              </div>
-            </div>
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-foreground mb-1">
+            CEP
+          </label>
+          <Input
+            value={formData.cep}
+            onChange={(e) =>
+              setFormData({ ...formData, cep: e.target.value })
+            }
+            onBlur={() => buscarCep(formData.cep)}
+            placeholder="Digite o CEP"
+            className="text-foreground border border-border rounded-md focus:border-primary focus:ring focus:ring-primary/20 transition"
+          />
+        </div>
 
-            <DialogFooter className="pt-4">
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => setIsOpen(false)}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" className="">
-                Criar Condomínio
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-foreground mb-1">
+            Número
+          </label>
+          <Input
+            value={formData.numero}
+            onChange={(e) =>
+              setFormData({ ...formData, numero: e.target.value })
+            }
+            placeholder="Nº"
+            className="text-foreground border border-border rounded-md focus:border-primary focus:ring focus:ring-primary/20 transition"
+          />
+        </div>
+
+        <div className="col-span-2 flex flex-col">
+          <label className="text-sm font-medium text-foreground mb-1">
+            Logradouro
+          </label>
+          <Input
+            value={formData.logradouro}
+            onChange={(e) =>
+              setFormData({ ...formData, logradouro: e.target.value })
+            }
+            placeholder="Rua, avenida..."
+            className="text-foreground border border-border rounded-md focus:border-primary focus:ring focus:ring-primary/20 transition"
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-foreground mb-1">
+            Bairro
+          </label>
+          <Input
+            value={formData.bairro}
+            onChange={(e) =>
+              setFormData({ ...formData, bairro: e.target.value })
+            }
+            placeholder="Bairro"
+            className="text-foreground border border-border rounded-md focus:border-primary focus:ring focus:ring-primary/20 transition"
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-foreground mb-1">
+            Cidade
+          </label>
+          <Input
+            value={formData.cidade}
+            onChange={(e) =>
+              setFormData({ ...formData, cidade: e.target.value })
+            }
+            placeholder="Cidade"
+            className="text-foreground border border-border rounded-md focus:border-primary focus:ring focus:ring-primary/20 transition"
+          />
+        </div>
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-foreground mb-1">
+            Estado
+          </label>
+          <Input
+            value={formData.estado}
+            onChange={(e) =>
+              setFormData({ ...formData, estado: e.target.value })
+            }
+            placeholder="UF"
+            className="text-foreground border border-border rounded-md focus:border-primary focus:ring focus:ring-primary/20 transition"
+          />
+        </div>
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-foreground mb-1">
+            Complemento
+          </label>
+          <Input
+            value={formData.complemento}
+            onChange={(e) =>
+              setFormData({ ...formData, complemento: e.target.value })
+            }
+            placeholder="Apartamento, bloco..."
+            className="text-foreground border border-border rounded-md focus:border-primary focus:ring focus:ring-primary/20 transition"
+          />
+        </div>
+      </div>
+      <DialogFooter className="pt-4 flex justify-end gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-32 border-border text-foreground hover:bg-muted"
+          onClick={() => setIsOpen(false)}
+        >
+          Cancelar
+        </Button>
+        <Button
+          type="submit"
+          className="w-32 bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          Criar Condomínio
+        </Button>
+      </DialogFooter>
+    </form>
+  </DialogContent>
+</Dialog>
+
+
     </>
   );
 }

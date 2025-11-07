@@ -7,6 +7,7 @@ import CardTopDash from "@/components/Cards/CardTotaisDash";
 import CardAlertasRecentes from "@/components/Cards/CardAlertasRecentes";
 import { ChartAreaInteractive } from "@/components/Charts/ChartArea";
 import AnimationWrapper from "@/components/Layout/Animation/Animation";
+import { ChartMeiaLua } from "@/components/Charts/ChartMeiaLua";
 
 export default function Dashboard() {
 
@@ -19,19 +20,21 @@ export default function Dashboard() {
         <main className="container mx-auto pt-20 ">
 
           <CardTopDash></CardTopDash>
-       <AnimationWrapper delay={0.1}>
-          <div className="mt-10"><ChartAreaInteractive /></div>
-       </AnimationWrapper>
-
-          <section className="container mx-auto justify-center grid grid-cols-3 gap-10">
-
+          <AnimationWrapper delay={0.1}>
+            <div className="mt-10"><ChartAreaInteractive /></div>
+          </AnimationWrapper>
+          <section className="container mx-auto mt-10 grid grid-cols-3 gap-10">
+           
+            <div className="flex flex-col gap-6">
+              <CardAlertasRecentes />
+              <ChartMeiaLua />
+            </div>
             <div className="col-span-2">
               <DistribuicaoPorRegiao />
             </div>
-            <div>
-              <CardAlertasRecentes />
-            </div>
           </section>
+
+
 
         </main>
       </div>
