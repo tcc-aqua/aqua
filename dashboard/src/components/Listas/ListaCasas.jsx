@@ -267,7 +267,7 @@ export default function CasasDashboard() {
                             {casa.casa_status === "ativo" ? (
                               <Check className="text-green-500" size={14} />
                             ) : (
-                              <X className="text-red-500" size={14} />
+                              <X className="text-destructive" size={14} />
                             )}
                           </div>
                         </Button>

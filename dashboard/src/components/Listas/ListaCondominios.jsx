@@ -16,94 +16,117 @@ import {
 import CondominioFilter from "../Filters/CondominioFilter";
 import AnimationWrapper from "../Layout/Animation/Animation";
 
-
 export default function CondominiosDashboard() {
   const [condominios, setCondominios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [condominioStats, setCondominioStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0, sensoresAtivos: 0 });
+  const [condominioStats, setCondominioStats] = useState({
+    total: 0,
+    ativos: 0,
+    inativos: 0,
+    alertas: 0,
+    sensoresAtivos: 0,
+  });
   const [showModal, setShowModal] = useState(false);
   const [selectedCondominio, setSelectedCondominio] = useState(null);
 
-
-
-
   const API_URL = "http://localhost:3333/api/condominios";
 
+  const fetchData = async (filters = {}) => {
+    try {
+      setLoading(true);
 
+      const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
+        fetch(`${API_URL}`),
+        fetch(`${API_URL}/ativos`),
+        fetch(`${API_URL}/inativos`),
+        fetch(`${API_URL}/count`),
+      ]);
 
- const fetchData = async (filters = {}) => {
-  try {
-    setLoading(true);
+      if (!resAll.ok || !resAtivos.ok || !resInativos.ok || !resCount.ok) {
+        throw new Error("Erro ao buscar dados dos condomínios.");
+      }
 
-    const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
-      fetch(`${API_URL}`),
-      fetch(`${API_URL}/ativos`),
-      fetch(`${API_URL}/inativos`),
-      fetch(`${API_URL}/count`)
-    ]);
+      const [dataAll, dataAtivos, dataInativos, dataCount] = await Promise.all([
+        resAll.json(),
+        resAtivos.json(),
+        resInativos.json(),
+        resCount.json(),
+      ]);
 
-    if (!resAll.ok || !resAtivos.ok || !resInativos.ok || !resCount.ok) {
-      throw new Error("Erro ao buscar dados dos condomínios.");
+      // ✅ Garante que sempre teremos um array válido
+      const allCondominios = Array.isArray(dataAll)
+        ? dataAll
+        : dataAll.docs || [];
+
+      // ✅ Aplica filtros locais
+      const filteredCondominios = allCondominios.filter((c) => {
+        const matchesStatus = filters.status
+          ? c.condominio_status === filters.status
+          : true;
+        const matchesNome = filters.nome
+          ? c.condominio_nome
+              ?.toLowerCase()
+              .includes(filters.nome.toLowerCase())
+          : true;
+        return matchesStatus && matchesNome;
+      });
+
+      setCondominios(filteredCondominios);
+
+      // ✅ Estatísticas com fallback seguro
+      const stats = {
+        total: dataCount.total ?? filteredCondominios.length,
+        ativos:
+          Array.isArray(dataAtivos.docs) && dataAtivos.docs.length
+            ? dataAtivos.docs.length
+            : Array.isArray(dataAtivos)
+            ? dataAtivos.length
+            : 0,
+        inativos:
+          Array.isArray(dataInativos.docs) && dataInativos.docs.length
+            ? dataInativos.docs.length
+            : Array.isArray(dataInativos)
+            ? dataInativos.length
+            : 0,
+        alertas: filteredCondominios.filter((c) => !c.responsavel_id).length,
+      };
+
+      // ✅ Calcula sensores e apartamentos com segurança
+      const sensores = filteredCondominios.reduce(
+        (acc, c) => {
+          acc.totalSensores += Number(c.numero_sensores) || 0;
+          if (c.sensor_status === "ativo") acc.sensoresAtivos += 1;
+          else if (c.sensor_status === "inativo") acc.sensoresInativos += 1;
+          else if (c.sensor_status === "alerta") acc.sensoresAlertas += 1;
+
+          acc.totalApartamentos += Number(c.numero_apartamentos) || 0;
+          return acc;
+        },
+        {
+          totalSensores: 0,
+          sensoresAtivos: 0,
+          sensoresInativos: 0,
+          sensoresAlertas: 0,
+          totalApartamentos: 0,
+        }
+      );
+
+      setCondominioStats({
+        ...stats,
+        sensoresTotal: sensores.totalSensores,
+        sensoresAtivos: sensores.sensoresAtivos,
+        sensoresInativos: sensores.sensoresInativos,
+        sensoresAlertas: sensores.sensoresAlertas,
+        apartamentosTotais: sensores.totalApartamentos,
+      });
+    } catch (err) {
+      console.error("Erro ao buscar dados dos condomínios:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    const [dataAll, dataAtivos, dataInativos, dataCount] = await Promise.all([
-      resAll.json(),
-      resAtivos.json(),
-      resInativos.json(),
-      resCount.json(),
-    ]);
-
-    let allCondominios = dataAll.docs || [];
-
-    // Aplica filtros locais
-    const filteredCondominios = allCondominios.filter(c => {
-      const matchesStatus = filters.status ? c.condominio_status === filters.status : true;
-      const matchesNome = filters.nome ? c.condominio_nome.toLowerCase().includes(filters.nome.toLowerCase()) : true;
-      return matchesStatus && matchesNome;
-    });
-
-    setCondominios(filteredCondominios);
-
-    // Estatísticas básicas
-    const stats = {
-      total: dataCount.total ?? filteredCondominios.length,
-      ativos: dataAtivos.docs?.length ?? 0,
-      inativos: dataInativos.docs?.length ?? 0,
-      alertas: filteredCondominios.filter(c => !c.responsavel_id).length,
-    };
-
-    // Calcula sensores e apartamentos de forma segura
-    const sensores = filteredCondominios.reduce(
-      (acc, c) => {
-        acc.totalSensores += Number(c.numero_sensores) || 0;
-        if (c.sensor_status === "ativo") acc.sensoresAtivos += 1;
-        else if (c.sensor_status === "inativo") acc.sensoresInativos += 1;
-        else if (c.sensor_status === "alerta") acc.sensoresAlertas += 1;
-
-        acc.totalApartamentos += Number(c.numero_apartamentos) || 0;
-        return acc;
-      },
-      { totalSensores: 0, sensoresAtivos: 0, sensoresInativos: 0, sensoresAlertas: 0, totalApartamentos: 0 }
-    );
-
-    setCondominioStats({
-      ...stats,
-      sensoresTotal: sensores.totalSensores,
-      sensoresAtivos: sensores.sensoresAtivos,
-      sensoresInativos: sensores.sensoresInativos,
-      sensoresAlertas: sensores.sensoresAlertas,
-      apartamentosTotais: sensores.totalApartamentos,
-    });
-
-  } catch (err) {
-    console.error("Erro ao buscar dados dos condomínios:", err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   useEffect(() => {
     fetchData();
@@ -114,14 +137,25 @@ export default function CondominiosDashboard() {
     setShowModal(true);
   };
 
-
   const toggleStatus = async () => {
     if (!selectedCondominio) return;
     try {
-      const action = selectedCondominio.condominio_status === "ativo" ? "inativar" : "ativar";
-      const res = await fetch(`${API_URL}/${selectedCondominio.id}/${action}`, { method: "PATCH" });
+      const action =
+        selectedCondominio.condominio_status === "ativo"
+          ? "inativar"
+          : "ativar";
+      const res = await fetch(
+        `${API_URL}/${selectedCondominio.id}/${action}`,
+        { method: "PATCH" }
+      );
       if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
-      toast.success(`Condomínio ${selectedCondominio.condominio_status === "ativo" ? "inativado" : "ativado"} com sucesso!`);
+      toast.success(
+        `Condomínio ${
+          selectedCondominio.condominio_status === "ativo"
+            ? "inativado"
+            : "ativado"
+        } com sucesso!`
+      );
       fetchData();
     } catch (err) {
       toast.error(err.message);
@@ -140,41 +174,57 @@ export default function CondominiosDashboard() {
       value: condominioStats.total,
       valueAtivos: { casas: condominioStats.ativos },
       icon: Building,
-      bg: "bg-card",
       iconColor: "text-accent",
-
     },
     {
       title: "Apartamentos Totais",
-      value: condominios.reduce((acc, c) => acc + (c.numero_apartamentos || 0), 0),
-      valueAtivos: { casas: condominios.reduce((acc, c) => acc + (c.apartamentosAtivos || 0), 0) },
+      value:
+        condominios.reduce((acc, c) => acc + (c.numero_apartamentos || 0), 0) ||
+        0,
+      valueAtivos2: {
+        casas:
+          condominios.reduce(
+            (acc, c) => acc + (c.apartamentosAtivos || 0),
+            0
+          ) || 0,
+      },
       icon: Droplet,
-      bg: "bg-card",
       iconColor: "text-orange-300",
-      textColor: "text-orange-800",
-
     },
     {
       title: "Sensores Ativos",
-      value: condominioStats.sensoresTotal,
+      value: condominioStats.sensoresTotal ?? 0,
       icon: Check,
       iconColor: "text-green-700",
-      porcentagem: condominioStats.sensoresTotal > 0
-        ? ((condominioStats.sensoresAtivos / condominioStats.sensoresTotal) * 100).toFixed(0) + "% operacionais"
-        : "0% operacionais"
+      porcentagem:
+        condominioStats.sensoresTotal > 0
+          ? (
+              (condominioStats.sensoresAtivos /
+                condominioStats.sensoresTotal) *
+              100
+            ).toFixed(0) + "% operacionais"
+          : "0% operacionais",
     },
     {
       title: "Total de Síndicos",
-      value: condominios.reduce((acc, c) => acc + (c.sindico_nome ? 1 : 0), 0),
+      value:
+        condominios.reduce(
+          (acc, c) => acc + (c.sindico_nome ? 1 : 0),
+          0
+        ) ?? 0,
       icon: UserStar,
-      bg: "bg-card",
       iconColor: "text-purple-700",
-      subTitle: condominios.length > 0
-        ? `Média de ${(condominios.reduce((acc, c) => acc + (c.sindico_nome ? 1 : 0), 0) / condominios.length).toFixed(0)} por condomínio`
-        : "0"
-    }
+      subTitle:
+        condominios.length > 0
+          ? `Média de ${(
+              condominios.reduce(
+                (acc, c) => acc + (c.sindico_nome ? 1 : 0),
+                0
+              ) / condominios.length
+            ).toFixed(0)} por condomínio`
+          : "0",
+    },
   ];
-
 
   return (
     <div className="p-4">
@@ -187,43 +237,50 @@ export default function CondominiosDashboard() {
         {cards.map((card, i) => {
           const Icon = card.icon;
           return (
-
             <AnimationWrapper key={card.title} delay={i * 0.2}>
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
+                  <CardTitle className="font-bold text-xl text-foreground">
+                    {card.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-row items-center justify-between -mt-6">
                   <div className="flex flex-col">
-               
-                    <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
+                    <p className="font-bold text-4xl text-foreground">
+                      {card.value ?? 0}
+                    </p>
 
                     {card.valueAtivos && (
                       <p className="text-sm mt-1 text-accent">
                         {card.valueAtivos.casas} ativos
                       </p>
                     )}
+                      {card.valueAtivos2 && (
+                      <p className="text-sm mt-1 text-orange-300">
+                        {card.valueAtivos2.casas} ativos
+                      </p>
+                    )}
 
                     {card.porcentagem && (
-                      <p className="text-sm mt-1 text-green-600">{card.porcentagem}</p>
+                      <p className="text-sm mt-1 text-green-600">
+                        {card.porcentagem}
+                      </p>
                     )}
 
-            
                     {card.subTitle && (
-                      <p className="text-sm mt-1 text-purple-600">{card.subTitle}</p>
-                    )}
-                    {card.subTitle2 && (
-                      <p className="text-sm mt-1 text-orange-300">{card.subTitle2}</p>
+                      <p className="text-sm mt-1 text-purple-600">
+                        {card.subTitle}
+                      </p>
                     )}
                   </div>
-
-                  <Icon className={`w-8 h-8 ${card.iconColor}`} />
+                  <Icon className={`w-8 h-8 bg-${card.iconColor} ${card.iconColor}`} />
                 </CardContent>
               </Card>
             </AnimationWrapper>
           );
         })}
       </section>
+
 
       <AnimationWrapper delay={0.3}>
 

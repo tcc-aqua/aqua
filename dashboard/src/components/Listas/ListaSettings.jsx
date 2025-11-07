@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Loading from "../Layout/Loading/page";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 import { Shield, User, Calendar, Settings, Check, X, Plus } from "lucide-react";
 import {
   Dialog,
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import useToggleConfirm from "@/hooks/useStatus";
+import { useAdmins } from "@/hooks/useAdmins";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -26,6 +27,8 @@ export default function SettingsDashboard() {
 
   const [showNewAdminModal, setShowNewAdminModal] = useState(false);
   const [newAdmin, setNewAdmin] = useState({ name: "", email: "", password: "", role: "admin" });
+
+  const { addAdmin, fetchAdmins } = useAdmins();
 
   const API_URL = activeTab === "admins"
     ? "http://localhost:3333/api/admins"
@@ -40,10 +43,10 @@ export default function SettingsDashboard() {
       const items = json.docs || json || [];
       const sortedItems = Array.isArray(items)
         ? items.sort((a, b) => {
-          const statusA = a.status || a.user_status;
-          const statusB = b.status || b.user_status;
-          return statusA === statusB ? 0 : statusA === "ativo" ? -1 : 1;
-        })
+            const statusA = a.status || a.user_status;
+            const statusB = b.status || b.user_status;
+            return statusA === statusB ? 0 : statusA === "ativo" ? -1 : 1;
+          })
         : [];
       setData(sortedItems);
     } catch (err) {
@@ -53,7 +56,8 @@ export default function SettingsDashboard() {
     }
   };
 
-  const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
+  const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } =
+    useToggleConfirm(API_URL, fetchData);
 
   useEffect(() => {
     fetchData();
@@ -81,25 +85,29 @@ export default function SettingsDashboard() {
   };
 
   const handleCreateAdmin = async () => {
-    if (!newAdmin.name || !newAdmin.email || !newAdmin.password) return;
+    if (!newAdmin.name || !newAdmin.email || !newAdmin.password) {
+      toast.error("Preencha todos os campos!");
+      return;
+    }
 
     try {
-      const res = await fetch("http://localhost:3333/api/admins", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newAdmin),
-      });
-      if (!res.ok) throw new Error("Erro ao criar admin");
+      await addAdmin(newAdmin);
       setShowNewAdminModal(false);
       setNewAdmin({ name: "", email: "", password: "", role: "admin" });
-      fetchData();
+      fetchAdmins();
+      fetchData(); // atualiza tabela local
     } catch (err) {
-      console.error(err);
+      toast.error("Erro ao criar administrador!");
     }
   };
 
   if (loading) return <Loading />;
-  if (error) return <div className="p-10 text-center text-destructive font-semibold">Erro: {error}</div>;
+  if (error)
+    return (
+      <div className="p-10 text-center text-destructive font-semibold">
+        Erro: {error}
+      </div>
+    );
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
@@ -114,8 +122,11 @@ export default function SettingsDashboard() {
         <nav className="flex-1 flex flex-col py-4">
           <button
             onClick={() => setActiveTab("admins")}
-            className={`flex items-center gap-3 px-6 py-3 text-sm transition-all duration-200 rounded-md ${activeTab === "admins" ? "bg-muted border-r-4 border-accent text-accent" : "text-sidebar-foreground hover:text-accent"
-              }`}
+            className={`flex items-center gap-3 px-6 py-3 text-sm transition-all duration-200 rounded-md ${
+              activeTab === "admins"
+                ? "bg-muted border-r-4 border-accent text-accent"
+                : "text-sidebar-foreground hover:text-accent"
+            }`}
           >
             <Shield size={18} />
             Administradores
@@ -123,8 +134,11 @@ export default function SettingsDashboard() {
 
           <button
             onClick={() => setActiveTab("users")}
-            className={`flex items-center gap-3 px-6 py-3 text-sm transition-all duration-200 rounded-md ${activeTab === "users" ? "bg-muted border-r-4 border-accent text-accent" : "text-sidebar-foreground hover:text-accent"
-              }`}
+            className={`flex items-center gap-3 px-6 py-3 text-sm transition-all duration-200 rounded-md ${
+              activeTab === "users"
+                ? "bg-muted border-r-4 border-accent text-accent"
+                : "text-sidebar-foreground hover:text-accent"
+            }`}
           >
             <User size={18} />
             Usuários
@@ -136,11 +150,19 @@ export default function SettingsDashboard() {
         <AnimationWrapper delay={0.2}>
           <Card className="mx-auto">
             <CardHeader className="flex justify-between items-center">
-              <CardTitle>{activeTab === "admins" ? "Administradores" : "Usuários"}</CardTitle>
+              <CardTitle>
+                {activeTab === "admins" ? "Administradores" : "Usuários"}
+              </CardTitle>
               <div className="flex gap-4 items-center">
-                <span className="text-sm text-muted-foreground">{data.length} registros</span>
+                <span className="text-sm text-muted-foreground">
+                  {data.length} registros
+                </span>
                 {activeTab === "admins" && (
-                  <Button className="h-7 w-full sm:w-auto rounded-md bg-accent/80" variant="default" onClick={() => setShowNewAdminModal(true)}>
+                  <Button
+                    className="h-7 w-full sm:w-auto rounded-md bg-accent/80"
+                    variant="default"
+                    onClick={() => setShowNewAdminModal(true)}
+                  >
                     <Plus size={14} />
                     Novo Admin
                   </Button>
@@ -150,17 +172,33 @@ export default function SettingsDashboard() {
 
             <CardContent className="overflow-x-auto">
               {data.length === 0 ? (
-                <p className="text-center text-muted-foreground py-10">Nenhum registro encontrado.</p>
+                <p className="text-center text-muted-foreground py-10">
+                  Nenhum registro encontrado.
+                </p>
               ) : (
                 <table className="min-w-full divide-y divide-border">
                   <thead className="bg-muted">
                     <tr>
-                      {activeTab === "users" && <th className="px-4 py-2 text-left text-xs font-medium uppercase">Nome</th>}
-                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">Email</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">Função</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">Criado em</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">Ações</th>
+                      {activeTab === "users" && (
+                        <th className="px-4 py-2 text-left text-xs font-medium uppercase">
+                          Nome
+                        </th>
+                      )}
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">
+                        Email
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">
+                        Função
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">
+                        Status
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">
+                        Criado em
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">
+                        Ações
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -169,42 +207,60 @@ export default function SettingsDashboard() {
                       const status = item.status || item.user_status;
 
                       return (
-                        <tr key={item.id || item.user_id} className="hover:bg-muted/10 transition text-foreground">
+                        <tr
+                          key={item.id || item.user_id}
+                          className="hover:bg-muted/10 transition text-foreground"
+                        >
                           {activeTab === "users" ? (
                             <td className="px-4 py-2">
                               <div className="flex flex-col">
-                                <span className="font-semibold text-sm">{item.user_name || "-"}</span>
-                                <span className="text-xs text-foreground/80">{item.user_email || "-"}</span>
+                                <span className="font-semibold text-sm">
+                                  {item.user_name || "-"}
+                                </span>
+                                <span className="text-xs text-foreground/80">
+                                  {item.user_email || "-"}
+                                </span>
                               </div>
                             </td>
                           ) : (
-                            <td className="px-4 py-2 text-sm">{item.email || "-"}</td>
+                            <td className="px-4 py-2 text-sm">
+                              {item.email || "-"}
+                            </td>
                           )}
 
                           <td className="px-4 py-2 text-xs">
-                            <span className={`px-2 py-1 rounded-full text-white font-semibold ${roleColor(role)}`}>
+                            <span
+                              className={`px-2 py-1 rounded-full text-white font-semibold ${roleColor(
+                                role
+                              )}`}
+                            >
                               {role === "superadmin"
                                 ? "Super Admin"
                                 : role === "admin"
-                                  ? "Admin"
-                                  : role === "sindico"
-                                    ? "Síndico"
-                                    : role === "morador"
-                                      ? "Morador"
-                                      : "-"}
+                                ? "Admin"
+                                : role === "sindico"
+                                ? "Síndico"
+                                : role === "morador"
+                                ? "Morador"
+                                : "-"}
                             </span>
                           </td>
 
                           <td className="px-4 py-2">
                             <span
-                              className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${status === "ativo" ? "bg-green-600" : "bg-destructive"
-                                }`}
+                              className={`inline-block w-3 h-3 rounded-full mt-3 px-3 ${
+                                status === "ativo"
+                                  ? "bg-green-600"
+                                  : "bg-destructive"
+                              }`}
                             />
                           </td>
 
                           <td className="px-4 py-2 flex items-center gap-2 text-sm">
                             <Calendar size={14} />
-                            {new Date(item.criado_em || item.created_at || Date.now()).toLocaleDateString("pt-BR")}
+                            {new Date(
+                              item.criado_em || item.created_at || Date.now()
+                            ).toLocaleDateString("pt-BR")}
                           </td>
 
                           <td className="px-4 py-2 text-center">
@@ -214,7 +270,11 @@ export default function SettingsDashboard() {
                                 variant="ghost"
                                 onClick={() => confirmToggleStatus(item)}
                                 disabled={role === "superadmin"}
-                                className={role === "superadmin" ? "opacity-50 cursor-not-allowed" : ""}
+                                className={
+                                  role === "superadmin"
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                }
                               >
                                 {status === "ativo" ? (
                                   <Check className="text-green-500" size={14} />
@@ -235,35 +295,46 @@ export default function SettingsDashboard() {
         </AnimationWrapper>
       </main>
 
+      {/* Modal de confirmação */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Confirmação</DialogTitle>
           </DialogHeader>
           <p className="py-4">
-            Deseja realmente {(selectedItem?.status || selectedItem?.user_status) === "ativo" ? "inativar" : "ativar"} o usuário <strong>{selectedItem?.user_name || selectedItem?.email}</strong>?
+            Deseja realmente{" "}
+            {(selectedItem?.status || selectedItem?.user_status) === "ativo"
+              ? "inativar"
+              : "ativar"}{" "}
+            o usuário{" "}
+            <strong>
+              {selectedItem?.user_name || selectedItem?.email}
+            </strong>
+            ?
           </p>
           <DialogFooter className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => setShowModal(false)}>
+              Cancelar
+            </Button>
             <Button variant="destructive" onClick={toggleStatus}>
-              {(selectedItem?.status || selectedItem?.user_status) === "ativo" ? "Inativar" : "Ativar"}
+              {(selectedItem?.status || selectedItem?.user_status) === "ativo"
+                ? "Inativar"
+                : "Ativar"}
             </Button>
           </DialogFooter>
-
         </DialogContent>
       </Dialog>
 
+      {/* Modal de novo admin */}
       <Dialog open={showNewAdminModal} onOpenChange={setShowNewAdminModal}>
         <DialogContent className="sm:max-w-[400px] text-foreground shadow-xl rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">Criar Novo Admin</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">
+              Criar Novo Admin
+            </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4 py-4">
-            <Input
-              placeholder="Nome"
-              value={newAdmin.name}
-              onChange={(e) => handleNewAdminChange("name", e.target.value)}
-            />
+      
             <Input
               type="email"
               placeholder="Email"
@@ -276,7 +347,10 @@ export default function SettingsDashboard() {
               value={newAdmin.password}
               onChange={(e) => handleNewAdminChange("password", e.target.value)}
             />
-            <Select value={newAdmin.role} onValueChange={(value) => handleNewAdminChange("role", value)}>
+            <Select
+              value={newAdmin.role}
+              onValueChange={(value) => handleNewAdminChange("role", value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a função" />
               </SelectTrigger>
@@ -287,8 +361,15 @@ export default function SettingsDashboard() {
             </Select>
           </div>
           <DialogFooter className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowNewAdminModal(false)}>Cancelar</Button>
-            <Button variant="default" onClick={handleCreateAdmin}>Criar</Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowNewAdminModal(false)}
+            >
+              Cancelar
+            </Button>
+            <Button variant="default" onClick={handleCreateAdmin}>
+              Criar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

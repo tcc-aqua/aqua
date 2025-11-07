@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Users, UserPlus, AlertTriangle, Cpu } from "lucide-react";
+import { Users, UserPlus, AlertTriangle, Cpu, Siren, Check } from "lucide-react";
 
 const cardVariants = {
   hidden: { y: -120, opacity: 0, zIndex: -1 },
@@ -43,47 +43,15 @@ export default function CardTopDash() {
           alertasRes.json(),
         ]);
 
-        console.log("API Sensores:", dataSensores);
+      
 
-        const totalResidencias =
-          dataResidencias?.totalResidencias ??
-          dataResidencias?.count ??
-          dataResidencias?.docs?.length ??
-          0;
-
-        const totalCasas =
-          dataResidencias?.totalCasas ??
-          dataResidencias?.casas ??
-          dataResidencias?.docs?.filter?.((r) => r.tipo === "casa")?.length ??
-          0;
-
-        const totalApartamentos =
-          dataResidencias?.totalApartamentos ??
-          dataResidencias?.apartamentos ??
-          dataResidencias?.docs?.filter?.((r) => r.tipo === "apartamento")?.length ??
-          0;
-
-        const sensoresAtivos =
-          dataSensores?.sensoresAtivos ??
-          dataSensores?.ativos ??
-          dataSensores?.count ??
-          (Array.isArray(dataSensores) ? dataSensores.length : 0);
-
-        const sensoresTotal =
-          dataSensores?.totalSensores ??
-          dataSensores?.total ??
-          sensoresAtivos;
-
-        const usuariosAtivos =
-          dataUsers?.sindicosAtivos ??
-          dataUsers?.usuariosAtivos ??
-          dataUsers?.count ??
-          (Array.isArray(dataUsers) ? dataUsers.length : 0);
-
-        const alertasAtivos =
-          dataAlertas?.totalAlertas ??
-          dataAlertas?.count ??
-          (Array.isArray(dataAlertas) ? dataAlertas.length : 0);
+        const totalResidencias = dataResidencias.totalResidencias ?? 0;
+        const totalCasas = dataResidencias.totalCasas ?? 0;
+        const totalApartamentos = dataResidencias.totalApartamentos ?? 0;
+        const sensoresAtivos = dataSensores ?? 0;
+        const sensoresTotal = dataSensores ?? 0;
+        const usuariosAtivos = dataUsers ?? 0;
+        const alertasAtivos = dataAlertas.totalAlertasAtivos ?? 0;
 
         setUserStats({
           totalResidencias,
@@ -107,29 +75,29 @@ export default function CardTopDash() {
       title: "Total de residências",
       value: userStats.totalResidencias,
       icon: Users,
-      iconColor: "text-blue-700",
+      iconColor: "text-accent",
       detalhe: `${userStats.totalCasas} casas + ${userStats.totalApartamentos} aptos`,
     },
     {
-      title: "Sensores ativos", 
+      title: "Sensores ativos",
       value: userStats.sensoresAtivos,
       icon: Cpu,
-      iconColor: "text-green-700",
-      detalhe: `${userStats.sensoresAtivos} de ${userStats.sensoresTotal} operacionais`, // 🔹 alterado
+      iconColor: "text-purple-700",
+      detalhe1: `${userStats.sensoresAtivos} de ${userStats.sensoresTotal} operacionais`,
     },
     {
       title: "Usuários ativos",
       value: userStats.usuariosAtivos,
-      icon: UserPlus,
-      iconColor: "text-yellow-500",
-      detalhe: `${userStats.totalCasas} moradores + ${userStats.totalApartamentos} síndicos`,
+      icon: Check,
+      iconColor: "text-green-500",
+      detalhe2: `${userStats.totalCasas} moradores + ${userStats.totalApartamentos} síndicos`,
     },
     {
       title: "Alertas ativos",
       value: userStats.alertasAtivos,
-      icon: AlertTriangle,
+      icon: Siren,
       iconColor: "text-red-700",
-      detalhe: "Precisa de atenção"
+      detalhe3: "Precisa de atenção",
     },
   ];
 
@@ -153,15 +121,27 @@ export default function CardTopDash() {
               </CardHeader>
               <CardContent className="flex flex-col justify-between -mt-6">
                 <div className="flex items-center justify-between">
-                  <p className="font-bold text-4xl text-foreground">
-                    {card.value ?? 0}
+              
+                  <p className="font-bold text-4xl text-black dark:text-white">
+                    {String(card.value)}
                   </p>
                   <Icon className={`w-10 h-10 ${card.iconColor}`} />
                 </div>
-
                 {card.detalhe && (
-                  <p className="text-sm text-blue-600 mt-2">{card.detalhe}</p>
+                  <p className="text-sm text-accent mt-2">{card.detalhe}</p>
                 )}
+                  {card.detalhe1 && (
+                      <p className="text-purple-600 text-sm mt-1">
+                        {card.detalhe1} 
+                      </p>
+                    )}
+                    {card.detalhe2 && !card.valueAtivos && (
+                      <p className="text-sm mt-1 text-green-600"> {card.detalhe2} </p>
+                    )}
+                    {card.detalhe3 && (
+                      <p className="text-sm mt-1 text-destructive"> {card.detalhe3} </p>
+                    )}
+               
               </CardContent>
             </Card>
           </motion.div>

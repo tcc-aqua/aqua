@@ -17,66 +17,83 @@ export default function Header() {
   const isMobile = useIsMobile();
   const pathname = usePathname();
 
-
   const getTituloByPath = () => {
     if (pathname.startsWith('/dashboard')) return 'Painel Administrativo';
     if (pathname.startsWith('/users')) return 'Gerenciamento de Usuários';
-    if (pathname.startsWith('/condominios')) return 'Gerenciamento de Vagas';
+    if (pathname.startsWith('/condominios')) return 'Gerenciamento de Condomínios';
     if (pathname.startsWith('/suporte')) return 'Central de Suporte';
     if (pathname.startsWith('/settings')) return 'Configurações do Sistema';
-     if (pathname.startsWith('/apartamentos')) return 'Configurações do Sistema';
-      if (pathname.startsWith('/alerts')) return 'Configurações do Sistema';
+    if (pathname.startsWith('/apartamentos')) return 'Gerenciamento de Apartamentos';
+    if (pathname.startsWith('/alerts')) return 'Gerenciamento de Alertas';
+    if (pathname.startsWith('/casas')) return 'Gerenciamento de Casas';
+    if (pathname.startsWith('/sensors')) return 'Gerenciamento de Sensores';
+      if (pathname.startsWith('/profile')) return 'Perfil';
     return 'Bem-vindo(a)';
   };
 
   const titulo = getTituloByPath();
 
   return (
-    <header className="fixed top-0 left-0 w-full h-20 z-50 bg-card dark:bg-sidebar border-b border-border dark:border-sidebar-border">
+    <header className="fixed top-0 left-0 w-full h-20 z-50 bg-card/90 backdrop-blur-lg border-b border-border shadow-sm transition-all">
       <div
-        className={`${isMobile ? 'py-3 px-2' : 'p-3'
-          } flex items-center justify-between relative`}
+        className={`${
+          isMobile ? 'px-4 py-3' : 'px-10 py-4'
+        } flex items-center justify-between`}
       >
-
-       
+      
         {!isMobile && (
-          <h1 className="text-lg font-semibold text-foreground ml-6">
-            {titulo}
-          </h1>
+          <div className="absolute left-1/2 -translate-x-1/2 text-center select-none">
+            <h1 className="text-3xl font-semibold tracking-wide bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent drop-shadow-sm">
+              {titulo}
+            </h1>
+            <p className="text-xs text-muted-foreground/80 mt-1">
+              Sistema de gestão e monitoramento
+            </p>
+          </div>
         )}
 
-      
-        <div className="flex items-center space-x-6 px-3 py-3">
+     
+        <div className="flex items-center space-x-6 ml-auto">
           <ModeToggle />
-          <Bell className="h-4 w-4 text-muted-foreground cursor-pointer" />
+
+          <div className="relative">
+            <Bell className="h-5 w-5 text-foreground/80 hover:text-primary transition-colors cursor-pointer" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-destructive animate-pulse" />
+          </div>
 
           {headerInfos.map((header, index) => (
-            <div key={index} className="flex items-center space-x-2 mr-4">
+            <div
+              key={index}
+              className="flex items-center space-x-3 border-l border-border pl-5"
+            >
               <div className="relative">
                 {header.image ? (
                   <img
                     src={header.image}
                     alt={`${header.nome} ${header.sobrenome}`}
-                    className="w-9 h-9 rounded-full object-cover border border-border"
+                    className="w-10 h-10 rounded-full object-cover border-2 border-primary shadow-sm"
                   />
                 ) : (
-                  <div className="w-9 h-9 bg-muted rounded-full flex items-center justify-center">
-                    <span className="text-foreground font-medium text-sm">
+                  <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center border border-border">
+                    <span className="text-foreground font-semibold text-base">
                       {header.nome[0]}
                       {header.sobrenome[0]}
                     </span>
                   </div>
                 )}
                 <div
-                  className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-500 dark:bg-green-400 border-2 border-card dark:border-sidebar"
+                  className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-card"
                   title="Online"
                 />
               </div>
 
               {!isMobile && (
-                <div className="min-w-0 pr-2">
-                  <p className="text-sm font-medium text-foreground truncate">
+                <div className="leading-tight">
+                  <p className="text-sm font-semibold text-foreground">
                     {header.nome} {header.sobrenome}
+                  </p>
+                  <p className="text-xs text-muted-foreground/70">
+                    Administrador
                   </p>
                 </div>
               )}
