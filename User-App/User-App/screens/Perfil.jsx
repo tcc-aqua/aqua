@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import {
   Avatar,
   Card,
@@ -12,37 +12,86 @@ import {
   Button,
   useTheme,
 } from 'react-native-paper';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const ProfileScreen = () => {
-  const { colors } = useTheme(); // Para usar a cor de erro no botão
+const ProfileScreen = ({ navigation, onLogout }) => {
+  const { colors } = useTheme();
 
-  // Estados para notificações específicas
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLeakAlertsEnabled, setIsLeakAlertsEnabled] = useState(true);
   const [isConsumptionAlertsEnabled, setIsConsumptionAlertsEnabled] = useState(true);
   const [isGoalsAlertsEnabled, setIsGoalsAlertsEnabled] = useState(true);
   const [isCommunityAlertsEnabled, setIsCommunityAlertsEnabled] = useState(false);
   const [isReportsEnabled, setIsReportsEnabled] = useState(true);
 
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      const authToken = await AsyncStorage.getItem('token');
+      if (!authToken) {
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const API_URL = 'http://10.84.6.152:3334/api/profile';
+        const response = await axios.get(API_URL, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        setUser(response.data);
+      } catch (error) {
+        console.error("ERRO AO BUSCAR PERFIL:", error.response?.data || error.message);
+        if (error.response?.status === 401) await AsyncStorage.removeItem('token');
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProfileData();
+  }, []);
+
+  const handleLogoutPress = async () => {
+    await AsyncStorage.removeItem('token');
+    onLogout();
+  };
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Title style={{textAlign: 'center'}}>Não foi possível carregar o perfil.</Title>
+        <Paragraph style={{textAlign: 'center'}}>Por favor, faça o login novamente.</Paragraph>
+        <Button onPress={onLogout} style={{marginTop: 20}}>Voltar ao Login</Button>
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
-      {/* Card 1: Informações Principais do Perfil */}
       <Card style={styles.card}>
         <Card.Content>
           <View style={styles.userInfoTopContainer}>
             <Avatar.Image
               size={80}
-              source={{ uri: 'https://api.dicebear.com/8.x/initials/svg?seed=Seu+Nome' }}
+              source={{ uri: `https://api.dicebear.com/8.x/initials/svg?seed=${user.user_name}` }}
               style={styles.avatar}
             />
             <View style={styles.userInfoTextContainer}>
-              <Title style={styles.userName}>Seu Nome</Title>
+              <Title style={styles.userName}>{user.user_name}</Title>
               <View style={styles.userInfoDetailRow}>
                 <Icon source="email" size={16} color="#666" />
-                <Paragraph style={styles.infoText}>seu.email@exemplo.com</Paragraph>
+                <Paragraph style={styles.infoText}>{user.user_email}</Paragraph>
               </View>
               <View style={styles.userInfoDetailRow}>
                 <Icon source="office-building" size={16} color="#666" />
-                <Paragraph style={styles.infoText}>Apt 123, Bloco A</Paragraph>
+                <Paragraph style={styles.infoText}>{user.logradouro}, {user.numero}</Paragraph>
               </View>
             </View>
           </View>
@@ -60,113 +109,56 @@ const ProfileScreen = () => {
         </Card.Content>
       </Card>
 
-      {/* Card 2: Estatísticas */}
       <Card style={styles.card}>
         <Card.Title title="Minhas Estatísticas" />
         <Card.Content>
-          <List.Item
-            title="Tempo no app"
-            left={props => <List.Icon {...props} icon="clock-time-eight-outline" color="#3498db" />}
-            right={props => <Title {...props} style={styles.statListValue}>120 dias</Title>}
-          />
+          <List.Item title="Tempo no app" left={props => <List.Icon {...props} icon="clock-time-eight-outline" color="#3498db" />} right={props => <Title {...props} style={styles.statListValue}>120 dias</Title>} />
           <Divider />
-          <List.Item
-            title="Economia total"
-            left={props => <List.Icon {...props} icon="cash" color="#2ecc71" />}
-            right={props => <Title {...props} style={styles.statListValue}>R$ 250</Title>}
-          />
+          <List.Item title="Economia total" left={props => <List.Icon {...props} icon="cash" color="#2ecc71" />} right={props => <Title {...props} style={styles.statListValue}>R$ 250</Title>} />
           <Divider />
-          <List.Item
-            title="Água poupada"
-            left={props => <List.Icon {...props} icon="water" color="#5dade2" />}
-            right={props => <Title {...props} style={styles.statListValue}>500 L</Title>}
-          />
+          <List.Item title="Água poupada" left={props => <List.Icon {...props} icon="water" color="#5dade2" />} right={props => <Title {...props} style={styles.statListValue}>500 L</Title>} />
           <Divider />
-          <List.Item
-            title="Metas cumpridas"
-            left={props => <List.Icon {...props} icon="check-circle" color="#f1c40f" />}
-            right={props => <Title {...props} style={styles.statListValue}>12</Title>}
-          />
+          <List.Item title="Metas cumpridas" left={props => <List.Icon {...props} icon="check-circle" color="#f1c40f" />} right={props => <Title {...props} style={styles.statListValue}>12</Title>} />
         </Card.Content>
       </Card>
 
-      {/* Card 3: Controle de Notificações Específicas */}
       <Card style={styles.card}>
         <Card.Title title="Notificações" subtitle="Escolha o que você quer receber" />
         <Card.Content>
-          <List.Item
-            title="Alertas de Vazamento"
-            left={props => <List.Icon {...props} icon="pipe-leak" />}
-            right={() => <Switch value={isLeakAlertsEnabled} onValueChange={setIsLeakAlertsEnabled} />}
-          />
+          <List.Item title="Alertas de Vazamento" left={props => <List.Icon {...props} icon="pipe-leak" />} right={() => <Switch value={isLeakAlertsEnabled} onValueChange={setIsLeakAlertsEnabled} />} />
           <Divider />
-          <List.Item
-            title="Alto Consumo"
-            left={props => <List.Icon {...props} icon="chart-line" />}
-            right={() => <Switch value={isConsumptionAlertsEnabled} onValueChange={setIsConsumptionAlertsEnabled} />}
-          />
+          <List.Item title="Alto Consumo" left={props => <List.Icon {...props} icon="chart-line" />} right={() => <Switch value={isConsumptionAlertsEnabled} onValueChange={setIsConsumptionAlertsEnabled} />} />
           <Divider />
-          <List.Item
-            title="Metas e Objetivos"
-            left={props => <List.Icon {...props} icon="flag-checkered" />}
-            right={() => <Switch value={isGoalsAlertsEnabled} onValueChange={setIsGoalsAlertsEnabled} />}
-          />
+          <List.Item title="Metas e Objetivos" left={props => <List.Icon {...props} icon="flag-checkered" />} right={() => <Switch value={isGoalsAlertsEnabled} onValue-Change={setIsGoalsAlertsEnabled} />} />
           <Divider />
-          <List.Item
-            title="Desafios da Comunidade"
-            left={props => <List.Icon {...props} icon="account-group" />}
-            right={() => <Switch value={isCommunityAlertsEnabled} onValueChange={setIsCommunityAlertsEnabled} />}
-          />
+          <List.Item title="Desafios da Comunidade" left={props => <List.Icon {...props} icon="account-group" />} right={() => <Switch value={isCommunityAlertsEnabled} onValueChange={setIsCommunityAlertsEnabled} />} />
           <Divider />
-          <List.Item
-            title="Relatórios de Economia"
-            left={props => <List.Icon {...props} icon="file-chart" />}
-            right={() => <Switch value={isReportsEnabled} onValueChange={setIsReportsEnabled} />}
-          />
+          <List.Item title="Relatórios de Economia" left={props => <List.Icon {...props} icon="file-chart" />} right={() => <Switch value={isReportsEnabled} onValueChange={setIsReportsEnabled} />} />
         </Card.Content>
       </Card>
       
-      {/* Card 4: Ajuda e Suporte */}
       <Card style={styles.card}>
         <Card.Title title="Ajuda & Suporte" />
         <Card.Content>
-          <List.Item
-            title="Central de Ajuda"
-            left={props => <List.Icon {...props} icon="help-circle-outline" />}
-            onPress={() => console.log('Pressionou Central de Ajuda')}
-          />
+          <List.Item title="Central de Ajuda" left={props => <List.Icon {...props} icon="help-circle-outline" />} onPress={() => navigation.navigate('HelpCenter')} />
           <Divider />
-          <List.Item
-            title="Suporte Técnico"
-            left={props => <List.Icon {...props} icon="headset" />}
-            onPress={() => console.log('Pressionou Suporte Técnico')}
-          />
+          <List.Item title="Suporte Técnico" left={props => <List.Icon {...props} icon="headset" />} onPress={() => navigation.navigate('Support')} />
           <Divider />
-          <List.Item
-            title="Privacidade"
-            left={props => <List.Icon {...props} icon="shield-lock-outline" />}
-            onPress={() => console.log('Pressionou Privacidade')}
-          />
+          <List.Item title="Privacidade" left={props => <List.Icon {...props} icon="shield-lock-outline" />} onPress={() => navigation.navigate('PrivacyPolicy')} />
           <Divider />
-          <List.Item
-            title="Avaliar App"
-            left={props => <List.Icon {...props} icon="star-outline" />}
-            onPress={() => console.log('Pressionou Avaliar App')}
-          />
+          <List.Item title="Avaliar App" left={props => <List.Icon {...props} icon="star-outline" />} onPress={() => {}} />
         </Card.Content>
       </Card>
       
-      {/* Botão de Logout */}
       <Button
         icon="logout"
         mode="contained"
-        onPress={() => console.log('Pressionou Sair')}
+        onPress={handleLogoutPress}
         style={styles.logoutButton}
         buttonColor={colors.error}
       >
         Sair da Conta
       </Button>
-
     </ScrollView>
   );
 };
@@ -180,7 +172,6 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: 15,
   },
-  // --- Estilos do Card de Perfil ---
   userInfoTopContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -224,13 +215,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#555',
   },
-  // --- Estilo para o valor na lista de estatísticas ---
   statListValue: {
     fontSize: 16,
     fontWeight: 'bold',
     alignSelf: 'center',
   },
-  // --- Estilo para o Botão de Logout ---
   logoutButton: {
     marginTop: 15,
     marginBottom: 20,
