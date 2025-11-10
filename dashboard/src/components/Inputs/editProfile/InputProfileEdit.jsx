@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Pencil, User, Mail } from "lucide-react";
 import {
   DropdownMenu,
@@ -10,19 +10,36 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "../../ui/button";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 
 export default function FotoPerfil() {
   const [foto, setFoto] = useState("/perfilImage/default-avatar.png");
   const [file, setFile] = useState(null);
+  const [userInfo, setUserInfo] = useState({
+    email: "",
+    role: "",
+  });
+
   const fileInputRef = useRef(null);
 
-  const nome = "Thiago";
-  const sobrenome = "";
-  const role = "Adm é Top";
-  const email = "thiago@example.com";
+  useEffect(() => {
+    try {
+      const token = Cookies.get("token");
+      if (token) {
+        const decoded = jwtDecode(token);
+        setUserInfo({
+          email: decoded.email || decoded.user_email || "usuario@dominio.com",
+          role: decoded.type || decoded.role || "Usuário",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao decodificar token:", error);
+    }
+  }, []);
 
   const handleUpload = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (file) {
       setFile(file);
       setFoto(URL.createObjectURL(file));
@@ -35,13 +52,13 @@ export default function FotoPerfil() {
   };
 
   const handleChangeEmail = () => {
-    const newEmail = prompt("Digite seu novo e-mail:", email);
+    const newEmail = prompt("Digite seu novo e-mail:", userInfo.email);
     if (newEmail) console.log("Novo e-mail:", newEmail);
   };
 
   return (
     <div className="flex flex-col md:flex-row items-center md:items-start gap-6 p-6">
-   
+
       <div className="relative">
         <img
           src={foto}
@@ -59,7 +76,7 @@ export default function FotoPerfil() {
             <DropdownMenuItem onClick={() => window.open(foto, "_blank")}>
               Ver foto
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => fileInputRef.current.click()}>
+            <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
               Alterar
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -72,16 +89,16 @@ export default function FotoPerfil() {
         </DropdownMenu>
       </div>
 
-  
-      <div className="flex flex-col justify-center md:justify-start text-center md:text-left w-full max-w-sm">
-        <CardHeader className="p-0 mb-2">
-          <CardTitle className="text-xl font-semibold">
-            {nome} {sobrenome}
+    
+      <div className="flex flex-col justify-center md:justify-start text-center md:text-left w-full max-w-sm md:mt-8">
+        <CardHeader className="p-0 ">
+          <CardTitle className="text-xl font-semibold uppercase">
+            {userInfo.email.split("@")[0] || "Usuário"}
           </CardTitle>
         </CardHeader>
 
         <div className="flex items-center justify-between mb-3">
-          <p className="text-sm text-muted-foreground">{role}</p>
+          <p className="text-sm text-muted-foreground  rounded-full p-1 h-7">Fução: {userInfo.role}</p>
           <Button
             variant="outline"
             size="sm"
@@ -92,7 +109,7 @@ export default function FotoPerfil() {
         </div>
 
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{email}</p>
+          <p className="text-sm text-muted-foreground ">Email: {userInfo.email}</p>
           <Button
             variant="outline"
             size="sm"

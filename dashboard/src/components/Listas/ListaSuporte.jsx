@@ -130,7 +130,7 @@ export default function SuporteDashboard() {
         <SuporteFilter onApply={(filters) => fetchData(filters)} /> 
       </div>
 
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"> {/* Adicionado mb-8 para espaçamento */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"> 
         {cardsData.map((card, i) => { // Usa cardsData
           const Icon = card.icon;
           return (
@@ -157,7 +157,7 @@ export default function SuporteDashboard() {
                       <p className="text-sm mt-1 text-blue-500">{card.subTitle2}</p>
                     )}
                   </div>
-                  {/* Note: A classe bg-${card.iconColor} não funcionará com Tailwind CSS a menos que você configure cores dinâmicas ou use uma classe de cor predefinida */}
+               
                   <Icon className={`w-8 h-8 ${card.iconColor}`} /> 
                 </CardContent>
               </Card>
@@ -166,7 +166,6 @@ export default function SuporteDashboard() {
         })}
       </section>
       
-      {/* O resto do seu código para exibir os tickets */}
       <div className="flex flex-col gap-4">
         {tickets.length === 0 ? (
           <p>Nenhum ticket encontrado.</p>
