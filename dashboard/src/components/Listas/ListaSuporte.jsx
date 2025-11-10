@@ -138,7 +138,7 @@ export default function SuporteDashboard() {
           const Icon = card.icon;
           return (
             <AnimationWrapper key={card.title} delay={i * 0.2}>
-              <Card className=" hover:border-sky-400 dark:hover:border-sky-600">
+              <Card className=" hover:border-sky-400 dark:hover:border-sky-700">
                 <CardHeader>
                   <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                 </CardHeader>
@@ -178,7 +178,7 @@ export default function SuporteDashboard() {
             return (
               <AnimationWrapper key={ticket.id || i} delay={i * 0.1}>
                 <Card
-                  className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:border-sky-400 dark:hover:border-sky-600"
+                  className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:border-sky-400 dark:hover:border-sky-700"
                   role="listitem"
                 >
 

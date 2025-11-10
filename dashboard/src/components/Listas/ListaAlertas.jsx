@@ -170,7 +170,7 @@ export default function AlertasDashboard() {
           const Icon = card.icon;
           return (
             <AnimationWrapper key={card.title} delay={i * 0.15}>
-              <Card className=" hover:border-sky-400 dark:hover:border-sky-600">
+              <Card className=" hover:border-sky-400 dark:hover:border-sky-700">
                 <CardHeader>
                   <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                 </CardHeader>
@@ -203,7 +203,7 @@ export default function AlertasDashboard() {
       </section>
 
       <AnimationWrapper delay={0.3}>
-        <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-600">
+        <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-700">
           <CardHeader>
             <CardTitle>Lista de Alertas</CardTitle>
           </CardHeader>

@@ -146,7 +146,7 @@ export default function SettingsDashboard() {
 
       <main className="flex-1 p-10 overflow-x-auto">
         <AnimationWrapper delay={0.2}>
-          <Card className="mx-auto hover:border-sky-400 dark:hover:border-sky-600">
+          <Card className="mx-auto hover:border-sky-400 dark:hover:border-sky-700">
             <CardHeader className="flex justify-between items-center">
               <CardTitle>
                 {activeTab === "admins" ? "Administradores" : "Usuários"}
