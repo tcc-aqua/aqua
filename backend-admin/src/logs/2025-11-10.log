@@ -1,0 +1,22 @@
+{"level":30,"time":1762773144596,"pid":9116,"hostname":"ESN123D1230198","msg":"Server listening at http://127.0.0.1:3333"}
+{"level":30,"time":1762773144598,"pid":9116,"hostname":"ESN123D1230198","msg":"Server listening at http://10.84.6.158:3333"}
+{"level":30,"time":1762773144598,"pid":9116,"hostname":"ESN123D1230198","msg":"Server listening at http://192.168.56.1:3333"}
+{"level":30,"time":1762773160733,"pid":9116,"hostname":"ESN123D1230198","reqId":"req-1","req":{"method":"GET","url":"/api/cep/09181720","host":"localhost:3333","remoteAddress":"127.0.0.1","remotePort":51758},"msg":"incoming request"}
+{"level":30,"time":1762773161169,"pid":9116,"hostname":"ESN123D1230198","reqId":"req-1","res":{"statusCode":200},"responseTime":434.6056999999564,"msg":"request completed"}
+{"level":30,"time":1762773268508,"pid":7792,"hostname":"ESN123D1230198","msg":"Server listening at http://127.0.0.1:3333"}
+{"level":30,"time":1762773268509,"pid":7792,"hostname":"ESN123D1230198","msg":"Server listening at http://10.84.6.158:3333"}
+{"level":30,"time":1762773268509,"pid":7792,"hostname":"ESN123D1230198","msg":"Server listening at http://192.168.56.1:3333"}
+{"level":30,"time":1762773273973,"pid":11372,"hostname":"ESN123D1230198","msg":"Server listening at http://127.0.0.1:3333"}
+{"level":30,"time":1762773273974,"pid":11372,"hostname":"ESN123D1230198","msg":"Server listening at http://10.84.6.158:3333"}
+{"level":30,"time":1762773273974,"pid":11372,"hostname":"ESN123D1230198","msg":"Server listening at http://192.168.56.1:3333"}
+{"level":30,"time":1762773276263,"pid":8136,"hostname":"ESN123D1230198","msg":"Server listening at http://127.0.0.1:3333"}
+{"level":30,"time":1762773276264,"pid":8136,"hostname":"ESN123D1230198","msg":"Server listening at http://10.84.6.158:3333"}
+{"level":30,"time":1762773276264,"pid":8136,"hostname":"ESN123D1230198","msg":"Server listening at http://192.168.56.1:3333"}
+{"level":30,"time":1762773279735,"pid":15016,"hostname":"ESN123D1230198","msg":"Server listening at http://127.0.0.1:3333"}
+{"level":30,"time":1762773279736,"pid":15016,"hostname":"ESN123D1230198","msg":"Server listening at http://10.84.6.158:3333"}
+{"level":30,"time":1762773279736,"pid":15016,"hostname":"ESN123D1230198","msg":"Server listening at http://192.168.56.1:3333"}
+{"level":30,"time":1762773285781,"pid":15408,"hostname":"ESN123D1230198","msg":"Server listening at http://127.0.0.1:3333"}
+{"level":30,"time":1762773285782,"pid":15408,"hostname":"ESN123D1230198","msg":"Server listening at http://10.84.6.158:3333"}
+{"level":30,"time":1762773285782,"pid":15408,"hostname":"ESN123D1230198","msg":"Server listening at http://192.168.56.1:3333"}
+{"level":30,"time":1762773293733,"pid":15408,"hostname":"ESN123D1230198","reqId":"req-1","req":{"method":"GET","url":"/api/cep/09181720","host":"localhost:3333","remoteAddress":"127.0.0.1","remotePort":51808},"msg":"incoming request"}
+{"level":30,"time":1762773294176,"pid":15408,"hostname":"ESN123D1230198","reqId":"req-1","res":{"statusCode":200},"responseTime":442.3735000002198,"msg":"request completed"}
