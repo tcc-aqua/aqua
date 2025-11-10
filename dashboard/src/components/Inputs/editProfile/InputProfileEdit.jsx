@@ -90,7 +90,7 @@ export default function FotoPerfil() {
       </div>
 
     
-      <div className="flex flex-col justify-center md:justify-start text-center md:text-left w-full max-w-sm md:mt-8">
+      <div className="flex flex-col justify-center md:justify-start text-center md:text-left w-full max-w-sm md:mt-10">
         <CardHeader className="p-0 ">
           <CardTitle className="text-xl font-semibold uppercase">
             {userInfo.email.split("@")[0] || "Usuário"}
@@ -109,7 +109,7 @@ export default function FotoPerfil() {
         </div>
 
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground ">Email: {userInfo.email}</p>
+          <p className="text-sm text-muted-foreground -mt-7">Email: {userInfo.email}</p>
           <Button
             variant="outline"
             size="sm"

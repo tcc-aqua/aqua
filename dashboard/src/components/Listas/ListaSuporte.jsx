@@ -116,7 +116,7 @@ export default function SuporteDashboard() {
       toast.error("A mensagem de resposta não pode estar vazia.");
       return;
     }
-    toast.success(`Resposta enviada para o Ticket ${ticketId}`);
+    toast.success(`Resposta enviada para o problema ${ticketId}`);
     setReplyingTicketId(null);
     setReplyMessage("");
   };
@@ -138,7 +138,7 @@ export default function SuporteDashboard() {
           const Icon = card.icon;
           return (
             <AnimationWrapper key={card.title} delay={i * 0.2}>
-              <Card>
+              <Card className=" hover:border-sky-400 dark:hover:border-sky-600">
                 <CardHeader>
                   <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                 </CardHeader>
@@ -215,7 +215,7 @@ export default function SuporteDashboard() {
                           className={`p-1.5 text-white rounded-full shadow-md transition ${isReplying ? 'bg-orange-600 hover:bg-orange-700 focus:ring-orange-500/50' : 'bg-sky-600 hover:bg-sky-700 focus:ring-sky-500/50'}`}
                           title={isReplying ? "Fechar Resposta" : "Responder Ticket"}
                         >
-                          <MessageCircle className="w-4 h-4" />
+                          <MessageCircle className="w-4 h-4 cursor-pointer" />
                         </button>
 
                         <button
@@ -223,7 +223,7 @@ export default function SuporteDashboard() {
                             e.stopPropagation();
                             alert(`Excluir ticket ${ticket.id}`);
                           }}
-                          className="p-1.5 text-red-500 bg-gray-100 dark:bg-gray-700 rounded-full shadow-md hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition"
+                          className="p-1.5 cursor-pointer text-red-500 bg-gray-100 dark:bg-gray-700 rounded-full shadow-md hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition"
                           title="Excluir Ticket"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>

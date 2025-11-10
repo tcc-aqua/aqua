@@ -113,13 +113,13 @@ export default function SettingsDashboard() {
     <div className="flex min-h-screen bg-background text-foreground">
       <Toaster position="top-right" richColors />
 
-      <aside className="w-64 bg-sidebar border-r border-border flex flex-col h-full rounded-md">
-        <div className="flex items-center gap-2 p-6 text-lg font-semibold border-b border-border text-accent">
+      <aside className="w-64 bg-sidebar border-r border-border flex flex-col h-full rounded-md  ">
+        <div className="flex items-center gap-2 p-6 text-lg font-semibold border-b border-border text-accent ">
           <Settings className="text-accent" size={20} />
           Configurações
         </div>
 
-        <nav className="flex-1 flex flex-col py-4">
+        <nav className="flex-1 flex flex-col py-4 ">
           <button
             onClick={() => setActiveTab("admins")}
             className={`flex items-center gap-3 px-6 py-3 text-sm transition-all duration-200 rounded-md ${activeTab === "admins"
@@ -146,7 +146,7 @@ export default function SettingsDashboard() {
 
       <main className="flex-1 p-10 overflow-x-auto">
         <AnimationWrapper delay={0.2}>
-          <Card className="mx-auto">
+          <Card className="mx-auto hover:border-sky-400 dark:hover:border-sky-600">
             <CardHeader className="flex justify-between items-center">
               <CardTitle>
                 {activeTab === "admins" ? "Administradores" : "Usuários"}

@@ -40,7 +40,7 @@ export default function AccountSecurityCard({ password }) {
     <div className="mx-auto max-w-lg space-y-4 ">
       <Toaster position="top-right" richColors />
 
-      <Card>
+      <Card className=" hover:border-sky-400 dark:hover:border-sky-600"> 
         <CardContent className="flex justify-between items-center">
           <div className="flex flex-col">
             <p className="text-sm font-medium flex items-center gap-2">
@@ -61,7 +61,7 @@ export default function AccountSecurityCard({ password }) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className=" hover:border-sky-400 dark:hover:border-sky-600">
         <CardContent className="flex justify-between items-center">
           <div className="flex flex-col">
             <p className="text-sm font-medium flex items-center gap-2">
@@ -82,7 +82,7 @@ export default function AccountSecurityCard({ password }) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className=" hover:border-sky-400 dark:hover:border-sky-600">
         <CardContent className="flex justify-between items-center">
           <div className="flex flex-col">
             <p className="text-sm font-medium flex items-center gap-2">
