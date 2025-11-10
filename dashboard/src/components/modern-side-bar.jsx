@@ -13,17 +13,15 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
-  IdCardLanyard,
   Droplets,
   Building,
-  MessageCircle,
-  Rows,
   HousePlus,
   Siren,
   Headset,
   Grid
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navigationItems = [
   { id: "dashboard", name: "Dashboard", icon: Home, href: "/dashboard" },
@@ -33,34 +31,26 @@ const navigationItems = [
   { id: "casas", name: "Casas", icon: HousePlus, href: "/casas" },
   { id: "sensors", name: "Sensores", icon: Droplets, href: "/sensors" },
   { id: "alerts", name: "Alertas", icon: Siren, href: "/alerts" },
-  // { id: "tecnicos", name: "Técnicos", icon: IdCardLanyard, href: "/funcionarios" },
-    { id: "suporte", name: "Suporte", icon: Headset, href: "/suporte" },
+  { id: "suporte", name: "Suporte", icon: Headset, href: "/suporte" },
   { id: "profile", name: "Perfil", icon: User, href: "/profile" },
-
 ];
 
 export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
 
   const [isOpen, setIsOpen] = useState(false);
-
   const { theme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
-
   useEffect(() => {
     const handleResize = () => setIsOpen(window.innerWidth >= 768);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-
-  useEffect(() => {
-    navigationItems.forEach(item => router.prefetch(item.href));
-  }, [router]);
+  useEffect(() => { navigationItems.forEach(item => router.prefetch(item.href)); }, [router]);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
@@ -114,11 +104,11 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
 
         <nav className="flex-1 px-3 py-2 overflow-y-auto mt-4">
           <ul className="space-y-0.5">
-            {navigationItems.map(item => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <li key={item.id}>
+            <TooltipProvider>
+              {navigationItems.map(item => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+                const link = (
                   <Link
                     href={item.href}
                     className={`
@@ -133,34 +123,91 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
                     <Icon className="h-5 w-5 transition-colors duration-200" />
                     {!isCollapsed && <span className="text-sm">{item.name}</span>}
                   </Link>
-                </li>
-              );
-            })}
+                );
+
+                return (
+                  <li key={item.id}>
+                    {isCollapsed ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>{link}</TooltipTrigger>
+                        <TooltipContent
+                          sideOffset={5} 
+                          side="right"
+                          className="bg-accent text-white rounded-md px-2 py-1 text-sm shadow-lg"
+                        >
+                          {item.name}
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : link}
+                  </li>
+                );
+              })}
+            </TooltipProvider>
           </ul>
         </nav>
 
         <div className="p-3 border-t border-sidebar-border">
-          <Link
-            href="/settings"
-            className={`flex items-center rounded-md transition-all duration-200
-              ${isCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 space-x-2.5"}
-              text-sidebar-foreground hover:bg-muted hover:text-accent`}
-          >
-            <Settings className="h-5 w-5 transition-colors duration-200" />
-            {!isCollapsed && <span className="text-sm">Configurações</span>}
-          </Link>
+          {isCollapsed ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/settings"
+                    className="flex items-center justify-center p-2.5 text-sidebar-foreground hover:bg-muted hover:text-accent rounded-md transition-all duration-200"
+                  >
+                    <Settings className="h-5 w-5 transition-colors duration-200" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent
+                  sideOffset={5} 
+                  side="right"
+                  className="bg-accent text-white rounded-md px-2 py-1 text-sm shadow-lg"
+                >
+                  Configurações
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Link
+              href="/settings"
+              className="flex items-center rounded-md px-3 py-2.5 space-x-2.5 text-sidebar-foreground hover:bg-muted hover:text-accent transition-all duration-200"
+            >
+              <Settings className="h-5 w-5 transition-colors duration-200" />
+              <span className="text-sm">Configurações</span>
+            </Link>
+          )}
         </div>
 
         <div className="p-3 border-t border-sidebar-border mt-auto">
-          <Link
-            href="/logout"
-            className={`flex items-center rounded-md transition-all duration-200
-              ${isCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 space-x-2.5"}
-              text-destructive hover:bg-destructive/10 hover:text-destructive`}
-          >
-            <LogOut className="h-5 w-5 transition-colors duration-200" />
-            {!isCollapsed && <span className="text-sm">Sair</span>}
-          </Link>
+          {isCollapsed ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/logout"
+                    className="flex items-center justify-center p-2.5 text-sidebar-foreground hover:bg-muted hover:text-accent rounded-md transition-all duration-200"
+                  >
+                    <LogOut className="h-5 w-5 transition-colors duration-200" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent
+                  sideOffset={5} 
+                  side="right"
+                  className="bg-destructive text-white rounded-md px-2 py-1 text-sm shadow-lg"
+                >
+                  Sair
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Link
+              href="/logout"
+              className="flex items-center rounded-md px-3 py-2.5 space-x-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive transition-all duration-200"
+            >
+              <LogOut className="h-5 w-5 transition-colors duration-200" />
+              <span className="text-sm">Sair</span>
+            </Link>
+          )}
         </div>
       </div>
     </>

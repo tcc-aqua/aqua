@@ -70,8 +70,8 @@ export default function CardAlertasRecentes() {
     <Card className="w-full mt-10">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-red-600" />
-          <h1 className="text-red-600">Alertas Recentes</h1>
+          <AlertTriangle className="w-5 h-5 text-destructive" />
+          <h1 className="text-destructive">Alertas Recentes</h1>
         </CardTitle>
         <CardDescription>
           Últimos alertas gerados no sistema
@@ -96,7 +96,7 @@ export default function CardAlertasRecentes() {
 
                       <span
                         className={`font-semibold p-1 rounded-full inline-flex items-center gap-1
-                ${alerta.residencia_type === "casa" ? "bg-blue-700 text-white" : "bg-purple-700 text-white"}`}
+                ${alerta.residencia_type === "casa" ? "bg-popover-foreground/70 text-white" : "bg-purple-500 text-white"}`}
                       >
                         {renderIconeResidencia(alerta.residencia_type)}
                         {alerta.residencia_type}

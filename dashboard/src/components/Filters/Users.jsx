@@ -53,7 +53,7 @@ export default function UserFilter({ onApply }) {
     >
       <Card className="container mx-auto p-4 rounded-md shadow-sm mb-6">
         <div className="flex flex-wrap gap-4 items-end">
-          {/* Pesquisa (maior) */}
+         
           <div className="flex flex-col flex-1 min-w-[200px]">
             <label className="text-sm font-medium mb-1">Pesquisar</label>
             <input
@@ -61,11 +61,11 @@ export default function UserFilter({ onApply }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Pesquisar usuário..."
-              className="w-full h-10 border border-border rounded px-2"
+              className="w-full h-10 border border-border rounded px-2 "
             />
           </div>
 
-          {/* Status */}
+       
           <div className="flex flex-col min-w-[120px]">
             <label className="text-sm font-medium mb-1">Status</label>
             <Select value={status} onValueChange={setStatus}>
@@ -80,7 +80,7 @@ export default function UserFilter({ onApply }) {
             </Select>
           </div>
 
-          {/* Função */}
+          
           <div className="flex flex-col min-w-[140px]">
             <label className="text-sm font-medium mb-1">Função</label>
             <Select value={funcao} onValueChange={setFuncao}>

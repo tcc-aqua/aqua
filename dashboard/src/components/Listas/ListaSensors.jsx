@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
-import { Cpu, X, Check, Droplet } from "lucide-react";
+import { Cpu, X, Check, Droplet, XCircle, CheckCircle, AlertTriangle } from "lucide-react";
 import useToggleConfirm from "@/hooks/useStatus"
 import {
   Dialog,
@@ -216,7 +216,7 @@ export default function SensorsDashboard() {
                         <div className="text-[10px] text-foreground/60">Localização do Sensor</div>
                       </td>
                       <td className="px-4 py-2 text-sm">
-                        <span className={`inline-block w-3 h-3 rounded-full  px-3 ${sensor.sensor_status === "ativo" ? "bg-green-600" : sensor.sensor_status === "inativo" ? "bg-destructive" : "bg-yellow-600"}`} title={sensor.sensor_status} />
+                        <span className={`inline-block w-3 h-3 rounded-full  ${sensor.sensor_status === "ativo" ? "bg-green-600" : sensor.sensor_status === "inativo" ? "bg-destructive" : "bg-yellow-600"}`} title={sensor.sensor_status} />
                       </td>
                       <td className="px-4 py-2 text-sm font-bold">
                         {sensor.consumo_total}/L
@@ -245,16 +245,55 @@ export default function SensorsDashboard() {
       </AnimationWrapper>
 
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Confirmação</DialogTitle>
+        <DialogContent className="sm:max-w-[450px] rounded-2xl shadow-2xl p-6 ">
+        
+          <DialogHeader className="flex flex-col items-center text-center space-y-4">
+            <div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded-full">
+              <AlertTriangle className="h-10 w-10 text-yellow-500 dark:text-yellow-400" />
+            </div>
+            <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+              Confirmação
+            </DialogTitle>
           </DialogHeader>
-          <p className="py-4">
-            Deseja realmente {selectedItem?.sensor_status === "ativo" ? "inativar" : "ativar"} o usuário <strong>{selectedItem?.sensor_codigo}</strong>?
+      
+          <p className="py-6 text-gray-700 dark:text-gray-300 text-center text-lg">
+            Deseja realmente{" "}
+            <span
+              className={`font-semibold ${
+                selectedItem?.sensor_status === "ativo"
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-green-600 dark:text-green-400"
+              }`}
+            >
+              {selectedItem?.sensor_status === "ativo" ? "inativar" : "ativar"} 
+              
+            </span>{" "}
+            o sensor <strong>{selectedItem?.sensor_codigo}</strong>?
           </p>
-          <DialogFooter className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={toggleStatus}>{selectedItem?.sensor_status === "ativo" ? "Inativar" : "Ativar"}</Button>
+      
+          <DialogFooter className="flex justify-center gap-4">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              onClick={() => setShowModal(false)}
+            >
+              <XCircle className="h-5 w-5" />
+              Cancelar
+            </Button>
+      
+            <Button
+              className={`flex items-center gap-2 px-6 py-3 text-white transition
+                ${
+                  selectedItem?.sensor_status === "ativo"
+                    ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                    : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                }
+              `}
+              onClick={toggleStatus}
+            >
+              <CheckCircle className="h-5 w-5" />
+              {selectedItem?.sensor_status === "ativo" ? "Inativar" : "Ativar"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

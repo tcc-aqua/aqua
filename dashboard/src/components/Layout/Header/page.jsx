@@ -34,7 +34,8 @@ export default function Header() {
   const titulo = getTituloByPath();
 
   return (
-    <header className="fixed top-0 left-0 w-full h-20 z-50 bg-card/90 backdrop-blur-lg border-b border-border shadow-sm transition-all">
+    <header className="fixed top-0 left-0 w-full h-20 z-50 bg-sidebar backdrop-blur-lg border-b border-border shadow-sm transition-all"> 
+     {/* bg-card/90  */}
       <div
         className={`${
           isMobile ? 'px-4 py-3' : 'px-10 py-4'

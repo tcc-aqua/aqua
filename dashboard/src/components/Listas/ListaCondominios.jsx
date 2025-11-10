@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Building, X, Check, UserStar, Droplet, Pencil } from "lucide-react";
+import { Building, X, Check, UserStar, Droplet, Pencil, AlertTriangle, XCircle, CheckCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -324,9 +324,11 @@ export default function CondominiosDashboard() {
                         <div className="text-[10px] text-foreground/60">Total de Sensores</div>
                       </td>
                       <td className="text-sm font-bold flex items-center ml-7 py-9">
-                        <span className={`inline-block w-3 h-3 rounded-full px-3 ${condominio.condominio_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={condominio.condominio_status} />
+                        <span className={`inline-block w-3 h-3 rounded-full ${condominio.condominio_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={condominio.condominio_status} />
                       </td>
-                      <td className="px-4 py-2 text-sm">{condominio.sindico_nome}</td>
+                      <td className="px-4 py-2 text-sm font-semibold">{condominio.sindico_nome}
+                              
+                      </td>
         
                       <td className="px-4 py-2 text-sm">
                         <div className="flex items-center gap-1">
@@ -361,21 +363,58 @@ export default function CondominiosDashboard() {
         </Card>
       </AnimationWrapper>
 
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Confirmação</DialogTitle>
+
+
+  <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="sm:max-w-[450px] rounded-2xl shadow-2xl p-6 ">
+
+          <DialogHeader className="flex flex-col items-center text-center space-y-4">
+            <div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded-full">
+              <AlertTriangle className="h-10 w-10 text-yellow-500 dark:text-yellow-400" />
+            </div>
+            <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+              Confirmação
+            </DialogTitle>
           </DialogHeader>
-          <p className="py-4">
-            Deseja realmente {selectedCondominio?.condominio_status === "ativo" ? "inativar" : "ativar"} o condomínio <strong>{selectedCondominio?.condominio_nome}</strong>?
+
+          <p className="py-6 text-gray-700 dark:text-gray-300 text-center text-lg">
+            Deseja realmente{" "}
+            <span
+              className={`font-semibold ${selectedCondominio?.condominio_status === "ativo"
+                  ? "text-destuctive"
+                  : "text-green-600 dark:text-green-400"
+                }`}
+            >
+           {selectedCondominio?.condominio_status === "ativo" ? "inativar" : "ativar"}
+            </span>{" "}
+            o condomínio <strong>{selectedCondominio?.condominio_nome}</strong>?
           </p>
-          <DialogFooter className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={toggleStatus}>{selectedCondominio?.condominio_status === "ativo" ? "Inativar" : "Ativar"}</Button>
+
+          <DialogFooter className="flex justify-center gap-4">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              onClick={() => setShowModal(false)}
+            >
+              <XCircle className="h-5 w-5" />
+              Cancelar
+            </Button>
+
+            <Button
+              className={`flex items-center gap-2 px-6 py-3 text-white transition
+          ${selectedCondominio?.condominio_status === "ativo"
+                  ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                }
+        `}
+              onClick={toggleStatus}
+            >
+              <CheckCircle className="h-5 w-5" />
+              {selectedCondominio?.condominio_status === "ativo" ? "Inativar" : "Ativar"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
 
     </div>
   );

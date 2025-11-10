@@ -177,7 +177,7 @@ export default function SuporteDashboard() {
                 <CardHeader>
                   <CardTitle className="text-lg font-bold">
                     {ticket.assunto}{" "}
-                    <span className={`ml-2 text-sm font-normal capitalize ${ticket.status === "pendente" ? "text-red-500" : "text-green-500"}`}>
+                    <span className={`ml-2 text-sm font-normal capitalize ${ticket.status === "pendente" ? "text-destructive" : "text-green-500"}`}>
                       [{ticket.status}]
                     </span>
                   </CardTitle>
