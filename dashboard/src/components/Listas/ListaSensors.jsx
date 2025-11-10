@@ -277,7 +277,7 @@ export default function SensorsDashboard() {
               className="flex items-center gap-2 px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               onClick={() => setShowModal(false)}
             >
-              <XCircle className="h-5 w-5" />
+              <X className="h-5 w-5" />
               Cancelar
             </Button>
       
@@ -291,7 +291,7 @@ export default function SensorsDashboard() {
               `}
               onClick={toggleStatus}
             >
-              <CheckCircle className="h-5 w-5" />
+              <Check className="h-5 w-5" />
               {selectedItem?.sensor_status === "ativo" ? "Inativar" : "Ativar"}
             </Button>
           </DialogFooter>

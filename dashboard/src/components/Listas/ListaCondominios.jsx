@@ -66,8 +66,8 @@ export default function CondominiosDashboard() {
           : true;
         const matchesNome = filters.nome
           ? c.condominio_nome
-              ?.toLowerCase()
-              .includes(filters.nome.toLowerCase())
+            ?.toLowerCase()
+            .includes(filters.nome.toLowerCase())
           : true;
         return matchesStatus && matchesNome;
       });
@@ -81,14 +81,14 @@ export default function CondominiosDashboard() {
           Array.isArray(dataAtivos.docs) && dataAtivos.docs.length
             ? dataAtivos.docs.length
             : Array.isArray(dataAtivos)
-            ? dataAtivos.length
-            : 0,
+              ? dataAtivos.length
+              : 0,
         inativos:
           Array.isArray(dataInativos.docs) && dataInativos.docs.length
             ? dataInativos.docs.length
             : Array.isArray(dataInativos)
-            ? dataInativos.length
-            : 0,
+              ? dataInativos.length
+              : 0,
         alertas: filteredCondominios.filter((c) => !c.responsavel_id).length,
       };
 
@@ -150,10 +150,9 @@ export default function CondominiosDashboard() {
       );
       if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
       toast.success(
-        `Condomínio ${
-          selectedCondominio.condominio_status === "ativo"
-            ? "inativado"
-            : "ativado"
+        `Condomínio ${selectedCondominio.condominio_status === "ativo"
+          ? "inativado"
+          : "ativado"
         } com sucesso!`
       );
       fetchData();
@@ -199,10 +198,10 @@ export default function CondominiosDashboard() {
       porcentagem:
         condominioStats.sensoresTotal > 0
           ? (
-              (condominioStats.sensoresAtivos /
-                condominioStats.sensoresTotal) *
-              100
-            ).toFixed(0) + "% operacionais"
+            (condominioStats.sensoresAtivos /
+              condominioStats.sensoresTotal) *
+            100
+          ).toFixed(0) + "% operacionais"
           : "0% operacionais",
     },
     {
@@ -217,11 +216,11 @@ export default function CondominiosDashboard() {
       subTitle:
         condominios.length > 0
           ? `Média de ${(
-              condominios.reduce(
-                (acc, c) => acc + (c.sindico_nome ? 1 : 0),
-                0
-              ) / condominios.length
-            ).toFixed(0)} por condomínio`
+            condominios.reduce(
+              (acc, c) => acc + (c.sindico_nome ? 1 : 0),
+              0
+            ) / condominios.length
+          ).toFixed(0)} por condomínio`
           : "0",
     },
   ];
@@ -255,7 +254,7 @@ export default function CondominiosDashboard() {
                         {card.valueAtivos.casas} ativos
                       </p>
                     )}
-                      {card.valueAtivos2 && (
+                    {card.valueAtivos2 && (
                       <p className="text-sm mt-1 text-orange-300">
                         {card.valueAtivos2.casas} ativos
                       </p>
@@ -327,9 +326,9 @@ export default function CondominiosDashboard() {
                         <span className={`inline-block w-3 h-3 rounded-full ${condominio.condominio_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={condominio.condominio_status} />
                       </td>
                       <td className="px-4 py-2 text-sm font-semibold">{condominio.sindico_nome}
-                              
+
                       </td>
-        
+
                       <td className="px-4 py-2 text-sm">
                         <div className="flex items-center gap-1">
                           <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(condominio)}>
@@ -365,27 +364,28 @@ export default function CondominiosDashboard() {
 
 
 
-  <Dialog open={showModal} onOpenChange={setShowModal}>
+      <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-[450px] rounded-2xl shadow-2xl p-6 ">
 
           <DialogHeader className="flex flex-col items-center text-center space-y-4">
-            <div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded-full">
-              <AlertTriangle className="h-10 w-10 text-yellow-500 dark:text-yellow-400" />
+            <div className="bg-red-100 dark:bg-red-900 p-4 rounded-full">
+              <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-400" />
             </div>
             <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">
               Confirmação
             </DialogTitle>
           </DialogHeader>
 
+
           <p className="py-6 text-gray-700 dark:text-gray-300 text-center text-lg">
             Deseja realmente{" "}
             <span
               className={`font-semibold ${selectedCondominio?.condominio_status === "ativo"
-                  ? "text-destuctive"
-                  : "text-green-600 dark:text-green-400"
+                ? "text-destuctive"
+                : "text-green-600 dark:text-green-400"
                 }`}
             >
-           {selectedCondominio?.condominio_status === "ativo" ? "inativar" : "ativar"}
+              {selectedCondominio?.condominio_status === "ativo" ? "inativar" : "ativar"}
             </span>{" "}
             o condomínio <strong>{selectedCondominio?.condominio_nome}</strong>?
           </p>
@@ -396,7 +396,7 @@ export default function CondominiosDashboard() {
               className="flex items-center gap-2 px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               onClick={() => setShowModal(false)}
             >
-              <XCircle className="h-5 w-5" />
+              <X className="h-5 w-5" />
               Cancelar
             </Button>
 
@@ -409,7 +409,7 @@ export default function CondominiosDashboard() {
         `}
               onClick={toggleStatus}
             >
-              <CheckCircle className="h-5 w-5" />
+              <Check className="h-5 w-5" />
               {selectedCondominio?.condominio_status === "ativo" ? "Inativar" : "Ativar"}
             </Button>
           </DialogFooter>

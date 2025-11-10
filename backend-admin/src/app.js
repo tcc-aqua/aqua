@@ -2,6 +2,8 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { fastifySwagger } from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
+import pino from 'pino'
+import fs from 'fs'
 
 import fastifyFormbody from '@fastify/formbody'
 import userRoutes from './routes/user.routes.js';
@@ -17,13 +19,33 @@ import alertasRoutes from './routes/alertas.routes.js';
 import cepRoutes from './routes/cep.routes.js';
 import leituraRoutes from './routes/leitura.routes.js';
 import suporteRoutes from './routes/suporte.routes.js';
+import crescimentoRoutes from './routes/crescimento.routes.js';
 
+if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
+
+// cria log diário
+const date = new Date().toISOString().slice(0, 10)
+const filePath = `./logs/${date}.log`
+const fileStream = fs.createWriteStream(filePath, { flags: 'a' })
+
+const prettyTransport = pino.transport({
+    target: 'pino-pretty',
+    options: {
+        colorize: true,
+        translateTime: 'SYS:standard',
+        ignore: 'pid,hostname',
+    },
+})
+
+const multiStream = pino.multistream([
+    { stream: prettyTransport },
+    { stream: fileStream },
+])
 
 const fastify = Fastify({
     logger: {
-        transport: {
-            target: 'pino-pretty'
-        }
+        level: 'info',
+        stream: multiStream,
     }
 })
 
@@ -82,6 +104,7 @@ await fastify.register(residenciaRoutes, { prefix: '/api/residencias' });
 await fastify.register(alertasRoutes, { prefix: '/api/alertas' });
 await fastify.register(leituraRoutes, { prefix: '/api/leituras' });
 await fastify.register(suporteRoutes, { prefix: '/api/suporte' });
+await fastify.register(crescimentoRoutes, { prefix: '/api/crescimento' });
 await fastify.register(cepRoutes, { prefix: '/api/cep' });
 await fastify.register(errorHandler);
 
