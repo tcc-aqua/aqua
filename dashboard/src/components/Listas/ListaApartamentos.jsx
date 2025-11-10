@@ -157,11 +157,11 @@ export default function ApartamentosDashboard() {
       subTitle:
         apartamentos.length > 0
           ? `Média de ${(
-              apartamentos.reduce(
-                (acc, ap) => acc + (Number(ap.numero_moradores) || 0),
-                0
-              ) / apartamentos.length
-            ).toFixed(0)} por unidade`
+            apartamentos.reduce(
+              (acc, ap) => acc + (Number(ap.numero_moradores) || 0),
+              0
+            ) / apartamentos.length
+          ).toFixed(0)} por unidade`
           : "0",
     },
     {
@@ -172,7 +172,7 @@ export default function ApartamentosDashboard() {
       porcentagem:
         sensorStats.total > 0
           ? ((sensorStats.ativos / sensorStats.total) * 100).toFixed(0) +
-            "% operacionais"
+          "% operacionais"
           : "0% operacionais",
     },
     {
@@ -290,9 +290,8 @@ export default function ApartamentosDashboard() {
                         <div className="text-xs text-foreground/80">
                           {ap.endereco_condominio}
                         </div>
-                        <div className="text-xs text-foreground/80">{`${
-                          ap.numero_moradores || 0
-                        } Moradores`}</div>
+                        <div className="text-xs text-foreground/80">{`${ap.numero_moradores || 0
+                          } Moradores`}</div>
                         <div className="text-[10px] text-chart-1">
                           Código {ap.apartamento_codigo}
                         </div>
@@ -328,15 +327,15 @@ export default function ApartamentosDashboard() {
                           Último envio:{" "}
                           {ap.ultimo_envio
                             ? new Date(ap.ultimo_envio).toLocaleString(
-                                "pt-BR",
-                                {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                }
-                              )
+                              "pt-BR",
+                              {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )
                             : "-"}
                         </div>
                       </td>
@@ -348,11 +347,10 @@ export default function ApartamentosDashboard() {
                       </td>
                       <td className="text-sm font-bold flex items-center ml-7 py-9">
                         <span
-                          className={`inline-block w-3 h-3 rounded-full mt-3 ${
-                            ap.apartamento_status === "ativo"
+                          className={`inline-block w-3 h-3 rounded-full mt-3 ${ap.apartamento_status === "ativo"
                               ? "bg-green-600"
-                              : "bg-rdestructive"
-                          }`}
+                              : "bg-destructive"
+                            }`}
                           title={ap.apartamento_status}
                         />
                       </td>
@@ -391,31 +389,32 @@ export default function ApartamentosDashboard() {
       </AnimationWrapper>
 
 
-     
 
-       <Dialog open={showModal} onOpenChange={setShowModal}>
+
+      <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-[450px] rounded-2xl shadow-2xl p-6 ">
 
           <DialogHeader className="flex flex-col items-center text-center space-y-4">
-            <div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded-full">
-              <AlertTriangle className="h-10 w-10 text-yellow-500 dark:text-yellow-400" />
+            <div className="bg-red-100 dark:bg-red-900 p-4 rounded-full">
+              <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-400" />
             </div>
             <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">
               Confirmação
             </DialogTitle>
           </DialogHeader>
 
+
           <p className="py-6 text-gray-700 dark:text-gray-300 text-center text-lg">
             Deseja realmente{" "}
             <span
               className={`font-semibold ${selectedAp?.apartamento_status === "ativo"
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-green-600 dark:text-green-400"
+                ? "text-red-600 dark:text-red-400"
+                : "text-green-600 dark:text-green-400"
                 }`}
             >
               {selectedAp?.apartamento_status === "ativo" ? "inativar" : "ativar"}
             </span>{" "}
-              o apartamento <strong>Bloco {selectedAp?.endereco_completo}</strong>?
+            o apartamento <strong>Bloco {selectedAp?.endereco_completo}</strong>?
           </p>
 
           <DialogFooter className="flex justify-center gap-4">
@@ -424,7 +423,7 @@ export default function ApartamentosDashboard() {
               className="flex items-center gap-2 px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               onClick={() => setShowModal(false)}
             >
-              <XCircle className="h-5 w-5" />
+              <X className="h-5 w-5" />
               Cancelar
             </Button>
 
@@ -437,7 +436,7 @@ export default function ApartamentosDashboard() {
         `}
               onClick={toggleStatus}
             >
-              <CheckCircle className="h-5 w-5" />
+              <Check className="h-5 w-5" />
               {selectedAp?.apartamento_status === "ativo" ? "Inativar" : "Ativar"}
             </Button>
           </DialogFooter>

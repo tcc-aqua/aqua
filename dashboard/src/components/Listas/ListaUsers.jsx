@@ -265,25 +265,26 @@ export default function UsersDashboard() {
           </CardContent>
         </Card>
       </AnimationWrapper>
-      
+
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-[450px] rounded-2xl shadow-2xl p-6 ">
 
           <DialogHeader className="flex flex-col items-center text-center space-y-4">
-            <div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded-full">
-              <AlertTriangle className="h-10 w-10 text-yellow-500 dark:text-yellow-400" />
+            <div className="bg-red-100 dark:bg-red-900 p-4 rounded-full">
+              <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-400" />
             </div>
             <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">
               Confirmação
             </DialogTitle>
           </DialogHeader>
 
+
           <p className="py-6 text-gray-700 dark:text-gray-300 text-center text-lg">
             Deseja realmente{" "}
             <span
               className={`font-semibold ${selectedItem?.user_status === "ativo"
-                  ? "text-red-600 "
-                  : "text-green-600 dark:text-green-400"
+                ? "text-red-600 "
+                : "text-green-600 dark:text-green-400"
                 }`}
             >
               {selectedItem?.user_status === "ativo" ? "inativar" : "ativar"}
@@ -297,7 +298,7 @@ export default function UsersDashboard() {
               className="flex items-center gap-2 px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               onClick={() => setShowModal(false)}
             >
-              <XCircle className="h-5 w-5" />
+              <X className="h-5 w-5" />
               Cancelar
             </Button>
 
@@ -310,7 +311,7 @@ export default function UsersDashboard() {
         `}
               onClick={toggleStatus}
             >
-              <CheckCircle className="h-5 w-5" />
+              <Check className="h-5 w-5" />
               {selectedItem?.user_status === "ativo" ? "Inativar" : "Ativar"}
             </Button>
           </DialogFooter>

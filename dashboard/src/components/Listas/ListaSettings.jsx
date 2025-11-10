@@ -26,7 +26,7 @@ export default function SettingsDashboard() {
   const [error, setError] = useState(null);
 
   const [showNewAdminModal, setShowNewAdminModal] = useState(false);
-  const [newAdmin, setNewAdmin] = useState({ email: "", password: "", role: "admin" });
+  const [newAdmin, setNewAdmin] = useState({ email: "", password: "", role: "superadmin" });
 
   const { addAdmin, fetchAdmins } = useAdmins();
 
@@ -301,13 +301,14 @@ export default function SettingsDashboard() {
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-[425px] rounded-xl shadow-lg p-5 ">
           <DialogHeader className="flex flex-col items-center text-center space-y-4">
-            <div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded-full">
-              <AlertTriangle className="h-10 w-10 text-yellow-500 dark:text-yellow-400" />
+            <div className="bg-red-100 dark:bg-red-900 p-4 rounded-full">
+              <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-400" />
             </div>
             <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">
               Confirmação
             </DialogTitle>
           </DialogHeader>
+
 
           <p className="py-4 text-gray-700 dark:text-gray-300">
             Deseja realmente{" "}
@@ -331,7 +332,7 @@ export default function SettingsDashboard() {
               className="flex items-center gap-2"
               onClick={() => setShowModal(false)}
             >
-              <XCircle className="h-4 w-4" />
+              <X className="h-4 w-4" />
               Cancelar
             </Button>
 
@@ -343,7 +344,7 @@ export default function SettingsDashboard() {
                 } text-white`}
               onClick={toggleStatus}
             >
-              <CheckCircle className="h-4 w-4" />
+              <Check className="h-4 w-4" />
               {(selectedItem?.status || selectedItem?.user_status) === "ativo"
                 ? "Inativar"
                 : "Ativar"}
