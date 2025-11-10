@@ -24,14 +24,14 @@ export default function Dashboard() {
             <div className="mt-10"><ChartAreaInteractive /></div>
           </AnimationWrapper>
           <section className="container mx-auto mt-10 grid grid-cols-3 gap-10">
-           
+           <div className="col-span-2">
+              <DistribuicaoPorRegiao />
+            </div>
             <div className="flex flex-col gap-6">
               <CardAlertasRecentes />
               <ChartMeiaLua />
             </div>
-            <div className="col-span-2">
-              <DistribuicaoPorRegiao />
-            </div>
+            
           </section>
 
 
