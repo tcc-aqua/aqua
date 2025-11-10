@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Dimensions, Text } from 'react-native';
+import { View, StyleSheet, ScrollView, Dimensions, Text as RNText } from 'react-native';
 import {
   SegmentedButtons,
   Card,
@@ -8,7 +8,8 @@ import {
   Paragraph,
   Icon,
 } from 'react-native-paper';
-import { BarChart } from 'react-native-chart-kit';
+// Importações do Skia
+import { Canvas, Rect, Text } from "@shopify/react-native-skia";
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -22,48 +23,61 @@ const reportData = [
   { date: '07/11', consumption: 130, savings: 18 },
 ];
 
+const LOW_CONSUMPTION_THRESHOLD = 130;
+const HIGH_CONSUMPTION_THRESHOLD = 160;
+
+// Função de cor, agora fora do componente para ser acessada pelo SkiaChart
+const getBarColor = (consumption) => {
+  if (consumption >= HIGH_CONSUMPTION_THRESHOLD) return '#f31212ff';
+  if (consumption < LOW_CONSUMPTION_THRESHOLD) return '#2ecc71';
+  return '#3498db';
+};
+
+// --- NOSSO NOVO COMPONENTE DE GRÁFICO COM SKIA ---
+const SkiaBarChart = ({ data, width, height }) => {
+  const PADDING = { top: 30, bottom: 30, left: 10, right: 10 };
+  const BAR_WIDTH = 35;
+  const VISUAL_BASE_HEIGHT = 20;
+
+  const chartHeight = height - PADDING.top - PADDING.bottom;
+  const chartWidth = width - PADDING.left - PADDING.right;
+
+  const values = data.map(d => d.consumption);
+  const minConsumption = Math.min(...values);
+  const maxConsumption = Math.max(...values);
+  const dataRange = maxConsumption - minConsumption;
+
+  const totalBarWidth = data.length * BAR_WIDTH;
+  const totalSpacing = chartWidth - totalBarWidth;
+  const gapWidth = data.length > 1 ? totalSpacing / (data.length - 1) : 0;
+
+  return (
+    <Canvas style={{ width, height }}>
+      {data.map((item, index) => {
+        const barHeight = dataRange === 0 
+          ? chartHeight
+          : ((item.consumption - minConsumption) / dataRange) * (chartHeight - VISUAL_BASE_HEIGHT) + VISUAL_BASE_HEIGHT;
+        
+        const x = PADDING.left + index * (BAR_WIDTH + gapWidth);
+        const y = PADDING.top + chartHeight - barHeight;
+
+        return (
+          <React.Fragment key={index}>
+            <Rect x={x} y={y} width={BAR_WIDTH} height={barHeight} color={getBarColor(item.consumption)} rx={4} />
+            <Text x={x + BAR_WIDTH / 2 - 15} y={y - 8} text={`${item.consumption}`} color="black" />
+            <Text x={x + BAR_WIDTH / 2 - 15} y={height - 10} text={item.date} color="gray" />
+          </React.Fragment>
+        );
+      })}
+    </Canvas>
+  );
+};
+
 const ReportsScreen = () => {
   const [timeframe, setTimeframe] = useState('7d');
   const [viewMode, setViewMode] = useState('graph');
 
-  const LOW_CONSUMPTION_THRESHOLD = 130;
-  const HIGH_CONSUMPTION_THRESHOLD = 160;
-
-  const getBarColor = (consumption) => {
-    if (consumption >= HIGH_CONSUMPTION_THRESHOLD) return '#f39c12';
-    if (consumption < LOW_CONSUMPTION_THRESHOLD) return '#2ecc71';
-    return '#3498db';
-  };
-
-  const minConsumption = Math.min(...reportData.map(item => item.consumption));
-  const visualBaseHeight = 50; 
-  const transformedData = reportData.map(item => {
-    return (item.consumption - minConsumption) + visualBaseHeight;
-  });
-
-  const barChartData = {
-    labels: reportData.map(item => item.date),
-    datasets: [
-      {
-        data: transformedData,
-        colors: reportData.map(item => (opacity = 1) => getBarColor(item.consumption)),
-      },
-    ],
-  };
-  
-  const chartConfig = {
-    backgroundColor: '#ffffff',
-    backgroundGradientFrom: '#ffffff',
-    backgroundGradientTo: '#ffffff',
-    decimalPlaces: 0,
-    color: (opacity = 0.1) => `rgba(0, 0, 0, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-    style: {
-      borderRadius: 16,
-    },
-    // withVerticalLabels: false, // Esta propriedade falhou, então removemos.
-  };
-
+  // Os cálculos de resumo continuam os mesmos
   const totalConsumption = reportData.reduce((acc, item) => acc + item.consumption, 0);
   const totalSavings = reportData.reduce((acc, item) => acc + item.savings, 0);
   const dailyAverage = Math.round(totalConsumption / reportData.length);
@@ -78,31 +92,10 @@ const ReportsScreen = () => {
         <Card style={styles.card}>
           <Card.Content style={styles.chartCardContent}>
             <Title style={styles.chartTitle}>Consumo Diário (Litros)</Title>
-            <BarChart
-              style={styles.chartStyle}
-              data={barChartData}
-              width={screenWidth - 35}
+            <SkiaBarChart
+              data={reportData}
+              width={screenWidth - 40}
               height={250}
-              chartConfig={chartConfig}
-              withCustomBarColorFromData={true}
-              flatColor={true}
-              withInnerLines={false}
-              fromZero={true}
-              renderDotContent={({ x, y, index }) => (
-                <Text
-                  key={index}
-                  style={{
-                    position: 'absolute',
-                    left: x - 15,
-                    top: y + 5,
-                    color: '#000',
-                    fontSize: 12,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  {reportData[index].consumption}
-                </Text>
-              )}
             />
           </Card.Content>
         </Card>
@@ -127,24 +120,35 @@ const ReportsScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
+      {/* Controles do Topo */}
       <View style={styles.controlsContainer}>
         <SegmentedButtons
           value={timeframe}
           onValueChange={setTimeframe}
-          buttons={[ { value: '7d', label: '7 Dias' }, { value: '30d', label: '30 Dias' }, { value: '90d', label: '90 Dias' } ]}
+          buttons={[
+            { value: '7d', label: '7 Dias' },
+            { value: '30d', label: '30 Dias' },
+            { value: '90d', label: '90 Dias' },
+          ]}
           style={styles.segmentedButton}
         />
         <SegmentedButtons
           value={viewMode}
           onValueChange={setViewMode}
-          buttons={[ { value: 'graph', label: 'Gráfico', icon: 'chart-bar' }, { value: 'list', label: 'Lista', icon: 'format-list-bulleted' } ]}
+          buttons={[
+            { value: 'graph', label: 'Gráfico', icon: 'chart-bar' },
+            { value: 'list', label: 'Lista', icon: 'format-list-bulleted' },
+          ]}
           style={styles.segmentedButton}
         />
       </View>
+      
+      {/* Área de Conteúdo Principal */}
       <View style={styles.contentContainer}>
         {renderContent()}
       </View>
       
+      {/* Grade de Resumo */}
       <View style={styles.summaryGridContainer}>
         <View style={styles.summaryRow}>
           <Card style={styles.summaryCard}>
@@ -193,26 +197,25 @@ const ReportsScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  controlsContainer: { padding: 10, backgroundColor: '#fff' },
-  segmentedButton: { marginBottom: 10 },
-  contentContainer: { paddingHorizontal: 10, alignItems: 'center' },
-  chartTitle: { textAlign: 'center', marginBottom: 10 },
-  chartStyle: {
-    borderRadius: 16,
-  },
-  card: { marginBottom: 10, width: screenWidth - 20 },
-  reportDate: { alignSelf: 'center', marginRight: 10, color: '#666' },
-  summaryGridContainer: { paddingHorizontal: 10, marginTop: 10, marginBottom: 20 },
-  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  summaryCard: { width: '48%' },
-  summaryCardContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 5, paddingVertical: 15 },
-  summaryLabel: { fontSize: 12, color: '#666' },
-  summaryValue: { fontSize: 18, lineHeight: 20 },
-  bestDayDate: { fontSize: 11, lineHeight: 12, color: '#666' },
-  chartCardContent: {
-    alignItems: 'center',
-  },
+    container: { flex: 1, backgroundColor: '#f5f5f5' },
+    controlsContainer: { padding: 10, backgroundColor: '#fff' },
+    segmentedButton: { marginBottom: 10 },
+    contentContainer: { paddingHorizontal: 10, alignItems: 'center' },
+    chartTitle: { textAlign: 'center', marginBottom: 10 },
+    card: { marginBottom: 10, width: screenWidth - 20 },
+    reportDate: { alignSelf: 'center', marginRight: 10, color: '#666' },
+    summaryGridContainer: { paddingHorizontal: 10, marginTop: 10, marginBottom: 20 },
+    summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+    summaryCard: { width: '48%' },
+    summaryCardContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 5, paddingVertical: 15 },
+    summaryLabel: { fontSize: 12, color: '#666' },
+    summaryValue: { fontSize: 18, lineHeight: 20 },
+    bestDayDate: { fontSize: 11, lineHeight: 12, color: '#666' },
+    chartCardContent: {
+      alignItems: 'center',
+      paddingHorizontal: 0,
+      paddingVertical: 10,
+    },
 });
 
 export default ReportsScreen;
