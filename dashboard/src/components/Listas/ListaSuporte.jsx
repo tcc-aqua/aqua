@@ -2,52 +2,41 @@
 
 import { useEffect, useState } from "react";
 import Loading from "../Layout/Loading/page";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster, toast } from "sonner";
 import SuporteFilter from "../Filters/Suporte";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import AnimationWrapper from "../Layout/Animation/Animation";
-
-// Importações de ícones de exemplo (você precisará ter esses ícones disponíveis)
-// Exemplo: npm install lucide-react
-import { MessageCircle, MailWarning, Clock, AlertTriangle } from "lucide-react";
+import { MessageCircle, MailWarning, Clock, AlertTriangle, User, Mail, Calendar } from "lucide-react";
 
 export default function SuporteDashboard() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Novo estado para armazenar os dados dos cards
   const [cardsData, setCardsData] = useState([]);
 
   const [showModal, setShowModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [replyingTicketId, setReplyingTicketId] = useState(null);
+  const [replyMessage, setReplyMessage] = useState("");
 
   const API_URL = "http://localhost:3333/api/suporte";
 
-  // Função para calcular os dados dos cards a partir dos tickets
   const calculateCardsData = (currentTickets) => {
     const total = currentTickets.length;
     const naoLidas = currentTickets.filter(t => t.status === "pendente").length;
-    
-    // Simulação para "Recentes": tickets criados na última hora (ajuste conforme a sua lógica real)
     const umaHoraAtras = new Date(Date.now() - 60 * 60 * 1000);
     const recentes = currentTickets.filter(t => new Date(t.criado_em) > umaHoraAtras).length;
-
-    // Simulação para "Alta Prioridade" (assumindo um campo 'prioridade' ou baseando-se no assunto/remetente)
-    // Usaremos "pendente" como proxy para alta prioridade se não houver campo de prioridade real
     const altaPrioridade = currentTickets.filter(t => t.prioridade === "alta" || t.status === "pendente").length;
 
-
-    // Definindo o array de cards com os valores calculados
     const newCards = [
       {
         title: "Total de Mensagens",
         value: total,
         icon: MessageCircle,
         iconColor: "text-blue-500",
-        porcentagem: "Visão Geral", // Mock de subtítulo
+        porcentagem: "Visão Geral",
       },
       {
         title: "Mensagens Não Lidas",
@@ -80,20 +69,19 @@ export default function SuporteDashboard() {
       setLoading(true);
       setError(null);
 
-      // Aqui você pode adaptar o fetch para usar filtros, se necessário
       const res = await fetch(API_URL);
       if (!res.ok) throw new Error("Erro ao buscar tickets de suporte.");
 
       const data = await res.json();
       const ticketsArray = Array.isArray(data) ? data : data.docs ?? [];
-      
+
       setTickets(ticketsArray);
-      calculateCardsData(ticketsArray); // Chama o cálculo dos cards após receber os tickets
-      
+      calculateCardsData(ticketsArray);
+
     } catch (err) {
       console.error(err);
       setError(err.message || String(err));
-      setCardsData([]); // Limpa os cards em caso de erro
+      setCardsData([]);
     } finally {
       setLoading(false);
     }
@@ -118,6 +106,22 @@ export default function SuporteDashboard() {
     }
   };
 
+  const handleToggleReply = (ticketId) => {
+    setReplyingTicketId(replyingTicketId === ticketId ? null : ticketId);
+    setReplyMessage("");
+  };
+
+  const handleSendReply = (ticketId) => {
+    if (!replyMessage.trim()) {
+      toast.error("A mensagem de resposta não pode estar vazia.");
+      return;
+    }
+    toast.success(`Resposta enviada para o Ticket ${ticketId}`);
+    setReplyingTicketId(null);
+    setReplyMessage("");
+  };
+
+
   if (loading) return <Loading />;
   if (error) return <p className="text-destructive">Erro: {error}</p>;
 
@@ -126,12 +130,11 @@ export default function SuporteDashboard() {
       <Toaster position="top-right" richColors />
 
       <div className="mb-10">
-        {/* Você precisará ajustar o SuporteFilter para não receber 'filters' se o 'fetchData' não for alterado para usá-los */}
-        <SuporteFilter onApply={(filters) => fetchData(filters)} /> 
+        <SuporteFilter onApply={(filters) => fetchData(filters)} />
       </div>
 
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"> 
-        {cardsData.map((card, i) => { // Usa cardsData
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {cardsData.map((card, i) => {
           const Icon = card.icon;
           return (
             <AnimationWrapper key={card.title} delay={i * 0.2}>
@@ -157,38 +160,140 @@ export default function SuporteDashboard() {
                       <p className="text-sm mt-1 text-blue-500">{card.subTitle2}</p>
                     )}
                   </div>
-               
-                  <Icon className={`w-8 h-8 ${card.iconColor}`} /> 
+                  <Icon className={`w-8 h-8 ${card.iconColor}`} />
                 </CardContent>
               </Card>
             </AnimationWrapper>
           );
         })}
       </section>
-      
-      <div className="flex flex-col gap-4">
+
+      <div className="flex flex-col gap-4 font-sans">
         {tickets.length === 0 ? (
           <p>Nenhum ticket encontrado.</p>
         ) : (
-          tickets.map((ticket, i) => (
-            <AnimationWrapper key={ticket.id || i} delay={i * 0.1}>
-              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => { setSelectedTicket(ticket); setShowModal(true); }}>
-                <CardHeader>
-                  <CardTitle className="text-lg font-bold">
-                    {ticket.assunto}{" "}
-                    <span className={`ml-2 text-sm font-normal capitalize ${ticket.status === "pendente" ? "text-destructive" : "text-green-500"}`}>
-                      [{ticket.status}]
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground/80 truncate">{ticket.mensagem}</p>
-                  <p className="mt-1 text-xs text-foreground/60">Remetente: {ticket.remetente_id}</p>
-                  <p className="mt-1 text-xs text-foreground/60">Criado em: {formatDate(ticket.criado_em)}</p>
-                </CardContent>
-              </Card>
-            </AnimationWrapper>
-          ))
+          tickets.map((ticket, i) => {
+            const isReplying = replyingTicketId === ticket.id;
+
+            return (
+              <AnimationWrapper key={ticket.id || i} delay={i * 0.1}>
+                <Card
+                  className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:border-sky-400 dark:hover:border-sky-600"
+                  role="listitem"
+                >
+
+                  <CardHeader className="p-4 border-b border-gray-100 dark:border-gray-700">
+
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex gap-2">
+                        <span
+                          className={`inline-block px-2 py-0.5 text-xs font-semibold uppercase rounded tracking-wide 
+                          ${ticket.status === "pendente"
+                              ? "bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400"
+                              : "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400"
+                            }`}
+                        >
+                          {ticket.status}
+                        </span>
+                        <span
+                          className={`inline-block px-2 py-0.5 text-xs font-semibold uppercase rounded tracking-wide 
+                          ${ticket.status === "resolvido"
+                              ? "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400"
+                              : "bg-sky-500/10 text-sky-600 dark:bg-sky-500/20 dark:text-sky-400"
+                            }`}
+                        >
+                          {ticket.status === "resolvido" ? "Respondida" : "Não Respondida"}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-1.5 shrink-0">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleReply(ticket.id);
+                          }}
+                          className={`p-1.5 text-white rounded-full shadow-md transition ${isReplying ? 'bg-orange-600 hover:bg-orange-700 focus:ring-orange-500/50' : 'bg-sky-600 hover:bg-sky-700 focus:ring-sky-500/50'}`}
+                          title={isReplying ? "Fechar Resposta" : "Responder Ticket"}
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            alert(`Excluir ticket ${ticket.id}`);
+                          }}
+                          className="p-1.5 text-red-500 bg-gray-100 dark:bg-gray-700 rounded-full shadow-md hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition"
+                          title="Excluir Ticket"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <CardTitle className="text-xl font-bold truncate max-w-full">
+                      {ticket.assunto}
+                    </CardTitle>
+                  </CardHeader>
+
+                  <CardContent className="p-4 space-y-3">
+
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pb-2 border-b border-dashed border-gray-200 dark:border-gray-700 text-xs">
+
+                      <p className="font-medium flex items-center gap-1">
+                        <User className="w-3 h-3 text-sky-600 dark:text-sky-400" />
+                        <span className="font-semibold"></span> {ticket.remetente_nome || ticket.remetente_id}
+                      </p>
+
+                      <p className="flex items-center gap-1">
+                        <Mail className="w-3 h-3" />
+                        <span className="font-semibold"></span> {ticket.remetente_email || 'N/A'}
+                      </p>
+
+                      <p className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        <span className="font-semibold"></span> {formatDate(ticket.criado_em)}
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-sky-700 dark:text-sky-400 mb-1">Mensagem</h3>
+                      <p className="text-sm line-clamp-3">
+                        {ticket.mensagem}
+                      </p>
+                    </div>
+
+                  </CardContent>
+
+                  {isReplying && (
+                    <CardFooter className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80">
+                      <div className="w-full space-y-2">
+                        <label htmlFor={`reply-${ticket.id}`} className="sr-only">Sua Resposta</label>
+                        <textarea
+                          id={`reply-${ticket.id}`}
+                          rows="3"
+                          value={replyMessage}
+                          onChange={(e) => setReplyMessage(e.target.value)}
+                          className="w-full p-2 text-sm bg-white border border-gray-300 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:bg-gray-900 dark:border-gray-600"
+                          placeholder="Escreva sua resposta (min. 3 linhas)..."
+                        ></textarea>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSendReply(ticket.id);
+                          }}
+                          className="w-full py-1.5 text-sm font-semibold cursor-pointer rounded-md shadow-md hover:bg-blue-300 transition"
+                        >
+                          Enviar Resposta
+                        </button>
+                      </div>
+                    </CardFooter>
+                  )}
+
+                </Card>
+              </AnimationWrapper>
+            );
+          })
         )}
       </div>
 
