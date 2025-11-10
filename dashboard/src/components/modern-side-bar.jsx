@@ -59,7 +59,7 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
     <>
       <button
         onClick={toggleSidebar}
-        className="fixed top-3 left-3 z-50 p-2 rounded-lg bg-white shadow-md border border-border md:hidden hover:bg-muted transition-all duration-200"
+        className="fixed top-3 left-3 z-50 p-2 rounded-lgshadow-md border border-border md:hidden hover:bg-muted transition-all duration-200"
         aria-label="Alternar menu lateral"
       >
         {isOpen ? <X className="h-5 w-5 text-foreground" /> : <Menu className="h-5 w-5 text-foreground" />}
