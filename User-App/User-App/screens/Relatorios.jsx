@@ -81,7 +81,7 @@ const ReportsScreen = () => {
             <BarChart
               style={styles.chartStyle}
               data={barChartData}
-              width={screenWidth - 60}
+              width={screenWidth - 35}
               height={250}
               chartConfig={chartConfig}
               withCustomBarColorFromData={true}
