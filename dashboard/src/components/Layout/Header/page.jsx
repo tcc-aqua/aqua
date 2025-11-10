@@ -77,12 +77,12 @@ export default function Header() {
             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-destructive animate-pulse" />
           </div>
 
-          <div className="flex items-center space-x-3 border-l border-border pl-5">
+          <div className="flex items-center space-x-3  pl-5">
             <div className="relative">
               <img
                 src={userInfo.image}
                 alt="Avatar"
-                className="w-10 h-10 rounded-full object-cover border-2 border-primary shadow-sm"
+                className="w-10 h-10 rounded-full object-cover border-1 border-primary shadow-sm"
               />
               <div
                 className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-card"

@@ -202,7 +202,7 @@ export default function ApartamentosDashboard() {
           const Icon = card.icon;
           return (
             <AnimationWrapper key={card.title} delay={i * 0.2}>
-              <Card>
+              <Card className=" hover:border-sky-400 dark:hover:border-sky-600">
                 <CardHeader>
                   <CardTitle className="font-bold text-xl text-foreground">
                     {card.title}
@@ -243,7 +243,7 @@ export default function ApartamentosDashboard() {
       </section>
 
       <AnimationWrapper delay={0.3}>
-        <Card className="mx-auto mt-10">
+        <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-600">
           <CardHeader>
             <CardTitle>Lista de Apartamentos</CardTitle>
           </CardHeader>

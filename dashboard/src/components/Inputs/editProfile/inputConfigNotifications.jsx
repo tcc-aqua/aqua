@@ -35,7 +35,7 @@ export default function InputNotifications() {
   return (
     <div className="mx-auto max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 ">
       {notifications.map((notif, index) => (
-        <Card key={index} className="shadow-md hover:shadow-lg transition-shadow">
+        <Card key={index} className="shadow-md hover:shadow-lg transition-shadow  hover:border-sky-400 dark:hover:border-sky-600">
           <CardContent className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-4">
             <div className="flex flex-col">
               <p className="text-sm font-semibold">{notif.title}</p>
