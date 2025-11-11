@@ -9,6 +9,8 @@ import SuporteFilter from "../Filters/Suporte";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { MessageCircle, MailWarning, Clock, AlertTriangle, User, Mail, Calendar } from "lucide-react";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode"
 
 export default function SuporteDashboard() {
   const [tickets, setTickets] = useState([]);
@@ -42,8 +44,8 @@ export default function SuporteDashboard() {
         title: "Mensagens Não Lidas",
         value: naoLidas,
         icon: MailWarning,
-        iconColor: "text-red-500",
-        subTitle: naoLidas > 0 ? `${naoLidas} para ação` : "Tudo Certo!",
+        iconColor: "text-yellow-500",
+        subTitle1: naoLidas > 0 ? `${naoLidas} para ação` : "Tudo Certo!",
       },
       {
         title: "Mensagens Recentes",
@@ -56,7 +58,7 @@ export default function SuporteDashboard() {
         title: "Prioridade Alta",
         value: altaPrioridade,
         icon: AlertTriangle,
-        iconColor: "text-yellow-500",
+        iconColor: "text-red-500",
         subTitle: altaPrioridade > 0 ? "Ação Imediata" : "Sem Urgência",
       },
     ];
@@ -111,15 +113,50 @@ export default function SuporteDashboard() {
     setReplyMessage("");
   };
 
-  const handleSendReply = (ticketId) => {
+
+
+const handleSendReply = async (ticketId) => {
+  try {
     if (!replyMessage.trim()) {
-      toast.error("A mensagem de resposta não pode estar vazia.");
+      toast.error("Preencha a resposta antes de enviar.");
       return;
     }
-    toast.success(`Resposta enviada para o problema ${ticketId}`);
-    setReplyingTicketId(null);
+
+    const token = Cookies.get("token");
+    if (!token) {
+      toast.error("Usuário não autenticado.");
+      return;
+    }
+
+    const decoded = jwtDecode(token);
+    const respondido_por = decoded.role || "Desconhecido";
+
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: ticketId,
+        resposta: replyMessage,
+        respondido_por, // agora vem do token
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Falha na requisição");
+    }
+
+    toast.success("Resposta enviada com sucesso!");
     setReplyMessage("");
-  };
+    setReplyingTicketId(null);
+    fetchData();
+  } catch (error) {
+    console.error("Erro ao enviar resposta:", error);
+    toast.error("Erro ao enviar resposta.");
+  }
+};
+
 
 
   if (loading) return <Loading />;
@@ -145,19 +182,19 @@ export default function SuporteDashboard() {
                 <CardContent className="flex flex-row items-center justify-between -mt-6">
                   <div className="flex flex-col">
                     <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
-                    {card.valueAtivos && (
-                      <p className="text-purple-700 text-sm mt-1">
-                        {card.valueAtivos.casas} casas + {card.valueAtivos.apartamentos} apartamentos
+                    {card.subTitle1 && (
+                      <p className="text-yellow-500 text-sm mt-1">
+                        {card.subTitle1}
                       </p>
                     )}
                     {card.porcentagem && !card.valueAtivos && (
-                      <p className="text-sm mt-1 text-green-600">{card.porcentagem}</p>
+                      <p className="text-sm mt-1 text-blue-500">{card.porcentagem}</p>
                     )}
                     {card.subTitle && (
                       <p className="text-sm mt-1 text-destructive">{card.subTitle}</p>
                     )}
                     {card.subTitle2 && (
-                      <p className="text-sm mt-1 text-blue-500">{card.subTitle2}</p>
+                      <p className="text-sm mt-1 text-green-600">{card.subTitle2}</p>
                     )}
                   </div>
                   <Icon className={`w-8 h-8 ${card.iconColor}`} />

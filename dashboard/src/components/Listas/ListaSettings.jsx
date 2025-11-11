@@ -68,7 +68,7 @@ export default function SettingsDashboard() {
   const roleColor = (role) => {
     switch (role) {
       case "superadmin":
-        return "bg-purple-500 ";
+        return "bg-purple-400 ";
       case "admin":
         return "bg-accent/60 ";
       case "sindico":

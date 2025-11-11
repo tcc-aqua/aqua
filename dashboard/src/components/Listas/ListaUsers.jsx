@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
-import { Users, UserCheck, UserCog, AlertTriangle, X, Check, Pencil, XCircle, CheckCircle } from "lucide-react";
+import { Users, UserCheck, UserCog, User, X, Check, Pencil, AlertTriangle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -17,21 +17,22 @@ import useToggleConfirm from "@/hooks/useStatus";
 import UserFilter from "../Filters/Users";
 import AnimationWrapper from "../Layout/Animation/Animation";
 
-
-
 export default function UsersDashboard() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userStats, setUserStats] = useState({
-
     total: 0,
     ativos: 0,
+    inativos: 0,
     sindicos: 0,
     moradores: 0,
+    casas: 0,
+    condominios: 0,
   });
 
   const API_URL = "http://localhost:3333/api/users";
+
   const fetchData = async (filters = {}) => {
     try {
       setLoading(true);
@@ -61,7 +62,6 @@ export default function UsersDashboard() {
       ]);
 
       const usersArray = Array.isArray(allData) ? allData : allData.docs || allData.users || [];
-      console.log("usersArray:", usersArray);
 
       const filteredUsers = usersArray.filter(user => {
         const matchesSearch = filters.search
@@ -88,14 +88,15 @@ export default function UsersDashboard() {
 
 
       setUserStats({
-        total: countData.total ?? usersArray.length,
-        ativos: countAtivasData.total ?? ativosData.docs?.length ?? filteredUsers.filter(u => u.user_status === "ativo").length,
-        inativos: inativosData.docs?.length ?? 0,
-        sindicos: sindicosData.total ?? 0,
-        moradores: moradoresData.total ?? 0,
-        casas: filteredUsers.filter(u => u.user_type === "casa").length,
-        condominios: filteredUsers.filter(u => u.user_type === "condominio").length,
+        total: usersArray.length, // pega todos os usuários retornados do backend
+        ativos: usersArray.filter(u => u.user_status === "ativo").length,
+        inativos: usersArray.filter(u => u.user_status === "inativo").length,
+        sindicos: usersArray.filter(u => u.user_role === "sindico").length,
+        moradores: usersArray.filter(u => u.user_role === "morador").length,
+        casas: usersArray.filter(u => u.user_type === "casa").length,
+        condominios: usersArray.filter(u => u.user_type === "condominio").length,
       });
+
 
     } catch (err) {
       console.error("Erro ao buscar dados:", err);
@@ -105,7 +106,10 @@ export default function UsersDashboard() {
     }
   };
 
-  const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
+  const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, async () => {
+    await fetchData();
+  });
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -113,32 +117,36 @@ export default function UsersDashboard() {
   if (loading) return <Loading />;
   if (error) return <p className="text-destructive">Erro: {error}</p>;
 
-
   const cards = [
     {
       title: "Todos os Usuários",
       value: userStats.total,
       icon: Users,
       iconColor: "text-accent",
+      detalhe: `${userStats.casas ?? 0} casas + ${userStats.condominios ?? 0} condomínios`,
     },
     {
       title: "Usuários Ativos",
       value: userStats.ativos,
       icon: UserCheck,
-
       iconColor: "text-green-700",
+      porcentagem: userStats.total > 0
+        ? ((userStats.ativos / userStats.total) * 100).toFixed(0) + "% operacionais"
+        : "0% operacionais"
     },
     {
       title: "Síndicos",
       value: userStats.sindicos,
       icon: UserCog,
       iconColor: "text-yellow-500",
+      subTitle: "Síndicos Totais"
     },
     {
-      title: "Alertas",
+      title: "Moradores",
       value: userStats.moradores,
-      icon: AlertTriangle,
-      iconColor: "text-destructive",
+      icon: User,
+      iconColor: "text-sky-500",
+      subTitle2: "Usuários finais"
     },
   ];
 
@@ -154,18 +162,21 @@ export default function UsersDashboard() {
         {cards.map((card, i) => {
           const Icon = card.icon;
           return (
-
             <AnimationWrapper key={card.title} delay={i * 0.2}>
               <Card className=" hover:border-sky-400 dark:hover:border-sky-700">
                 <CardHeader>
                   <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-row items-center justify-between -mt-6">
-                  <p className="font-bold text-4xl text-foreground ">{card.value ?? 0}</p>
-                  <Icon className={`w-8 h-8 ${card.iconColor}`}
-                  />
+                  <div className="flex flex-col">
+                    <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
+                    {card.detalhe && <p className="text-sm text-accent mt-1">{card.detalhe}</p>}
+                    {card.porcentagem && <p className="text-sm mt-1 text-green-600">{card.porcentagem}</p>}
+                    {card.subTitle && <p className="text-sm mt-1 text-yellow-400">{card.subTitle}</p>}
+                    {card.subTitle2 && <p className="text-sm mt-1 text-sky-500">{card.subTitle2}</p>}
+                  </div>
+                  <Icon className={`w-8 h-8 ${card.iconColor}`} />
                 </CardContent>
-
               </Card>
             </AnimationWrapper>
           );
@@ -220,9 +231,9 @@ export default function UsersDashboard() {
                       <td className=" text-sm">
                         <span
                           className={`px-2 py-1 rounded-full text-white font-semibold ${user.user_type === "casa"
-                            ? "bg-accent/60"
+                            ? "bg-sky-700"
                             : user.user_type === "condominio"
-                              ? "bg-purple-500"
+                              ? "bg-purple-400"
                               : "bg-gray-500"
                             }`}
                         >
@@ -232,9 +243,9 @@ export default function UsersDashboard() {
                       <td className="px-4 py-2 text-sm">
                         <span
                           className={`px-2 py-1 rounded-full text-white font-semibold  ${user.user_role === "morador"
-                            ? "bg-popover-foreground/70"
+                            ? "bg-sky-500"
                             : user.user_role === "sindico"
-                              ? "bg-yellow-500"
+                              ? "bg-yellow-300"
                               : "bg-gray-500"
                             }`}
                         >

@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster, toast } from "sonner";
-import { AlertTriangle, Droplet, Flame, Check, Siren } from "lucide-react";
+import { AlertTriangle, Droplet, Flame, Check, Siren, XCircle, X, Home, CalendarDays, MessageSquare } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import AnimationWrapper from "../Layout/Animation/Animation";
+import AlertasFilter from "../Filters/Alertas";
 
 export default function AlertasDashboard() {
   const [alertas, setAlertas] = useState([]);
@@ -158,11 +159,37 @@ export default function AlertasDashboard() {
     }
   };
 
+    const getIcone = () => {
+    switch (selectedAlerta?.nivel?.toLowerCase()) {
+      case "alto":
+        return <AlertTriangle className="h-10 w-10 text-red-500" />;
+      case "médio":
+        return <Info className="h-10 w-10 text-yellow-500" />;
+      case "baixo":
+        return <Check className="h-10 w-10 text-green-500" />;
+      default:
+        return <X className="h-10 w-10 text-yellow-500" />;
+    }
+  };
+    // Faixa colorida no topo de acordo com o nível
+  const getNivelColor = () => {
+    switch (selectedAlerta?.nivel?.toLowerCase()) {
+      case "alto":
+        return "bg-red-500";
+      case "médio":
+        return "bg-yellow-500";
+      case "baixo":
+        return "bg-green-500";
+      default:
+        return "bg-yellow-500";
+    }
+  };
+
   return (
     <div className="p-4">
       <Toaster position="top-right" richColors />
       <div className="mb-10">
-        {/* aqui você pode depois colocar o filtro */}
+
       </div>
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -283,7 +310,7 @@ export default function AlertasDashboard() {
                             size="sm"
                             variant="ghost"
                             onClick={() => {
-                              // abrir modal de detalhes (reutilizamos o mesmo modal)
+                              
                               setSelectedAlerta(alerta);
                               setShowModal(true);
                             }}
@@ -301,43 +328,93 @@ export default function AlertasDashboard() {
         </Card>
       </AnimationWrapper>
 
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[640px]">
-          <DialogHeader>
-            <DialogTitle>Detalhes do Alerta</DialogTitle>
-          </DialogHeader>
+     
+    <Dialog open={showModal} onOpenChange={setShowModal}>
+      <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+    
+        <div className={`h-2 w-full rounded-t-md ${getNivelColor()}`} />
 
-          <div className="py-4">
-            <p className="text-sm">
-              <strong>Tipo:</strong> {selectedAlerta?.tipo ?? selectedAlerta?.type}
-            </p>
-            <p className="text-sm mt-2">
-              <strong>Residência:</strong> {selectedAlerta?.residencia_type ?? "-"} #{selectedAlerta?.residencia_id ?? "-"}
-            </p>
-            <p className="text-sm mt-2">
-              <strong>Nível:</strong> {selectedAlerta?.nivel ?? "-"}
-            </p>
-            <p className="text-sm mt-2">
-              <strong>Mensagem:</strong><br />
-              <span className="text-foreground/80">{selectedAlerta?.mensagem ?? "-"}</span>
-            </p>
-            <p className="text-sm mt-2">
-              <strong>Data:</strong> {formatDate(selectedAlerta)}
-            </p>
+        {/* Cabeçalho */}
+        <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+          {getIcone()}
+          <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+            Detalhes do Alerta
+          </DialogTitle>
+        </DialogHeader>
+
+        {/* Corpo organizado */}
+        <div className="mt-5 space-y-4 px-2 text-sm text-foreground/90">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-muted/40 rounded-xl p-3 border border-border">
+              <p className="text-xs uppercase text-muted-foreground">Tipo</p>
+              <p className="font-semibold text-foreground mt-1">
+                {selectedAlerta?.tipo ?? selectedAlerta?.type ?? "-"}
+              </p>
+            </div>
+            <div className="bg-muted/40 rounded-xl p-3 border border-border">
+              <p className="text-xs uppercase text-muted-foreground">Nível</p>
+              <p
+                className={`font-semibold mt-1 ${
+                  selectedAlerta?.nivel === "alto"
+                    ? "text-red-500"
+                    : selectedAlerta?.nivel === "medio"
+                    ? "text-yellow-500"
+                    : "text-green-500"
+                }`}
+              >
+                {selectedAlerta?.nivel ?? "-"}
+              </p>
+            </div>
+            <div className="bg-muted/40 rounded-xl p-3 border border-border">
+              <p className="text-xs uppercase text-muted-foreground">
+                Residência
+              </p>
+              <p className="font-semibold mt-1 flex items-center gap-1">
+                <Home className="h-4 w-4 text-muted-foreground" />
+                {selectedAlerta?.residencia_type ?? "-"} #
+                {selectedAlerta?.residencia_id ?? "-"}
+              </p>
+            </div>
+            <div className="bg-muted/40 rounded-xl p-3 border border-border">
+              <p className="text-xs uppercase text-muted-foreground">Data</p>
+              <p className="font-semibold mt-1 flex items-center gap-1">
+                <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                {formatDate(selectedAlerta)}
+              </p>
+            </div>
           </div>
 
-          <DialogFooter className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => { setShowModal(false); setSelectedAlerta(null); }}>
-              Fechar
+    
+          <div className="bg-muted/30 rounded-xl p-4 border border-border">
+            <p className="text-xs uppercase text-muted-foreground mb-2 flex items-center gap-1">
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />{" "}
+              Mensagem
+            </p>
+            <p className="leading-relaxed text-foreground/90">
+              {selectedAlerta?.mensagem ?? "-"}
+            </p>
+          </div>
+        </div>
+
+   
+        <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowModal(false);
+              setSelectedAlerta(null);
+            }}
+          >
+            Fechar
+          </Button>
+          {!selectedAlerta?.resolvido && (
+            <Button className="bg-green-500 hover:bg-green-600" onClick={resolverAlerta}>
+              Marcar como resolvido
             </Button>
-            {!selectedAlerta?.resolvido && (
-              <Button variant="destructive" onClick={resolverAlerta}>
-                Marcar como resolvido
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </div>
   );
 }

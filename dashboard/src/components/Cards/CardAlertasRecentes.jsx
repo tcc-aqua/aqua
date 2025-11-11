@@ -96,7 +96,7 @@ export default function CardAlertasRecentes() {
 
                       <span
                         className={`font-semibold p-1 rounded-full inline-flex items-center gap-1
-                ${alerta.residencia_type === "casa" ? "bg-popover-foreground/70 text-white" : "bg-purple-500 text-white"}`}
+                ${alerta.residencia_type === "casa" ? "bg-sky-700 text-white" : "bg-purple-400 text-white"}`}
                       >
                         {renderIconeResidencia(alerta.residencia_type)}
                         {alerta.residencia_type}
