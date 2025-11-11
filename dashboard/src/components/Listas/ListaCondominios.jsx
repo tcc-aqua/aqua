@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import CondominioFilter from "../Filters/CondominioFilter";
 import AnimationWrapper from "../Layout/Animation/Animation";
+import { PaginationDemo } from "../pagination/pagination";
 
 export default function CondominiosDashboard() {
   const [condominios, setCondominios] = useState([]);
@@ -226,6 +227,7 @@ export default function CondominiosDashboard() {
   ];
 
   return (
+    <>
     <div className="p-4">
       <Toaster position="top-right" richColors />
       <div className="mb-10">
@@ -415,7 +417,8 @@ export default function CondominiosDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
+      <PaginationDemo className='my-2' />
     </div>
+    </>
   );
 }

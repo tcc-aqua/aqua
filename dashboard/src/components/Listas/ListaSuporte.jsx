@@ -9,6 +9,7 @@ import SuporteFilter from "../Filters/Suporte";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { MessageCircle, MailWarning, Clock, AlertTriangle, User, Mail, Calendar } from "lucide-react";
+import { PaginationDemo } from "../pagination/pagination";
 
 export default function SuporteDashboard() {
   const [tickets, setTickets] = useState([]);
@@ -126,6 +127,7 @@ export default function SuporteDashboard() {
   if (error) return <p className="text-destructive">Erro: {error}</p>;
 
   return (
+    <>
     <div className="p-4">
       <Toaster position="top-right" richColors />
 
@@ -323,7 +325,9 @@ export default function SuporteDashboard() {
             </Button>
           </DialogFooter>
         </DialogContent>
+        <PaginationDemo className='my-2' />
       </Dialog>
     </div>
+    </>
   );
 }

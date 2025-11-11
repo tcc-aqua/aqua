@@ -16,6 +16,7 @@ import {
 import useToggleConfirm from "@/hooks/useStatus";
 import CasaFilter from "../Filters/Casa";
 import AnimationWrapper from "../Layout/Animation/Animation";
+import { PaginationDemo } from "../pagination/pagination";
 
 
 export default function CasasDashboard() {
@@ -166,6 +167,7 @@ export default function CasasDashboard() {
 
 
   return (
+    <>
     <div className="p-4">
       <Toaster position="top-right" richColors />
       <div className="mb-10">
@@ -340,7 +342,9 @@ export default function CasasDashboard() {
             </Button>
           </DialogFooter>
         </DialogContent>
+        <PaginationDemo className='my-2' />
       </Dialog>
     </div>
+    </>
   );
 }

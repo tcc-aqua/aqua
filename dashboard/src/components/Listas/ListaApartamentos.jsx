@@ -28,6 +28,7 @@ import {
 import useToggleConfirm from "@/hooks/useStatus";
 import ApartamentoFilter from "../Filters/Apartamentos";
 import AnimationWrapper from "../Layout/Animation/Animation";
+import { PaginationDemo } from "../pagination/pagination";
 
 export default function ApartamentosDashboard() {
   const [apartamentos, setApartamentos] = useState([]);
@@ -190,6 +191,7 @@ export default function ApartamentosDashboard() {
   ];
 
   return (
+    <>
     <div className="p-4">
       <Toaster position="top-right" richColors />
       <div className="mb-10">
@@ -441,7 +443,9 @@ export default function ApartamentosDashboard() {
             </Button>
           </DialogFooter>
         </DialogContent>
+        <PaginationDemo className='my-2' />
       </Dialog>
     </div>
+    </>
   );
 }
