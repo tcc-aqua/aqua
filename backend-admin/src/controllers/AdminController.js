@@ -2,7 +2,7 @@ import AdminService from "../services/AdminService.js";
 import { createAdminDTO } from '../dto/admin/createAdminDTO.js';
 import { updateAdminDTO } from "../dto/admin/updateAdminDTO.js";
 import { updatePasswordDTO } from "../dto/admin/updatePasswordDTO.js";
-import { uploadProfilePicture } from '../services/AdminService.js';
+import uploadProfilePicture  from '../services/AdminService.js';
 
 export default class AdminController {
 

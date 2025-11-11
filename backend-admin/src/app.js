@@ -6,8 +6,9 @@ import pino from 'pino'
 import fs from 'fs'
 import fastifyMultipart from 'fastify-multipart'
 import path from 'path';
-
+import fastifyStatic from '@fastify/static';
 import fastifyFormbody from '@fastify/formbody'
+
 import userRoutes from './routes/user.routes.js';
 import errorHandler from './middlewares/errorHandler.js';
 import condominioRoutes from './routes/condominio.routes.js';
@@ -60,10 +61,12 @@ await fastify.register(cors, {
 
 fastify.register(fastifyFormbody);
 fastify.register(fastifyMultipart);
-fastify.register(import('fastify-static'), {
+
+fastify.register(fastifyStatic, {
     root: path.join(process.cwd(), 'uploads'),
-    prefix: '/uploads/', 
+    prefix: '/uploads/',
 })
+
 
 // docs api
 await fastify.register(fastifySwagger, {

@@ -1,6 +1,6 @@
 import AdminController from "../controllers/AdminController.js";
 import { autenticarAdmin } from "../middlewares/AuthMiddleware.js";
-import { uploadProfile } from '../controllers/AdminController.js';
+import uploadProfile  from '../controllers/AdminController.js';
 import { verifyToken } from '../controllers/AuthController.js';
 
 export default async function adminRoutes(fastify) {
