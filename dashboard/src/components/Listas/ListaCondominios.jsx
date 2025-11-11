@@ -239,7 +239,7 @@ export default function CondominiosDashboard() {
           const Icon = card.icon;
           return (
             <AnimationWrapper key={card.title} delay={i * 0.2}>
-              <Card>
+              <Card className=" hover:border-sky-400 dark:hover:border-sky-700"> 
                 <CardHeader>
                   <CardTitle className="font-bold text-xl text-foreground">
                     {card.title}
@@ -285,7 +285,7 @@ export default function CondominiosDashboard() {
 
       <AnimationWrapper delay={0.3}>
 
-        <Card className="mx-auto mt-10">
+        <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-700">
           <CardHeader>
             <CardTitle>Lista de Condomínios</CardTitle>
           </CardHeader>

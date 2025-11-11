@@ -39,7 +39,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const API_BASE_URL = 'http://192.168.56.1:3334';
+const API_BASE_URL = 'http://localhost:3334';
 
 const theme = {
     ...DefaultTheme,

@@ -29,7 +29,7 @@ export default function MensagensSuporteFilter({ onApply }) {
     };
 
     return (
-        <Card className="container mx-auto p-4 rounded-md shadow-sm mb-6">
+        <Card className="container mx-auto p-4 rounded-md shadow-sm mb-6  hover:border-sky-400 dark:hover:border-sky-700">
             <div className="flex flex-wrap gap-4 items-end">
 
                 <div className="flex flex-col flex-1 min-w-[200px]">

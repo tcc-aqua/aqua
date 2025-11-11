@@ -8,6 +8,10 @@ import userRoutes from './routes/user.routes.js';
 import passwordRoutes from './routes/password.routes.js';
 import cepRoutes from './routes/cep.routes.js';
 import metasRoutes from './routes/metas.routes.js';
+// ==================================================================
+// 1. IMPORTA O ARQUIVO DE ROTAS QUE CRIAMOS
+// ==================================================================
+import profileRoutes from './routes/profile.routes.js';
 
 const fastify = Fastify({
     logger: {
@@ -36,5 +40,6 @@ fastify.register(userRoutes, {prefix: '/api/user'});
 fastify.register(passwordRoutes, {prefix: '/api/forgot'});
 fastify.register(metasRoutes, {prefix: '/api/metas'});
 fastify.register(cepRoutes, {prefix: '/api/cep'});
+fastify.register(profileRoutes, {prefix: '/api/profile'});
 
 export default fastify;

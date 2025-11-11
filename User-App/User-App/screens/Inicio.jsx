@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { ScrollView, StyleSheet, View, Platform, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
+import { ScrollView, StyleSheet, View, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { 
   Provider as PaperProvider, 
   DefaultTheme, 
@@ -10,15 +10,19 @@ import {
   Paragraph, 
   List,
   Surface,
-  ProgressBar
+  ProgressBar,
+  Button
 } from 'react-native-paper';
 import { LineChart } from 'react-native-gifted-charts';
 import 'react-native-svg';
 import { MotiView, MotiText } from 'moti';
 import { MotiPressable } from 'moti/interactions';
 import * as Haptics from 'expo-haptics';
+import axios from 'axios'; // Importa o axios
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa o AsyncStorage
 
-const API_URL = 'http://192.168.56.1:3334/api';
+// ALTERAÇÃO: URL padronizada para localhost, compatível com adb reverse.
+const API_URL = 'http://localhost:3334/api';
 
 const { width: screenWidth } = Dimensions.get('window');
 const chartWidth = screenWidth - 80;
@@ -57,46 +61,54 @@ export default function Inicio() {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [residenciaId, setResidenciaId] = useState(null);
+  const [residenciaId, setResidenciaId] = useState(null); // ID da residência do usuário
 
   const [consumptionData, setConsumptionData] = useState({ todayConsumption: 0, todaySavings: 0, comparison: 0 });
   const [dailyGoal, setDailyGoal] = useState(0);
   const [chartData, setChartData] = useState(mockChartData);
   const [recentHistory, setRecentHistory] = useState(mockRecentHistory);
   const [dicaDoPingo, setDicaDoPingo] = useState("Carregando dica...");
-
   const [filter, setFilter] = useState('hoje');
 
   useEffect(() => {
+    // Simulando a obtenção do ID da residência (você deve pegar do usuário logado)
     const loadUserData = async () => {
-      const id = '1';
+      const id = '1'; 
       setResidenciaId(id);
     };
     loadUserData();
   }, []);
 
+  // ALTERAÇÃO: Função refatorada para usar Axios com token de autorização.
   const fetchDashboardData = useCallback(async () => {
     if (!residenciaId) return;
 
     setIsLoading(true);
+    setError(null);
     try {
-      const consumoUrl = `${API_URL}/apartamentos/${residenciaId}/consumo-total`;
+      const authToken = await AsyncStorage.getItem('token');
+      if (!authToken) {
+        throw new Error("Token de autenticação não encontrado.");
+      }
 
-      const responses = await Promise.all([
-        fetch(consumoUrl),
-        fetch(`${API_URL}/metas`),
-        fetch(`${API_URL}/dica`),
-        Promise.resolve({ json: () => mockChartData }),
-        Promise.resolve({ json: () => mockRecentHistory }),
+      const headers = { 'Authorization': `Bearer ${authToken}` };
+
+      // Usando Promise.all com axios para chamadas paralelas
+      const [consumoResponse, metasResponse, dicaResponse] = await Promise.all([
+        axios.get(`${API_URL}/apartamentos/${residenciaId}/consumo-total`, { headers }),
+        axios.get(`${API_URL}/metas`, { headers }),
+        axios.get(`${API_URL}/dica`, { headers }),
       ]);
-
-      const [consumoResult, metasResult, dicaResult, chartResult, historyResult] = await Promise.all(responses.map(res => res.json()));
+      
+      const consumoResult = consumoResponse.data;
+      const metasResult = metasResponse.data;
+      const dicaResult = dicaResponse.data;
 
       if (consumoResult) {
         setConsumptionData({
           todayConsumption: consumoResult.consumoTotal || 0,
-          todaySavings: 11.2,
-          comparison: -12.5,
+          todaySavings: 11.2, // Mockado
+          comparison: -12.5,  // Mockado
         });
       }
 
@@ -108,12 +120,13 @@ export default function Inicio() {
         setDicaDoPingo(dicaResult.mensagem);
       }
 
-      setChartData(chartResult);
-      setRecentHistory(historyResult);
+      // Mantendo mocks para partes visuais
+      setChartData(mockChartData);
+      setRecentHistory(mockRecentHistory);
 
     } catch (err) {
       setError(err.message);
-      console.error("Erro ao buscar dados do dashboard:", err);
+      console.error("Erro ao buscar dados do dashboard:", err.response?.data || err.message);
     } finally {
       setIsLoading(false);
       setRefreshing(false);
@@ -138,7 +151,7 @@ export default function Inicio() {
     setFilter(newFilter);
   };
   
-  if (!residenciaId) {
+  if (isLoading && !residenciaId) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -149,8 +162,9 @@ export default function Inicio() {
   if (error) {
      return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <Text>Ocorreu um erro ao carregar os dados.</Text>
-        <Text>Verifique sua conexão e tente novamente.</Text>
+        <Title>Ocorreu um erro</Title>
+        <Paragraph style={{textAlign: 'center'}}>Não foi possível carregar os dados. Verifique sua conexão.</Paragraph>
+        <Button onPress={onRefresh} style={{marginTop: 10}}>Tentar Novamente</Button>
       </View>
     );
   }
