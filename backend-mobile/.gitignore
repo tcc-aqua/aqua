@@ -1,3 +1,7 @@
 /node_modules
 
+# segurança das variáveis de ambiente
 .env
+
+# ignora os logs da aplicação
+src/logs/
