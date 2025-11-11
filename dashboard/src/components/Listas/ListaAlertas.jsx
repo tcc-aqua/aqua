@@ -14,11 +14,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import AnimationWrapper from "../Layout/Animation/Animation";
-<<<<<<< HEAD
 import AlertasFilter from "../Filters/Alertas";
-=======
-import { PaginationDemo } from "../pagination/pagination";
->>>>>>> 9d74036031c77b9a73acfef95f2d88e036023f37
 
 export default function AlertasDashboard() {
   const [alertas, setAlertas] = useState([]);

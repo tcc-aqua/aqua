@@ -18,7 +18,7 @@ import useToggleConfirm from "@/hooks/useStatus";
 import { useAdmins } from "@/hooks/useAdmins";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PaginationDemo } from "../pagination/pagination";
+
 
 export default function SettingsDashboard() {
   const [activeTab, setActiveTab] = useState("admins");
@@ -411,7 +411,7 @@ export default function SettingsDashboard() {
               </Button>
             </DialogFooter>
           </DialogContent>
-          <PaginationDemo className='my-2' />
+         
         </Dialog>
       </div>
     </>

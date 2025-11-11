@@ -9,6 +9,8 @@ import SuporteFilter from "../Filters/Suporte";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { MessageCircle, MailWarning, Clock, AlertTriangle, User, Mail, Calendar } from "lucide-react";
+import { PaginationDemo } from "../pagination/pagination";
+
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode"
 
