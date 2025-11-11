@@ -5,6 +5,10 @@ const gerarToken = (payload) => {
     return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
+// Blacklist de tokens 
+const tokenBlacklist = new Set();
+
+
 export const Login = async (req, reply) => {
     const { email, password } = req.body;
 
@@ -41,6 +45,49 @@ export const Login = async (req, reply) => {
         return reply.status(500).send({ message: 'Erro ao efetuar login.' });
     }
 }
+
+export const Logout = async (req, reply) => {
+    try {
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader) {
+            return reply.status(400).send({ message: 'Token não fornecido.' });
+        }
+
+        const token = authHeader.split(' ')[1]; // espera "Bearer <token>"
+
+        // adiciona o token na blacklist
+        tokenBlacklist.add(token);
+
+        return reply.status(200).send({ message: 'Logout realizado com sucesso.' });
+    } catch (error) {
+        console.error("Erro ao efetuar logout:", error);
+        return reply.status(500).send({ message: 'Erro ao efetuar logout.' });
+    }
+};
+
+export const verifyToken = async (req, reply, done) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return reply.status(401).send({ message: 'Token não fornecido.' });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    if (tokenBlacklist.has(token)) {
+        return reply.status(401).send({ message: 'Token inválido (logout realizado).' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.admin = decoded;
+        done();
+    } catch (error) {
+        return reply.status(401).send({ message: 'Token inválido ou expirado.' });
+    }
+};
+
 export const getMe = async (req, reply) => {
     try {
         const admin = await Admin.findByPk(req.admin.id);
