@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import SensorFilter from "../Filters/Sensors";
 import AnimationWrapper from "../Layout/Animation/Animation";
+import { PaginationDemo } from "../pagination/pagination";
 
 export default function SensorsDashboard() {
   const [sensores, setSensores] = useState([]);
@@ -140,6 +141,7 @@ export default function SensorsDashboard() {
   ];
 
   return (
+    <>
     <div className="p-4">
       <Toaster position="top-right" richColors />
       <div className="mb-10">
@@ -296,7 +298,9 @@ export default function SensorsDashboard() {
             </Button>
           </DialogFooter>
         </DialogContent>
+        <PaginationDemo className='my-2' />
       </Dialog>
     </div>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-// Este é o seu app.jsx do FRONT-END
 
 import React, { useState } from 'react';
 import { View, StyleSheet, StatusBar } from 'react-native';
@@ -17,9 +16,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeScreen, setActiveScreen] = useState('Inicio');
 
-  // ==================================================================
-  // 1. ADICIONE ESSA FUNÇÃO DE LOGOUT AQUI
-  // ==================================================================
+
   const handleLogout = () => {
     setIsLoggedIn(false); // Desliga o "interruptor" que mostra o app
   };

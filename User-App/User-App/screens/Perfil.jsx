@@ -15,6 +15,9 @@ import {
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// URL padronizada para localhost, compatível com adb reverse.
+const API_URL = 'http://localhost:3334/api';
+
 const ProfileScreen = ({ navigation, onLogout }) => {
   const { colors } = useTheme();
 
@@ -28,27 +31,36 @@ const ProfileScreen = ({ navigation, onLogout }) => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      const authToken = await AsyncStorage.getItem('token');
-      if (!authToken) {
-        setIsLoading(false);
-        return;
-      }
+      setIsLoading(true);
       try {
-        const API_URL = 'http://10.84.6.152:3334/api/profile';
-        const response = await axios.get(API_URL, {
+        const authToken = await AsyncStorage.getItem('token');
+        
+        if (!authToken) {
+          setUser(null); 
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await axios.get(`${API_URL}/profile`, {
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
+
         setUser(response.data);
+
       } catch (error) {
         console.error("ERRO AO BUSCAR PERFIL:", error.response?.data || error.message);
-        if (error.response?.status === 401) await AsyncStorage.removeItem('token');
-        setUser(null);
+        if (error.response?.status === 401) {
+            await AsyncStorage.removeItem('token');
+            onLogout();
+        } else {
+            setUser(null);
+        }
       } finally {
         setIsLoading(false);
       }
     };
     fetchProfileData();
-  }, []);
+  }, [onLogout]);
 
   const handleLogoutPress = async () => {
     await AsyncStorage.removeItem('token');
@@ -129,7 +141,7 @@ const ProfileScreen = ({ navigation, onLogout }) => {
           <Divider />
           <List.Item title="Alto Consumo" left={props => <List.Icon {...props} icon="chart-line" />} right={() => <Switch value={isConsumptionAlertsEnabled} onValueChange={setIsConsumptionAlertsEnabled} />} />
           <Divider />
-          <List.Item title="Metas e Objetivos" left={props => <List.Icon {...props} icon="flag-checkered" />} right={() => <Switch value={isGoalsAlertsEnabled} onValue-Change={setIsGoalsAlertsEnabled} />} />
+          <List.Item title="Metas e Objetivos" left={props => <List.Icon {...props} icon="flag-checkered" />} right={() => <Switch value={isGoalsAlertsEnabled} onValueChange={setIsGoalsAlertsEnabled} />} />
           <Divider />
           <List.Item title="Desafios da Comunidade" left={props => <List.Icon {...props} icon="account-group" />} right={() => <Switch value={isCommunityAlertsEnabled} onValueChange={setIsCommunityAlertsEnabled} />} />
           <Divider />

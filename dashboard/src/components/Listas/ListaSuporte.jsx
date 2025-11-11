@@ -163,6 +163,7 @@ const handleSendReply = async (ticketId) => {
   if (error) return <p className="text-destructive">Erro: {error}</p>;
 
   return (
+    <>
     <div className="p-4">
       <Toaster position="top-right" richColors />
 
@@ -360,7 +361,9 @@ const handleSendReply = async (ticketId) => {
             </Button>
           </DialogFooter>
         </DialogContent>
+        <PaginationDemo className='my-2' />
       </Dialog>
     </div>
+    </>
   );
 }

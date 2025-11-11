@@ -95,7 +95,7 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
 
           <button
             onClick={toggleCollapse}
-            className="hidden md:flex p-1 rounded-md hover:bg-muted transition-all duration-200"
+            className="hidden md:flex p-1 rounded-md hover:bg-muted transition-all duration-200 cursor-pointer"
             aria-label={isCollapsed ? "Expandir menu" : "Colapsar menu"}
           >
             {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}

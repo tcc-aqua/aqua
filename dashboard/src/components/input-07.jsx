@@ -98,7 +98,7 @@ export default function InputWithAdornmentDemo() {
           </button>
         </div>
 
-        <Button type="submit" className="w-full rounded-full h-10 mt-5">
+        <Button type="submit" className="w-full rounded-full h-10 mt-5 cursor-pointer">
           Entrar
         </Button>
 
