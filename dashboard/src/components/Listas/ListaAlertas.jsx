@@ -14,6 +14,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import AnimationWrapper from "../Layout/Animation/Animation";
+import { PaginationDemo } from "../pagination/pagination";
 
 export default function AlertasDashboard() {
   const [alertas, setAlertas] = useState([]);
@@ -159,6 +160,7 @@ export default function AlertasDashboard() {
   };
 
   return (
+    <>
     <div className="p-4">
       <Toaster position="top-right" richColors />
       <div className="mb-10">
@@ -338,6 +340,8 @@ export default function AlertasDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <PaginationDemo className='my-2' />
     </div>
+    </>
   );
 }
