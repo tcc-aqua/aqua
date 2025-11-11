@@ -300,9 +300,9 @@ export default function UsersDashboard() {
                   <td className=" text-sm">
                     <span
                       className={`px-2 py-1 rounded-full text-white font-semibold ${user.user_type === "casa"
-                        ? "bg-accent/60"
+                        ? "bg-sky-700"
                         : user.user_type === "condominio"
-                          ? "bg-purple-500"
+                          ? "bg-purple-400"
                           : "bg-gray-500"
                         }`}
                     >
@@ -312,7 +312,7 @@ export default function UsersDashboard() {
                   <td className="px-4 py-2 text-sm">
                     <span
                       className={`px-2 py-1 rounded-full text-white font-semibold  ${user.user_role === "morador"
-                        ? "bg-popover-foreground/70"
+                        ? "bg-sky-500"
                         : user.user_role === "sindico"
                           ? "bg-yellow-500"
                           : "bg-gray-500"
