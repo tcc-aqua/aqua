@@ -132,4 +132,34 @@ export default class AdminService {
         }
     }
 
+    static async uploadProfilePicture  (adminId, file)  {
+        try {
+
+            const uploadDir = path.join(process.cwd(), 'uploads');
+            
+            // cria a pasta uploads se não existir
+            if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+            
+            // gera nome único
+            const fileName = `${Date.now()}-${file.filename}`;
+            const filePath = path.join(uploadDir, fileName);
+            
+            // salva o arquivo
+            const buffer = await file.toBuffer();
+            await fs.promises.writeFile(filePath, buffer);
+            
+            // atualiza campo img_url do admin
+            const admin = await Admin.findByPk(adminId);
+            if (!admin) throw new Error('Administrador não encontrado');
+            
+            admin.img_url = `/uploads/${fileName}`;
+            await admin.save();
+            
+            return admin.img_url;
+        } catch (error) {
+            console.error('Erro ao atualizar foto de usuário', error);
+            throw error;
+        }   
+        }
+        
 }

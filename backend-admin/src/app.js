@@ -4,6 +4,8 @@ import { fastifySwagger } from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
 import pino from 'pino'
 import fs from 'fs'
+import fastifyMultipart from 'fastify-multipart'
+import path from 'path';
 
 import fastifyFormbody from '@fastify/formbody'
 import userRoutes from './routes/user.routes.js';
@@ -57,6 +59,11 @@ await fastify.register(cors, {
 })
 
 fastify.register(fastifyFormbody);
+fastify.register(fastifyMultipart);
+fastify.register(import('fastify-static'), {
+    root: path.join(process.cwd(), 'uploads'),
+    prefix: '/uploads/', 
+})
 
 // docs api
 await fastify.register(fastifySwagger, {
