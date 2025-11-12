@@ -10,11 +10,11 @@ const PORT = 3333;
 
 // dados mockados de um admin padrão...
 const criarSuperadminPadrao = async () => {
-    const existe = await Admin.findOne({ where: { email: 'admin@empresa.com' } });
+    const existe = await Admin.findOne({ where: { email: 'aqua@gmail.com' } });
 
     if (!existe) {
         await Admin.create({
-            email: 'admin@empresa.com',
+            email: 'aqua@gmail.com',
             password: 'admin123', 
             type: 'superadmin',
         });

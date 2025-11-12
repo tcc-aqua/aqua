@@ -4,8 +4,12 @@ import { fastifySwagger } from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
 import pino from 'pino'
 import fs from 'fs'
-
+import multipart from '@fastify/multipart'
+import fastifyStatic from '@fastify/static';
 import fastifyFormbody from '@fastify/formbody'
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 import userRoutes from './routes/user.routes.js';
 import errorHandler from './middlewares/errorHandler.js';
 import condominioRoutes from './routes/condominio.routes.js';
@@ -23,6 +27,10 @@ import crescimentoRoutes from './routes/crescimento.routes.js';
 import vazamentoRoutes from './routes/vazamento.routes.js';
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 // cria log diário
 const date = new Date().toISOString().slice(0, 10)
@@ -57,6 +65,13 @@ await fastify.register(cors, {
 })
 
 fastify.register(fastifyFormbody);
+await fastify.register(multipart);
+
+fastify.register(fastifyStatic, {
+    root: path.join(process.cwd(), 'uploads'),
+    prefix: '/api/uploads/',
+})
+
 
 // docs api
 await fastify.register(fastifySwagger, {

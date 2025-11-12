@@ -1,4 +1,9 @@
 import Admin from '../models/Admin.js'
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs'
+
+
 
 export default class AdminService {
 
@@ -23,7 +28,7 @@ export default class AdminService {
             const options = {
                 page,
                 paginate: limit,
-                 order: [['criado_em', 'DESC']],
+                order: [['criado_em', 'DESC']],
                 attributes: { exclude: ['password'] },
                 where: { status: 'ativo' }
 
@@ -128,6 +133,39 @@ export default class AdminService {
             return adminData;
         } catch (error) {
             console.error('Erro ao atualizar usuário', error);
+            throw error;
+        }
+    }
+
+    static async uploadProfilePicture(adminId, file) {
+        try {
+
+            const uploadDir = path.join(process.cwd(), 'uploads');
+
+            // cria a pasta uploads se não existir
+            if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+            // gera nome único
+            const fileName = `${Date.now()}-${file.filename}`;
+            const filePath = path.join(uploadDir, fileName);
+
+            // salva o arquivo
+            const buffer = await file.toBuffer();
+            await fs.promises.writeFile(filePath, buffer);
+
+            // atualiza campo img_url do admin
+            const admin = await Admin.findByPk(adminId);
+            if (!admin) throw new Error('Administrador não encontrado');
+
+            admin.img_url = `/api/uploads/${fileName}`;
+
+            console.log('path importado:', path);
+            console.log('file recebido:', file);
+            await admin.save();
+
+            return admin.img_url;
+        } catch (error) {
+            console.error('Erro ao atualizar foto de usuário', error);
             throw error;
         }
     }
