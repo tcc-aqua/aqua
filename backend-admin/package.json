@@ -18,6 +18,7 @@
     "@fastify/static": "^8.3.0",
     "@fastify/swagger": "^9.5.2",
     "@fastify/swagger-ui": "^5.2.3",
+    "@guivic/fastify-socket.io": "^0.1.3",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "crypto": "^1.0.1",

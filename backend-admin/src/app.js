@@ -9,6 +9,7 @@ import fastifyStatic from '@fastify/static';
 import fastifyFormbody from '@fastify/formbody'
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fastifySocketIO from '@guivic/fastify-socket.io'
 
 import userRoutes from './routes/user.routes.js';
 import errorHandler from './middlewares/errorHandler.js';
@@ -25,12 +26,14 @@ import leituraRoutes from './routes/leitura.routes.js';
 import suporteRoutes from './routes/suporte.routes.js';
 import crescimentoRoutes from './routes/crescimento.routes.js';
 import vazamentoRoutes from './routes/vazamento.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
 
-if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
-
+// paths 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// criando foulder logs se ela nao exisitir (monitoramento)
+if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
 // cria log diário
 const date = new Date().toISOString().slice(0, 10)
@@ -57,12 +60,14 @@ const fastify = Fastify({
         stream: multiStream,
     }
 })
+// fim logs
 
 await fastify.register(cors, {
     origin: 'http://localhost:3000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
 })
+
 
 fastify.register(fastifyFormbody);
 await fastify.register(multipart);
@@ -72,6 +77,24 @@ fastify.register(fastifyStatic, {
     prefix: '/api/uploads/',
 })
 
+// registrando socket io para sistema de notificações
+await fastify.register(fastifySocketIO, {
+  cors: { origin: '*' }
+})
+
+// eventos socket
+fastify.io.on('connection', (socket) => {
+  console.log('🟢 Cliente conectado:', socket.id)
+
+  socket.on('join', (userId) => {
+    socket.join(userId)
+    console.log(`Usuário ${userId} entrou na sala ${userId}`)
+  })
+
+  socket.on('disconnect', () => {
+    console.log('🔴 Cliente desconectado:', socket.id)
+  })
+})
 
 // docs api
 await fastify.register(fastifySwagger, {
@@ -84,6 +107,7 @@ await fastify.register(fastifySwagger, {
     }
 });
 
+// registrando swagger
 await fastify.register(swaggerUI, {
     routePrefix: '/docs',
     uiConfig: {
@@ -93,6 +117,7 @@ await fastify.register(swaggerUI, {
     initOAuth: {},
 });
 
+// rotas api
 fastify.get('/api', {
     schema: {
         tags: ['Health Check'],
@@ -122,6 +147,7 @@ await fastify.register(leituraRoutes, { prefix: '/api/leituras' });
 await fastify.register(suporteRoutes, { prefix: '/api/suporte' });
 await fastify.register(crescimentoRoutes, { prefix: '/api/crescimento' });
 await fastify.register(vazamentoRoutes, { prefix: '/api/vazamentos' });
+await fastify.register(notificationRoutes, { prefix: '/api/notificacoes' });
 await fastify.register(cepRoutes, { prefix: '/api/cep' });
 await fastify.register(errorHandler);
 
