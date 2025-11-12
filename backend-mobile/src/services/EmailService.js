@@ -1,15 +1,21 @@
-const nodemailer = require('nodemailer');
 
+import nodemailer from 'nodemailer';
+
+// Converte a porta para número a partir do .env
+const EMAIL_PORT = parseInt(process.env.EMAIL_PORT, 10);
+
+// Cria o transporter. A opção 'secure' será 'true' se a porta for 465.
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT, 10),
-    secure: false,
+    port: EMAIL_PORT,
+    secure: EMAIL_PORT === 465,
     auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        pass: process.env.EMAIL_PASS.replace(/\s/g, ''),
     },
 });
 
+// A função continua a mesma
 const sendPasswordResetEmail = async (to, token) => {
     const mailOptions = {
         from: `"Aqua Services" <${process.env.EMAIL_USER}>`,
@@ -40,10 +46,11 @@ const sendPasswordResetEmail = async (to, token) => {
 
     try {
         await transporter.sendMail(mailOptions);
+        console.log(`E-mail de redefinição enviado com sucesso para: ${to}`);
     } catch (error) {
-        console.error('Erro ao enviar e-mail de redefinição de senha:', error);
-        throw new Error('Não foi possível enviar o e-mail de redefinição de senha.');
+        console.error('ERRO DETALHADO AO ENVIAR E-MAIL:', error);
+        throw new Error('Falha na comunicação com o servidor de e-mail. Verifique as credenciais e a configuração de porta/segurança.');
     }
 };
 
-module.exports = { sendPasswordResetEmail };
+export { sendPasswordResetEmail };

@@ -1,3 +1,5 @@
+// C:\Users\...\backend-mobile\src\controllers\PasswordController.js
+
 import PasswordService from "../services/PasswordService.js";
 
 export default class PasswordController {
