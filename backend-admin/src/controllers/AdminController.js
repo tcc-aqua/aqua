@@ -46,8 +46,28 @@ export default class AdminController {
 
     static async updatePassword(req, reply) {
         const validatePassword = updatePasswordDTO.parse(req.body);
-        const adminId = req.admin.id; 
+        const adminId = req.admin.id;
         const admin = await AdminService.updateMe(adminId, validatePassword);
         return reply.status(200).send(admin);
     }
+
+    static async uploadProfile(req, reply) {
+        try {
+            const file = await req.file(); // fastify-multipart
+            if (!file) {
+                return reply.status(400).send({ message: 'Arquivo não enviado ou tipo inválido' });
+            }
+
+            const imgUrl = await AdminService.uploadProfilePicture(req.admin.id, file);
+
+            return reply.status(200).send({
+                message: 'Foto enviada com sucesso!',
+                img_url: imgUrl
+            });
+        } catch (err) {
+            console.error('Erro no upload', err);
+            return reply.status(500).send({ message: 'Erro ao enviar arquivo' });
+        }
+    }
+
 }

@@ -26,6 +26,10 @@ Admin.init({
         type: DataTypes.STRING(255),
         allowNull: false
     },
+    img_url: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     type: {
         type: DataTypes.ENUM('superadmin', 'admin'),
         defaultValue: 'admin',
