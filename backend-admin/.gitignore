@@ -4,4 +4,6 @@
 
 # ignora os logs da aplicação
 src/logs/
+
+#ignora os envios de imagem da aplicação
 src/uploads/
