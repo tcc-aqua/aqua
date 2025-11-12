@@ -78,6 +78,6 @@ export default async function adminRoutes(fastify) {
                 AdminController.updatePassword
         );
 
-        fastify.post('/upload-img', { preHandler: verifyToken }, uploadProfile);
+        fastify.post('/upload-img', { preHandler: verifyToken }, AdminController.uploadProfile);
 
 }

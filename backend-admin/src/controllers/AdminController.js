@@ -2,7 +2,6 @@ import AdminService from "../services/AdminService.js";
 import { createAdminDTO } from '../dto/admin/createAdminDTO.js';
 import { updateAdminDTO } from "../dto/admin/updateAdminDTO.js";
 import { updatePasswordDTO } from "../dto/admin/updatePasswordDTO.js";
-import uploadProfilePicture  from '../services/AdminService.js';
 
 export default class AdminController {
 
@@ -53,12 +52,22 @@ export default class AdminController {
     }
 
     static async uploadProfile(req, reply) {
-        const file = await req.file(); // fastify-multipart
-        const imgUrl = await uploadProfilePicture(req.admin.id, file);
+        try {
+            const file = await req.file(); // fastify-multipart
+            if (!file) {
+                return reply.status(400).send({ message: 'Arquivo não enviado ou tipo inválido' });
+            }
 
-        return reply.status(200).send({
-            message: 'Foto enviada com sucesso!',
-            img_url: imgUrl
-        });
+            const imgUrl = await AdminService.uploadProfilePicture(req.admin.id, file);
+
+            return reply.status(200).send({
+                message: 'Foto enviada com sucesso!',
+                img_url: imgUrl
+            });
+        } catch (err) {
+            console.error('Erro no upload', err);
+            return reply.status(500).send({ message: 'Erro ao enviar arquivo' });
+        }
     }
+
 }
