@@ -17,7 +17,7 @@ export default function InputAppearance() {
      
 
  
-      <Card className="shadow-md hover:shadow-lg transition-shadow   hover:border-sky-400 dark:hover:border-sky-700">
+      <Card className="shadow-md hover:shadow-lg transition-shadow   hover:border-sky-400 dark:hover:border-sky-950">
         <CardContent className="flex justify-between items-center">
           <div className="flex flex-col">
             <p className="text-sm font-semibold flex items-center gap-2">
@@ -35,7 +35,7 @@ export default function InputAppearance() {
       </Card>
 
    
-      <Card className="shadow-md hover:shadow-lg transition-shadow  hover:border-sky-400 dark:hover:border-sky-700">
+      <Card className="shadow-md hover:shadow-lg transition-shadow  hover:border-sky-400 dark:hover:border-sky-950">
         <CardContent className="flex justify-between items-center">
           <div className="flex flex-col">
             <p className="text-sm font-semibold flex items-center gap-2">
@@ -52,7 +52,7 @@ export default function InputAppearance() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-md hover:shadow-lg transition-shadow mt-3  hover:border-sky-400 dark:hover:border-sky-700">
+      <Card className="shadow-md hover:shadow-lg transition-shadow mt-3  hover:border-sky-400 dark:hover:border-sky-950">
         <CardContent className="flex justify-between items-center">
           <div className="flex flex-col">
             <p className="text-sm font-semibold flex items-center gap-2">

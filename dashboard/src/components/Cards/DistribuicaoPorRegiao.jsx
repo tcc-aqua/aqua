@@ -95,7 +95,7 @@ export default function DistribuicaoPorRegiao() {
   return (
     <AnimationWrapper delay={0.2}>
       <section className="container mx-auto mt-10">
-        <Card className="w-full  hover:border-sky-400 dark:hover:border-sky-700">
+        <Card className="w-full  hover:border-sky-400 dark:hover:border-sky-950">
           <CardHeader>
             <CardTitle>Distribuição por Estado</CardTitle>
           </CardHeader>

@@ -69,13 +69,13 @@ export default function SettingsDashboard() {
   const roleColor = (role) => {
     switch (role) {
       case "superadmin":
-        return "bg-purple-400 ";
+        return "bg-purple-600 ";
       case "admin":
         return "bg-accent/60 ";
       case "sindico":
         return "bg-yellow-500 ";
       case "morador":
-        return "bg-popover-foreground/70 ";
+        return "bg-sky-500";
       default:
         return "bg-gray-500 ";
     }
@@ -282,7 +282,7 @@ export default function SettingsDashboard() {
                                   }
                                 >
                                   {status === "ativo" ? (
-                                    <Check className="text-green-500" size={14} />
+                                    <Check className="text-green-500  hover:bg-green-100" size={14} />
                                   ) : (
                                     <X className="text-destructive" size={14} />
                                   )}
@@ -300,119 +300,145 @@ export default function SettingsDashboard() {
           </AnimationWrapper>
         </main>
 
-        <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="sm:max-w-[425px] rounded-xl shadow-lg p-5 ">
-            <DialogHeader className="flex flex-col items-center text-center space-y-4">
-              <div className="bg-red-100 dark:bg-red-900 p-4 rounded-full">
-                <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-400" />
-              </div>
-              <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                Confirmação
-              </DialogTitle>
-            </DialogHeader>
+      {/* Modal de Confirmação Usuário */}
+<Dialog open={showModal} onOpenChange={setShowModal}>
+  <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+    
+    {/* Barra superior colorida */}
+    <div
+      className={`h-2 w-full rounded-t-md ${
+        (selectedItem?.status || selectedItem?.user_status) === "ativo"
+          ? "bg-red-600"
+          : "bg-green-600"
+      }`}
+    />
 
+    <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+      <div
+        className={`p-4 rounded-full ${
+          (selectedItem?.status || selectedItem?.user_status) === "ativo"
+            ? "bg-red-100 dark:bg-red-900"
+            : "bg-green-100 dark:bg-green-900"
+        }`}
+      >
+        <AlertTriangle
+          className={`h-10 w-10 ${
+            (selectedItem?.status || selectedItem?.user_status) === "ativo"
+              ? "text-red-600 dark:text-red-400"
+              : "text-green-600 dark:text-green-400"
+          }`}
+        />
+      </div>
+      <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+        Confirmação
+      </DialogTitle>
+    </DialogHeader>
 
-            <p className="py-4 text-gray-700 dark:text-gray-300">
-              Deseja realmente{" "}
-              <span
-                className={`font-semibold ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-green-600 dark:text-green-400"
-                  }`}
-              >
-                {(selectedItem?.status || selectedItem?.user_status) === "ativo"
-                  ? "inativar"
-                  : "ativar"}
-              </span>{" "}
-              o usuário{" "}
-              <strong>{selectedItem?.user_name || selectedItem?.email}</strong>?
-            </p>
+    <div className="mt-5 px-4 text-foreground/90 text-center text-lg">
+      <p>
+        Deseja realmente{" "}
+        <span
+          className={`font-semibold ${
+            (selectedItem?.status || selectedItem?.user_status) === "ativo"
+              ? "text-red-600 dark:text-red-400"
+              : "text-green-600 dark:text-green-400"
+          }`}
+        >
+          {(selectedItem?.status || selectedItem?.user_status) === "ativo"
+            ? "inativar"
+            : "ativar"}
+        </span>{" "}
+        o usuário <strong>{selectedItem?.user_name || selectedItem?.email}</strong>?
+      </p>
+    </div>
 
-            <DialogFooter className="flex justify-end space-x-2">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2"
-                onClick={() => setShowModal(false)}
-              >
-                <X className="h-4 w-4" />
-                Cancelar
-              </Button>
+    <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
+      <Button
+        variant="outline"
+        className="flex items-center gap-2"
+        onClick={() => setShowModal(false)}
+      >
+        <X className="h-5 w-5" />
+        Cancelar
+      </Button>
 
-              <Button
-                variant="destructive"
-                className={`flex items-center gap-2 ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
-                  ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
-                  } text-white`}
-                onClick={toggleStatus}
-              >
-                <Check className="h-4 w-4" />
-                {(selectedItem?.status || selectedItem?.user_status) === "ativo"
-                  ? "Inativar"
-                  : "Ativar"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+      <Button
+        className={`flex items-center gap-2 px-6 py-3 text-white transition ${
+          (selectedItem?.status || selectedItem?.user_status) === "ativo"
+            ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+            : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+        }`}
+        onClick={toggleStatus}
+      >
+        <Check className="h-5 w-5" />
+        {(selectedItem?.status || selectedItem?.user_status) === "ativo"
+          ? "Inativar"
+          : "Ativar"}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
 
-        <Dialog open={showNewAdminModal} onOpenChange={setShowNewAdminModal}>
-          <DialogContent className="sm:max-w-[400px] rounded-2xl shadow-xl p-6  text-card-foreground">
-            <DialogHeader className="flex items-center space-x-2">
-              <UserPlus className="h-5 w-5 text-primary" />
-              <DialogTitle className="text-lg font-semibold text-accent">
-                Criar Novo Admin
-              </DialogTitle>
-            </DialogHeader>
+{/* Modal Criar Novo Admin */}
+<Dialog open={showNewAdminModal} onOpenChange={setShowNewAdminModal}>
+  <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+    
+    <DialogHeader className="flex items-center space-x-2 border-b border-border pb-4 px-4">
+      <UserPlus className="h-5 w-5 text-primary" />
+      <DialogTitle className="text-lg font-semibold text-foreground">
+        Criar Novo Admin
+      </DialogTitle>
+    </DialogHeader>
 
-            <div className="flex flex-col gap-4 py-4">
-              <Input
-                type="email"
-                placeholder="Email"
-                value={newAdmin.email}
-                onChange={(e) => handleNewAdminChange("email", e.target.value)}
-                className="text-foreground border border-border focus:border-primary focus:ring focus:ring-primary/20 rounded-md"
-              />
-              <Input
-                type="password"
-                placeholder="Senha"
-                value={newAdmin.password}
-                onChange={(e) => handleNewAdminChange("password", e.target.value)}
-                className="text-foreground border border-border focus:border-primary focus:ring focus:ring-primary/20 rounded-md"
-              />
-              <Select
-                value={newAdmin.role}
-                onValueChange={(value) => handleNewAdminChange("role", value)}
-              >
-                <SelectTrigger className="text-foreground border border-border focus:border-primary focus:ring focus:ring-primary/20 rounded-md">
-                  <SelectValue placeholder="Selecione a função" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="superadmin">SuperAdmin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+    <div className="flex flex-col gap-4 py-4 px-4">
+      <Input
+        type="email"
+        placeholder="Email"
+        value={newAdmin.email}
+        onChange={(e) => handleNewAdminChange("email", e.target.value)}
+        className="text-foreground border border-border focus:border-primary focus:ring focus:ring-primary/20 rounded-md"
+      />
+      <Input
+        type="password"
+        placeholder="Senha"
+        value={newAdmin.password}
+        onChange={(e) => handleNewAdminChange("password", e.target.value)}
+        className="text-foreground border border-border focus:border-primary focus:ring focus:ring-primary/20 rounded-md"
+      />
+      <Select
+        value={newAdmin.role}
+        onValueChange={(value) => handleNewAdminChange("role", value)}
+      >
+        <SelectTrigger className="text-foreground border border-border focus:border-primary focus:ring focus:ring-primary/20 rounded-md">
+          <SelectValue placeholder="Selecione a função" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="admin">Admin</SelectItem>
+          <SelectItem value="superadmin">SuperAdmin</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
 
-            <DialogFooter className="flex justify-end space-x-2">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2 border-border text-foreground hover:bg-muted"
-                onClick={() => setShowNewAdminModal(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                variant="default"
-                className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={handleCreateAdmin}
-              >
-                <UserPlus className="h-4 w-4" />
-                Criar
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-         
-        </Dialog>
+    <DialogFooter className="flex justify-end mt-4 border-t border-border pt-4 space-x-2 px-4">
+      <Button
+        variant="outline"
+        className="flex items-center gap-2 border-border text-foreground hover:bg-muted"
+        onClick={() => setShowNewAdminModal(false)}
+      >
+        Cancelar
+      </Button>
+      <Button
+        variant="default"
+        className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+        onClick={handleCreateAdmin}
+      >
+        <UserPlus className="h-4 w-4" />
+        Criar
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
       </div>
     </>
   );

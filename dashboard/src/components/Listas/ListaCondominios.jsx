@@ -13,9 +13,20 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+
 import CondominioFilter from "../Filters/CondominioFilter";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { PaginationDemo } from "../pagination/pagination";
+import { Separator } from "../ui/separator";
+import ExportarTabela from "../Layout/ExportTable/page";
+import { useAtribuirSindico } from "@/hooks/useAtribuirSIndico";
 
 export default function CondominiosDashboard() {
   const [condominios, setCondominios] = useState([]);
@@ -28,11 +39,20 @@ export default function CondominiosDashboard() {
     alertas: 0,
     sensoresAtivos: 0,
   });
+
   const [showModal, setShowModal] = useState(false);
   const [selectedCondominio, setSelectedCondominio] = useState(null);
+  const [filters, setFilters] = useState({});
+
+
+  const [showSindicoModal, setShowSindicoModal] = useState(false);
+  const [sindicoId, setSindicoId] = useState("");
+  const [sindicos, setSindicos] = useState([]); // lista vinda da API
+
+
 
   const API_URL = "http://localhost:3333/api/condominios";
-
+  const { atribuirSindico, loading: atribuindo } = useAtribuirSindico(API_URL);
   const fetchData = async (filters = {}) => {
     try {
       setLoading(true);
@@ -55,12 +75,10 @@ export default function CondominiosDashboard() {
         resCount.json(),
       ]);
 
-      // ✅ Garante que sempre teremos um array válido
       const allCondominios = Array.isArray(dataAll)
         ? dataAll
         : dataAll.docs || [];
 
-      // ✅ Aplica filtros locais
       const filteredCondominios = allCondominios.filter((c) => {
         const matchesStatus = filters.status
           ? c.condominio_status === filters.status
@@ -75,7 +93,6 @@ export default function CondominiosDashboard() {
 
       setCondominios(filteredCondominios);
 
-      // ✅ Estatísticas com fallback seguro
       const stats = {
         total: dataCount.total ?? filteredCondominios.length,
         ativos:
@@ -93,7 +110,7 @@ export default function CondominiosDashboard() {
         alertas: filteredCondominios.filter((c) => !c.responsavel_id).length,
       };
 
-      // ✅ Calcula sensores e apartamentos com segurança
+
       const sensores = filteredCondominios.reduce(
         (acc, c) => {
           acc.totalSensores += Number(c.numero_sensores) || 0;
@@ -132,6 +149,36 @@ export default function CondominiosDashboard() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!showSindicoModal) return;
+
+    const fetchSindicos = async () => {
+      try {
+        const res = await fetch("http://localhost:3333/api/users/sindicos");
+        if (!res.ok) throw new Error("Erro ao buscar síndicos");
+
+        const data = await res.json();
+
+        // mapear corretamente docs para id e nome
+        const lista = Array.isArray(data.docs)
+          ? data.docs.map((s) => ({
+            id: s.user_id,
+            nome: s.user_name,
+          }))
+          : [];
+
+        setSindicos(lista);
+      } catch (err) {
+        toast.error(err.message);
+      }
+    };
+
+    fetchSindicos();
+  }, [showSindicoModal]);
+
+
+
 
   const confirmToggleStatus = (condominio) => {
     setSelectedCondominio(condominio);
@@ -228,197 +275,336 @@ export default function CondominiosDashboard() {
 
   return (
     <>
-    <div className="p-4">
-      <Toaster position="top-right" richColors />
-      <div className="mb-10">
-        <CondominioFilter onApply={(filters) => fetchData(filters)} />
+      <div className="p-4">
+        <Toaster position="top-right" richColors />
+        <div className="mb-10">
+          <CondominioFilter onApply={(filters) => fetchData(filters)} />
+        </div>
+
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {cards.map((card, i) => {
+            const Icon = card.icon;
+            return (
+              <AnimationWrapper key={card.title} delay={i * 0.2}>
+                <Card className=" hover:border-sky-400 dark:hover:border-sky-950">
+                  <CardHeader>
+                    <CardTitle className="font-bold text-xl text-foreground">
+                      {card.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-row items-center justify-between -mt-6">
+                    <div className="flex flex-col">
+                      <p className="font-bold text-4xl text-foreground">
+                        {card.value ?? 0}
+                      </p>
+
+                      {card.valueAtivos && (
+                        <p className="text-sm mt-1 text-accent">
+                          {card.valueAtivos.casas} ativos
+                        </p>
+                      )}
+                      {card.valueAtivos2 && (
+                        <p className="text-sm mt-1 text-orange-300">
+                          {card.valueAtivos2.casas} ativos
+                        </p>
+                      )}
+
+                      {card.porcentagem && (
+                        <p className="text-sm mt-1 text-green-600">
+                          {card.porcentagem}
+                        </p>
+                      )}
+
+                      {card.subTitle && (
+                        <p className="text-sm mt-1 text-purple-600">
+                          {card.subTitle}
+                        </p>
+                      )}
+                    </div>
+                    <Icon className={`w-8 h-8 bg-${card.iconColor} ${card.iconColor}`} />
+                  </CardContent>
+                </Card>
+              </AnimationWrapper>
+            );
+          })}
+        </section>
+
+
+        <AnimationWrapper delay={0.3}>
+
+          <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-950">
+            <CardHeader>
+              <CardTitle>Lista de Condomínios
+                <ExportarTabela data={condominios} filtros={filters} fileName="condominios" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              {condominios.length === 0 ? (
+                <p>Nenhum condomínio encontrado.</p>
+              ) : (
+                <table className="min-w-full divide-y divide-border">
+                  <thead className="bg-muted">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">Condomínio</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">Unidades</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">Sensores</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">Síndicos</th>
+                      {/* <th className="px-4 py-2 text-left text-xs font-medium uppercase">Alertas</th> */}
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {condominios.map(condominio => (
+                      <tr key={condominio.condominio_id} className="hover:bg-muted/10 text-foreground">
+                        <td className="px-4 py-2">
+                          <div className="text-sm font-semibold">{condominio.condominio_nome}</div>
+                          <div className="text-xs text-foreground/80">{`${condominio.logradouro}, ${condominio.numero} - ${condominio.bairro}, ${condominio.cidade}  / ${condominio.uf}`}</div>
+                          <div className="text-[10px] text-foreground/60">CEP: {condominio.cep}</div>
+
+                          <div className="text-[10px] text-chart-1">Código {condominio.condominio_codigo}</div>
+                          <div className="text-[10px] text-foreground/60">
+                            Criado em {new Date(condominio.data_criacao).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                          </div>
+                        </td>
+                        <td className="px-4 py-2 text-sm">{condominio.numero_apartamentos}/300
+                          <div className="text-[10px] text-foreground/60">Total Apartamentos</div>
+                        </td>
+                        <td className="px-4 py-2 text-sm">{condominio.numero_sensores}/300
+                          <div className="text-[10px] text-foreground/60">Total de Sensores</div>
+                        </td>
+                        <td className="text-sm font-bold flex items-center ml-7 py-9">
+                          <span className={`inline-block w-3 h-3 rounded-full ${condominio.condominio_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={condominio.condominio_status} />
+                        </td>
+                        <td className="px-4 py-2 text-sm font-semibold">{condominio.sindico_nome}
+
+                        </td>
+
+                        <td className="px-4 py-2 text-sm">
+                          <div className="flex items-center gap-1">
+                            <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(condominio)}>
+                              <div className="flex items-center gap-1">
+                                {condominio.condominio_status === "ativo" ? (
+                                  <Check className="text-green-500  hover:bg-green-100" size={14} />
+                                ) : (
+                                  <X className="text-destructive" size={14} />
+                                )}
+                              </div>
+
+
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setSelectedCondominio(condominio);
+                                setSindicoId(condominio.sindico_id ? String(condominio.sindico_id) : "");
+                                setShowSindicoModal(true);
+                              }}
+                            >
+                              <UserStar size={14} className="text-accent" />
+                            </Button>
+
+
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </CardContent>
+            <Separator></Separator>
+            <PaginationDemo className='my-20' />
+          </Card>
+        </AnimationWrapper>
+
+
+
+   <Dialog open={showModal} onOpenChange={setShowModal}>
+  <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+    
+    {/* Barra superior colorida */}
+    <div
+      className={`h-2 w-full rounded-t-md ${
+        selectedCondominio?.condominio_status === "ativo"
+          ? "bg-red-600"
+          : "bg-green-600"
+      }`}
+    />
+
+    <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+      <div
+        className={`p-4 rounded-full ${
+          selectedCondominio?.condominio_status === "ativo"
+            ? "bg-red-100 dark:bg-red-900"
+            : "bg-green-100 dark:bg-green-900"
+        }`}
+      >
+        <AlertTriangle
+          className={`h-10 w-10 ${
+            selectedCondominio?.condominio_status === "ativo"
+              ? "text-red-600 dark:text-red-400"
+              : "text-green-600 dark:text-green-400"
+          }`}
+        />
+      </div>
+      <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+        Confirmação
+      </DialogTitle>
+    </DialogHeader>
+
+    <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
+      <p className="text-lg">
+        Deseja realmente{" "}
+        <span
+          className={`font-semibold ${
+            selectedCondominio?.condominio_status === "ativo"
+              ? "text-red-600 dark:text-red-400"
+              : "text-green-600 dark:text-green-400"
+          }`}
+        >
+          {selectedCondominio?.condominio_status === "ativo" ? "inativar" : "ativar"}
+        </span>{" "}
+        o condomínio <strong>{selectedCondominio?.condominio_nome}</strong>?
+      </p>
+      <div className="bg-muted/40 rounded-xl p-4 border border-border mt-3">
+        <p className="text-xs uppercase text-muted-foreground mb-1">Código do condomínio</p>
+        <p className="font-semibold">{selectedCondominio?.condominio_codigo ?? "-"}</p>
+      </div>
+      <div className="bg-muted/40 rounded-xl p-4 border border-border">
+        <p className="text-xs uppercase text-muted-foreground mb-1">Endereço</p>
+        <p className="font-semibold">
+          {`${selectedCondominio?.logradouro}, ${selectedCondominio?.numero} - ${selectedCondominio?.bairro}, ${selectedCondominio?.cidade} / ${selectedCondominio?.uf}`}
+        </p>
+      </div>
+    </div>
+
+    <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
+      <Button
+        variant="outline"
+        onClick={() => setShowModal(false)}
+        className="flex items-center gap-2"
+      >
+        <X className="h-5 w-5" />
+        Cancelar
+      </Button>
+
+      <Button
+        className={`flex items-center gap-2 px-6 py-3 text-white transition ${
+          selectedCondominio?.condominio_status === "ativo"
+            ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+            : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+        }`}
+        onClick={toggleStatus}
+      >
+        <Check className="h-5 w-5" />
+        {selectedCondominio?.condominio_status === "ativo" ? "Inativar" : "Ativar"}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+
+<Dialog open={showSindicoModal} onOpenChange={setShowSindicoModal}>
+  <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+    
+ 
+    <div className="h-2 w-full rounded-t-md bg-purple-600" />
+
+    <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+      <UserStar className="h-10 w-10 text-purple-600 dark:text-purple-400" />
+      <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+        Atribuir Síndico
+      </DialogTitle>
+    </DialogHeader>
+
+
+    <div className="mt-5 space-y-6 px-4 text-sm text-foreground/90">
+      <div className="grid grid-cols-1 gap-4">
+        <div className="bg-muted/40 rounded-xl p-4 border border-border">
+          <p className="text-xs uppercase text-muted-foreground mb-2">Síndico</p>
+          <Select value={sindicoId} onValueChange={(v) => setSindicoId(v)}>
+            <SelectTrigger className="w-full bg-background border border-input text-foreground">
+              <SelectValue placeholder="Escolha um síndico" />
+            </SelectTrigger>
+            <SelectContent>
+              {sindicos.length > 0 ? (
+                sindicos.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.nome}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="none" disabled>
+                  Nenhum síndico encontrado
+                </SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="bg-muted/40 rounded-xl p-4 border border-border">
+          <p className="text-xs uppercase text-muted-foreground mb-2">Condomínio</p>
+          <p className="font-semibold text-foreground mt-1">
+            {selectedCondominio?.condominio_nome ?? "-"}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
+      <Button
+        variant="ghost"
+        onClick={() => {
+          setShowSindicoModal(false);
+          setSindicoId("");
+        }}
+        className="flex items-center gap-2"
+      >
+        <X className="h-5 w-5" />
+        Cancelar
+      </Button>
+
+      <Button
+        onClick={async () => {
+          if (!sindicoId || sindicoId === "none" || !selectedCondominio) {
+            toast.warning("Selecione um síndico antes de salvar.");
+            return;
+          }
+
+          try {
+            const idCondominio = selectedCondominio.condominio_id ?? selectedCondominio.id;
+            const res = await fetch(`http://localhost:3333/api/condominios/${idCondominio}/sindico`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sindico_id: sindicoId }),
+            });
+
+            if (!res.ok) throw new Error("Erro ao atribuir síndico");
+
+            toast.success("Síndico atribuído com sucesso!");
+            setShowSindicoModal(false);
+            setSindicoId("");
+            fetchData();
+          } catch (err) {
+            toast.error(err.message);
+          }
+        }}
+        disabled={atribuindo}
+        className="bg-purple-600 hover:bg-purple-700 text-white"
+      >
+        <Check className="h-5 w-5" />
+        Salvar
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+
       </div>
 
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {cards.map((card, i) => {
-          const Icon = card.icon;
-          return (
-            <AnimationWrapper key={card.title} delay={i * 0.2}>
-              <Card className=" hover:border-sky-400 dark:hover:border-sky-700"> 
-                <CardHeader>
-                  <CardTitle className="font-bold text-xl text-foreground">
-                    {card.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-row items-center justify-between -mt-6">
-                  <div className="flex flex-col">
-                    <p className="font-bold text-4xl text-foreground">
-                      {card.value ?? 0}
-                    </p>
-
-                    {card.valueAtivos && (
-                      <p className="text-sm mt-1 text-accent">
-                        {card.valueAtivos.casas} ativos
-                      </p>
-                    )}
-                    {card.valueAtivos2 && (
-                      <p className="text-sm mt-1 text-orange-300">
-                        {card.valueAtivos2.casas} ativos
-                      </p>
-                    )}
-
-                    {card.porcentagem && (
-                      <p className="text-sm mt-1 text-green-600">
-                        {card.porcentagem}
-                      </p>
-                    )}
-
-                    {card.subTitle && (
-                      <p className="text-sm mt-1 text-purple-600">
-                        {card.subTitle}
-                      </p>
-                    )}
-                  </div>
-                  <Icon className={`w-8 h-8 bg-${card.iconColor} ${card.iconColor}`} />
-                </CardContent>
-              </Card>
-            </AnimationWrapper>
-          );
-        })}
-      </section>
-
-
-      <AnimationWrapper delay={0.3}>
-
-        <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-700">
-          <CardHeader>
-            <CardTitle>Lista de Condomínios</CardTitle>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            {condominios.length === 0 ? (
-              <p>Nenhum condomínio encontrado.</p>
-            ) : (
-              <table className="min-w-full divide-y divide-border">
-                <thead className="bg-muted">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Condomínio</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Unidades</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Sensores</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Síndicos</th>
-                    {/* <th className="px-4 py-2 text-left text-xs font-medium uppercase">Alertas</th> */}
-                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Ações</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {condominios.map(condominio => (
-                    <tr key={condominio.condominio_id} className="hover:bg-muted/10 text-foreground">
-                      <td className="px-4 py-2">
-                        <div className="text-sm font-semibold">{condominio.condominio_nome}</div>
-                        <div className="text-xs text-foreground/80">{`${condominio.logradouro}, ${condominio.numero} - ${condominio.bairro}, ${condominio.cidade}  / ${condominio.uf}`}</div>
-                        <div className="text-[10px] text-foreground/60">CEP: {condominio.cep}</div>
-
-                        <div className="text-[10px] text-chart-1">Código {condominio.condominio_codigo}</div>
-                        <div className="text-[10px] text-foreground/60">
-                          Criado em {new Date(condominio.data_criacao).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 text-sm">{condominio.numero_apartamentos}/300
-                        <div className="text-[10px] text-foreground/60">Total Apartamentos</div>
-                      </td>
-                      <td className="px-4 py-2 text-sm">{condominio.numero_sensores}/300
-                        <div className="text-[10px] text-foreground/60">Total de Sensores</div>
-                      </td>
-                      <td className="text-sm font-bold flex items-center ml-7 py-9">
-                        <span className={`inline-block w-3 h-3 rounded-full ${condominio.condominio_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={condominio.condominio_status} />
-                      </td>
-                      <td className="px-4 py-2 text-sm font-semibold">{condominio.sindico_nome}
-
-                      </td>
-
-                      <td className="px-4 py-2 text-sm">
-                        <div className="flex items-center gap-1">
-                          <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(condominio)}>
-                            <div className="flex items-center gap-1">
-                              {condominio.condominio_status === "ativo" ? (
-                                <Check className="text-green-500" size={14} />
-                              ) : (
-                                <X className="text-destructive" size={14} />
-                              )}
-                            </div>
-
-
-                          </Button>
-
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setSelectedCondominio(condominio)}
-
-                          >
-                            <Pencil size={14} className="text-accent" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </CardContent>
-        </Card>
-      </AnimationWrapper>
-
-
-
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[450px] rounded-2xl shadow-2xl p-6 ">
-
-          <DialogHeader className="flex flex-col items-center text-center space-y-4">
-            <div className="bg-red-100 dark:bg-red-900 p-4 rounded-full">
-              <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-400" />
-            </div>
-            <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-              Confirmação
-            </DialogTitle>
-          </DialogHeader>
-
-
-          <p className="py-6 text-gray-700 dark:text-gray-300 text-center text-lg">
-            Deseja realmente{" "}
-            <span
-              className={`font-semibold ${selectedCondominio?.condominio_status === "ativo"
-                ? "text-destuctive"
-                : "text-green-600 dark:text-green-400"
-                }`}
-            >
-              {selectedCondominio?.condominio_status === "ativo" ? "inativar" : "ativar"}
-            </span>{" "}
-            o condomínio <strong>{selectedCondominio?.condominio_nome}</strong>?
-          </p>
-
-          <DialogFooter className="flex justify-center gap-4">
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-              onClick={() => setShowModal(false)}
-            >
-              <X className="h-5 w-5" />
-              Cancelar
-            </Button>
-
-            <Button
-              className={`flex items-center gap-2 px-6 py-3 text-white transition
-          ${selectedCondominio?.condominio_status === "ativo"
-                  ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
-                }
-        `}
-              onClick={toggleStatus}
-            >
-              <Check className="h-5 w-5" />
-              {selectedCondominio?.condominio_status === "ativo" ? "Inativar" : "Ativar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <PaginationDemo className='my-2' />
-    </div>
     </>
   );
 }

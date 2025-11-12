@@ -29,6 +29,8 @@ import useToggleConfirm from "@/hooks/useStatus";
 import ApartamentoFilter from "../Filters/Apartamentos";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { PaginationDemo } from "../pagination/pagination";
+import { Separator } from "../ui/separator";
+import ExportarTabela from "../Layout/ExportTable/page";
 
 export default function ApartamentosDashboard() {
   const [apartamentos, setApartamentos] = useState([]);
@@ -47,7 +49,7 @@ export default function ApartamentosDashboard() {
     alertas: 0,
     litrosTotais: 0,
   });
-
+const [filters, setFilters] = useState({});
 
   const API_AP = "http://localhost:3333/api/apartamentos";
 
@@ -204,7 +206,7 @@ export default function ApartamentosDashboard() {
           const Icon = card.icon;
           return (
             <AnimationWrapper key={card.title} delay={i * 0.2}>
-              <Card className=" hover:border-sky-400 dark:hover:border-sky-700">
+              <Card className=" hover:border-sky-400 dark:hover:border-sky-950">
                 <CardHeader>
                   <CardTitle className="font-bold text-xl text-foreground">
                     {card.title}
@@ -245,9 +247,11 @@ export default function ApartamentosDashboard() {
       </section>
 
       <AnimationWrapper delay={0.3}>
-        <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-700">
+        <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-950">
           <CardHeader>
-            <CardTitle>Lista de Apartamentos</CardTitle>
+            <CardTitle>Lista de Apartamentos
+              <ExportarTabela data={apartamentos} filtros={filters} fileName="apartamentos" />
+            </CardTitle>
           </CardHeader>
           <CardContent className="overflow-x-auto">
             {apartamentos.length === 0 ? (
@@ -364,7 +368,7 @@ export default function ApartamentosDashboard() {
                         >
                           <div className="flex items-center gap-1">
                             {ap.apartamento_status === "ativo" ? (
-                              <Check className="text-green-500" size={14} />
+                              <Check className="text-green-500 hover:bg-green-100" size={14} />
                             ) : (
                               <X className="text-destructive" size={14} />
                             )}
@@ -387,64 +391,99 @@ export default function ApartamentosDashboard() {
               </table>
             )}
           </CardContent>
+            <Separator></Separator>
+           <PaginationDemo className='my-20' />
         </Card>
       </AnimationWrapper>
 
 
 
+<Dialog open={showModal} onOpenChange={setShowModal}>
+  <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[450px] rounded-2xl shadow-2xl p-6 ">
+    {/* Barra superior colorida */}
+    <div
+      className={`h-2 w-full rounded-t-md ${
+        selectedAp?.apartamento_status === "ativo" ? "bg-red-600" : "bg-green-600"
+      }`}
+    />
 
-          <DialogHeader className="flex flex-col items-center text-center space-y-4">
-            <div className="bg-red-100 dark:bg-red-900 p-4 rounded-full">
-              <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-400" />
-            </div>
-            <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-              Confirmação
-            </DialogTitle>
-          </DialogHeader>
+    <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+      <div
+        className={`p-4 rounded-full ${
+          selectedAp?.apartamento_status === "ativo"
+            ? "bg-red-100 dark:bg-red-900"
+            : "bg-green-100 dark:bg-green-900"
+        }`}
+      >
+        <AlertTriangle
+          className={`h-10 w-10 ${
+            selectedAp?.apartamento_status === "ativo"
+              ? "text-red-600 dark:text-red-400"
+              : "text-green-600 dark:text-green-400"
+          }`}
+        />
+      </div>
+      <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+        Confirmação
+      </DialogTitle>
+    </DialogHeader>
 
+    <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
+      <p className="text-lg">
+        Deseja realmente{" "}
+        <span
+          className={`font-semibold ${
+            selectedAp?.apartamento_status === "ativo"
+              ? "text-red-600 dark:text-red-400"
+              : "text-green-600 dark:text-green-400"
+          }`}
+        >
+          {selectedAp?.apartamento_status === "ativo" ? "inativar" : "ativar"}
+        </span>{" "}
+        o apartamento <strong>Bloco {selectedAp?.endereco_completo}</strong>?
+      </p>
 
-          <p className="py-6 text-gray-700 dark:text-gray-300 text-center text-lg">
-            Deseja realmente{" "}
-            <span
-              className={`font-semibold ${selectedAp?.apartamento_status === "ativo"
-                ? "text-red-600 dark:text-red-400"
-                : "text-green-600 dark:text-green-400"
-                }`}
-            >
-              {selectedAp?.apartamento_status === "ativo" ? "inativar" : "ativar"}
-            </span>{" "}
-            o apartamento <strong>Bloco {selectedAp?.endereco_completo}</strong>?
-          </p>
+      {/* Código do apartamento */}
+      <div className="bg-muted/40 rounded-xl p-4 border border-border">
+        <p className="text-xs uppercase text-muted-foreground mb-1">Código do Apartamento</p>
+        <p className="font-semibold">{selectedAp?.apartamento_codigo ?? "-"}</p>
+      </div>
 
-          <DialogFooter className="flex justify-center gap-4">
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-              onClick={() => setShowModal(false)}
-            >
-              <X className="h-5 w-5" />
-              Cancelar
-            </Button>
+      {/* Endereço completo */}
+      <div className="bg-muted/40 rounded-xl p-4 border border-border">
+        <p className="text-xs uppercase text-muted-foreground mb-1">Endereço</p>
+        <p className="font-semibold">
+          {`${selectedAp?.logradouro}, ${selectedAp?.numero} - ${selectedAp?.bairro}, ${selectedAp?.cidade} / ${selectedAp?.uf}`}
+        </p>
+      </div>
+    </div>
 
-            <Button
-              className={`flex items-center gap-2 px-6 py-3 text-white transition
-          ${selectedAp?.apartamento_status === "ativo"
-                  ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
-                }
-        `}
-              onClick={toggleStatus}
-            >
-              <Check className="h-5 w-5" />
-              {selectedAp?.apartamento_status === "ativo" ? "Inativar" : "Ativar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-        <PaginationDemo className='my-2' />
-      </Dialog>
+    <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
+      <Button
+        variant="outline"
+        onClick={() => setShowModal(false)}
+        className="flex items-center gap-2"
+      >
+        <X className="h-5 w-5" />
+        Cancelar
+      </Button>
+
+      <Button
+        className={`flex items-center gap-2 px-6 py-3 text-white transition ${
+          selectedAp?.apartamento_status === "ativo"
+            ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+            : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+        }`}
+        onClick={toggleStatus}
+      >
+        <Check className="h-5 w-5" />
+        {selectedAp?.apartamento_status === "ativo" ? "Inativar" : "Ativar"}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
     </div>
     </>
   );

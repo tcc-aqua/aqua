@@ -34,7 +34,7 @@ export function ChartMeiaLua() {
   const totalVisitors = chartData[0].desktop + chartData[0].mobile
 
   return (
-    <Card className="flex flex-col  hover:border-sky-400 dark:hover:border-sky-700">
+    <Card className="flex flex-col  hover:border-sky-400 dark:hover:border-sky-950">
       <CardHeader className="items-center pb-0">
         <CardTitle>Radial Chart - Stacked</CardTitle>
         <CardDescription>January - June 2024</CardDescription>

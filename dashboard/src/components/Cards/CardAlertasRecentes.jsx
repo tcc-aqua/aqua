@@ -67,7 +67,7 @@ export default function CardAlertasRecentes() {
 
 
   return (
-    <Card className="w-full mt-10  hover:border-sky-400 dark:hover:border-sky-700">
+    <Card className="w-full mt-10  hover:border-sky-400 dark:hover:border-sky-950">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-destructive" />

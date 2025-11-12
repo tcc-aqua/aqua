@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import { ModeToggle } from '../DarkMode/page';
 import { jwtDecode } from 'jwt-decode';
@@ -23,7 +24,6 @@ export default function Header() {
       const token = Cookies.get('token');
       if (token) {
         const decoded = jwtDecode(token);
-        // Ajuste conforme os campos do seu JWT:
         setUserInfo({
           email: decoded.email || decoded.user_email || 'usuario@dominio.com',
           role: decoded.type || decoded.role || 'Usuário',
@@ -52,24 +52,34 @@ export default function Header() {
   const titulo = getTituloByPath();
 
   return (
-    <header className="fixed top-0 left-0 w-full h-20 z-50 bg-sidebar backdrop-blur-lg border-b border-border shadow-sm transition-all">
+    <header className="fixed top-0 left-0 w-full h-auto z-50 bg-sidebar backdrop-blur-lg border-b border-border shadow-sm transition-all">
       <div
-        className={`${
-          isMobile ? 'px-4 py-3' : 'px-10 py-4'
-        } flex items-center justify-between`}
+        className={`flex flex-col sm:flex-row items-center justify-between ${
+          isMobile ? 'px-4 py-3 space-y-2' : 'px-10 py-4'
+        }`}
       >
-        {!isMobile && (
-          <div className="absolute left-1/2 -translate-x-1/2 text-center select-none">
-            <h1 className="text-3xl font-semibold tracking-wide bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent drop-shadow-sm">
-              {titulo}
-            </h1>
+     
+        <div
+          className={`text-center select-none ${
+            isMobile ? 'order-1 w-full' : 'absolute left-1/2 -translate-x-1/2'
+          }`}
+        >
+          <h1
+            className={`font-semibold tracking-wide bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent drop-shadow-sm ${
+              isMobile ? 'text-lg leading-tight' : 'text-3xl'
+            }`}
+          >
+            {titulo}
+          </h1>
+
+          {!isMobile && (
             <p className="text-xs text-muted-foreground/80 mt-1">
               Sistema de gestão e monitoramento
             </p>
-          </div>
-        )}
+          )}
+        </div>
 
-        <div className="flex items-center space-x-6 ml-auto">
+        <div className="flex items-center space-x-3 ml-auto order-2">
           <ModeToggle />
 
           <div className="relative">
@@ -77,12 +87,16 @@ export default function Header() {
             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-destructive animate-pulse" />
           </div>
 
-          <div className="flex items-center space-x-3  pl-5">
+     
+          <Link
+            href="/profile"
+            className="flex items-center space-x-3 pl-5 cursor-pointer group"
+          >
             <div className="relative">
               <img
                 src={userInfo.image}
                 alt="Avatar"
-                className="w-10 h-10 rounded-full object-cover border-1 border-primary shadow-sm"
+                className="w-10 h-10 rounded-full object-cover border-1 border-primary shadow-sm group-hover:scale-105 transition-transform"
               />
               <div
                 className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-card"
@@ -91,14 +105,14 @@ export default function Header() {
             </div>
 
             {!isMobile && (
-              <div className="leading-tight">
+              <div className="leading-tight group-hover:opacity-80 transition-opacity">
                 <p className="text-sm font-semibold text-foreground break-all">
                   {userInfo.email}
                 </p>
                 <p className="text-xs text-muted-foreground/70">{userInfo.role}</p>
               </div>
             )}
-          </div>
+          </Link>
         </div>
       </div>
     </header>

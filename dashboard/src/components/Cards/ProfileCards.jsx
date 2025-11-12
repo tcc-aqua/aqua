@@ -25,7 +25,7 @@ export default function ProfileCards() {
           <AnimationWrapper delay={0.1}>
 
 
-            <Card className="bg-card rounded-md shadow-md h-auto  hover:border-sky-400 dark:hover:border-sky-700">
+            <Card className="bg-card rounded-md shadow-md h-auto  hover:border-sky-400 dark:hover:border-sky-950">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <User size={18} /> Profile Settings
@@ -42,7 +42,7 @@ export default function ProfileCards() {
           <AnimationWrapper delay={0.1} >
 
 
-            <Card className="bg-card rounded-md shadow-md h-auto  hover:border-sky-400 dark:hover:border-sky-700">
+            <Card className="bg-card rounded-md shadow-md h-auto  hover:border-sky-400 dark:hover:border-sky-950">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <Bell size={18} /> Notifications
@@ -59,7 +59,7 @@ export default function ProfileCards() {
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 ">
           <AnimationWrapper delay={0.2}>
-            <Card className="bg-card rounded-md shadow-md h-auto  hover:border-sky-400 dark:hover:border-sky-700 ">
+            <Card className="bg-card rounded-md shadow-md h-auto  hover:border-sky-400 dark:hover:border-sky-950 ">
               {/* w-[33rem] md:w-[90rem] */}
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -74,7 +74,7 @@ export default function ProfileCards() {
           </AnimationWrapper>
 
           <AnimationWrapper delay={0.2} >
-            <Card className="bg-card rounded-md shadow-md h-auto md:h-131  md:-mt-27  hover:border-sky-400 dark:hover:border-sky-700 ">
+            <Card className="bg-card rounded-md shadow-md h-auto md:h-131  md:-mt-27  hover:border-sky-400 dark:hover:border-sky-950 ">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <ShieldCheck size={18} /> Account & Security

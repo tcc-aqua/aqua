@@ -17,6 +17,8 @@ import useToggleConfirm from "@/hooks/useStatus";
 import UserFilter from "../Filters/Users";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { PaginationDemo } from "../pagination/pagination";
+import { Separator } from "../ui/separator";
+import ExportarTabela from "../Layout/ExportTable/page";
 
 export default function UsersDashboard() {
   const [users, setUsers] = useState([]);
@@ -31,6 +33,7 @@ export default function UsersDashboard() {
     casas: 0,
     condominios: 0,
   });
+const [filters, setFilters] = useState({});
 
   const API_URL = "http://localhost:3333/api/users";
 
@@ -120,7 +123,7 @@ export default function UsersDashboard() {
 
   const cards = [
     {
-      title: "Todos os Usuários",
+      title: "Total de Usuários",
       value: userStats.total,
       icon: Users,
       iconColor: "text-accent",
@@ -165,7 +168,7 @@ export default function UsersDashboard() {
             const Icon = card.icon;
             return (
               <AnimationWrapper key={card.title} delay={i * 0.2}>
-                <Card className=" hover:border-sky-400 dark:hover:border-sky-700">
+                <Card className=" hover:border-sky-400 dark:hover:border-sky-950">
                   <CardHeader>
                     <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                   </CardHeader>
@@ -188,9 +191,11 @@ export default function UsersDashboard() {
         <AnimationWrapper delay={0.3}>
 
 
-          <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-700 ">
+          <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-950 ">
             <CardHeader>
-              <CardTitle>Lista de Usuários</CardTitle>
+              <CardTitle>Lista de Usuários
+                 <ExportarTabela data={users} filtros={filters} fileName="users" />
+              </CardTitle>
             </CardHeader>
             <CardContent className="overflow-x-auto">
               {users.length === 0 ? (
@@ -328,7 +333,7 @@ export default function UsersDashboard() {
                   <td className="px-4 py-2 text-sm text-center -">
                     <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
                       <div className="flex items-center gap-1">
-                        {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
+                        {user.user_status === "ativo" ? <Check className="text-green-500 hover:bg-green-100" size={14} /> : <X className="text-destructive" size={14} />}
                       </div>
                     </Button>
                     <Button size="sm" variant='ghost' onClick={() => editItem(user)}>
@@ -343,61 +348,94 @@ export default function UsersDashboard() {
           </table>
               )}
         </CardContent>
+        <Separator/>
+           <PaginationDemo className='my-20' />
       </Card>
     </AnimationWrapper >
 
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[450px] rounded-2xl shadow-2xl p-6 ">
+   <Dialog open={showModal} onOpenChange={setShowModal}>
+  <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+    
+    {/* Barra superior colorida */}
+    <div
+      className={`h-2 w-full rounded-t-md ${
+        selectedItem?.user_status === "ativo" ? "bg-red-600" : "bg-green-600"
+      }`}
+    />
 
-          <DialogHeader className="flex flex-col items-center text-center space-y-4">
-            <div className="bg-red-100 dark:bg-red-900 p-4 rounded-full">
-              <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-400" />
-            </div>
-            <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-              Confirmação
-            </DialogTitle>
-          </DialogHeader>
+    <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+      <div
+        className={`p-4 rounded-full ${
+          selectedItem?.user_status === "ativo"
+            ? "bg-red-100 dark:bg-red-900"
+            : "bg-green-100 dark:bg-green-900"
+        }`}
+      >
+        <AlertTriangle
+          className={`h-10 w-10 ${
+            selectedItem?.user_status === "ativo"
+              ? "text-red-600 dark:text-red-400"
+              : "text-green-600 dark:text-green-400"
+          }`}
+        />
+      </div>
+      <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+        Confirmação
+      </DialogTitle>
+    </DialogHeader>
 
+    <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
+      <p className="text-lg">
+        Deseja realmente{" "}
+        <span
+          className={`font-semibold ${
+            selectedItem?.user_status === "ativo"
+              ? "text-red-600 dark:text-red-400"
+              : "text-green-600 dark:text-green-400"
+          }`}
+        >
+          {selectedItem?.user_status === "ativo" ? "inativar" : "ativar"}
+        </span>{" "}
+        o usuário <strong>{selectedItem?.user_name}</strong>?
+      </p>
 
-          <p className="py-6 text-gray-700 dark:text-gray-300 text-center text-lg">
-            Deseja realmente{" "}
-            <span
-              className={`font-semibold ${selectedItem?.user_status === "ativo"
-                ? "text-red-600 "
-                : "text-green-600 dark:text-green-400"
-                }`}
-            >
-              {selectedItem?.user_status === "ativo" ? "inativar" : "ativar"}
-            </span>{" "}
-            o usuário <strong>{selectedItem?.user_name}</strong>?
-          </p>
+      {/* Exemplo de card com informações extras do usuário */}
+      <div className="bg-muted/40 rounded-xl p-4 border border-border mt-3">
+        <p className="text-xs uppercase text-muted-foreground mb-1">Email</p>
+        <p className="font-semibold">{selectedItem?.user_email ?? "-"}</p>
+      </div>
+      <div className="bg-muted/40 rounded-xl p-4 border border-border">
+        <p className="text-xs uppercase text-muted-foreground mb-1">Perfil</p>
+        <p className="font-semibold">{selectedItem?.user_role ?? "-"}</p>
+      </div>
+    </div>
 
-          <DialogFooter className="flex justify-center gap-4">
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-              onClick={() => setShowModal(false)}
-            >
-              <X className="h-5 w-5" />
-              Cancelar
-            </Button>
+    <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
+      <Button
+        variant="outline"
+        onClick={() => setShowModal(false)}
+        className="flex items-center gap-2"
+      >
+        <X className="h-5 w-5" />
+        Cancelar
+      </Button>
 
-            <Button
-              className={`flex items-center gap-2 px-6 py-3 text-white transition
-          ${selectedItem?.user_status === "ativo"
-                  ? "bg-red-600 hover:bg-red-700 dark:hover:bg-red-600"
-                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
-                }
-        `}
-              onClick={toggleStatus}
-            >
-              <Check className="h-5 w-5" />
-              {selectedItem?.user_status === "ativo" ? "Inativar" : "Ativar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-        <PaginationDemo className='my-20' />
-      </Dialog>
+      <Button
+        className={`flex items-center gap-2 px-6 py-3 text-white transition ${
+          selectedItem?.user_status === "ativo"
+            ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+            : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+        }`}
+        onClick={toggleStatus}
+      >
+        <Check className="h-5 w-5" />
+        {selectedItem?.user_status === "ativo" ? "Inativar" : "Ativar"}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+     
       </div >
     </>
   );

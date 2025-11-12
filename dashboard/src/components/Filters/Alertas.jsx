@@ -54,7 +54,7 @@ export default function AlertasFilter({ onApply }) {
       animate="visible"
       custom={0.3}
     >
-      <Card className="container mx-auto p-5 rounded-md shadow-sm mb-6 hover:border-sky-400 dark:hover:border-sky-700 transition-all">
+      <Card className="container mx-auto p-5 rounded-md shadow-sm mb-6 hover:border-sky-400 dark:hover:border-sky-950 transition-all">
         <div className="flex flex-wrap items-end gap-4">
    
           <div className="flex flex-col flex-1 min-w-[180px]">

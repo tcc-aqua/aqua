@@ -13,6 +13,7 @@ import { PaginationDemo } from "../pagination/pagination";
 
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode"
+import { Separator } from "../ui/separator";
 
 export default function SuporteDashboard() {
   const [tickets, setTickets] = useState([]);
@@ -117,47 +118,47 @@ export default function SuporteDashboard() {
 
 
 
-const handleSendReply = async (ticketId) => {
-  try {
-    if (!replyMessage.trim()) {
-      toast.error("Preencha a resposta antes de enviar.");
-      return;
+  const handleSendReply = async (ticketId) => {
+    try {
+      if (!replyMessage.trim()) {
+        toast.error("Preencha a resposta antes de enviar.");
+        return;
+      }
+
+      const token = Cookies.get("token");
+      if (!token) {
+        toast.error("Usuário não autenticado.");
+        return;
+      }
+
+      const decoded = jwtDecode(token);
+      const respondido_por = decoded.role || "Desconhecido";
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: ticketId,
+          resposta: replyMessage,
+          respondido_por, // agora vem do token
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha na requisição");
+      }
+
+      toast.success("Resposta enviada com sucesso!");
+      setReplyMessage("");
+      setReplyingTicketId(null);
+      fetchData();
+    } catch (error) {
+      console.error("Erro ao enviar resposta:", error);
+      toast.error("Erro ao enviar resposta.");
     }
-
-    const token = Cookies.get("token");
-    if (!token) {
-      toast.error("Usuário não autenticado.");
-      return;
-    }
-
-    const decoded = jwtDecode(token);
-    const respondido_por = decoded.role || "Desconhecido";
-
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: ticketId,
-        resposta: replyMessage,
-        respondido_por, // agora vem do token
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Falha na requisição");
-    }
-
-    toast.success("Resposta enviada com sucesso!");
-    setReplyMessage("");
-    setReplyingTicketId(null);
-    fetchData();
-  } catch (error) {
-    console.error("Erro ao enviar resposta:", error);
-    toast.error("Erro ao enviar resposta.");
-  }
-};
+  };
 
 
 
@@ -166,206 +167,216 @@ const handleSendReply = async (ticketId) => {
 
   return (
     <>
-    <div className="p-4">
-      <Toaster position="top-right" richColors />
+      <div className="p-4">
+        <Toaster position="top-right" richColors />
 
-      <div className="mb-10">
-        <SuporteFilter onApply={(filters) => fetchData(filters)} />
-      </div>
+        <div className="mb-10">
+          <SuporteFilter onApply={(filters) => fetchData(filters)} />
+        </div>
 
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {cardsData.map((card, i) => {
-          const Icon = card.icon;
-          return (
-            <AnimationWrapper key={card.title} delay={i * 0.2}>
-              <Card className=" hover:border-sky-400 dark:hover:border-sky-700">
-                <CardHeader>
-                  <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-row items-center justify-between -mt-6">
-                  <div className="flex flex-col">
-                    <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
-                    {card.subTitle1 && (
-                      <p className="text-yellow-500 text-sm mt-1">
-                        {card.subTitle1}
-                      </p>
-                    )}
-                    {card.porcentagem && !card.valueAtivos && (
-                      <p className="text-sm mt-1 text-blue-500">{card.porcentagem}</p>
-                    )}
-                    {card.subTitle && (
-                      <p className="text-sm mt-1 text-destructive">{card.subTitle}</p>
-                    )}
-                    {card.subTitle2 && (
-                      <p className="text-sm mt-1 text-green-600">{card.subTitle2}</p>
-                    )}
-                  </div>
-                  <Icon className={`w-8 h-8 ${card.iconColor}`} />
-                </CardContent>
-              </Card>
-            </AnimationWrapper>
-          );
-        })}
-      </section>
-
-      <div className="flex flex-col gap-4 font-sans">
-        {tickets.length === 0 ? (
-          <p>Nenhum ticket encontrado.</p>
-        ) : (
-          tickets.map((ticket, i) => {
-            const isReplying = replyingTicketId === ticket.id;
-
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {cardsData.map((card, i) => {
+            const Icon = card.icon;
             return (
-              <AnimationWrapper key={ticket.id || i} delay={i * 0.1}>
-                <Card
-                  className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:border-sky-400 dark:hover:border-sky-700"
-                  role="listitem"
-                >
-
-                  <CardHeader className="p-4 border-b border-gray-100 dark:border-gray-700">
-
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="flex gap-2">
-                        <span
-                          className={`inline-block px-2 py-0.5 text-xs font-semibold uppercase rounded tracking-wide 
-                          ${ticket.status === "pendente"
-                              ? "bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400"
-                              : "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400"
-                            }`}
-                        >
-                          {ticket.status}
-                        </span>
-                        <span
-                          className={`inline-block px-2 py-0.5 text-xs font-semibold uppercase rounded tracking-wide 
-                          ${ticket.status === "resolvido"
-                              ? "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400"
-                              : "bg-sky-500/10 text-sky-600 dark:bg-sky-500/20 dark:text-sky-400"
-                            }`}
-                        >
-                          {ticket.status === "resolvido" ? "Respondida" : "Não Respondida"}
-                        </span>
-                      </div>
-
-                      <div className="flex gap-1.5 shrink-0">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleReply(ticket.id);
-                          }}
-                          className={`p-1.5 text-white rounded-full shadow-md transition ${isReplying ? 'bg-orange-600 hover:bg-orange-700 focus:ring-orange-500/50' : 'bg-sky-600 hover:bg-sky-700 focus:ring-sky-500/50'}`}
-                          title={isReplying ? "Fechar Resposta" : "Responder Ticket"}
-                        >
-                          <MessageCircle className="w-4 h-4 cursor-pointer" />
-                        </button>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            alert(`Excluir ticket ${ticket.id}`);
-                          }}
-                          className="p-1.5 cursor-pointer text-red-500 bg-gray-100 dark:bg-gray-700 rounded-full shadow-md hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition"
-                          title="Excluir Ticket"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                      </div>
-                    </div>
-
-                    <CardTitle className="text-xl font-bold truncate max-w-full">
-                      {ticket.assunto}
-                    </CardTitle>
+              <AnimationWrapper key={card.title} delay={i * 0.2}>
+                <Card className=" hover:border-sky-400 dark:hover:border-sky-950">
+                  <CardHeader>
+                    <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                   </CardHeader>
-
-                  <CardContent className="p-4 space-y-3">
-
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pb-2 border-b border-dashed border-gray-200 dark:border-gray-700 text-xs">
-
-                      <p className="font-medium flex items-center gap-1">
-                        <User className="w-3 h-3 text-sky-600 dark:text-sky-400" />
-                        <span className="font-semibold"></span> {ticket.remetente_nome || ticket.remetente_id}
-                      </p>
-
-                      <p className="flex items-center gap-1">
-                        <Mail className="w-3 h-3" />
-                        <span className="font-semibold"></span> {ticket.remetente_email || 'N/A'}
-                      </p>
-
-                      <p className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        <span className="font-semibold"></span> {formatDate(ticket.criado_em)}
-                      </p>
+                  <CardContent className="flex flex-row items-center justify-between -mt-6">
+                    <div className="flex flex-col">
+                      <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
+                      {card.subTitle1 && (
+                        <p className="text-yellow-500 text-sm mt-1">
+                          {card.subTitle1}
+                        </p>
+                      )}
+                      {card.porcentagem && !card.valueAtivos && (
+                        <p className="text-sm mt-1 text-blue-500">{card.porcentagem}</p>
+                      )}
+                      {card.subTitle && (
+                        <p className="text-sm mt-1 text-destructive">{card.subTitle}</p>
+                      )}
+                      {card.subTitle2 && (
+                        <p className="text-sm mt-1 text-green-600">{card.subTitle2}</p>
+                      )}
                     </div>
-
-                    <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md">
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-sky-700 dark:text-sky-400 mb-1">Mensagem</h3>
-                      <p className="text-sm line-clamp-3">
-                        {ticket.mensagem}
-                      </p>
-                    </div>
-
+                    <Icon className={`w-8 h-8 ${card.iconColor}`} />
                   </CardContent>
-
-                  {isReplying && (
-                    <CardFooter className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80">
-                      <div className="w-full space-y-2">
-                        <label htmlFor={`reply-${ticket.id}`} className="sr-only">Sua Resposta</label>
-                        <textarea
-                          id={`reply-${ticket.id}`}
-                          rows="3"
-                          value={replyMessage}
-                          onChange={(e) => setReplyMessage(e.target.value)}
-                          className="w-full p-2 text-sm bg-white border border-gray-300 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:bg-gray-900 dark:border-gray-600"
-                          placeholder="Escreva sua resposta (min. 3 linhas)..."
-                        ></textarea>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSendReply(ticket.id);
-                          }}
-                          className="w-full py-1.5 text-sm font-semibold cursor-pointer rounded-md shadow-md hover:bg-blue-300 transition"
-                        >
-                          Enviar Resposta
-                        </button>
-                      </div>
-                    </CardFooter>
-                  )}
-
                 </Card>
               </AnimationWrapper>
             );
-          })
-        )}
-      </div>
+          })}
+        </section>
 
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[640px]">
-          <DialogHeader>
-            <DialogTitle>Detalhes do Ticket</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 flex flex-col gap-2">
-            <p><strong>Assunto:</strong> {selectedTicket?.assunto}</p>
-            <p><strong>Mensagem:</strong> {selectedTicket?.mensagem}</p>
-            <p><strong>Remetente:</strong> {selectedTicket?.remetente_id}</p>
-            <p><strong>Status:</strong> {selectedTicket?.status}</p>
-            <p><strong>Resposta:</strong> {selectedTicket?.resposta ?? "-"}</p>
-            <p><strong>Criado em:</strong> {formatDate(selectedTicket?.criado_em)}</p>
-            <p><strong>Atualizado em:</strong> {formatDate(selectedTicket?.atualizado_em)}</p>
-          </div>
-          <DialogFooter className="flex justify-end space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowModal(false);
-                setSelectedTicket(null);
-              }}
-            >
-              Fechar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-        <PaginationDemo className='my-2' />
-      </Dialog>
-    </div>
+        <div className="flex flex-col gap-4 font-sans">
+          {tickets.length === 0 ? (
+            <p>Nenhum ticket encontrado.</p>
+          ) : (
+            tickets.map((ticket, i) => {
+              const isReplying = replyingTicketId === ticket.id;
+
+              return (
+                <AnimationWrapper key={ticket.id || i} delay={i * 0.1}>
+                  <Card
+                    className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:border-sky-400 dark:hover:border-sky-950"
+                    role="listitem"
+                  >
+
+                    <CardHeader className="p-4 border-b border-gray-100 dark:border-gray-700">
+
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex gap-2">
+                          <span
+                            className={`inline-block px-2 py-0.5 text-xs font-semibold uppercase rounded tracking-wide 
+                          ${ticket.status === "pendente"
+                                ? "bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400"
+                                : "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400"
+                              }`}
+                          >
+                            {ticket.status}
+                          </span>
+                          <span
+                            className={`inline-block px-2 py-0.5 text-xs font-semibold uppercase rounded tracking-wide 
+                          ${ticket.status === "resolvido"
+                                ? "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400"
+                                : "bg-sky-500/10 text-sky-600 dark:bg-sky-500/20 dark:text-sky-400"
+                              }`}
+                          >
+                            {ticket.status === "resolvido" ? "Respondida" : "Não Respondida"}
+                          </span>
+                        </div>
+
+                        <div className="flex gap-1.5 shrink-0">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleReply(ticket.id);
+                            }}
+                            className={`p-1.5 text-white rounded-full shadow-md transition ${isReplying ? 'bg-orange-600 hover:bg-orange-700 focus:ring-orange-500/50' : 'bg-sky-600 hover:bg-sky-700 focus:ring-sky-500/50'}`}
+                            title={isReplying ? "Fechar Resposta" : "Responder Ticket"}
+                          >
+                            <MessageCircle className="w-4 h-4 cursor-pointer" />
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              alert(`Excluir ticket ${ticket.id}`);
+                            }}
+                            className="p-1.5 cursor-pointer text-red-500 bg-gray-100 dark:bg-gray-700 rounded-full shadow-md hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition"
+                            title="Excluir Ticket"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      <CardTitle className="text-xl font-bold truncate max-w-full">
+                        {ticket.assunto}
+                      </CardTitle>
+                    </CardHeader>
+
+                    <CardContent className="p-4 space-y-3">
+
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pb-2 border-b border-dashed border-gray-200 dark:border-gray-700 text-xs">
+
+                        <p className="font-medium flex items-center gap-1">
+                          <User className="w-3 h-3 text-sky-600 dark:text-sky-400" />
+                          <span className="font-semibold"></span> {ticket.remetente_nome || ticket.remetente_id}
+                        </p>
+
+                        <p className="flex items-center gap-1">
+                          <Mail className="w-3 h-3" />
+                          <span className="font-semibold"></span> {ticket.remetente_email || 'N/A'}
+                        </p>
+
+                        <p className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          <span className="font-semibold"></span> {formatDate(ticket.criado_em)}
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-sky-700 dark:text-sky-400 mb-1">Mensagem</h3>
+                        <p className="text-sm line-clamp-3">
+                          {ticket.mensagem}
+                        </p>
+
+                    
+                        {ticket.resposta && (
+                          <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/50 rounded-md border-l-4 border-green-500">
+                            <h4 className="text-xs font-semibold uppercase text-green-700 dark:text-green-300 mb-1">Resposta</h4>
+                            <p className="text-sm">{ticket.resposta}</p>
+                          </div>
+                        )}
+                      </div>
+
+                    </CardContent>
+
+                    {isReplying && (
+                      <CardFooter className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80">
+                        <div className="w-full space-y-2">
+                          <label htmlFor={`reply-${ticket.id}`} className="sr-only">Sua Resposta</label>
+                          <textarea
+                            id={`reply-${ticket.id}`}
+                            rows="3"
+                            value={replyMessage}
+                            onChange={(e) => setReplyMessage(e.target.value)}
+                            className="w-full p-2 text-sm bg-white border border-gray-300 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:bg-gray-900 dark:border-gray-600"
+                            placeholder="Escreva sua resposta (min. 3 linhas)..."
+                          ></textarea>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSendReply(ticket.id);
+                            }}
+                            className="w-full py-1.5 text-sm font-semibold cursor-pointer rounded-md shadow-md hover:bg-blue-300 transition"
+                          >
+                            Enviar Resposta
+                          </button>
+                        </div>
+                      </CardFooter>
+                    )}
+                    <Separator></Separator>
+                    <PaginationDemo className='my-20' />
+                  </Card>
+                </AnimationWrapper>
+              );
+            })
+          )}
+        </div>
+
+        <Dialog open={showModal} onOpenChange={setShowModal}>
+          <DialogContent className="sm:max-w-[640px]">
+            <DialogHeader>
+              <DialogTitle>Detalhes do Ticket</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 flex flex-col gap-2">
+              <p><strong>Assunto:</strong> {selectedTicket?.assunto}</p>
+              <p><strong>Mensagem:</strong> {selectedTicket?.mensagem}</p>
+              <p><strong>Remetente:</strong> {selectedTicket?.remetente_id}</p>
+              <p><strong>Status:</strong> {selectedTicket?.status}</p>
+              <p><strong>Resposta:</strong> {selectedTicket?.resposta ?? "-"}</p>
+              <p><strong>Criado em:</strong> {formatDate(selectedTicket?.criado_em)}</p>
+              <p><strong>Atualizado em:</strong> {formatDate(selectedTicket?.atualizado_em)}</p>
+            </div>
+            <DialogFooter className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowModal(false);
+                  setSelectedTicket(null);
+                }}
+              >
+                Fechar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+
+        </Dialog>
+
+      </div>
     </>
   );
 }

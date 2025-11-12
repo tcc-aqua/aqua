@@ -113,7 +113,7 @@ export default function CardTopDash() {
             animate="visible"
             custom={i * 0.2}
           >
-            <Card className=" hover:border-sky-400 dark:hover:border-sky-700">
+            <Card className=" hover:border-sky-400 dark:hover:border-sky-950">
               <CardHeader>
                 <CardTitle className="font-bold text-xl text-foreground">
                   {card.title}

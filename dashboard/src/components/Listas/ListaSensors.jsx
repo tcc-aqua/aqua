@@ -17,12 +17,15 @@ import {
 import SensorFilter from "../Filters/Sensors";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { PaginationDemo } from "../pagination/pagination";
+import { Separator } from "../ui/separator";
+import ExportarTabela from "../Layout/ExportTable/page";
 
 export default function SensorsDashboard() {
   const [sensores, setSensores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
+const [filters, setFilters] = useState({});
 
   const API_URL = "http://localhost:3333/api/sensores";
   const fetchData = async (filters = {}) => {
@@ -153,7 +156,7 @@ export default function SensorsDashboard() {
           const Icon = card.icon;
           return (
             <AnimationWrapper key={card.title} delay={i * 0.2}>
-              <Card className=" hover:border-sky-400 dark:hover:border-sky-700" >
+              <Card className=" hover:border-sky-400 dark:hover:border-sky-950" >
                 <CardHeader>
                   <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                 </CardHeader>
@@ -179,6 +182,7 @@ export default function SensorsDashboard() {
                   </div>
                   <Icon className={`w-8 h-8 bg-${card.iconColor} ${card.iconColor}`} />
                 </CardContent>
+       
               </Card>
             </AnimationWrapper>
           );
@@ -187,9 +191,11 @@ export default function SensorsDashboard() {
 
       <AnimationWrapper delay={0.3}>
 
-        <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-700">
+        <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-950">
           <CardHeader>
-            <CardTitle>Lista de Sensores</CardTitle>
+            <CardTitle>Lista de Sensores
+               <ExportarTabela data={sensores} filtros={filters} fileName="sensores" />
+            </CardTitle>
           </CardHeader>
           <CardContent className="overflow-x-auto">
             {sensores.length === 0 ? (
@@ -243,64 +249,85 @@ export default function SensorsDashboard() {
               </table>
             )}
           </CardContent>
+                     <Separator></Separator>
+           <PaginationDemo className='my-20' />
         </Card>
       </AnimationWrapper>
 
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[450px] rounded-2xl shadow-2xl p-6 ">
-        
-          <DialogHeader className="flex flex-col items-center text-center space-y-4">
-            <div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded-full">
-              <AlertTriangle className="h-10 w-10 text-yellow-500 dark:text-yellow-400" />
-            </div>
-            <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-              Confirmação
-            </DialogTitle>
-          </DialogHeader>
-      
-          <p className="py-6 text-gray-700 dark:text-gray-300 text-center text-lg">
-            Deseja realmente{" "}
-            <span
-              className={`font-semibold ${
-                selectedItem?.sensor_status === "ativo"
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-green-600 dark:text-green-400"
-              }`}
-            >
-              {selectedItem?.sensor_status === "ativo" ? "inativar" : "ativar"} 
-              
-            </span>{" "}
-            o sensor <strong>{selectedItem?.sensor_codigo}</strong>?
-          </p>
-      
-          <DialogFooter className="flex justify-center gap-4">
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-              onClick={() => setShowModal(false)}
-            >
-              <X className="h-5 w-5" />
-              Cancelar
-            </Button>
-      
-            <Button
-              className={`flex items-center gap-2 px-6 py-3 text-white transition
-                ${
-                  selectedItem?.sensor_status === "ativo"
-                    ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                    : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
-                }
-              `}
-              onClick={toggleStatus}
-            >
-              <Check className="h-5 w-5" />
-              {selectedItem?.sensor_status === "ativo" ? "Inativar" : "Ativar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-        <PaginationDemo className='my-2' />
-      </Dialog>
+     <Dialog open={showModal} onOpenChange={setShowModal}>
+  <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+    
+    {/* Barra superior colorida de acordo com status */}
+    <div
+      className={`h-2 w-full rounded-t-md ${
+        selectedItem?.sensor_status === "ativo" ? "bg-red-600" : "bg-green-600"
+      }`}
+    />
+
+    <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+      <div
+        className={`p-4 rounded-full ${
+          selectedItem?.sensor_status === "ativo"
+            ? "bg-red-100 dark:bg-red-900"
+            : "bg-green-100 dark:bg-green-900"
+        }`}
+      >
+        <AlertTriangle
+          className={`h-10 w-10 ${
+            selectedItem?.sensor_status === "ativo"
+              ? "text-red-600 dark:text-red-400"
+              : "text-green-600 dark:text-green-400"
+          }`}
+        />
+      </div>
+      <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+        Confirmação
+      </DialogTitle>
+    </DialogHeader>
+
+    <div className="mt-5 px-4 text-foreground/90 text-center text-lg">
+      <p>
+        Deseja realmente{" "}
+        <span
+          className={`font-semibold ${
+            selectedItem?.sensor_status === "ativo"
+              ? "text-red-600 dark:text-red-400"
+              : "text-green-600 dark:text-green-400"
+          }`}
+        >
+          {selectedItem?.sensor_status === "ativo" ? "inativar" : "ativar"}
+        </span>{" "}
+        o sensor <strong>{selectedItem?.sensor_codigo}</strong>?
+      </p>
     </div>
+
+    <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
+      <Button
+        variant="outline"
+        className="flex items-center gap-2"
+        onClick={() => setShowModal(false)}
+      >
+        <X className="h-5 w-5" />
+        Cancelar
+      </Button>
+
+      <Button
+        className={`flex items-center gap-2 px-6 py-3 text-white transition ${
+          selectedItem?.sensor_status === "ativo"
+            ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+            : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+        }`}
+        onClick={toggleStatus}
+      >
+        <Check className="h-5 w-5" />
+        {selectedItem?.sensor_status === "ativo" ? "Inativar" : "Ativar"}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+    </div>
+
     </>
   );
 }
