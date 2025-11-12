@@ -282,7 +282,7 @@ export default function SettingsDashboard() {
                                   }
                                 >
                                   {status === "ativo" ? (
-                                    <Check className="text-green-500  hover:bg-green-100" size={14} />
+                                    <Check className="text-green-500" size={14} />
                                   ) : (
                                     <X className="text-destructive" size={14} />
                                   )}

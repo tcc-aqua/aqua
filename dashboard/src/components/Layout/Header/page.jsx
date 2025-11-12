@@ -96,7 +96,7 @@ export default function Header() {
               <img
                 src={userInfo.image}
                 alt="Avatar"
-                className="w-10 h-10 rounded-full object-cover border-1 border-primary shadow-sm group-hover:scale-105 transition-transform"
+                className="w-10 h-10 rounded-full object-cover border  shadow-sm group-hover:scale-105 transition-transform"
               />
               <div
                 className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-card"

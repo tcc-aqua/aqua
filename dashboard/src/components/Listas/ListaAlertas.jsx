@@ -308,9 +308,9 @@ export default function AlertasDashboard() {
                                   setSelectedAlerta(alerta);
                                   setShowModal(true);
                                 }}
-                                className="p-2 rounded hover:bg-green-100 text-green-600"
+                                className="p-2 rounded 0 text-green-600"
                               >
-                               <ThumbsUp className="w-5 h-5" />
+                               <ThumbsUp className="w-5 h-5 cursor-pointer" />
                               </button>
                             )}
 
@@ -322,7 +322,7 @@ export default function AlertasDashboard() {
                               }}
                               className="p-2 rounded  text-sky-600"
                             >
-                              <Eye className="w-5 h-5" />
+                              <Eye className="w-5 h-5 cursor-pointer" />
                             </button>
                           </td>
 
