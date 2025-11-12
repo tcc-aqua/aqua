@@ -333,7 +333,7 @@ const [filters, setFilters] = useState({});
                   <td className="px-4 py-2 text-sm text-center -">
                     <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
                       <div className="flex items-center gap-1">
-                        {user.user_status === "ativo" ? <Check className="text-green-500 hover:bg-green-100" size={14} /> : <X className="text-destructive" size={14} />}
+                        {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
                       </div>
                     </Button>
                     <Button size="sm" variant='ghost' onClick={() => editItem(user)}>

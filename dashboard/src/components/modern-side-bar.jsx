@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import Cookies from "js-cookie";
 
 const navigationItems = [
   { id: "dashboard", name: "Dashboard", icon: Home, href: "/dashboard" },
@@ -54,6 +55,29 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
+
+
+  async function handleLogout(router) {
+    try {
+      
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (res.ok) {
+       
+        Cookies.remove("token");
+
+
+        router.push("/");
+      } else {
+        console.error("Erro ao fazer logout");
+      }
+    } catch (err) {
+      console.error("Erro de conexão no logout:", err);
+    }
+  }
 
   return (
     <>
@@ -131,7 +155,7 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
                       <Tooltip>
                         <TooltipTrigger asChild>{link}</TooltipTrigger>
                         <TooltipContent
-                          sideOffset={5} 
+                          sideOffset={5}
                           side="right"
                           className="bg-accent text-white rounded-md px-2 py-1 text-sm shadow-lg"
                         >
@@ -159,7 +183,7 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent
-                  sideOffset={5} 
+                  sideOffset={5}
                   side="right"
                   className="bg-accent text-white rounded-md px-2 py-1 text-sm shadow-lg"
                 >
@@ -183,15 +207,15 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link
-                    href="/logout"
+                  <button
+                    onClick={() => handleLogout(router)}
                     className="flex items-center justify-center p-2.5 text-sidebar-foreground hover:bg-muted hover:text-accent rounded-md transition-all duration-200"
                   >
                     <LogOut className="h-5 w-5 transition-colors duration-200" />
-                  </Link>
+                  </button>
                 </TooltipTrigger>
                 <TooltipContent
-                  sideOffset={5} 
+                  sideOffset={5}
                   side="right"
                   className="bg-destructive text-white rounded-md px-2 py-1 text-sm shadow-lg"
                 >
@@ -200,15 +224,16 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
               </Tooltip>
             </TooltipProvider>
           ) : (
-            <Link
-              href="/logout"
-              className="flex items-center rounded-md px-3 py-2.5 space-x-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive transition-all duration-200"
+            <button
+              onClick={() => handleLogout(router)}
+              className="flex items-center rounded-md px-3 py-2.5 space-x-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive transition-all duration-200 w-full"
             >
               <LogOut className="h-5 w-5 transition-colors duration-200" />
               <span className="text-sm">Sair</span>
-            </Link>
+            </button>
           )}
         </div>
+
       </div>
     </>
   );

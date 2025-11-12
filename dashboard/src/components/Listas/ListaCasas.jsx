@@ -280,7 +280,7 @@ export default function CasasDashboard() {
                           <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(casa)}>
                             <div className="flex items-center gap-1">
                               {casa.casa_status === "ativo" ? (
-                                <Check className="text-green-500  hover:bg-green-100" size={14} />
+                                <Check className="text-green-500" size={14} />
                               ) : (
                                 <X className="text-destructive" size={14} />
                               )}
