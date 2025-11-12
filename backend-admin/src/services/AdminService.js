@@ -157,7 +157,7 @@ export default class AdminService {
             const admin = await Admin.findByPk(adminId);
             if (!admin) throw new Error('Administrador não encontrado');
 
-            admin.img_url = `/uploads/${fileName}`;
+            admin.img_url = `/api/uploads/${fileName}`;
 
             console.log('path importado:', path);
             console.log('file recebido:', file);

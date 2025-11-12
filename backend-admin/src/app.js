@@ -69,7 +69,7 @@ await fastify.register(multipart);
 
 fastify.register(fastifyStatic, {
     root: path.join(process.cwd(), 'uploads'),
-    prefix: '/uploads/',
+    prefix: '/api/uploads/',
 })
 
 

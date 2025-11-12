@@ -4,3 +4,4 @@
 
 # ignora os logs da aplicação
 src/logs/
+/uploads/
