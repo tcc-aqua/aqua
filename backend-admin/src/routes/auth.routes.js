@@ -1,4 +1,4 @@
-import { Login, getMe } from "../controllers/AuthController.js";
+import { Login, Logout, getMe, verifyToken } from "../controllers/AuthController.js";
 import { autenticarAdmin } from "../middlewares/AuthMiddleware.js";
 
 export default async function authRoutes(fastify) {
@@ -20,4 +20,13 @@ export default async function authRoutes(fastify) {
             preHandler: autenticarAdmin
         },
         getMe);
+        
+    fastify.post('/logout', {
+        schema: {
+            summary: 'Logout de conta administrador',
+            tags: ['autenticação'],
+            description: 'Rota para efetuar o logout do administrador'
+        },
+        preHandler: verifyToken
+    }, Logout);
 }
