@@ -22,7 +22,7 @@ export default class AdminController {
 
     static async create(req, reply) {
         const validateAdmin = createAdminDTO.parse(req.body);
-        const admin = await AdminService.create(validateAdmin);
+        const admin = await AdminService.createAdmin(validateAdmin);
         return reply.status(201).send(admin);
     }
 
