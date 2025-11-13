@@ -1,7 +1,7 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
-import Notifications from "./Notifications.js";
 import User from "./User.js";
+import Notifications from "./Notifications.js";
 
 export default class NotificationAdmin extends Model {}
 

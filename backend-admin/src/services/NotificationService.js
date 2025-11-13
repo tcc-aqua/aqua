@@ -1,12 +1,10 @@
-import Notifications from "../models/Notifications.js";
-import { NotificationAdmin } from "../models/NotificationAdmin.js";
 import User from "../models/User.js";
-import fastify from "../server.js";
+import NotificationAdmin from '../models/NotificationsAdmin.js'
 
 export default class NotificationService {
 
   static async create({ sender_id, type, title, message }) {
-    const notification = await Notifications.create({
+    const notification = await NotificationAdmin.create({
       user_id: sender_id,
       type,
       title,
@@ -34,7 +32,7 @@ export default class NotificationService {
   static async listByAdmin(admin_id) {
     const notifications = await NotificationAdmin.findAll({
       where: { admin_id, is_deleted: false },
-      include: [{ model: Notifications, as: "notification" }],
+      include: [{ model: NotificationAdmin, as: "notification" }],
       order: [["id", "DESC"]]
     });
 
