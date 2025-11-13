@@ -8,11 +8,10 @@ async function profileRoutes(fastify, options) {
         summary: 'Rota para puxar as informações pessoal do usuário',
         tags: ['profile'],
         description: 'Listando informações do usuário'
-      }
-    },
-    {
+      },
       preHandler: [authMiddleware],
     },
+  
     ProfileController.getAuthenticatedUserProfile
   );
 }

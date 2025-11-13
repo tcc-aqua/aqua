@@ -29,6 +29,7 @@ export default async function authRoutes(fastify) {
         tags: ['autenticação'],
         description: 'Rota para a API puxar as informações do usuário logado'
       }
+      ,preHandler: authMiddleware 
     },
-    { preHandler: authMiddleware }, UserController.me);
+      UserController.me);
 }

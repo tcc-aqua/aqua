@@ -93,9 +93,15 @@ fastify.register(authRoutes, {prefix: '/api/auth'});
 fastify.register(apartamentoRoutes, {prefix: '/api/apartamentos'});
 fastify.register(dicaRoutes, {prefix: '/api/dica'});
 fastify.register(userRoutes, {prefix: '/api/user'});
-fastify.register(passwordRoutes, {prefix: '/api/forgot'});
 fastify.register(metasRoutes, {prefix: '/api/metas'});
 fastify.register(cepRoutes, {prefix: '/api/cep'});
 fastify.register(profileRoutes, {prefix: '/api/profile'});
+
+// ==================================================================
+// A CORREÇÃO ESTÁ AQUI
+// O prefixo deve ser '/api/password' para agrupar as rotas de senha.
+// Assim, '/api/password' + '/forgot' = '/api/password/forgot' (CORRETO!)
+// ==================================================================
+fastify.register(passwordRoutes, {prefix: '/api/password'});
 
 export default fastify;
