@@ -39,7 +39,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const API_BASE_URL = 'http://localhost:3334';
+const API_BASE_URL = 'http://localhost:3334'; // Para Expo Go, use o IP da sua máquina. Ex: 'http://192.168.1.10:3334'
 
 const theme = {
     ...DefaultTheme,
@@ -87,6 +87,15 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
     const [bloco, setBloco] = useState('');
     const [numeroMoradores, setNumeroMoradores] = useState('1');
     
+    // Estados para o fluxo de "Esqueci minha senha"
+    const [forgotPasswordModalVisible, setForgotPasswordModalVisible] = useState(false);
+    const [resetPasswordModalVisible, setResetPasswordModalVisible] = useState(false);
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetToken, setResetToken] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
+
     const showSnackbar = (message, type = 'default') => {
         setSnackbar({ visible: true, message, type });
     };
@@ -183,6 +192,52 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
         }
     };
 
+    const handleForgotPasswordRequest = async () => {
+        if (!resetEmail.includes('@') || !resetEmail.includes('.')) {
+            showSnackbar('Por favor, insira um e-mail válido.', 'error');
+            return;
+        }
+        setIsLoading(true);
+        try {
+            await axios.post(`${API_BASE_URL}/api/password/forgot`, { email: resetEmail });
+            showSnackbar('Código enviado! Verifique sua caixa de entrada e spam.', 'success');
+            setForgotPasswordModalVisible(false);
+            setResetPasswordModalVisible(true);
+        } catch (error) {
+            console.error("Erro ao solicitar redefinição:", error.response?.data || error.message);
+            showSnackbar('Se o e-mail estiver correto, você receberá um código.', 'success');
+            setForgotPasswordModalVisible(false);
+            setResetPasswordModalVisible(true);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResetPasswordSubmit = async () => {
+        if (!resetToken.trim() || !newPassword.trim()) {
+            showSnackbar('Preencha o código e a nova senha.', 'error'); return;
+        }
+        if (newPassword !== confirmNewPassword) {
+            showSnackbar('As senhas não coincidem.', 'error'); return;
+        }
+        if (newPassword.length < 6) {
+            showSnackbar('A nova senha deve ter no mínimo 6 caracteres.', 'error'); return;
+        }
+        setIsLoading(true);
+        try {
+            await axios.post(`${API_BASE_URL}/api/password/reset`, { token: resetToken, newPassword });
+            showSnackbar('Senha alterada com sucesso! Faça o login.', 'success');
+            setResetPasswordModalVisible(false);
+            setResetEmail(''); setResetToken(''); setNewPassword(''); setConfirmNewPassword('');
+            handleFormTypeChange('login');
+        } catch (error) {
+            const errorMessage = error.response?.data?.error || 'Não foi possível redefinir a senha.';
+            showSnackbar(`Erro: ${errorMessage}`, 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleOpenTerms = () => setTermsVisible(true);
     const handleCloseTerms = () => setTermsVisible(false);
     const handleAcceptTerms = () => { setAgreeToTerms(true); handleCloseTerms(); };
@@ -191,8 +246,8 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
         return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
     };
 
-    const GradientButton = ({ onPress, loading, disabled, children }) => (
-        <TouchableOpacity onPress={onPress} disabled={disabled || loading} style={styles.gradientButtonContainer}>
+    const GradientButton = ({ onPress, loading, disabled, children, style }) => (
+        <TouchableOpacity onPress={onPress} disabled={disabled || loading} style={[styles.gradientButtonContainer, style]}>
             <LinearGradient colors={disabled ? ['#B0B0B0', '#C0C0C0'] : ['#0A84FF', '#005ecb']} style={styles.gradientButton} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                 <Text style={styles.gradientButtonText}>{loading ? 'Aguarde...' : children}</Text>
             </LinearGradient>
@@ -204,7 +259,7 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
             <Paragraph style={styles.paragraph}>Bem-vindo! Faça login para continuar.</Paragraph>
             <TextInput label="Email" value={email} onChangeText={setEmail} style={styles.input} mode="outlined" keyboardType="email-address" autoCapitalize="none" left={<TextInput.Icon icon="account-circle-outline" />} />
             <TextInput label="Senha" value={senha} onChangeText={setSenha} secureTextEntry={!passwordVisible} style={styles.input} mode="outlined" left={<TextInput.Icon icon="lock-outline" />} right={<TextInput.Icon icon={passwordVisible ? "eye-off" : "eye"} onPress={() => setPasswordVisible(!passwordVisible)} />} />
-            <Button mode="text" onPress={() => showSnackbar('Funcionalidade "Esqueci a Senha" em desenvolvimento.', 'default')} style={{ alignSelf: 'flex-end', marginBottom: 16 }}>
+            <Button mode="text" onPress={() => setForgotPasswordModalVisible(true)} style={{ alignSelf: 'flex-end', marginBottom: 16 }}>
                 Esqueci minha senha
             </Button>
             <GradientButton onPress={handleLogin} loading={isLoading} disabled={isLoading}>
@@ -305,7 +360,6 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                         <Card style={styles.card}>
                             <Card.Content style={styles.cardContent}>
                                 <View style={styles.logoContainer}>
-                                    {/* ATENÇÃO: Verifique se o caminho para sua logo está correto */}
                                     <Avatar.Image size={80} source={require('../assets/logo.png')} style={{ backgroundColor: 'transparent' }} />
                                     <Title style={styles.title}>Aqua Services</Title>
                                 </View>
@@ -378,6 +432,39 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                         <Button onPress={() => setCodigoDialogVisible(false)} mode="contained">Entendi</Button>
                     </Dialog.Actions>
                 </Dialog>
+
+                <Modal visible={forgotPasswordModalVisible} onDismiss={() => setForgotPasswordModalVisible(false)} contentContainerStyle={styles.modalContainerShort}>
+                    <View style={styles.modalHeader}>
+                        <Title style={styles.modalTitle}>Redefinir Senha</Title>
+                        <Paragraph style={styles.modalSubtitle}>Digite seu e-mail para receber um código de verificação.</Paragraph>
+                    </View>
+                    <Divider />
+                    <View style={styles.modalContent}>
+                        <TextInput label="Seu e-mail de cadastro" value={resetEmail} onChangeText={setResetEmail} style={styles.input} mode="outlined" keyboardType="email-address" autoCapitalize="none" left={<TextInput.Icon icon="email-outline" />} />
+                    </View>
+                    <View style={styles.modalFooterRow}>
+                        <Button onPress={() => setForgotPasswordModalVisible(false)} style={{ marginRight: 8 }}>Cancelar</Button>
+                        <GradientButton onPress={handleForgotPasswordRequest} loading={isLoading} disabled={isLoading}>Enviar</GradientButton>
+                    </View>
+                </Modal>
+
+                <Modal visible={resetPasswordModalVisible} onDismiss={() => setResetPasswordModalVisible(false)} contentContainerStyle={styles.modalContainerShort}>
+                    <View style={styles.modalHeader}>
+                        <Title style={styles.modalTitle}>Criar Nova Senha</Title>
+                        <Paragraph style={styles.modalSubtitle}>Insira o código recebido e defina sua nova senha.</Paragraph>
+                    </View>
+                    <Divider />
+                    <View style={styles.modalContent}>
+                        <TextInput label="Código de 6 dígitos" value={resetToken} onChangeText={setResetToken} style={styles.input} mode="outlined" keyboardType="number-pad" maxLength={6} />
+                        <TextInput label="Nova Senha" value={newPassword} onChangeText={setNewPassword} secureTextEntry style={styles.input} mode="outlined" />
+                        <TextInput label="Confirmar Nova Senha" value={confirmNewPassword} onChangeText={setConfirmNewPassword} secureTextEntry style={styles.input} mode="outlined" />
+                    </View>
+                    <View style={styles.modalFooterRow}>
+                        <Button onPress={() => setResetPasswordModalVisible(false)} style={{ marginRight: 8 }}>Cancelar</Button>
+                        <GradientButton onPress={handleResetPasswordSubmit} loading={isLoading} disabled={isLoading}>Salvar Senha</GradientButton>
+                    </View>
+                </Modal>
+
             </Portal>
 
             <Snackbar
@@ -402,8 +489,8 @@ const styles = StyleSheet.create({
     title: { fontSize: 28, fontWeight: 'bold', color: theme.colors.primary, marginTop: 12, letterSpacing: 0.5 },
     paragraph: { fontSize: 16, color: theme.colors.placeholder, textAlign: 'center', marginBottom: 24, lineHeight: 22 },
     input: { marginBottom: 16, backgroundColor: theme.colors.background },
-    gradientButtonContainer: { marginTop: 8, borderRadius: theme.roundness * 5, elevation: 4, shadowColor: '#0A84FF', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 5 },
-    gradientButton: { paddingVertical: 14, alignItems: 'center' },
+    gradientButtonContainer: { borderRadius: theme.roundness * 5, elevation: 4, shadowColor: '#0A84FF', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 5 },
+    gradientButton: { paddingVertical: 14, paddingHorizontal: 20, alignItems: 'center', borderRadius: theme.roundness * 5, overflow: 'hidden' },
     gradientButtonText: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF', letterSpacing: 0.5 },
     switchButton: { marginTop: 16 },
     customSegmentedContainer: { flexDirection: 'row', marginBottom: 24, borderWidth: 1, borderColor: theme.colors.placeholder, borderRadius: theme.roundness, overflow: 'hidden' },
@@ -419,11 +506,14 @@ const styles = StyleSheet.create({
     dialogTitle: { textAlign: 'center', color: theme.colors.text },
     dialogParagraph: { textAlign: 'center', color: theme.colors.placeholder, lineHeight: 20 },
     modalContainer: { backgroundColor: 'white', margin: 20, borderRadius: theme.roundness * 1.5, height: '85%', elevation: 10 },
+    modalContainerShort: { backgroundColor: 'white', margin: 20, borderRadius: theme.roundness * 1.5, elevation: 10, alignSelf: 'center', width: '90%', maxWidth: 400 },
     modalHeader: { paddingVertical: 20, paddingHorizontal: 20, alignItems: 'center' },
     modalTitle: { fontSize: 22, fontWeight: 'bold', color: theme.colors.text },
-    modalSubtitle: { fontSize: 14, color: theme.colors.placeholder },
+    modalSubtitle: { fontSize: 14, color: theme.colors.placeholder, textAlign: 'center' },
+    modalContent: { paddingHorizontal: 24, paddingTop: 16 },
     modalScrollView: { paddingHorizontal: 24 },
     termsText: { fontSize: 14, lineHeight: 22, marginBottom: 16, textAlign: 'justify', color: theme.colors.text },
     termsSubheading: { fontSize: 16, fontWeight: 'bold', marginTop: 8, marginBottom: 8, color: theme.colors.text },
     modalFooter: { padding: 20, borderTopWidth: 1, borderTopColor: '#EEEEEE' },
+    modalFooterRow: { padding: 20, borderTopWidth: 1, borderTopColor: '#EEEEEE', flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' },
 });
