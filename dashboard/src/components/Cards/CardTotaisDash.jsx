@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Users, UserPlus, AlertTriangle, Cpu, Siren, Check } from "lucide-react";
+import { Users, UserPlus, AlertTriangle, Cpu, Siren, Check, Signal } from "lucide-react";
 
 const cardVariants = {
   hidden: { y: -120, opacity: 0, zIndex: -1 },
@@ -81,7 +81,7 @@ export default function CardTopDash() {
     {
       title: "Sensores ativos",
       value: userStats.sensoresAtivos,
-      icon: Cpu,
+      icon: Signal,
       iconColor: "text-purple-700",
       detalhe1: `${userStats.sensoresAtivos} de ${userStats.sensoresTotal} operacionais`,
     },

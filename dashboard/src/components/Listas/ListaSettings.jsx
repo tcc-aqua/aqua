@@ -13,6 +13,9 @@ import {
   Plus,
   AlertTriangle,
   UserPlus,
+  ShieldCheck,
+  UserCircle2,
+  Crown,
 } from "lucide-react";
 import {
   Dialog,
@@ -64,10 +67,10 @@ export default function SettingsDashboard() {
       const items = json.docs || json || [];
       const sortedItems = Array.isArray(items)
         ? items.sort((a, b) => {
-            const statusA = a.status || a.user_status;
-            const statusB = b.status || b.user_status;
-            return statusA === statusB ? 0 : statusA === "ativo" ? -1 : 1;
-          })
+          const statusA = a.status || a.user_status;
+          const statusB = b.status || b.user_status;
+          return statusA === statusB ? 0 : statusA === "ativo" ? -1 : 1;
+        })
         : [];
       setData(sortedItems);
     } catch (err) {
@@ -151,11 +154,10 @@ export default function SettingsDashboard() {
           <nav className="flex-1 flex flex-row justify-center md:flex-col overflow-x-auto md:overflow-visible py-2 md:py-4 px-2 md:px-0 ">
             <button
               onClick={() => setActiveTab("admins")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${
-                activeTab === "admins"
+              className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${activeTab === "admins"
                   ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
                   : "text-sidebar-foreground hover:text-accent"
-              }`}
+                }`}
             >
               <Shield size={18} />
               Administradores
@@ -163,11 +165,10 @@ export default function SettingsDashboard() {
 
             <button
               onClick={() => setActiveTab("users")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${
-                activeTab === "users"
+              className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${activeTab === "users"
                   ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
                   : "text-sidebar-foreground hover:text-accent"
-              }`}
+                }`}
             >
               <User size={18} />
               Usuários
@@ -262,32 +263,55 @@ export default function SettingsDashboard() {
                                   {item.email || "-"}
                                 </td>
                               )}
-
-                              <td className="px-2 sm:px-4 py-2 text-xs">
+                              <td className="text-sm">
                                 <span
-                                  className={`px-2 py-1 rounded-full text-white font-semibold ${roleColor(
-                                    role
-                                  )}`}
+                                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-white font-semibold uppercase
+                                   ${role === "morador"
+                                      ? "bg-sky-500"
+                                      : role === "sindico"
+                                        ? "bg-yellow-400 text-black"
+                                        : role === "admin"
+                                          ? "bg-blue-600"
+                                          : role === "superadmin"
+                                            ? "bg-purple-600"
+                                            : "bg-gray-500"
+                                    }`}
                                 >
-                                  {role === "superadmin"
-                                    ? "Super Admin"
-                                    : role === "admin"
-                                    ? "Admin"
-                                    : role === "sindico"
-                                    ? "Síndico"
-                                    : role === "morador"
-                                    ? "Morador"
-                                    : "-"}
+                                  {role === "morador" ? (
+                                    <>
+                                      <User className="w-4 h-4" />
+                                      Morador
+                                    </>
+                                  ) : role === "sindico" ? (
+                                    <>
+                                      <Crown className="w-4 h-4" />
+                                      Síndico
+                                    </>
+                                  ) : role === "admin" ? (
+                                    <>
+                                      <Shield className="w-4 h-4" />
+                                      Admin
+                                    </>
+                                  ) : role === "superadmin" ? (
+                                    <>
+                                      <ShieldCheck className="w-4 h-4" />
+                                      SuperAdmin
+                                    </>
+                                  ) : (
+                                    <>
+                                      <UserCircle2 className="w-4 h-4" />
+                                      Desconhecido
+                                    </>
+                                  )}
                                 </span>
                               </td>
 
                               <td className="px-2 sm:px-4 py-2">
                                 <span
-                                  className={`inline-block w-3 h-3 rounded-full mt-3 ${
-                                    status === "ativo"
+                                  className={`inline-block w-3 h-3 rounded-full mt-3 ${status === "ativo"
                                       ? "bg-green-600"
                                       : "bg-destructive"
-                                  }`}
+                                    }`}
                                 />
                               </td>
 
@@ -296,8 +320,8 @@ export default function SettingsDashboard() {
                                   <Calendar size={14} />
                                   {new Date(
                                     item.criado_em ||
-                                      item.created_at ||
-                                      Date.now()
+                                    item.created_at ||
+                                    Date.now()
                                   ).toLocaleDateString("pt-BR")}
                                 </td>
                               )}
@@ -345,28 +369,25 @@ export default function SettingsDashboard() {
         <Dialog open={showModal} onOpenChange={setShowModal}>
           <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
             <div
-              className={`h-2 w-full rounded-t-md ${
-                (selectedItem?.status || selectedItem?.user_status) === "ativo"
+              className={`h-2 w-full rounded-t-md ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
                   ? "bg-red-600"
                   : "bg-green-600"
-              }`}
+                }`}
             />
 
             <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
               <div
-                className={`p-4 rounded-full ${
-                  (selectedItem?.status || selectedItem?.user_status) === "ativo"
+                className={`p-4 rounded-full ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
                     ? "bg-red-100 dark:bg-red-900"
                     : "bg-green-100 dark:bg-green-900"
-                }`}
+                  }`}
               >
                 <AlertTriangle
-                  className={`h-10 w-10 ${
-                    (selectedItem?.status || selectedItem?.user_status) ===
-                    "ativo"
+                  className={`h-10 w-10 ${(selectedItem?.status || selectedItem?.user_status) ===
+                      "ativo"
                       ? "text-red-600 dark:text-red-400"
                       : "text-green-600 dark:text-green-400"
-                  }`}
+                    }`}
                 />
               </div>
               <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
@@ -378,15 +399,14 @@ export default function SettingsDashboard() {
               <p>
                 Deseja realmente{" "}
                 <span
-                  className={`font-semibold ${
-                    (selectedItem?.status || selectedItem?.user_status) ===
-                    "ativo"
+                  className={`font-semibold ${(selectedItem?.status || selectedItem?.user_status) ===
+                      "ativo"
                       ? "text-red-600 dark:text-red-400"
                       : "text-green-600 dark:text-green-400"
-                  }`}
+                    }`}
                 >
                   {(selectedItem?.status || selectedItem?.user_status) ===
-                  "ativo"
+                    "ativo"
                     ? "inativar"
                     : "ativar"}
                 </span>{" "}
@@ -406,11 +426,10 @@ export default function SettingsDashboard() {
               </Button>
 
               <Button
-                className={`flex items-center gap-2 px-6 py-3 text-white transition ${
-                  (selectedItem?.status || selectedItem?.user_status) === "ativo"
+                className={`flex items-center gap-2 px-6 py-3 text-white transition ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
                     ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
                     : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
-                }`}
+                  }`}
                 onClick={toggleStatus}
               >
                 <Check className="h-5 w-5" />
@@ -447,18 +466,6 @@ export default function SettingsDashboard() {
                 onChange={(e) => handleNewAdminChange("password", e.target.value)}
                 className="text-foreground border border-border focus:border-primary focus:ring focus:ring-primary/20 rounded-md"
               />
-              <Select
-                value={newAdmin.role}
-                onValueChange={(value) => handleNewAdminChange("role", value)}
-              >
-                <SelectTrigger className="text-foreground border border-border focus:border-primary focus:ring focus:ring-primary/20 rounded-md">
-                  <SelectValue placeholder="Selecione a função" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="superadmin">SuperAdmin</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             <DialogFooter className="flex justify-end mt-4 border-t border-border pt-4 space-x-2 px-4">
@@ -482,7 +489,7 @@ export default function SettingsDashboard() {
         </Dialog>
       </div>
     </>
-    
+
   );
-  
+
 }

@@ -38,13 +38,40 @@ export default function FotoPerfil() {
     }
   }, []);
 
-  const handleUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFile(file);
-      setFoto(URL.createObjectURL(file));
+
+
+  const handleUpload = async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  setFile(file);
+  setFoto(URL.createObjectURL(file));
+
+  const token = Cookies.get("token");
+  const formData = new FormData();
+  formData.append("foto", file);
+
+  try {
+    const res = await fetch("http://localhost:3333/api/admins/upload-img", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      console.log(" Upload concluído:", data);
+      if (data.img_url) setFoto(data.img_url);
+    } else {
+      console.error(" Erro no upload:", data.message);
     }
-  };
+  } catch (error) {
+    console.error(" Erro ao enviar imagem:", error);
+  }
+};
+
 
   const handleRemove = () => {
     setFile(null);
@@ -55,6 +82,7 @@ export default function FotoPerfil() {
     const newEmail = prompt("Digite seu novo e-mail:", userInfo.email);
     if (newEmail) console.log("Novo e-mail:", newEmail);
   };
+  
 
   return (
     <div className="flex flex-col md:flex-row items-center md:items-start gap-6 p-6">

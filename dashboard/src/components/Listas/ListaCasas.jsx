@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
-import { Home, X, Check, User, Droplet, AlertTriangle, XCircle, CheckCircle } from "lucide-react";
+import { Home, X, Check, User, Droplet, AlertTriangle, XCircle, CheckCircle, MapPin, Signal } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -241,12 +241,28 @@ export default function CasasDashboard() {
                     {casas.map(casa => (
                       <tr key={casa.casa_id} className="hover:bg-muted/10 text-foreground">
                         <td className="px-4 py-2">
-                          <div className="text-sm font-semibold">{casa.endereco_completo}</div>
-                          <div className="text-xs text-foreground/80">{`${casa.numero_moradores || 0} Moradores`}</div>
-                          <div className="text-[10px] text-foreground/60">CEP: {casa.cep}</div>
-                          <div className="text-[10px] text-accent">Código {casa.casa_codigo}</div>
-
+                          <div className="flex items-start gap-2">
+                            <MapPin className="w-5 h-5 text-sky-600 mt-5" />
+                            <div className="flex flex-col">
+                              <div className="text-sm font-semibold">
+                                {casa.endereco_completo}
+                              </div>
+                              <div className="text-xs text-foreground/80">
+                                {`${casa.numero_moradores || 0} Moradores`}
+                              </div>
+                              <div className="text-[10px] text-foreground/60">
+                                CEP: {casa.cep}
+                              </div>
+                              <div className="text-[10px] text-accent">
+                                Código {casa.casa_codigo}
+                              </div>
+                              <span className={`text-[10px] font-bold ${casa.casa_status === "ativo" ? "text-green-600" : "text-destructive"}`}>
+                                {casa.casa_status === "ativo" ? "Ativo" : "Inativo"}
+                              </span>
+                            </div>
+                          </div>
                         </td>
+
                         <td className="px-4 py-2 text-sm">
                           {casa.responsavel_nome}
                           <div className="text-xs text-foreground/80">
@@ -257,22 +273,48 @@ export default function CasasDashboard() {
                           </div>
                         </td>
                         <td className="px-4 py-2 text-sm">
-                          <div className="font-bold">{casa.sensor_codigo}</div>
-                          <div className=" text-sm font-bold">
-                            <span className={casa.sensor_status === "ativo" ? "text-green-600" : "text-destructive"}>
-                              {casa.sensor_status === "ativo" ? "Ativo" : "Inativo"}
-                            </span>
-                          </div>
-                          <div className="text-[10px] text-foreground/60"> ID : {casa.sensor_id}</div>
-                          <div className="text-[10px] text-foreground/60">
-                            Último envio: {casa.ultimo_envio
-                              ? new Date(casa.ultimo_envio).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
-                              : "-"}
+                          {casa.sensor_codigo && (
+                            <div className="flex items-start gap-2">
+                              <Signal
+                                className={`w-5 h-5 mt-5 ${casa.sensor_status === "ativo" ? "text-green-600" : "text-destructive"}`}
+                              />
+                              <div className="flex flex-col">
+                                <div className="font-bold">{casa.sensor_codigo}</div>
+                                <div className="text-sm font-bold">
+                                  <span className={casa.sensor_status === "ativo" ? "text-green-600" : "text-destructive"}>
+                                    {casa.sensor_status === "ativo" ? "Ativo" : "Inativo"}
+                                  </span>
+                                </div>
+                                <div className="text-[10px] text-foreground/60">ID : {casa.sensor_id}</div>
+                                <div className="text-[10px] text-foreground/60">
+                                  Último envio: {casa.ultimo_envio
+                                    ? new Date(casa.ultimo_envio).toLocaleString("pt-BR", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                    : "-"}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-2 text-sm font-bold">
+                          <div className="flex items-start gap-2">
+                            <Droplet className="w-5 h-5 text-sky-500 mt-1" />
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-foreground">
+                                {casa.consumo_total || 0}L
+                              </span>
+                              <span className="text-[10px] text-foreground/60">
+                                Total Acumulado
+                              </span>
+                            </div>
                           </div>
                         </td>
-                        <td className="px-6 py-2 text-sm font-bold">{casa.consumo_total || 0}L
-                          <div className="text-[10px] text-foreground/60">Total Acumulado</div>
-                        </td>
+
                         <td className="text-sm font-bold flex items-center ml-7 py-10">
                           <span className={`inline-block w-3 h-3 rounded-full ${casa.casa_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={casa.casa_status} />
                         </td>
@@ -311,14 +353,14 @@ export default function CasasDashboard() {
             <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
               <div
                 className={`p-4 rounded-full ${selectedItem?.casa_status === "ativo"
-                    ? "bg-red-100 dark:bg-red-900"
-                    : "bg-green-100 dark:bg-green-900"
+                  ? "bg-red-100 dark:bg-red-900"
+                  : "bg-green-100 dark:bg-green-900"
                   }`}
               >
                 <AlertTriangle
                   className={`h-10 w-10 ${selectedItem?.casa_status === "ativo"
-                      ? "text-red-600 dark:text-red-400"
-                      : "text-green-600 dark:text-green-400"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
                     }`}
                 />
               </div>
@@ -332,8 +374,8 @@ export default function CasasDashboard() {
                 Deseja realmente{" "}
                 <span
                   className={`font-semibold ${selectedItem?.casa_status === "ativo"
-                      ? "text-red-600 dark:text-red-400"
-                      : "text-green-600 dark:text-green-400"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
                     }`}
                 >
                   {selectedItem?.casa_status === "ativo" ? "inativar" : "ativar"}
@@ -368,8 +410,8 @@ export default function CasasDashboard() {
 
               <Button
                 className={`flex items-center gap-2 px-6 py-3 text-white transition ${selectedItem?.casa_status === "ativo"
-                    ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                    : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                  ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
                   }`}
                 onClick={toggleStatus}
               >

@@ -56,28 +56,26 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
   const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
+async function handleLogout(router) {
+  const token = Cookies.get("token");
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    });
 
-  async function handleLogout(router) {
-    try {
-      
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (res.ok) {
-       
-        Cookies.remove("token");
-
-
-        router.push("/");
-      } else {
-        console.error("Erro ao fazer logout");
-      }
-    } catch (err) {
-      console.error("Erro de conexão no logout:", err);
+    if (res.ok) {
+      Cookies.remove("token");
+      router.push("/");
+    } else {
+      console.error("Erro ao fazer logout");
     }
+  } catch (err) {
+    console.error("Erro de conexão no logout:", err);
   }
+}
 
   return (
     <>

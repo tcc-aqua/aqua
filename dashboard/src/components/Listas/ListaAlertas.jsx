@@ -71,6 +71,7 @@ export default function AlertasDashboard() {
         ativos: Number(ativosData.total ?? ativosData ?? 0),
         vazamentos: Number(vazData.total ?? vazData ?? 0),
         consumoAlto: Number(consData.total ?? consData ?? 0),
+
         resolvidos: Number(inativosData.total ?? inativosData ?? 0),
       });
 
@@ -137,6 +138,7 @@ export default function AlertasDashboard() {
       iconColor: "text-red-500",
       subTitle: "Críticos"
     },
+
     {
       title: "Resolvidos",
       value: stats.resolvidos,
@@ -149,7 +151,7 @@ export default function AlertasDashboard() {
   const nivelClasses = {
     baixo: "bg-green-100 text-green-700",
     medio: "bg-yellow-100 text-yellow-700",
-    alto: "bg-orange-200 text-destructive/100",
+    alto: "bg-red-100 text-destructive/100",
     critico: "bg-destructive/20 text-destructive font-semibold",
   };
 
@@ -290,37 +292,47 @@ export default function AlertasDashboard() {
 
                           <td className="px-4 py-3 text-sm font-semibold">
                             {isResolved ? (
-                              <span className="text-green-600 " size={14}><Check /></span>
+
+                              <div className="relative inline-block group">
+                                <span className="text-green-600" size={14}>
+                                  <Check />
+                                </span>
+
+                                <div className="absolute z-10 top-1/2 left-full ml-4 w-max px-2 py-1 bg-green-600 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none transform -translate-y-1/2">
+                                  Resolvido
+                                </div>
+                              </div>
                             ) : (
-                              <span className="text-destructive" size={14}><Siren></Siren></span>
+
+                              <div className="relative inline-block group">
+                                <span className="text-destructive" size={14}>
+                                  <Siren />
+                                </span>
+
+                                <div className="absolute z-10 top-1/2 left-full ml-4 w-max px-2 py-1 bg-red-600 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none transform -translate-y-1/2">
+                                  Não Resolvido
+                                </div>
+                              </div>
                             )}
                           </td>
-
                           <td className="px-4 py-3 text-xs text-foreground/70">
                             {formatDate(alerta)}
                           </td>
 
-                          <td className="px-4 py-3 text-sm flex gap-1 justify-center">
-                            {!isResolved && (
-                              <button
-                                title="Marcar como resolvido"
-                                onClick={() => {
-                                  setSelectedAlerta(alerta);
-                                  setShowModal(true);
-                                }}
-                                className="p-2 rounded 0 text-green-600"
-                              >
-                               <ThumbsUp className="w-5 h-5 cursor-pointer" />
-                              </button>
-                            )}
-
+                          <td className="px-4 py-3 text-sm flex gap-1 justify-center items-center">
                             <button
-                              title="Ver detalhes"
+
+                              title={!isResolved ? "Marcar como resolvido" : "Ver detalhes"}
+
                               onClick={() => {
                                 setSelectedAlerta(alerta);
                                 setShowModal(true);
+
+                                if (!isResolved) {
+                                  console.log('Alerta marcado para ser resolvido');
+                                }
                               }}
-                              className="p-2 rounded  text-sky-600"
+                              className={`p-2 rounded text-sky-600 hover:text-blue-950`}
                             >
                               <Eye className="w-5 h-5 cursor-pointer" />
                             </button>

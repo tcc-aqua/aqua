@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
-import { Users, UserCheck, UserCog, User, X, Check, Pencil, AlertTriangle } from "lucide-react";
+import { Users, UserCheck, UserCog, User, X, Check, Pencil, AlertTriangle, Home, Building, MapPin, Crown, UserCircle2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +33,7 @@ export default function UsersDashboard() {
     casas: 0,
     condominios: 0,
   });
-const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState({});
 
   const API_URL = "http://localhost:3333/api/users";
 
@@ -141,7 +141,7 @@ const [filters, setFilters] = useState({});
     {
       title: "Síndicos",
       value: userStats.sindicos,
-      icon: UserCog,
+      icon: Crown,
       iconColor: "text-yellow-500",
       subTitle: "Síndicos Totais"
     },
@@ -194,7 +194,7 @@ const [filters, setFilters] = useState({});
           <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-950 ">
             <CardHeader>
               <CardTitle>Lista de Usuários
-                 <ExportarTabela data={users} filtros={filters} fileName="users" />
+                <ExportarTabela data={users} filtros={filters} fileName="users" />
               </CardTitle>
             </CardHeader>
             <CardContent className="overflow-x-auto">
@@ -212,6 +212,123 @@ const [filters, setFilters] = useState({});
                       <th className="px-4 py-2 text-center text-xs font-medium uppercase"> Ações</th>
                     </tr>
                   </thead>
+
+                  <tbody className="divide-y divide-border">
+                    {users.map((user) => (
+                      <tr key={user.user_id} className="hover:bg-muted/10 text-foreground">
+                        <td className="px-4 py-2">
+                          <div className="flex items-start gap-2">
+                            <User className="w-5 h-5 text-sky-600 mt-4" />
+                            <div className="flex flex-col">
+                              <span className="text-sm font-semibold text-foreground">{user.user_name}</span>
+                              <span className="text-xs text-foreground/80">{user.user_email}</span>
+                              <span className="text-xs text-foreground/60">{user.user_cpf}</span>
+                                <span className={`text-[10px] font-bold ${user.user_status === "ativo" ? "text-green-600" : "text-destructive"}`}>
+                                  {user.user_status === "ativo" ? "Ativo" : "Inativo"}
+                                </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-2 text-sm">
+                          <div className="flex items-start gap-2">
+                            <MapPin className="w-4 h-4 text-sky-600 mt-4" />
+                            <div>
+                              {user.user_type === "casa" ? (
+                                <>
+                                  {user.logradouro}, {user.numero}
+                                </>
+                              ) : (
+                                <>
+                                  Bloco {user.logradouro}, {user.numero}
+                                </>
+                              )}
+
+                              <div className="text-xs text-foreground/80">
+                                {user.bairro}, {user.cidade} / {user.uf}
+                              </div>
+
+                              <div className="text-[10px] text-foreground/60">
+                                CEP: {user.cep}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="text-sm">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-white font-semibold uppercase 
+                              ${user.user_type === "casa"
+                                ? "bg-sky-700"
+                                : user.user_type === "condominio"
+                                  ? "bg-purple-400"
+                                  : "bg-gray-500"
+                              }`}
+                          >
+                            {user.user_type === "casa" ? (
+                              <>
+                                <Home className="w-4 h-4" />
+                                Casa
+                              </>
+                            ) : user.user_type === "condominio" ? (
+                              <>
+                                <Building className="w-4 h-4" />
+                                Condomínio
+                              </>
+                            ) : (
+                              "Desconhecido"
+                            )}
+                          </span>
+                        </td>
+                       
+
+                        <td className="text-sm">
+                          <span
+                            className={`inline-flex items-center  px-2 py-1 rounded-full text-white font-semibold uppercase
+                         ${user.user_role === "morador"
+                                ? "bg-sky-500"
+                                : user.user_role === "sindico"
+                                  ? "bg-yellow-400 text-black"
+                                  : "bg-gray-500"
+                              }`}
+                          >
+                            {user.user_role === "morador" ? (
+                              <>
+                                <User className="w-4 h-4" />
+                                Morador
+                              </>
+                            ) : user.user_role === "sindico" ? (
+                              <>
+                                <Crown className="w-4 h-4" />
+                                Síndico
+                              </>
+                            ) : (
+                              <>
+                                <UserCircle2 className="w-4 h-4" />
+                                Desconhecido
+                              </>
+                            )}
+                          </span>
+                        </td>
+
+                        <td className=" text-sm font-bold flex items-center px-9 py-4">
+                          <span className={`inline-block w-3 h-3 rounded-full mt-3  ${user.user_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={user.user_status} />
+                        </td>
+
+                        <td className="px-4 py-2 text-sm text-center -">
+                          <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
+                            <div className="flex items-center gap-1">
+                              {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
+                            </div>
+                          </Button>
+                          <Button size="sm" variant='ghost' onClick={() => editItem(user)}>
+                            <div className="flex items-center gap-1">
+                              <Pencil className="text-accent" size={14} />
+                            </div>
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+
 
                   <tbody className="divide-y divide-border">
                     {users.map((user) => (
@@ -252,7 +369,7 @@ const [filters, setFilters] = useState({});
                             className={`px-2 py-1 rounded-full text-white font-semibold  ${user.user_role === "morador"
                               ? "bg-sky-500"
                               : user.user_role === "sindico"
-                                ? "bg-yellow-300"
+                                ? "bg-yellow-500"
                                 : "bg-gray-500"
                               }`}
                           >
@@ -278,164 +395,92 @@ const [filters, setFilters] = useState({});
                       </tr>
                     ))}
                   </tbody>
-             
-             
-            <tbody className="divide-y divide-border">
-              {users.map((user) => (
-                <tr key={user.user_id} className="hover:bg-muted/10 text-foreground">
-                  <td className="px-4 py-2">
-                    <div className="text-sm font-semibold">{user.user_name}</div>
-                    <div className="text-xs text-foreground/80">{user.user_email}</div>
-                    <div className="text-xs text-foreground/60">{user.user_cpf}</div>
-                  </td>
-                  <td className="px-4 py-2 text-sm">
-                    {user.user_type === "casa" ? (
-                      <>
-                        {user.logradouro}, {user.numero}
-                      </>
-                    ) : (
-                      <>
-                        Bloco {user.logradouro}, {user.numero}
-                      </>
-                    )
-                    }
-                    <div className="text-xs text-foreground/80">{user.bairro}, {user.cidade} / {user.uf}</div>
-                    <div className="text-[10px] text-foreground/60">CEP: {user.cep}</div>
-                  </td>
-                  <td className=" text-sm">
-                    <span
-                      className={`px-2 py-1 rounded-full text-white font-semibold ${user.user_type === "casa"
-                        ? "bg-sky-700"
-                        : user.user_type === "condominio"
-                          ? "bg-purple-400"
-                          : "bg-gray-500"
-                        }`}
-                    >
-                      {user.user_type === "casa" ? "casa" : user.user_type === "condominio" ? "condomínio" : "desconhecido"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-sm">
-                    <span
-                      className={`px-2 py-1 rounded-full text-white font-semibold  ${user.user_role === "morador"
-                        ? "bg-sky-500"
-                        : user.user_role === "sindico"
-                          ? "bg-yellow-500"
-                          : "bg-gray-500"
-                        }`}
-                    >
-                      {user.user_role === "morador" ? "morador" : user.user_role === "sindico" ? "síndico" : "Desconhecido"}
-                    </span>
-                  </td>
-                  <td className=" text-sm font-bold flex items-center px-9 py-4">
-                    <span className={`inline-block w-3 h-3 rounded-full mt-3  ${user.user_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={user.user_status} />
-                  </td>
-
-                  <td className="px-4 py-2 text-sm text-center -">
-                    <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
-                      <div className="flex items-center gap-1">
-                        {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
-                      </div>
-                    </Button>
-                    <Button size="sm" variant='ghost' onClick={() => editItem(user)}>
-                      <div className="flex items-center gap-1">
-                        <Pencil className="text-accent" size={14} />
-                      </div>
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                </table>
               )}
-        </CardContent>
-        <Separator/>
-           <PaginationDemo className='my-20' />
-      </Card>
-    </AnimationWrapper >
+            </CardContent>
+            <Separator />
+            <PaginationDemo className='my-20' />
+          </Card>
+        </AnimationWrapper >
 
-   <Dialog open={showModal} onOpenChange={setShowModal}>
-  <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
-    
-    {/* Barra superior colorida */}
-    <div
-      className={`h-2 w-full rounded-t-md ${
-        selectedItem?.user_status === "ativo" ? "bg-red-600" : "bg-green-600"
-      }`}
-    />
+        <Dialog open={showModal} onOpenChange={setShowModal}>
+          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
-    <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
-      <div
-        className={`p-4 rounded-full ${
-          selectedItem?.user_status === "ativo"
-            ? "bg-red-100 dark:bg-red-900"
-            : "bg-green-100 dark:bg-green-900"
-        }`}
-      >
-        <AlertTriangle
-          className={`h-10 w-10 ${
-            selectedItem?.user_status === "ativo"
-              ? "text-red-600 dark:text-red-400"
-              : "text-green-600 dark:text-green-400"
-          }`}
-        />
-      </div>
-      <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
-        Confirmação
-      </DialogTitle>
-    </DialogHeader>
+            {/* Barra superior colorida */}
+            <div
+              className={`h-2 w-full rounded-t-md ${selectedItem?.user_status === "ativo" ? "bg-red-600" : "bg-green-600"
+                }`}
+            />
 
-    <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
-      <p className="text-lg">
-        Deseja realmente{" "}
-        <span
-          className={`font-semibold ${
-            selectedItem?.user_status === "ativo"
-              ? "text-red-600 dark:text-red-400"
-              : "text-green-600 dark:text-green-400"
-          }`}
-        >
-          {selectedItem?.user_status === "ativo" ? "inativar" : "ativar"}
-        </span>{" "}
-        o usuário <strong>{selectedItem?.user_name}</strong>?
-      </p>
+            <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+              <div
+                className={`p-4 rounded-full ${selectedItem?.user_status === "ativo"
+                  ? "bg-red-100 dark:bg-red-900"
+                  : "bg-green-100 dark:bg-green-900"
+                  }`}
+              >
+                <AlertTriangle
+                  className={`h-10 w-10 ${selectedItem?.user_status === "ativo"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
+                    }`}
+                />
+              </div>
+              <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+                Confirmação
+              </DialogTitle>
+            </DialogHeader>
 
-      {/* Exemplo de card com informações extras do usuário */}
-      <div className="bg-muted/40 rounded-xl p-4 border border-border mt-3">
-        <p className="text-xs uppercase text-muted-foreground mb-1">Email</p>
-        <p className="font-semibold">{selectedItem?.user_email ?? "-"}</p>
-      </div>
-      <div className="bg-muted/40 rounded-xl p-4 border border-border">
-        <p className="text-xs uppercase text-muted-foreground mb-1">Perfil</p>
-        <p className="font-semibold">{selectedItem?.user_role ?? "-"}</p>
-      </div>
-    </div>
+            <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
+              <p className="text-lg">
+                Deseja realmente{" "}
+                <span
+                  className={`font-semibold ${selectedItem?.user_status === "ativo"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
+                    }`}
+                >
+                  {selectedItem?.user_status === "ativo" ? "inativar" : "ativar"}
+                </span>{" "}
+                o usuário <strong>{selectedItem?.user_name}</strong>?
+              </p>
 
-    <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
-      <Button
-        variant="outline"
-        onClick={() => setShowModal(false)}
-        className="flex items-center gap-2"
-      >
-        <X className="h-5 w-5" />
-        Cancelar
-      </Button>
+              {/* Exemplo de card com informações extras do usuário */}
+              <div className="bg-muted/40 rounded-xl p-4 border border-border mt-3">
+                <p className="text-xs uppercase text-muted-foreground mb-1">Email</p>
+                <p className="font-semibold">{selectedItem?.user_email ?? "-"}</p>
+              </div>
+              <div className="bg-muted/40 rounded-xl p-4 border border-border">
+                <p className="text-xs uppercase text-muted-foreground mb-1">Perfil</p>
+                <p className="font-semibold">{selectedItem?.user_role ?? "-"}</p>
+              </div>
+            </div>
 
-      <Button
-        className={`flex items-center gap-2 px-6 py-3 text-white transition ${
-          selectedItem?.user_status === "ativo"
-            ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-            : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
-        }`}
-        onClick={toggleStatus}
-      >
-        <Check className="h-5 w-5" />
-        {selectedItem?.user_status === "ativo" ? "Inativar" : "Ativar"}
-      </Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+            <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowModal(false)}
+                className="flex items-center gap-2"
+              >
+                <X className="h-5 w-5" />
+                Cancelar
+              </Button>
 
-     
+              <Button
+                className={`flex items-center gap-2 px-6 py-3 text-white transition ${selectedItem?.user_status === "ativo"
+                  ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                  }`}
+                onClick={toggleStatus}
+              >
+                <Check className="h-5 w-5" />
+                {selectedItem?.user_status === "ativo" ? "Inativar" : "Ativar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+
       </div >
     </>
   );
