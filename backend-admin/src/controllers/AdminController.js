@@ -28,7 +28,7 @@ export default class AdminController {
 
     static async update(req, reply) {
         const validateAdmin = updateAdminDTO.parse(req.body);
-        const admin = await AdminService.update(validateAdmin);
+        const admin = await AdminService.updateAdmin(validateAdmin);
         return reply.status(200).send(admin);
     }
 
