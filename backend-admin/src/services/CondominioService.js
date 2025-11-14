@@ -119,6 +119,26 @@ export default class CondominioService {
         }
     }
 
+    static async updateNameCondominio(id, { name }) {
+        try {
+            
+            const condominio = await Condominio.findByPk(id);
+            
+            if (!condominio) {
+                throw new Error('Condominio não encontrado.')
+            }
+
+            await condominio.update({
+                name,
+            })
+
+            return condominio;
+        } catch (error) {
+            console.error('Erro ao atualizar condominio', error);
+            throw error;
+        }
+    }
+
 
     static async updateCondominio(id, { name, numero, cep, sindico_id }) {
         try {
