@@ -1,5 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "../components/layout/DarkMode/theme-provider";
+import { Toaster } from "sonner"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,14 +17,23 @@ export const metadata = {
   title: "Dashboard | Síndico",
   description: "Dashboard destinada aos monitoramento dos sindicos sobre o seu condominio",
 };
-
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt-br">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="pt-br" suppressHydrationWarning>
+
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+
+        <link rel="icon" href="/logo.svg" sizes="any" />
+
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+        <Toaster richColors position="top-right" theme="system" />
       </body>
     </html>
   );
