@@ -24,6 +24,7 @@ Comunicados.init({
 }, {
     sequelize,
     tableName: 'comunicados',
-    createdAt: true,
-    updatedAt: true
+    timestamps: true,
+    createdAt: 'criado_em',
+    updatedAt: 'atualizado_em'
 })
