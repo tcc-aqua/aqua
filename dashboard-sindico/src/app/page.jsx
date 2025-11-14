@@ -1,8 +1,9 @@
+import CardCondominio from "@/components/blocks/dashboard/card-condominio";
+import CardsPrincipal from "@/components/blocks/dashboard/cards-principal";
 import Header from "@/components/layout/Header/page";
 import LayoutDashboard from "@/components/layout/LayoutDashboard/page";
-import Image from "next/image";
 
-export default function Home() {
+export default function Dashboard() {
   return (
     <>
       <LayoutDashboard>
@@ -11,7 +12,8 @@ export default function Home() {
         </header>
         <main className="container mx-auto pt-20 ">
           <div className="">
-            <h1>hello world</h1>
+            <CardCondominio/>
+            <CardsPrincipal />
           </div>
         </main>
       </LayoutDashboard>

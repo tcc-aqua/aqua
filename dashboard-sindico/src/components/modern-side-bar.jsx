@@ -26,15 +26,11 @@ import Cookies from "js-cookie";
 
 const navigationItems = [
   { id: "dashboard", name: "Dashboard", icon: Home, href: "/dashboard" },
-  { id: "users", name: "Usuários", icon: Users, href: "/users" },
-  { id: "condominios", name: "Condomínios", icon: Building, href: "/condominios" },
-  { id: "apartamentos", name: "Apartamentos", icon: Grid, href: "/apartamentos" },
-  { id: "casas", name: "Casas", icon: HousePlus, href: "/casas" },
-  { id: "sensors", name: "Sensores", icon: Droplets, href: "/sensors" },
-  { id: "alerts", name: "Alertas", icon: Siren, href: "/alerts" },
-  { id: "suporte", name: "Suporte", icon: Headset, href: "/suporte" },
-  { id: "comunicados", name: "Comunicados", icon: Headset, href: "/comunicados" },
-  // { id: "profile", name: "Perfil", icon: User, href: "/profile" },
+  { id: "moradores", name: "Moradores", icon: Users, href: "/moradores" },
+  { id: "relatorios", name: "Relatorios", icon: Building, href: "/relatorios" },
+  { id: "chat", name: "Chat", icon: Grid, href: "/chat" },
+  { id: "comunicados", name: "Comunicados", icon: HousePlus, href: "/comunicados" },
+  { id: "configuracoes", name: "Configurações", icon: Droplets, href: "/configuracoes" },
 ];
 
 export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
