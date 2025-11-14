@@ -1,0 +1,3561 @@
+
+// #################################################################################
+// INÍCIO DA ANÁLISE DE: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src
+// #################################################################################
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\app.js
+// =================================================================================
+
+import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import fastifyFormbody from '@fastify/formbody';
+import authRoutes from './routes/auth.routes.js';
+import apartamentoRoutes from './routes/apartamento.routes.js';
+import dicaRoutes from './routes/dica.routes.js';
+import userRoutes from './routes/user.routes.js';
+import passwordRoutes from './routes/password.routes.js';
+import cepRoutes from './routes/cep.routes.js';
+import metasRoutes from './routes/metas.routes.js';
+import profileRoutes from './routes/profile.routes.js';
+
+const fastify = Fastify({
+    logger: {
+        transport: {
+            target: 'pino-pretty'
+        }
+    }
+});
+
+await fastify.register(cors, {
+    origin: '*', 
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
+});
+
+fastify.register(fastifyFormbody);
+
+fastify.get('/', (req, reply) => {
+    return reply.status(200).send('Hello API MOBILE!');
+});
+
+fastify.register(authRoutes, {prefix: '/api/auth'});
+fastify.register(apartamentoRoutes, {prefix: '/api/apartamentos'});
+fastify.register(dicaRoutes, {prefix: '/api/dica'});
+fastify.register(userRoutes, {prefix: '/api/user'});
+fastify.register(metasRoutes, {prefix: '/api/metas'});
+fastify.register(cepRoutes, {prefix: '/api/cep'});
+fastify.register(profileRoutes, {prefix: '/api/profile'});
+
+// ==================================================================
+// A CORREÇÃO ESTÁ AQUI
+// O prefixo deve ser '/api/password' para agrupar as rotas de senha.
+// Assim, '/api/password' + '/forgot' = '/api/password/forgot' (CORRETO!)
+// ==================================================================
+fastify.register(passwordRoutes, {prefix: '/api/password'});
+
+export default fastify;
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\config\sequelize.js
+// =================================================================================
+
+import dotenv from 'dotenv';
+import { resolve } from "path";
+dotenv.config({ path: resolve("..", ".env") });
+
+import { Sequelize } from "sequelize";
+
+// escolhe host e porta com base no ambiente
+const dbHost = process.env.DB_ENV === "docker"
+  ? process.env.DB_HOST_DOCKER
+  : process.env.DB_HOST_LOCAL;
+
+const dbPort = process.env.DB_ENV === "docker"
+  ? Number(process.env.DB_PORT_DOCKER)
+  : Number(process.env.DB_PORT_LOCAL);
+
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASS,
+  {
+    host: dbHost,
+    port: dbPort,
+    dialect: process.env.DB_DIALECT || 'mysql',
+    logging: false
+  }
+);
+
+export const connectDB = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Conexão estabelecida com sucesso!!');
+    // await sequelize.sync();
+     await sequelize.sync({ alter: true });
+
+    console.log('Tabelas sincronizadas com o banco!');
+  } catch (error) {
+    console.error('Erro ao conectar com o banco de dados:', error);
+    process.exit(1);
+  }
+};
+
+export default sequelize;
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\ApartamentoController.js
+// =================================================================================
+
+import ApartamentoService from "../services/ApartamentoService.js";
+
+export default class ApartamentoController {
+
+    static async getConsumo(req, reply){
+        const {id} = req.params;
+        const consumoTotal = await ApartamentoService.getConsumoTotal(id);
+        return reply.status(200).send(consumoTotal);
+    }
+
+}
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\AuthController.js
+// =================================================================================
+
+import UserService from "../services/AuthService.js";
+import { registerUserSchema, loginUserSchema } from "../dtos/auth/authDTO.js";
+import jwt from 'jsonwebtoken'
+
+export default class UserController {
+
+  static async register(request, reply) {
+    try {
+      const data = registerUserSchema.parse(request.body);
+
+      const result = await UserService.register(data);
+      return reply.code(201).send(result);
+    } catch (error) {
+      console.error("Erro ao registrar usuário:", error);
+
+      if (error?.issues) {
+        return reply.code(400).send({ errors: error.issues });
+      }
+
+      return reply.code(400).send({ error: error.message });
+    }
+  }
+
+  static async login(request, reply) {
+    try {
+      const data = loginUserSchema.parse(request.body);
+
+      const user = await UserService.login(data);
+
+      const token = jwt.sign(
+        {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          type: user.type,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      return reply.code(200).send({
+        message: "Login realizado com sucesso",
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          type: user.type,
+        },
+        token,
+      });
+    } catch (error) {
+      console.error("Erro no login:", error);
+
+      if (error?.issues) {
+        return reply.code(400).send({ errors: error.issues });
+      }
+
+      return reply.code(400).send({ error: error.message });
+    }
+  }
+
+  static async me(req, reply) {
+    const userId = req.user.id; // obtido do authMiddleware
+    const user = await UserService.getMe(userId);
+    return reply.status(200).send({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      type: user.type,
+      role: user.role,
+      status: user.status
+    });
+  }
+}
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\CepController.js
+// =================================================================================
+
+import CepService from "../services/CepService.js";
+
+export default class CepController {
+
+    static async buscarCep(req, reply) {
+        const { cep } = req.params;
+
+        // salvando cep limpo
+        const cepLimpo = cep.replace(/\D/g, '');
+
+        if (!/^\d{8}$/.test(cepLimpo)) {
+            return reply.status(400).send({ error: 'CEP inválido' });
+        }
+
+        const endereco = await CepService.buscarCep(cepLimpo);
+        return reply.send(endereco);
+    }
+}
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\DicaController.js
+// =================================================================================
+
+import DicaService from "../services/DicaService.js";
+
+export default class DicaController {
+    static async getDicaDoDia(req, reply) {
+        const dica = await DicaService.gerarDicaDoDia();
+        return reply.status(200).send({dica});
+    }
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\MetasController.js
+// =================================================================================
+
+import MetasService from "../services/MetasService.js";
+
+export default class MetasController {
+    static async getAll(req, reply){
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const metas = await MetasService.getAllMetas(page, limit);
+        return reply.status(200).send(metas);
+    }
+
+    static async create(req, reply){
+        const meta = await MetasService.createMeta(req.body);
+        return reply.status(201).send(meta)
+    }
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\PasswordController.js
+// =================================================================================
+
+// C:\Users\...\backend-mobile\src\controllers\PasswordController.js
+
+import PasswordService from "../services/PasswordService.js";
+
+export default class PasswordController {
+    static async forgotPassword(req, reply) {
+        try {
+            const { email } = req.body;
+            if (!email) {
+                return reply.status(400).send({ error: 'O campo e-mail é obrigatório.' });
+            }
+            // O serviço agora sempre retorna uma mensagem genérica por segurança
+            await PasswordService.sendResetEmail(email);
+            return reply.status(200).send({ message: 'Se um usuário com este e-mail existir em nosso sistema, um código de redefinição foi enviado.' });
+        } catch (error) {
+            console.error('Erro em forgotPassword:', error);
+            return reply.status(500).send({ error: 'Ocorreu um erro interno ao processar a solicitação.' });
+        }
+    }
+
+    static async resetPassword(req, reply) {
+        try {
+            const { token, newPassword } = req.body;
+            if (!token || !newPassword) {
+                return reply.status(400).send({ error: 'Token e nova senha são obrigatórios.' });
+            }
+            if (newPassword.length < 6) {
+                return reply.status(400).send({ error: 'A senha deve ter no mínimo 6 caracteres.' });
+            }
+
+            const result = await PasswordService.resetPassword(token, newPassword);
+            return reply.status(200).send(result);
+        } catch (error) {
+            // Captura erros específicos do serviço para dar feedback claro ao usuário
+            if (error.message.includes('Token inválido ou expirado')) {
+                return reply.status(400).send({ error: error.message });
+            }
+            console.error("Erro em resetPassword:", error);
+            return reply.status(500).send({ error: 'Ocorreu um erro interno ao redefinir a senha.' });
+        }
+    }
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\ProfileController.js
+// =================================================================================
+
+import ProfileService from '../services/ProfileService.js';
+
+class ProfileController {
+  async getAuthenticatedUserProfile(request, reply) {
+    try {
+      const userId = request.user.id;
+
+      if (!userId) {
+        return reply.status(401).send({ message: 'Acesso não autorizado.' });
+      }
+
+      const userProfile = await ProfileService.findProfileById(userId);
+
+      if (!userProfile) {
+        return reply.status(404).send({ message: 'Perfil de usuário não encontrado.' });
+      }
+
+      return reply.status(200).send(userProfile);
+    } catch (error) {
+        reply.status(500).send({ message: error.message });
+    }
+  }
+}
+
+export default new ProfileController();
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\UserController.js
+// =================================================================================
+
+import UpdateService from "../services/UserService.js";
+
+export default class UpdateController {
+    static async updateMe(req, reply) {
+        const userId = req.user.id;
+        const user = await UpdateService.updateMe(userId, req.body);
+        return reply.status(200).send({ message: 'Perfil atualizado com sucesso!', user });
+    }
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\dtos\auth\authDTO.js
+// =================================================================================
+
+import { z } from "zod";
+
+export const registerUserSchema = z
+  .object({
+    // Dados básicos do usuário
+    name: z.string().min(3, "O nome é obrigatório."),
+    email: z.string().email("Formato de e-mail inválido."),
+    cpf: z
+      .string()
+      .regex(/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/, "CPF inválido. Use o formato 000.000.000-00"),
+    password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
+
+    // Tipo de residência
+    residencia_type: z.enum(["casa", "apartamento"], {
+      required_error: "O tipo de residência é obrigatório.",
+    }),
+
+    // Campos de residência (simplificados)
+    codigo_acesso: z.string().optional(), // usado para dependentes ou para criar apê em condomínio
+    cep: z.string().optional(), // obrigatório apenas para casa nova
+    numero: z.string().optional(), // número da casa ou do apê
+    bloco: z.string().optional(), // opcional para apê
+    numero_moradores: z.coerce.number().optional(),
+  })
+  // 🔹 Regra 1: CASA NOVA (sem código de acesso)
+  .refine(
+    (data) => {
+      if (data.residencia_type === "casa" && !data.codigo_acesso) {
+        // casa nova precisa de cep e número
+        return !!data.cep && !!data.numero;
+      }
+      return true;
+    },
+    {
+      message: "Para cadastrar uma nova casa, informe o CEP e o número da residência.",
+      path: ["cep"],
+    }
+  )
+  // 🔹 Regra 2: DEPENDENTE DE CASA (com código de acesso)
+  .refine(
+    (data) => {
+      if (data.residencia_type === "casa" && data.codigo_acesso) {
+        return true; // só precisa do código
+      }
+      return true;
+    },
+    {
+      message: "Informe o código de acesso da casa do responsável.",
+      path: ["codigo_acesso"],
+    }
+  )
+  // 🔹 Regra 3: NOVO APARTAMENTO (código do condomínio + número do apê)
+  .refine(
+    (data) => {
+      if (data.residencia_type === "apartamento" && data.codigo_acesso) {
+        return !!data.numero;
+      }
+      return true;
+    },
+    {
+      message: "Para criar um novo apartamento, o número do apê é obrigatório.",
+      path: ["numero"],
+    }
+  )
+  // 🔹 Regra 4: DEPENDENTE DE APARTAMENTO (código do apê existente)
+  .refine(
+    (data) => {
+      if (data.residencia_type === "apartamento" && !data.codigo_acesso) {
+        return false; // não pode cadastrar sem o código do apê
+      }
+      return true;
+    },
+    {
+      message: "Para entrar como dependente em um apartamento, informe o código de acesso.",
+      path: ["codigo_acesso"],
+    }
+  );
+
+export const loginUserSchema = z.object({
+  email: z.string().email("E-mail inválido."),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
+});
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\middlewares\AuthMidlleweare.js
+// =================================================================================
+
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+
+export async function authMiddleware(request, reply) {
+  try {
+    const authHeader = request.headers.authorization;
+    if (!authHeader) return reply.code(401).send({ error: "Token não fornecido" });
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findByPk(decoded.id);
+    if (!user) return reply.code(401).send({ error: "Usuário não encontrado" });
+
+    request.user = user;
+  } catch (error) {
+    return reply.code(401).send({ error: "Token inválido" });
+  }
+}
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\middlewares\errorHandler.js
+// =================================================================================
+
+export default async function errorHandler(fastify) {
+  fastify.setErrorHandler((err, req, reply) => {
+    fastify.log.error({
+      error: err.message,
+      stack: err.stack,
+      url: req.url,
+      method: req.method,
+      params: req.params,
+      body: req.body,
+    });
+
+    if (err.name === "ZodError") {
+      return reply.status(400).send({
+        message: "Erro de validação dos dados",
+        issues: err.errors,
+      });
+    }
+
+    if (err.name === "SequelizeValidationError") {
+      return reply.status(400).send({
+        message: "Erro de validação no banco de dados",
+        details: err.errors.map((e) => e.message),
+      });
+    }
+
+    if (err.name === "SequelizeUniqueConstraintError") {
+      return reply.status(409).send({
+        message: "Registro já existe (violação de chave única)",
+      });
+    }
+
+    if (err.statusCode === 401) {
+      return reply.status(401).send({ message: "Não autorizado" });
+    }
+
+    if (err.statusCode === 403) {
+      return reply.status(403).send({ message: "Acesso negado" });
+    }
+
+    const status = err.statusCode || 500;
+    const message =
+      err.message && status !== 500
+        ? err.message
+        : "Erro interno do servidor";
+
+    reply.status(status).send({ message });
+  });
+}
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Apartamento.js
+// =================================================================================
+
+import { Model, DataTypes } from "sequelize";
+import sequelize from "../config/sequelize.js";
+import Condominio from "./Condominio.js";
+import sequelizePaginate from 'sequelize-paginate'
+import Sensor from "./Sensor.js";
+import { nanoid } from 'nanoid';
+
+export default class Apartamento extends Model { }
+
+Apartamento.init({
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    condominio_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: Condominio, key: 'id' }
+    },
+    numero: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    bloco: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    numero_moradores: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    sensor_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: Sensor, key: 'id' }
+    },
+    status: {
+        type: DataTypes.ENUM('ativo', 'inativo'),
+        allowNull: false,
+        defaultValue: 'ativo'
+    },
+    codigo_acesso: {
+        type: DataTypes.CHAR(10),
+        defaultValue: () => nanoid(5),
+        allowNull: false,
+        unique: true
+    },
+    responsavel_id: {
+        type: DataTypes.CHAR(36),
+        allowNull: true,
+        references: { model: 'users', key: 'id' }
+    }
+}, {
+    sequelize,
+    tableName: 'apartamentos',
+    timestamps: true,
+    createdAt: 'criado_em',
+    updatedAt: 'atualizado_em'
+})
+Apartamento.belongsTo(Sensor, { foreignKey: "sensor_id", as: "sensor" });
+sequelizePaginate.paginate(Apartamento);
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Casa.js
+// =================================================================================
+
+    import { Model, DataTypes } from "sequelize";
+    import sequelize from "../config/sequelize.js";
+    import sequelizePaginate from 'sequelize-paginate'
+    import Sensor from "./Sensor.js";
+    import { nanoid } from "nanoid";
+
+    export const estados = {
+        AC: "Acre",
+        AL: "Alagoas",
+        AP: "Amapá",
+        AM: "Amazonas",
+        BA: "Bahia",
+        CE: "Ceará",
+        DF: "Distrito Federal",
+        ES: "Espírito Santo",
+        GO: "Goiás",
+        MA: "Maranhão",
+        MT: "Mato Grosso",
+        MS: "Mato Grosso do Sul",
+        MG: "Minas Gerais",
+        PA: "Pará",
+        PB: "Paraíba",
+        PR: "Paraná",
+        PE: "Pernambuco",
+        PI: "Piauí",
+        RJ: "Rio de Janeiro",
+        RN: "Rio Grande do Norte",
+        RS: "Rio Grande do Sul",
+        RO: "Rondônia",
+        RR: "Roraima",
+        SC: "Santa Catarina",
+        SP: "São Paulo",
+        SE: "Sergipe",
+        TO: "Tocantins",
+    };
+
+    export default class Casa extends Model { }
+
+    Casa.init({
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        },
+        logradouro: {
+            type: DataTypes.STRING(255),
+            allowNull: false
+        },
+        bairro: {
+            type: DataTypes.STRING(255),
+            allowNull: false
+        },
+        numero: {
+            type: DataTypes.CHAR(10),
+            allowNull: false
+        },
+        cidade: {
+            type: DataTypes.STRING(100),
+            allowNull: false
+        },
+        uf: {
+            type: DataTypes.STRING(2),
+            allowNull: false,
+        },
+        estado: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+        },
+        cep: {
+            type: DataTypes.CHAR(10),
+            allowNull: false
+        },
+        numero_moradores: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 1
+        },
+        sensor_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: { model: Sensor, key: 'id' }
+        },
+        codigo_acesso: {
+            type: DataTypes.CHAR(10),
+            defaultValue: () => nanoid(5).replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
+            allowNull: false,
+            unique: true
+        },
+        status: {
+            type: DataTypes.ENUM('ativo', 'inativo'),
+            allowNull: false,
+            defaultValue: 'ativo'
+        },
+        responsavel_id: {
+    type: DataTypes.CHAR(36),
+    allowNull: true,
+    references: { model: 'users', key: 'id' }
+}
+    }, {
+        sequelize,
+        tableName: 'casas',
+        timestamps: true,
+        createdAt: 'criado_em',
+        updatedAt: 'atualizado_em',
+
+        hooks: {
+            beforeValidate: (casa) => {
+                if (casa.uf) {
+                    casa.estado = estados[casa.uf] || casa.estado;
+                }
+            },
+        },
+    })
+
+    sequelizePaginate.paginate(Casa);
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Condominio.js
+// =================================================================================
+
+import { Model, DataTypes } from "sequelize";
+import sequelize from "../config/sequelize.js";
+import User from "./User.js";
+import { nanoid } from 'nanoid';
+import sequelizePaginate from 'sequelize-paginate'
+
+export const estados = {
+    AC: "Acre",
+    AL: "Alagoas",
+    AP: "Amapá",
+    AM: "Amazonas",
+    BA: "Bahia",
+    CE: "Ceará",
+    DF: "Distrito Federal",
+    ES: "Espírito Santo",
+    GO: "Goiás",
+    MA: "Maranhão",
+    MT: "Mato Grosso",
+    MS: "Mato Grosso do Sul",
+    MG: "Minas Gerais",
+    PA: "Pará",
+    PB: "Paraíba",
+    PR: "Paraná",
+    PE: "Pernambuco",
+    PI: "Piauí",
+    RJ: "Rio de Janeiro",
+    RN: "Rio Grande do Norte",
+    RS: "Rio Grande do Sul",
+    RO: "Rondônia",
+    RR: "Roraima",
+    SC: "Santa Catarina",
+    SP: "São Paulo",
+    SE: "Sergipe",
+    TO: "Tocantins",
+};
+
+export default class Condominio extends Model { }
+
+Condominio.init({
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    name: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    logradouro: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    numero: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    bairro: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    cidade: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    uf: {
+        type: DataTypes.STRING(2),
+        allowNull: false,
+    },
+    estado: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+    },
+    cep: {
+        type: DataTypes.CHAR(9),
+        allowNull: false
+    },
+    codigo_acesso: {
+        type: DataTypes.CHAR(10),
+        defaultValue: () => nanoid(5).replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
+        allowNull: false,
+        unique: true
+    },
+    sindico_id: {
+        type: DataTypes.CHAR(36),
+        allowNull: true,
+        references: { model: User, key: 'id' }
+    },
+    status: {
+        type: DataTypes.ENUM("ativo", 'inativo'),
+        defaultValue: 'ativo',
+        allowNull: false
+    }
+}, {
+    sequelize,
+    tableName: 'condominios',
+    timestamps: true,
+    createdAt: 'criado_em',
+    updatedAt: 'atualizado_em',
+
+    hooks: {
+        beforeValidate: (condominio) => {
+            if (condominio.uf) {
+                condominio.estado = estados[condominio.uf] || condominio.estado;
+            }
+        },
+    },
+})
+
+sequelizePaginate.paginate(Condominio);
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Metas.js
+// =================================================================================
+
+import {Model, DataTypes } from 'sequelize';
+import sequelize from '../config/sequelize.js';
+import User from './User.js';
+import sequelizePaginate from 'sequelize-paginate'
+
+export default class Metas extends Model {}
+
+Metas.init({
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    user_id: {
+        type: DataTypes.CHAR(36),
+        allowNull: false,
+        references: {model: User, key: 'id'}
+    },
+    residencia_type: {
+        type: DataTypes.ENUM('casa', 'apartamento'),
+        allowNull: false
+    },
+    residencia_type: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    periodo: {
+        type: DataTypes.ENUM('7 dias', '14 dias', '30_dias'),
+        allowNull: false
+    },
+    limite_consumo: {
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0
+    },
+    status: {
+        type: DataTypes.ENUM('em_andamento', 'atingida', 'excedida'),
+        defaultValue: 'em_andamento'
+    },
+    inicio_periodo: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
+    fim_periodo: {
+        type: DataTypes.DATE,
+        allowNull: false
+    }
+}, {
+    sequelize,
+    tableName: 'metas_consumo',
+    timestamps: true,
+    createdAt: 'criado_em',
+    updatedAt: 'atualizado_em'
+})
+
+sequelizePaginate.paginate(Metas);
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\PasswordReset.js
+// =================================================================================
+
+import { Model, DataTypes } from 'sequelize';
+import sequelize from '../config/sequelize.js';
+import { v4 as uuidv4 } from 'uuid';
+import User from './User.js';
+
+export default class PasswordReset extends Model { }
+
+PasswordReset.init({
+    id: {
+        type: DataTypes.CHAR(36),
+        primaryKey: true,
+        defaultValue: () => uuidv4(),
+    },
+    user_id: {
+        type: DataTypes.CHAR(36),
+        allowNull: false,
+        references: { model: User, key: "id" }
+    },
+    token: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    expira_em: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: () => new Date(Date.now() + 3600 * 1000) 
+    }
+
+}, {
+    sequelize,
+    tableName: 'password_resets',
+    timestamps: true,
+    createdAt: 'criado_em',
+    updatedAt: false
+})
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Sensor.js
+// =================================================================================
+
+import { Model, DataTypes } from "sequelize";
+import sequelize from "../config/sequelize.js";
+import { nanoid } from 'nanoid';
+import sequelizePaginate from 'sequelize-paginate'
+
+export default class Sensor extends Model { }
+
+Sensor.init({
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    codigo: {
+        type: DataTypes.CHAR(10),
+        defaultValue: () => nanoid(10),
+        allowNull: false,
+        unique: true
+    },
+    status: {
+        type: DataTypes.ENUM('ativo', 'inativo'),
+        defaultValue: 'ativo'
+    },
+    consumo_total: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false
+    },
+    ultimo_envio: {
+  type: DataTypes.DATE,
+  allowNull: true, 
+  defaultValue: null
+}
+}, {
+    sequelize,
+    tableName: 'sensores',
+    timestamps: true,
+    createdAt: 'criado_em',
+    updatedAt: 'atualizado_em'
+})
+
+sequelizePaginate.paginate(Sensor);
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\User.js
+// =================================================================================
+
+import sequelize from "../config/sequelize.js";
+import { DataTypes, Model } from "sequelize";
+import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcryptjs'
+import sequelizePaginate from 'sequelize-paginate'
+
+export default class User extends Model {
+    // compare hash password
+    async checkPassword(password) {
+        return bcrypt.compare(password, this.password)
+    }
+}
+
+User.init({
+    id: {
+        type: DataTypes.CHAR(36),
+        primaryKey: true,
+        defaultValue: () => uuidv4(),
+    },
+    name: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    email: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    cpf: {
+        type: DataTypes.CHAR(14),
+        allowNull: false
+    },
+    password: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    // representa de onde o usuário vem
+    type: {
+        type: DataTypes.ENUM('casa', 'condominio'),
+        allowNull: false
+    },
+    responsavel_id: {
+        type: DataTypes.CHAR(36),
+        allowNull: true,
+        references: {model: 'users', key: 'id'}
+    },
+    // indica para a residencia/unidade para atribuir para a tabela correta
+    // uma especie de polimorfismo em banco de dados
+    residencia_type: {
+        type: DataTypes.ENUM('casa', 'apartamento'),
+        allowNull: true
+    },
+    // id da residencia
+    residencia_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    status: {
+        type: DataTypes.ENUM('ativo', 'inativo'),
+        defaultValue: 'ativo',
+        allowNull: false
+    },
+    role: {
+        type: DataTypes.ENUM('morador', 'sindico'),
+        defaultValue: 'morador',
+        allowNull: false
+    },
+}, {
+    sequelize,
+    tableName: 'users',
+    timestamps: true,
+    createdAt: 'criado_em',
+    updatedAt: 'atualizado_em',
+
+    // hooks hash password
+    hooks: {
+        
+        // hash create user
+        beforeCreate: async (user, options) => {
+            if (user.password) {
+                const salt = await bcrypt.genSalt(10);
+                user.password = await bcrypt.hash(user.password, salt);
+            }
+        },
+        
+        // hash update user
+        beforeUpdate: async (user, options) => {
+            if (user.changed('password')) {
+                const salt = await bcrypt.genSalt(10);
+                user.password = await bcrypt.hash(user.password, salt)
+            }
+        }
+    }
+})
+
+sequelizePaginate.paginate(User);
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\apartamento.routes.js
+// =================================================================================
+
+import ApartamentoController from "../controllers/ApartamentoController.js";
+
+export default async function apartamentoRoutes(fastify){
+
+    fastify.get('/:id/consumo-total', ApartamentoController.getConsumo);
+
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\auth.routes.js
+// =================================================================================
+
+import UserController from "../controllers/AuthController.js";
+import { authMiddleware } from "../middlewares/AuthMidlleweare.js"
+
+export default async function authRoutes(fastify) {
+  fastify.post("/register", UserController.register);
+  fastify.post("/login", UserController.login);
+  fastify.get('/me', { preHandler: authMiddleware }, UserController.me);
+}
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\cep.routes.js
+// =================================================================================
+
+import CepController from "../controllers/CepController.js";
+
+export default async function cepRoutes(fastify) {
+  fastify.get("/:cep", CepController.buscarCep);
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\dica.routes.js
+// =================================================================================
+
+import DicaController from "../controllers/DicaController.js";
+
+export default async function dicaRoutes(fastify){
+    fastify.get('/', DicaController.getDicaDoDia);
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\metas.routes.js
+// =================================================================================
+
+import MetasController from "../controllers/MetasController.js";
+
+export default async function metasRoutes(fastify) {
+    fastify.get('/', MetasController.getAll);
+    fastify.post('/', MetasController.create);
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\password.routes.js
+// =================================================================================
+
+import PasswordController from "../controllers/PasswordController.js";
+
+export default async function passwordRoutes(fastify) {
+    // Rota para solicitar o código de redefinição
+    // POST /api/password/forgot
+    fastify.post('/forgot', PasswordController.forgotPassword);
+
+    // Rota para efetivar a redefinição com o código
+    // POST /api/password/reset
+    fastify.post('/reset', PasswordController.resetPassword);
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\profile.routes.js
+// =================================================================================
+
+// AQUI: Adicionamos .js nos dois imports
+import ProfileController from '../controllers/ProfileController.js';
+import { authMiddleware } from '../middlewares/AuthMidlleweare.js';
+
+async function profileRoutes(fastify, options) {
+  fastify.get(
+    '/',
+    {
+      preHandler: [authMiddleware],
+    },
+    ProfileController.getAuthenticatedUserProfile
+  );
+}
+
+export default profileRoutes;
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\user.routes.js
+// =================================================================================
+
+import UpdateController from "../controllers/UserController.js";
+
+export default async function userRoutes(fastify){
+    fastify.put('/me', UpdateController.updateMe);
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\server.js
+// =================================================================================
+
+import dotenv from 'dotenv';
+import { resolve } from "path";
+dotenv.config({ path: resolve("..", ".env") });
+import app from "./app.js";
+import { connectDB } from "./config/sequelize.js";
+
+const PORT = 3334;
+
+const start = async () => {
+    try {
+        await connectDB();
+        await app.listen({
+            host: '0.0.0.0', port: PORT
+        })
+        console.log(`Server Mobile listening on ${PORT}`);
+    } catch (error){
+        console.error(error);
+        process.exit(1);
+    }
+}
+
+start();
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\ApartamentoService.js
+// =================================================================================
+
+import Apartamento from "../models/Apartamento.js";
+import Sensor from "../models/Sensor.js";
+
+export default class ApartamentoService {
+
+
+    static async getConsumoTotal(apartamentoId) {
+        try {
+
+            const apartamento = await Apartamento.findOne({
+                where: { id: apartamentoId },
+                include: {
+                    model: Sensor,
+                    as: 'sensor',
+                    attributes: ['consumo_total'] // só pega o consumo
+                }
+            });
+
+            if (!apartamento) throw new Error('Apartamento não encontrado');
+
+            return apartamento.sensor.consumo_total;
+        } catch (error) {
+            console.error('Erro ao listar consumo total do seu apartamento', error);
+            throw error;
+        }
+    }
+
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\AuthService.js
+// =================================================================================
+
+import User from "../models/User.js";
+import Casa from "../models/Casa.js";
+import Apartamento from "../models/Apartamento.js";
+import Condominio from "../models/Condominio.js";
+import Sensor from "../models/Sensor.js";
+import CepService from "./CepService.js";
+import bcrypt from "bcryptjs";
+import { nanoid } from "nanoid";
+
+export default class UserService {
+
+  static async register(data) {
+    const {
+      name, email, cpf, password,
+      residencia_type, codigo_acesso,
+      cep, numero, bloco, numero_moradores
+    } = data;
+
+    if (!residencia_type)
+      throw new Error("O tipo de residência é obrigatório (casa ou apartamento).");
+
+    // ======================================
+    // RESPONSÁVEL DE CASA
+    // ======================================
+    if (residencia_type === "casa" && !codigo_acesso) {
+      if (!cep || !numero)
+        throw new Error("CEP e número são obrigatórios para criar uma nova casa.");
+
+      const endereco = await CepService.buscarCep(cep);
+
+      const user = await User.create({
+        name,
+        email,
+        cpf,
+        password,
+        type: "casa",
+        role: "morador",
+        residencia_type: "casa",
+        responsavel_id: null
+      });
+
+      const sensor = await Sensor.create({
+        codigo: nanoid(10).toUpperCase(),
+        status: "ativo",
+        consumo_total: 0
+      });
+
+      const casa = await Casa.create({
+        logradouro: endereco.logradouro,
+        bairro: endereco.bairro,
+        numero,
+        cidade: endereco.cidade,
+        uf: endereco.uf,
+        estado: endereco.uf,
+        cep: endereco.cep,
+        numero_moradores: parseInt(numero_moradores, 10) || 1,
+        sensor_id: sensor.id,
+        codigo_acesso: nanoid(6).toUpperCase(),
+        responsavel_id: user.id
+      });
+
+      user.residencia_id = casa.id;
+      await user.save();
+
+      return { message: "Usuário responsável (casa) criado com sucesso.", user, residencia: casa, sensor };
+    }
+
+    // ======================================
+    // DEPENDENTE DE CASA
+    // ======================================
+    if (residencia_type === "casa" && codigo_acesso) {
+      const casa = await Casa.findOne({ where: { codigo_acesso } });
+      if (!casa) throw new Error("Código de acesso inválido.");
+      if (!casa.responsavel_id) throw new Error("Esta casa ainda não possui um morador responsável.");
+
+      const user = await User.create({
+        name, email, cpf, password,
+        type: "casa",
+        role: "morador",
+        residencia_type: "casa",
+        residencia_id: casa.id,
+        responsavel_id: casa.responsavel_id
+      });
+
+      casa.numero_moradores += 1;
+      await casa.save();
+
+      return { message: "Usuário dependente (casa) criado com sucesso.", user, residencia: casa };
+    }
+
+    // ======================================
+    // RESPONSÁVEL DE APARTAMENTO
+    // ======================================
+    if (residencia_type === "apartamento" && codigo_acesso) {
+      const condominio = await Condominio.findOne({ where: { codigo_acesso } });
+      if (!condominio)
+        throw new Error("Código de acesso do condomínio inválido.");
+      if (!numero)
+        throw new Error("Número do apartamento é obrigatório.");
+
+      const user = await User.create({
+        name, email, cpf, password,
+        type: "condominio",
+        role: "morador",
+        residencia_type: "apartamento"
+      });
+
+      const sensor = await Sensor.create({
+        codigo: nanoid(10).toUpperCase(),
+        status: "ativo",
+        consumo_total: 0
+      });
+
+      const apartamento = await Apartamento.create({
+        condominio_id: condominio.id,
+        numero,
+        bloco: bloco || null,
+        codigo_acesso: nanoid(6).toUpperCase(),
+        numero_moradores: parseInt(numero_moradores, 10) || 1,
+        sensor_id: sensor.id,
+        responsavel_id: user.id
+      });
+
+      user.residencia_id = apartamento.id;
+      await user.save();
+
+      return { message: "Usuário responsável (apartamento) criado com sucesso.", user, residencia: apartamento, sensor };
+    }
+
+    // ======================================
+    // DEPENDENTE DE APARTAMENTO
+    // ======================================
+    const apartamentoExistente = await Apartamento.findOne({ where: { codigo_acesso } });
+    if (apartamentoExistente) {
+      if (!apartamentoExistente.responsavel_id)
+        throw new Error("Este apartamento ainda não possui um morador responsável.");
+
+      const user = await User.create({
+        name, email, cpf, password,
+        type: "condominio",
+        role: "morador",
+        residencia_type: "apartamento",
+        residencia_id: apartamentoExistente.id,
+        responsavel_id: apartamentoExistente.responsavel_id
+      });
+
+      apartamentoExistente.numero_moradores += 1;
+      await apartamentoExistente.save();
+
+      return { message: "Usuário dependente (apartamento) criado com sucesso.", user, residencia: apartamentoExistente };
+    }
+
+    throw new Error("Fluxo de cadastro inválido.");
+  }
+
+  // ======================================
+  // LOGIN
+  // ======================================
+  static async login({ email, password }) {
+    const user = await User.findOne({ where: { email } });
+    if (!user) throw new Error("E-mail ou senha inválidos.");
+
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) throw new Error("E-mail ou senha inválidos.");
+
+    return user;
+  }
+
+  // ======================================
+  // PERFIL
+  // ======================================
+  static async getMe(userId) {
+    const user = await User.findByPk(userId, {
+      attributes: { exclude: ["password"] }
+    });
+    if (!user) throw new Error("Usuário não encontrado");
+    return user;
+  }
+}
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\CepService.js
+// =================================================================================
+
+import axios from 'axios';
+
+export default class CepService {
+  static async buscarCep(cep) {
+    try {
+      const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
+
+      if (response.data.erro) {
+        throw new Error('CEP não encontrado');
+      }
+
+      return {
+        logradouro: response.data.logradouro,
+        bairro: response.data.bairro,
+        cidade: response.data.localidade,
+        uf: response.data.uf,
+        cep: response.data.cep
+      };
+    } catch (error) {
+      console.error('Erro ao buscar CEP:', error.message);
+      throw new Error('Não foi possível consultar o CEP');
+    }
+  }
+}
+
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\DicaService.js
+// =================================================================================
+
+import axios from "axios";
+
+export default class DicaService {
+    static async gerarDicaDoDia() {
+        const apiKey = process.env.GEMINI_API_KEY;
+
+        const prompt = `
+         Gere uma dica curta (até 200 caracteres) sobre consumo consciente e economia de recursos,
+         especialmente água e energia. Use uma linguagem simples, inspiradora e prática.
+         Exemplo: "Desligue o chuveiro enquanto se ensaboa — economiza até 30 litros por banho!"
+         `;
+
+        try {
+            const response = await axios.post(
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+                { contents: [{ parts: [{ text: prompt }] }] },
+                {
+                    headers: { "Content-Type": "application/json" },
+                    params: { key: apiKey },
+                }
+            );
+
+            const dica =
+                response.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+                "Economize energia desligando luzes desnecessárias.";
+
+            return dica.trim();
+        } catch (error) {
+            console.error("Erro na chamada da API Gemini:", error.message);
+            return "Erro ao gerar a dica do dia. Lembre-se: pequenas ações geram grandes economias!";
+        }
+    }
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\EmailService.js
+// =================================================================================
+
+import nodemailer from 'nodemailer';
+
+// Converte a porta para número a partir do .env
+const EMAIL_PORT = parseInt(process.env.EMAIL_PORT, 10);
+
+// Cria o transporter. A opção 'secure' será 'true' se a porta for 465.
+const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: EMAIL_PORT,
+    secure: EMAIL_PORT === 465,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS.replace(/\s/g, ''),
+    },
+});
+
+const sendPasswordResetEmail = async (to, token) => {
+    const mailOptions = {
+        from: `"Aqua Services" <${process.env.EMAIL_USER}>`,
+        to: to,
+        subject: 'Seu Código de Redefinição de Senha - Aqua Services',
+        html: `
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Redefinição de Senha</title>
+            <style>
+                body { margin: 0; padding: 0; background-color: #f4f7f6; }
+                table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+                table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+                img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+                table { border-collapse: collapse !important; }
+            </style>
+        </head>
+        <body style="margin: 0 !important; padding: 0 !important; background-color: #f4f7f6;">
+            <!-- Texto de Preheader (visível na prévia do e-mail) -->
+            <div style="display: none; font-size: 1px; color: #fefefe; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">
+                Seu código de verificação da Aqua Services está aqui.
+            </div>
+
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                    <td align="center" style="padding: 40px 15px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+                            
+                            <!-- HEADER -->
+                            <tr>
+                                <td align="center" style="padding: 30px 20px; background-color: #007bff; border-radius: 12px 12px 0 0;">
+                                    <h1 style="font-family: 'Arial Black', Gadget, sans-serif; font-size: 32px; color: #ffffff; margin: 0; letter-spacing: 1px;">Aqua Services</h1>
+                                </td>
+                            </tr>
+                            
+                            <!-- CORPO DO CONTEÚDO -->
+                            <tr>
+                                <td align="left" style="padding: 40px 30px; background-color: #ffffff; border-radius: 0 0 12px 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                                    <h2 style="font-family: Arial, sans-serif; font-size: 24px; color: #333333; margin: 0 0 20px;">Redefinição de Senha</h2>
+                                    <p style="font-family: Arial, sans-serif; font-size: 16px; color: #555555; line-height: 1.6; margin: 0 0 25px;">
+                                        Olá,
+                                    </p>
+                                    <p style="font-family: Arial, sans-serif; font-size: 16px; color: #555555; line-height: 1.6; margin: 0 0 25px;">
+                                        Recebemos uma solicitação para redefinir a senha da sua conta. Para continuar, use o código de verificação abaixo no seu aplicativo.
+                                    </p>
+                                    
+                                    <!-- CAIXA DO CÓDIGO -->
+                                    <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                        <tr>
+                                            <td align="center" style="background-color: #f0f5ff; border-radius: 8px; border: 2px dashed #a0c4ff; padding: 25px 20px;">
+                                                <p style="font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: bold; letter-spacing: 6px; margin: 0; color: #004aad;">
+                                                    ${token}
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    <p style="font-family: Arial, sans-serif; font-size: 14px; color: #777777; line-height: 1.6; margin: 25px 0 0; text-align: center;">
+                                        Este código expira em <strong>10 minutos</strong>.
+                                    </p>
+                                    <p style="font-family: Arial, sans-serif; font-size: 16px; color: #555555; line-height: 1.6; margin: 30px 0 0;">
+                                        Se você não solicitou esta alteração, pode ignorar este e-mail com segurança.
+                                    </p>
+                                    <p style="font-family: Arial, sans-serif; font-size: 16px; color: #555555; line-height: 1.6; margin: 30px 0 0;">
+                                        Atenciosamente,<br>Equipe Aqua Services
+                                    </p>
+                                </td>
+                            </tr>
+                            
+                            <!-- RODAPÉ -->
+                            <tr>
+                                <td align="center" style="padding: 30px 10px 0;">
+                                    <p style="font-family: Arial, sans-serif; font-size: 12px; color: #999999; margin: 0;">
+                                        © 2025 Aqua Services. Todos os direitos reservados.
+                                    </p>
+                                    <p style="font-family: Arial, sans-serif; font-size: 12px; color: #999999; margin: 5px 0 0;">
+                                        Esta é uma mensagem automática, por favor, não responda.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`E-mail de redefinição enviado com sucesso para: ${to}`);
+    } catch (error) {
+        console.error('ERRO DETALHADO AO ENVIAR E-MAIL:', error);
+        throw new Error('Falha na comunicação com o servidor de e-mail. Verifique as credenciais e a configuração de porta/segurança.');
+    }
+};
+
+export { sendPasswordResetEmail };
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\MetasService.js
+// =================================================================================
+
+import Metas from "../models/Metas.js";
+import User from "../models/User.js";
+
+export default class MetasService {
+
+    static async getAllMetas(page = 1, limit = 10) {
+        try {
+            const options = {
+                page,
+                paginate: limit,
+                order: [['criado_em', 'DESC']]
+            }
+            const metas = Metas.paginate(options);
+            return metas;
+        } catch (error) {
+            console.error('Erro ao listar metas do usuário', error);
+            throw error;
+        }
+    }
+
+    static async createMeta({ userId, data }) {
+        try {
+            const user = await User.findByPk(userId);
+            if (!user) throw new Error("Usuário não encontrado");
+
+            const { residencia_id, residencia_type, periodo, limite_consumo, inicio_periodo } = data;
+
+            await user.create({ residencia_id, residencia_type, periodo, limite_consumo, inicio_periodo });
+            return user;
+        } catch (error) {
+            console.error("Erro ao criar meta", error);
+            throw error;
+        }
+    }
+
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\PasswordService.js
+// =================================================================================
+
+// C:\Users\...\backend-mobile\src\services\PasswordService.js
+
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import User from '../models/User.js';
+import PasswordReset from '../models/PasswordReset.js';
+import { sendPasswordResetEmail } from './EmailService.js'; 
+
+export default class PasswordService {
+    static async sendResetEmail(email) {
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            console.log(`Tentativa de reset para e-mail não cadastrado: ${email}`);
+            return { message: 'Se um usuário com este e-mail existir, um código foi enviado.' };
+        }
+
+        const token = crypto.randomInt(100000, 999999).toString();
+        const expira_em = new Date(Date.now() + 10 * 60 * 1000);
+
+        await PasswordReset.destroy({ where: { user_id: user.id } });
+        await PasswordReset.create({ user_id: user.id, token, expira_em });
+
+        await sendPasswordResetEmail(user.email, token);
+
+        return { message: 'E-mail de redefinição enviado com sucesso!' };
+    }
+
+    static async resetPassword(token, newPassword) {
+        const reset = await PasswordReset.findOne({ where: { token } });
+
+        if (!reset || reset.expira_em < new Date()) {
+            if (reset) await reset.destroy();
+            throw new Error('Token inválido ou expirado. Por favor, solicite um novo.');
+        }
+
+        const user = await User.findByPk(reset.user_id);
+        if (!user) throw new Error("Usuário não encontrado.");
+
+        // <-- CORREÇÃO PRINCIPAL AQUI
+        // Atribuímos a nova senha em texto plano.
+        // O hook 'beforeUpdate' no modelo User.js se encarregará de fazer o hash.
+        user.password = newPassword;
+        
+        // Ao chamar .save(), o hook será ativado e fará o hash corretamente.
+        await user.save();
+
+        await reset.destroy(); // Remove o token após o uso
+        return { message: 'Senha redefinida com sucesso!' };
+    }
+}
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\ProfileService.js
+// =================================================================================
+
+// AQUI: Adicionamos .js ao final de sequelize
+import sequelize from '../config/sequelize.js';
+
+class ProfileService {
+  async findProfileById(id) {
+    try {
+      const [profile] = await sequelize.query(
+        'SELECT * FROM vw_users WHERE user_id = :id LIMIT 1',
+        {
+          replacements: { id: id },
+          type: sequelize.QueryTypes.SELECT,
+        }
+      );
+      return profile;
+    } catch (error) {
+      console.error('Erro no ProfileService:', error);
+      throw new Error('Erro ao buscar dados do perfil.');
+    }
+  }
+}
+
+export default new ProfileService();
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\UserService.js
+// =================================================================================
+
+import User from "../models/User.js";
+
+export default class UpdateService {
+    static async updateMe(userId, data) {
+        try {
+            const user = await User.findByPk(userId);
+            if (!user) throw new Error('Usuário não encontrado');
+
+            const { name, email } = data;
+            await user.update({ name, email });
+            return user;
+        } catch (error) {
+            console.error('Erro ao atualizar usuário', error);
+            throw error;
+        }
+    }
+}
+
+
+// #################################################################################
+// INÍCIO DA ANÁLISE DE: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens
+// #################################################################################
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Inicio.jsx
+// =================================================================================
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { ScrollView, StyleSheet, View, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
+import { 
+  Provider as PaperProvider, 
+  DefaultTheme, 
+  Card, 
+  Text, 
+  SegmentedButtons, 
+  Title, 
+  Paragraph, 
+  List,
+  Surface,
+  ProgressBar,
+  Button
+} from 'react-native-paper';
+import { LineChart } from 'react-native-gifted-charts';
+import 'react-native-svg';
+import { MotiView, MotiText } from 'moti';
+import { MotiPressable } from 'moti/interactions';
+import * as Haptics from 'expo-haptics';
+import axios from 'axios'; // Importa o axios
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa o AsyncStorage
+
+// ALTERAÇÃO: URL padronizada para localhost, compatível com adb reverse.
+const API_URL = 'http://localhost:3334/api';
+
+const { width: screenWidth } = Dimensions.get('window');
+const chartWidth = screenWidth - 80;
+
+const theme = {
+  ...DefaultTheme,
+  roundness: 12,
+  colors: { 
+    ...DefaultTheme.colors, 
+    primary: '#0A84FF', 
+    accent: '#005ecb', 
+    background: '#F2F2F7', 
+    surface: '#FFFFFF', 
+    text: '#1C1C1E', 
+    placeholder: '#8A8A8E', 
+    success: '#34C759', 
+    danger: '#FF3B30', 
+    warning: '#FF9500', 
+    cardBlue: '#E3F2FD', 
+    cardGreen: '#E8F5E9' 
+  },
+};
+
+const mockChartData = {
+    hoje: [ { value: 10, label: '0h' }, { value: 12, label: '3h' }, { value: 20, label: '6h' }, { value: 18, label: '9h' }, { value: 25, label: '12h' }, { value: 15.7, label: 'Agora', dataPointText: '15.7' } ],
+    semana: [ { value: 110, label: 'Seg' }, { value: 105, label: 'Ter' }, { value: 120, label: 'Qua' }, { value: 115, label: 'Qui' }, { value: 95, label: 'Sex' }, { value: 90, label: 'Sáb' }, { value: 89, label: 'Dom', dataPointText: '89' } ],
+    mes: [ { value: 800, label: 'S1' }, { value: 750, label: 'S2' }, { value: 820, label: 'S3' }, { value: 790, label: 'S4', dataPointText: '790' } ]
+};
+const mockRecentHistory = [
+    { id: '1', icon: 'shower-head', description: 'Banho (Ducha Principal)', time: '14:32', value: '-25 L', type: 'expense' },
+    { id: '2', icon: 'alert-decagram', description: 'Pequeno vazamento detectado', time: '12:15', value: 'Verificar', type: 'alert' },
+    { id: '3', icon: 'leaf-circle', description: 'Meta de economia diária', time: '08:00', value: '+5 L', type: 'saving' },
+];
+
+export default function Inicio() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+  const [residenciaId, setResidenciaId] = useState(null); // ID da residência do usuário
+
+  const [consumptionData, setConsumptionData] = useState({ todayConsumption: 0, todaySavings: 0, comparison: 0 });
+  const [dailyGoal, setDailyGoal] = useState(0);
+  const [chartData, setChartData] = useState(mockChartData);
+  const [recentHistory, setRecentHistory] = useState(mockRecentHistory);
+  const [dicaDoPingo, setDicaDoPingo] = useState("Carregando dica...");
+  const [filter, setFilter] = useState('hoje');
+
+  useEffect(() => {
+    // Simulando a obtenção do ID da residência (você deve pegar do usuário logado)
+    const loadUserData = async () => {
+      const id = '1'; 
+      setResidenciaId(id);
+    };
+    loadUserData();
+  }, []);
+
+  // ALTERAÇÃO: Função refatorada para usar Axios com token de autorização.
+  const fetchDashboardData = useCallback(async () => {
+    if (!residenciaId) return;
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const authToken = await AsyncStorage.getItem('token');
+      if (!authToken) {
+        throw new Error("Token de autenticação não encontrado.");
+      }
+
+      const headers = { 'Authorization': `Bearer ${authToken}` };
+
+      // Usando Promise.all com axios para chamadas paralelas
+      const [consumoResponse, metasResponse, dicaResponse] = await Promise.all([
+        axios.get(`${API_URL}/apartamentos/${residenciaId}/consumo-total`, { headers }),
+        axios.get(`${API_URL}/metas`, { headers }),
+        axios.get(`${API_URL}/dica`, { headers }),
+      ]);
+      
+      const consumoResult = consumoResponse.data;
+      const metasResult = metasResponse.data;
+      const dicaResult = dicaResponse.data;
+
+      if (consumoResult) {
+        setConsumptionData({
+          todayConsumption: consumoResult.consumoTotal || 0,
+          todaySavings: 11.2, // Mockado
+          comparison: -12.5,  // Mockado
+        });
+      }
+
+      if (metasResult && metasResult.length > 0) {
+        setDailyGoal(metasResult[0].limite_consumo); 
+      }
+      
+      if (dicaResult && dicaResult.mensagem) {
+        setDicaDoPingo(dicaResult.mensagem);
+      }
+
+      // Mantendo mocks para partes visuais
+      setChartData(mockChartData);
+      setRecentHistory(mockRecentHistory);
+
+    } catch (err) {
+      setError(err.message);
+      console.error("Erro ao buscar dados do dashboard:", err.response?.data || err.message);
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
+    }
+  }, [residenciaId]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+  
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const comparisonColor = useMemo(() => (consumptionData?.comparison <= 0 ? theme.colors.success : theme.colors.danger), [consumptionData?.comparison]);
+  const comparisonText = useMemo(() => { if (consumptionData?.comparison == null) return ''; return consumptionData.comparison <= 0 ? `${consumptionData.comparison}% em relação a ontem` : `+${consumptionData.comparison}% em relação a ontem`; }, [consumptionData?.comparison]);
+  const consumptionProgress = useMemo(() => (dailyGoal > 0 ? Math.min(consumptionData.todayConsumption / dailyGoal, 1) : 0), [consumptionData?.todayConsumption, dailyGoal]);
+
+  const handleFilterChange = (newFilter) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setFilter(newFilter);
+  };
+  
+  if (isLoading && !residenciaId) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+  
+  if (error) {
+     return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Title>Ocorreu um erro</Title>
+        <Paragraph style={{textAlign: 'center'}}>Não foi possível carregar os dados. Verifique sua conexão.</Paragraph>
+        <Button onPress={onRefresh} style={{marginTop: 10}}>Tentar Novamente</Button>
+      </View>
+    );
+  }
+
+  return (
+    <PaperProvider theme={theme}>
+      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        {isLoading && !refreshing ? <ActivityIndicator style={{ margin: 20 }} size="large" color={theme.colors.primary} /> : (
+          <>
+            <MotiView from={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'timing', duration: 500 }}>
+              <Card style={styles.card} elevation={4}>
+                  <Card.Content>
+                    <View style={styles.dailyCardHeader}>
+                      <Title style={styles.dailyCardTitle}>Resumo de Hoje</Title>
+                      <MotiText from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 300 }} style={[styles.comparisonText, { color: comparisonColor }]}>
+                        {comparisonText}
+                      </MotiText>
+                    </View>
+
+                    <View style={styles.innerCardsContainer}>
+                      <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardBlue }]}>
+                        <List.Icon icon="water-outline" color={theme.colors.primary} style={styles.innerCardIcon} />
+                        <View>
+                          <MotiText style={styles.innerCardValue}>{consumptionData?.todayConsumption.toFixed(1)} L</MotiText>
+                          <Text style={styles.innerCardLabel}>Consumido</Text>
+                        </View>
+                      </Surface>
+                      <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardGreen }]}>
+                        <List.Icon icon="leaf-circle-outline" color={theme.colors.success} style={styles.innerCardIcon}/>
+                        <View>
+                          <MotiText style={styles.innerCardValue}>{consumptionData?.todaySavings.toFixed(1)} L</MotiText>
+                          <Text style={styles.innerCardLabel}>Economizado</Text>
+                        </View>
+                      </Surface>
+                    </View>
+                    
+                    <View style={styles.goalContainer}>
+                      <Text style={styles.goalText}>Meta Diária: {consumptionData?.todayConsumption.toFixed(0)}L / {dailyGoal}L</Text>
+                      <ProgressBar progress={consumptionProgress} color={theme.colors.primary} style={styles.progressBar} />
+                    </View>
+
+                    <View style={styles.insightContainer}>
+                        <List.Icon icon="lightbulb-on-outline" color={theme.colors.warning} style={styles.innerCardIcon} />
+                        <Paragraph style={styles.insightText}>
+                            <Text style={{fontWeight: 'bold'}}>Dica do Pingo:</Text> {dicaDoPingo}
+                        </Paragraph>
+                    </View>
+                  </Card.Content>
+              </Card>
+            </MotiView>
+            
+            <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 150 }}>
+              <Card style={styles.card} elevation={2}>
+                <Card.Content>
+                  <SegmentedButtons value={filter} onValueChange={handleFilterChange} style={styles.filterButtons} buttons={[ { value: 'hoje', label: 'Hoje' }, { value: 'semana', label: '7d' }, { value: 'mes', label: '30d' }, ]} />
+                  <MotiView key={filter} from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ type: 'timing', duration: 300 }}>
+                    <LineChart 
+                      data={chartData[filter]}
+                      width={chartWidth}
+                      height={180}
+                      color1={theme.colors.primary} 
+                      dataPointsColor1={theme.colors.primary} 
+                      thickness1={3} 
+                      curved
+                      yAxisTextStyle={{ color: theme.colors.placeholder, fontSize: 10 }} 
+                      xAxisLabelTextStyle={{ color: theme.colors.placeholder, fontSize: 10, paddingTop: 5 }} 
+                      startFillColor1={theme.colors.primary} 
+                      endFillColor1={theme.colors.background}
+                      areaChart
+                      initialSpacing={15}
+                      endSpacing={15}
+                      noOfSections={4}
+                      yAxisThickness={0}
+                      rulesType="dashed"
+                      rulesColor="#EAEAEA"
+                      pointerConfig={{
+                        pointerStripHeight: 160,
+                        pointerStripColor: theme.colors.primary,
+                        pointerStripWidth: 2,
+                        pointerColor: theme.colors.primary,
+                        radius: 6,
+                        pointerLabelWidth: 100,
+                        pointerLabelHeight: 90,
+                        activatePointersOnLongPress: true,
+                        autoAdjustPointerLabelPosition: true,
+                        pointerLabelComponent: items => (
+                          <View style={styles.pointerLabel}>
+                            <Text style={styles.pointerLabelValue}>{items[0].value} L</Text>
+                            <Text style={styles.pointerLabelDate}>{items[0].label}</Text>
+                          </View>
+                        ),
+                      }}
+                    />
+                  </MotiView>
+                </Card.Content>
+              </Card>
+            </MotiView>
+            
+            <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 300 }} style={styles.actionsContainer}>
+                <MotiPressable animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })} style={styles.actionButton} onPress={() => console.log('Relatórios')}>
+                    <List.Icon icon="file-chart-outline" color={theme.colors.primary} />
+                    <Text style={styles.actionText}>Ver Relatórios</Text>
+                </MotiPressable>
+                <MotiPressable animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })} style={styles.actionButton} onPress={() => console.log('Metas')}>
+                    <List.Icon icon="target-arrow" color={theme.colors.success} />
+                    <Text style={styles.actionText}>Ajustar Metas</Text>
+                </MotiPressable>
+            </MotiView>
+            
+            <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 450 }}>
+              <Card style={styles.card} elevation={2}>
+                <Card.Content>
+                  <Title>Histórico Recente</Title>
+                  {recentHistory.map((item, index) => {
+                    const itemColor = item.type === 'expense' ? theme.colors.danger : 
+                                      item.type === 'saving' ? theme.colors.success : 
+                                      theme.colors.warning;
+                    return (
+                      <MotiView key={item.id} from={{ opacity: 0, translateX: -20 }} animate={{ opacity: 1, translateX: 0 }} transition={{ type: 'timing', delay: 100 + index * 100 }}>
+                        <List.Item 
+                          title={item.description} 
+                          description={item.time} 
+                          titleNumberOfLines={1} 
+                          left={props => <List.Icon {...props} icon={item.icon} color={itemColor} />} 
+                          right={() => <Text style={[styles.historyValue, { color: itemColor }]}>{item.value}</Text>} 
+                          style={[styles.listItem, index === 0 && styles.firstListItem]} 
+                        />
+                      </MotiView>
+                    )
+                  })}
+                </Card.Content>
+              </Card>
+            </MotiView>
+          </>
+        )}
+      </ScrollView>
+    </PaperProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { 
+    flex: 1, 
+    backgroundColor: theme.colors.background,
+  },
+  contentContainer: { 
+    padding: 16, 
+    paddingBottom: 48,
+  },
+  card: { 
+    marginBottom: 20, 
+    borderRadius: theme.roundness * 1.5,
+    backgroundColor: theme.colors.surface,
+  },
+  dailyCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  dailyCardTitle: {
+    fontWeight: 'bold',
+  },
+  comparisonText: { 
+    fontSize: 14, 
+    fontWeight: '600',
+  },
+  innerCardsContainer: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  innerCard: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    padding: 12, 
+    borderRadius: theme.roundness, 
+    flex: 1,
+  },
+  innerCardIcon: {
+    marginRight: 8,
+    marginLeft: 0,
+    marginTop: 0,
+    marginBottom: 0,
+  },
+  innerCardValue: { 
+    fontSize: 20, 
+    fontWeight: 'bold',
+    color: theme.colors.text,
+  },
+  innerCardLabel: { 
+    fontSize: 13, 
+    color: theme.colors.placeholder,
+  },
+  goalContainer: {
+    marginTop: 20,
+  },
+  goalText: {
+    marginBottom: 8,
+    fontSize: 14,
+    color: theme.colors.placeholder,
+  },
+  progressBar: {
+    height: 8,
+    borderRadius: 4,
+  },
+  insightContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#FFFBE6',
+      borderRadius: theme.roundness,
+      padding: 12,
+      marginTop: 20,
+  },
+  insightText: {
+      flex: 1,
+      fontSize: 14,
+      color: '#B26E00',
+      lineHeight: 20,
+  },
+  filterButtons: { 
+    marginBottom: 16,
+  },
+  pointerLabel: {
+    height: 60,
+    width: 100,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    justifyContent: 'center',
+    padding: 12,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+  },
+  pointerLabelValue: {
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 14,
+  },
+  pointerLabelDate: {
+    textAlign: 'center',
+    fontSize: 12,
+    color: theme.colors.placeholder,
+  },
+  actionsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: 16,
+      marginBottom: 20,
+  },
+  actionButton: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.roundness,
+      paddingVertical: 12,
+      elevation: 2,
+  },
+  actionText: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: theme.colors.text,
+  },
+  listItem: {
+      paddingLeft: 0,
+  },
+  firstListItem: {
+      borderTopWidth: 1, 
+      borderTopColor: '#F0F0F0', 
+      paddingTop: 16, 
+      marginTop: 10,
+  },
+  historyValue: {
+      fontWeight: 'bold', 
+      alignSelf: 'center',
+      fontSize: 15,
+  },
+});
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Login.jsx
+// =================================================================================
+
+import React, { useState } from 'react';
+import { 
+    StyleSheet, 
+    View, 
+    ScrollView, 
+    TouchableOpacity,
+    KeyboardAvoidingView,
+    Platform,
+    LayoutAnimation,
+    UIManager
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import {
+    TextInput,
+    Button,
+    Card,
+    Title,
+    Paragraph,
+    Provider as PaperProvider,
+    DefaultTheme,
+    Portal,
+    Dialog,
+    HelperText,
+    Avatar,
+    Checkbox,
+    Snackbar,
+    Text,
+    Modal,
+    Divider,
+    Subheading,
+    IconButton,
+    Icon
+} from 'react-native-paper';
+import { mask } from 'react-native-mask-text';
+import { LinearGradient } from 'expo-linear-gradient';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+const API_BASE_URL = 'http://localhost:3334'; // Para Expo Go, use o IP da sua máquina. Ex: 'http://192.168.1.10:3334'
+
+const theme = {
+    ...DefaultTheme,
+    roundness: 10,
+    colors: {
+        ...DefaultTheme.colors,
+        primary: '#0A84FF',
+        accent: '#005ecb',
+        background: '#F2F2F7',
+        surface: '#FFFFFF',
+        text: '#1C1C1E',
+        placeholder: '#8A8A8E',
+        error: '#FF3B30',
+        success: '#34C759'
+    },
+};
+
+export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
+    const [formType, setFormType] = useState('login');
+    const [registrationType, setRegistrationType] = useState('casa');
+    const [isLoading, setIsLoading] = useState(false);
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [snackbar, setSnackbar] = useState({ visible: false, message: '', type: 'default' });
+
+    const [codigoDialogVisible, setCodigoDialogVisible] = useState(false);
+    const [planoIndividualDialog, setPlanoIndividualDialog] = useState(false);
+    const [planoCondoDialog, setPlanoCondoDialog] = useState(false);
+
+    const [termsVisible, setTermsVisible] = useState(false);
+    const [agreeToTerms, setAgreeToTerms] = useState(false);
+    const [scrolledToBottom, setScrolledToBottom] = useState(false);
+
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [senha, setSenha] = useState('');
+    const [cpf, setCpf] = useState('');
+    const [cep, setCep] = useState('');
+    const [logradouro, setLogradouro] = useState('');
+    const [numero, setNumero] = useState('');
+    const [bairro, setBairro] = useState('');
+    const [cidade, setCidade] = useState('');
+    const [uf, setUf] = useState('');
+    const [estado, setEstado] = useState('');
+    const [codigoAcesso, setCodigoAcesso] = useState('');
+    const [bloco, setBloco] = useState('');
+    const [numeroMoradores, setNumeroMoradores] = useState('1');
+    
+    // Estados para o fluxo de "Esqueci minha senha"
+    const [forgotPasswordModalVisible, setForgotPasswordModalVisible] = useState(false);
+    const [resetPasswordModalVisible, setResetPasswordModalVisible] = useState(false);
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetToken, setResetToken] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
+
+    const showSnackbar = (message, type = 'default') => {
+        setSnackbar({ visible: true, message, type });
+    };
+
+    const clearFormFields = () => {
+        setName(''); setEmail(''); setSenha(''); setCpf(''); setCep('');
+        setLogradouro(''); setNumero(''); setBairro(''); setCidade('');
+        setUf(''); setEstado(''); setCodigoAcesso(''); setBloco('');
+        setNumeroMoradores('1'); setAgreeToTerms(false);
+    };
+
+    const handleFormTypeChange = (newType) => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        clearFormFields();
+        setFormType(newType);
+    };
+
+    const fetchAddressFromCep = async (cepValue) => {
+        const unmaskedCep = cepValue.replace(/\D/g, '');
+        if (unmaskedCep.length !== 8) return null;
+        
+        setIsLoading(true);
+        try {
+            const response = await axios.get(`${API_BASE_URL}/api/cep/${unmaskedCep}`);
+            const addressData = response.data;
+            setLogradouro(addressData.logradouro || ''); setBairro(addressData.bairro || '');
+            setCidade(addressData.localidade || ''); setUf(addressData.uf || ''); setEstado(addressData.estado || '');
+            return { logradouro: addressData.logradouro, bairro: addressData.bairro, cidade: addressData.localidade, uf: addressData.uf, estado: addressData.estado };
+        } catch (error) {
+            console.error("Erro ao buscar CEP:", error);
+            showSnackbar('CEP não encontrado ou inválido.', 'error');
+            setLogradouro(''); setBairro(''); setCidade(''); setUf(''); setEstado('');
+            return null;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleLogin = async () => {
+        if (!email || !senha) { showSnackbar('Por favor, preencha e-mail e senha.', 'error'); return; }
+        setIsLoading(true);
+        try {
+            const response = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password: senha });
+            const { token, user } = response.data;
+            await AsyncStorage.setItem('token', token);
+            await AsyncStorage.setItem('user', JSON.stringify(user));
+            showSnackbar('Login realizado com sucesso!', 'success');
+            if(onSuccessfulLogin) onSuccessfulLogin(user);
+        } catch (error) {
+            console.error("Erro no login:", error.response?.data || error.message);
+            const errorMessage = error.response?.data?.error || 'Credenciais inválidas ou erro no servidor.';
+            showSnackbar(`Erro: ${errorMessage}`, 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleRegister = async () => {
+        if (!name.trim() || !email.trim() || !senha.trim() || !cpf.trim()) { showSnackbar('Preencha todos os campos obrigatórios.', 'error'); return; }
+        if (!email.includes('@') || !email.includes('.')) { showSnackbar('Formato de e-mail inválido.', 'error'); return; }
+        if (senha.length < 6) { showSnackbar('A senha deve ter no mínimo 6 caracteres.', 'error'); return; }
+        if (cpf.replace(/\D/g, '').length !== 11) { showSnackbar('CPF inválido.', 'error'); return; }
+        if (registrationType === 'casa' && (!cep.trim() || !numero.trim())) { showSnackbar('Para residência própria, CEP e Número são obrigatórios.', 'error'); return; }
+        if (registrationType === 'condominio' && (!codigoAcesso.trim() || !numero.trim())) { showSnackbar('Para plano condomínio, Código de Acesso e Número são obrigatórios.', 'error'); return; }
+        if (!agreeToTerms) { showSnackbar('Você precisa aceitar os Termos e Condições para continuar.', 'error'); return; }
+
+        setIsLoading(true);
+        
+        const residenciaType = registrationType === 'condominio' ? 'apartamento' : 'casa';
+        let userData = { name, email, password: senha, cpf, residencia_type: residenciaType, numero_moradores: parseInt(numeroMoradores, 10) || 1 };
+
+        if (residenciaType === 'casa') {
+            Object.assign(userData, { logradouro, bairro, cidade, uf, estado, cep: cep.replace(/\D/g, ''), numero });
+        } else {
+            Object.assign(userData, { codigo_acesso: codigoAcesso, bloco, numero });
+        }
+        
+        try {
+            await axios.post(`${API_BASE_URL}/api/auth/register`, userData);
+            showSnackbar('Cadastro realizado com sucesso! Faça o login.', 'success');
+            handleFormTypeChange('login');
+        } catch (error) {
+            console.error("Detalhes do erro de cadastro:", error.response?.data || error);
+            if (error.response?.data?.errors) {
+                const errorMessages = error.response.data.errors.map(e => e.message).join('\n');
+                showSnackbar(`Erros de validação:\n${errorMessages}`, 'error');
+            } else if (error.response?.data?.error) {
+                showSnackbar(`Erro: ${error.response.data.error}`, 'error');
+            } else {
+                showSnackbar('Não foi possível conectar ao servidor.', 'error');
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleForgotPasswordRequest = async () => {
+        if (!resetEmail.includes('@') || !resetEmail.includes('.')) {
+            showSnackbar('Por favor, insira um e-mail válido.', 'error');
+            return;
+        }
+        setIsLoading(true);
+        try {
+            await axios.post(`${API_BASE_URL}/api/password/forgot`, { email: resetEmail });
+            showSnackbar('Código enviado! Verifique sua caixa de entrada e spam.', 'success');
+            setForgotPasswordModalVisible(false);
+            setResetPasswordModalVisible(true);
+        } catch (error) {
+            console.error("Erro ao solicitar redefinição:", error.response?.data || error.message);
+            showSnackbar('Se o e-mail estiver correto, você receberá um código.', 'success');
+            setForgotPasswordModalVisible(false);
+            setResetPasswordModalVisible(true);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResetPasswordSubmit = async () => {
+        if (!resetToken.trim() || !newPassword.trim()) {
+            showSnackbar('Preencha o código e a nova senha.', 'error'); return;
+        }
+        if (newPassword !== confirmNewPassword) {
+            showSnackbar('As senhas não coincidem.', 'error'); return;
+        }
+        if (newPassword.length < 6) {
+            showSnackbar('A nova senha deve ter no mínimo 6 caracteres.', 'error'); return;
+        }
+        setIsLoading(true);
+        try {
+            await axios.post(`${API_BASE_URL}/api/password/reset`, { token: resetToken, newPassword });
+            showSnackbar('Senha alterada com sucesso! Faça o login.', 'success');
+            setResetPasswordModalVisible(false);
+            setResetEmail(''); setResetToken(''); setNewPassword(''); setConfirmNewPassword('');
+            handleFormTypeChange('login');
+        } catch (error) {
+            const errorMessage = error.response?.data?.error || 'Não foi possível redefinir a senha.';
+            showSnackbar(`Erro: ${errorMessage}`, 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleOpenTerms = () => setTermsVisible(true);
+    const handleCloseTerms = () => setTermsVisible(false);
+    const handleAcceptTerms = () => { setAgreeToTerms(true); handleCloseTerms(); };
+    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+        const paddingToBottom = 20;
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+    };
+
+    const GradientButton = ({ onPress, loading, disabled, children, style }) => (
+        <TouchableOpacity onPress={onPress} disabled={disabled || loading} style={[styles.gradientButtonContainer, style]}>
+            <LinearGradient colors={disabled ? ['#B0B0B0', '#C0C0C0'] : ['#0A84FF', '#005ecb']} style={styles.gradientButton} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                <Text style={styles.gradientButtonText}>{loading ? 'Aguarde...' : children}</Text>
+            </LinearGradient>
+        </TouchableOpacity>
+    );
+
+    const renderLoginForm = () => (
+        <View>
+            <Paragraph style={styles.paragraph}>Bem-vindo! Faça login para continuar.</Paragraph>
+            <TextInput label="Email" value={email} onChangeText={setEmail} style={styles.input} mode="outlined" keyboardType="email-address" autoCapitalize="none" left={<TextInput.Icon icon="account-circle-outline" />} />
+            <TextInput label="Senha" value={senha} onChangeText={setSenha} secureTextEntry={!passwordVisible} style={styles.input} mode="outlined" left={<TextInput.Icon icon="lock-outline" />} right={<TextInput.Icon icon={passwordVisible ? "eye-off" : "eye"} onPress={() => setPasswordVisible(!passwordVisible)} />} />
+            <Button mode="text" onPress={() => setForgotPasswordModalVisible(true)} style={{ alignSelf: 'flex-end', marginBottom: 16 }}>
+                Esqueci minha senha
+            </Button>
+            <GradientButton onPress={handleLogin} loading={isLoading} disabled={isLoading}>
+                Login
+            </GradientButton>
+            <Button mode="text" onPress={() => handleFormTypeChange('register')} style={styles.switchButton}>
+                Novo por aqui? Crie uma conta
+            </Button>
+        </View>
+    );
+
+    const renderRegisterForm = () => (
+        <View>
+            <Paragraph style={styles.paragraph}>Selecione o tipo de plano para começar.</Paragraph>
+            <View style={styles.customSegmentedContainer}>
+                <TouchableOpacity 
+                    style={[styles.customSegmentButton, registrationType === 'casa' && styles.customSegmentButtonActive]}
+                    onPress={() => setRegistrationType('casa')}
+                >
+                    <Icon source="home-variant-outline" size={20} color={registrationType === 'casa' ? '#FFFFFF' : theme.colors.primary} />
+                    <Text style={[styles.customSegmentLabel, registrationType === 'casa' && styles.customSegmentLabelActive]}>
+                        Residência Própria
+                    </Text>
+                    <IconButton 
+                        icon="help-circle-outline" 
+                        size={20} 
+                        iconColor={registrationType === 'casa' ? '#FFFFFF' : theme.colors.primary}
+                        onPress={() => setPlanoIndividualDialog(true)}
+                        style={styles.infoIcon}
+                    />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                    style={[styles.customSegmentButton, registrationType === 'condominio' && styles.customSegmentButtonActive]}
+                    onPress={() => setRegistrationType('condominio')}
+                >
+                    <Icon source="office-building-outline" size={20} color={registrationType === 'condominio' ? '#FFFFFF' : theme.colors.primary} />
+                    <Text style={[styles.customSegmentLabel, registrationType === 'condominio' && styles.customSegmentLabelActive]}>
+                        Plano Condomínio
+                    </Text>
+                    <IconButton 
+                        icon="help-circle-outline" 
+                        size={20} 
+                        iconColor={registrationType === 'condominio' ? '#FFFFFF' : theme.colors.primary}
+                        onPress={() => setPlanoCondoDialog(true)}
+                        style={styles.infoIcon}
+                    />
+                </TouchableOpacity>
+            </View>
+
+            <TextInput label="Nome Completo" style={styles.input} value={name} onChangeText={setName} mode="outlined" />
+            <TextInput label="Email" style={styles.input} value={email} onChangeText={setEmail} mode="outlined" keyboardType="email-address" autoCapitalize="none"/>
+            <TextInput label="Senha (mín. 6 caracteres)" style={styles.input} value={senha} onChangeText={setSenha} secureTextEntry mode="outlined" />
+            <TextInput label="CPF" style={styles.input} value={cpf} onChangeText={(text) => setCpf(mask(text, '999.999.999-99'))} mode="outlined" keyboardType="numeric" />
+            
+            {registrationType === 'casa' && (
+                <>
+                    <TextInput label="CEP" style={styles.input} value={cep} onChangeText={(text) => setCep(mask(text, '99999-999'))} onBlur={() => fetchAddressFromCep(cep)} mode="outlined" keyboardType="numeric" />
+                    <TextInput label="Logradouro" style={styles.input} value={logradouro} onChangeText={setLogradouro} mode="outlined" disabled={isLoading} />
+                    <TextInput label="Bairro" style={styles.input} value={bairro} onChangeText={setBairro} mode="outlined" disabled={isLoading} />
+                    <TextInput label="Cidade" style={styles.input} value={cidade} onChangeText={setCidade} mode="outlined" disabled={isLoading} />
+                    <TextInput label="UF" style={styles.input} value={uf} onChangeText={setUf} mode="outlined" disabled={isLoading} />
+                    <TextInput label="Número da Casa" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" keyboardType="numeric" />
+                    <TextInput label="Número de Moradores" style={styles.input} value={numeroMoradores} onChangeText={setNumeroMoradores} mode="outlined" keyboardType="numeric" />
+                </>
+            )}
+
+            {registrationType === 'condominio' && (
+                <>
+                    <TextInput label="Código de Acesso do Condomínio" style={styles.input} value={codigoAcesso} onChangeText={setCodigoAcesso} mode="outlined" />
+                    <TextInput label="Bloco" style={styles.input} value={bloco} onChangeText={setBloco} mode="outlined" />
+                    <TextInput label="Código de acesso do apartamento" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" keyboardType="numeric" />
+                    <TextInput label="Número de Moradores" style={styles.input} value={numeroMoradores} onChangeText={setNumeroMoradores} mode="outlined" keyboardType="numeric" />
+                    <HelperText type="info" visible={true} style={{ textAlign: 'center' }}>
+                        Não sabe o código? <Button mode="text" compact onPress={() => setCodigoDialogVisible(true)} labelStyle={{ fontSize: 12 }}>Clique aqui</Button>
+                    </HelperText>
+                </>
+            )}
+
+            <TouchableOpacity onPress={handleOpenTerms} style={styles.checkboxContainer}>
+                <Checkbox.Android status={agreeToTerms ? 'checked' : 'unchecked'} color={theme.colors.primary} />
+                <Text style={styles.checkboxLabel}>Eu li e aceito os <Text style={styles.checkboxLink}>Termos e Condições</Text></Text>
+            </TouchableOpacity>
+
+            <GradientButton onPress={handleRegister} loading={isLoading} disabled={isLoading || !agreeToTerms}>
+                Cadastrar
+            </GradientButton>
+            <Button mode="text" onPress={() => handleFormTypeChange('login')} style={styles.switchButton}>
+                Já tem uma conta? Faça login
+            </Button>
+        </View>
+    );
+
+    return (
+        <PaperProvider theme={theme}>
+            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardAvoidingView}>
+                <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+                    <View style={styles.container}>
+                        <Card style={styles.card}>
+                            <Card.Content style={styles.cardContent}>
+                                <View style={styles.logoContainer}>
+                                    <Avatar.Image size={80} source={require('../assets/logo.png')} style={{ backgroundColor: 'transparent' }} />
+                                    <Title style={styles.title}>Aqua Services</Title>
+                                </View>
+                                {formType === 'login' ? renderLoginForm() : renderRegisterForm()}
+                            </Card.Content>
+                        </Card>
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
+
+            <Portal>
+                <Modal visible={termsVisible} onDismiss={handleCloseTerms} contentContainerStyle={styles.modalContainer}>
+                    <View style={styles.modalHeader}>
+                        <Title style={styles.modalTitle}>Termos e Condições de Uso</Title>
+                        <Paragraph style={styles.modalSubtitle}>Aqua Services</Paragraph>
+                    </View>
+                    <Divider />
+                    <ScrollView style={styles.modalScrollView} onScroll={({ nativeEvent }) => { if (isCloseToBottom(nativeEvent)) { if (!scrolledToBottom) setScrolledToBottom(true); }}} scrollEventThrottle={400}>
+                        <Paragraph style={styles.termsText}>Bem-vindo ao Aqua! Agradecemos por escolher nossa solução para o monitoramento inteligente do consumo de água. Antes de prosseguir, por favor, leia atentamente nossos Termos e Condições.</Paragraph>
+                        <Subheading style={styles.termsSubheading}>1. O Serviço Aqua</Subheading>
+                        <Paragraph style={styles.termsText}>O projeto Aqua consiste em um sistema de assinaturas para monitoramento de água em condomínios e residências individuais. Nossa plataforma é composta por um Aplicativo Android, voltado para moradores e síndicos, e um Dashboard Administrativo para nossa equipe interna. O objetivo é fornecer uma ferramenta centralizada para acompanhar o consumo estimado de água, criar metas de economia e facilitar a comunicação com nossos clientes.</Paragraph>
+                        <Subheading style={styles.termsSubheading}>2. Cadastro e Conta do Usuário</Subheading>
+                        <Paragraph style={styles.termsText}>Ao se cadastrar, você concorda em fornecer informações verdadeiras, precisas e completas, como nome, e-mail e CPF. Você é o único responsável pela segurança de sua senha e por todas as atividades que ocorrem em sua conta.</Paragraph>
+                        <Subheading style={styles.termsSubheading}>3. Coleta e Uso de Dados</Subheading>
+                        <Paragraph style={styles.termsText}>Para fornecer nossos serviços, coletamos dois tipos principais de dados:{"\n\n"}a) **Dados Pessoais:** Informações fornecidas durante o cadastro (nome, e-mail, CPF, endereço) são utilizadas para identificação, faturamento e comunicação.{"\n\n"}b) **Dados de Consumo:** Nossos sensores IOT coletam dados sobre o fluxo de água em sua residência. Esses dados são processados para gerar relatórios de consumo estimado, identificar possíveis vazamentos e auxiliar na criação de metas.{"\n\n"}Todos os dados são armazenados de forma segura em nossa infraestrutura na nuvem (AWS) e tratados com a máxima confidencialidade. Não compartilharemos seus dados pessoais com terceiros sem seu consentimento explícito, exceto quando exigido por lei.</Paragraph>
+                        <Subheading style={styles.termsSubheading}>4. Propriedade Intelectual</Subheading>
+                        <Paragraph style={styles.termsText}>Todo o conteúdo, design, código-fonte, e elementos visuais do aplicativo Aqua, incluindo nosso mascote "Pingo", são de propriedade exclusiva da equipe de desenvolvimento do projeto Aqua. É proibida a reprodução, cópia ou redistribuição de qualquer parte do serviço sem nossa permissão prévia por escrito.</Paragraph>
+                        <Subheading style={styles.termsSubheading}>5. Limitação de Responsabilidade</Subheading>
+                        <Paragraph style={styles.termsText}>O sistema Aqua fornece dados de consumo de forma **estimada** e para fins de monitoramento. Embora nos esforcemos para a máxima precisão, não nos responsabilizamos por discrepâncias entre os dados apresentados e sua fatura oficial de água. O serviço é uma ferramenta de apoio à gestão do consumo, e não substitui a verificação de profissionais qualificados para problemas hidráulicos.</Paragraph>
+                        <Subheading style={styles.termsSubheading}>6. Agradecimentos</Subheading>
+                        <Paragraph style={styles.termsText}>Este projeto foi desenvolvido como Trabalho de Conclusão de Curso por: Davi Rodrigues, Felipe Lopes, Davi Chagas, Ana Carollini e Thiago Henrique. Agradecemos por fazer parte desta jornada conosco.</Paragraph>
+                    </ScrollView>
+                    <Divider />
+                    <View style={styles.modalFooter}>
+                        <Button mode="contained" onPress={handleAcceptTerms} disabled={!scrolledToBottom} style={scrolledToBottom ? {} : { backgroundColor: theme.colors.placeholder }}>
+                            {scrolledToBottom ? "Eu Li e Aceito os Termos" : "Role até o final para aceitar"}
+                        </Button>
+                    </View>
+                </Modal>
+
+                <Dialog visible={planoIndividualDialog} onDismiss={() => setPlanoIndividualDialog(false)} style={styles.dialog}>
+                    <Dialog.Icon icon="home-variant-outline" size={48} color={theme.colors.primary} />
+                    <Dialog.Title style={styles.dialogTitle}>Plano de Residência Própria</Dialog.Title>
+                    <Dialog.Content>
+                        <Paragraph style={styles.dialogParagraph}>Escolha esta opção se você mora em uma casa ou residência que não faz parte de um condomínio parceiro. O cadastro será feito diretamente com seu endereço.</Paragraph>
+                    </Dialog.Content>
+                    <Dialog.Actions>
+                        <Button onPress={() => setPlanoIndividualDialog(false)} mode="contained">Entendi</Button>
+                    </Dialog.Actions>
+                </Dialog>
+
+                <Dialog visible={planoCondoDialog} onDismiss={() => setPlanoCondoDialog(false)} style={styles.dialog}>
+                    <Dialog.Icon icon="office-building-outline" size={48} color={theme.colors.primary} />
+                    <Dialog.Title style={styles.dialogTitle}>Plano Condomínio</Dialog.Title>
+                    <Dialog.Content>
+                        <Paragraph style={styles.dialogParagraph}>Escolha esta opção se você mora em um apartamento ou casa dentro de um condomínio que já possui o sistema Aqua. Você precisará do código de acesso fornecido pelo síndico.</Paragraph>
+                    </Dialog.Content>
+                    <Dialog.Actions>
+                        <Button onPress={() => setPlanoCondoDialog(false)} mode="contained">Entendi</Button>
+                    </Dialog.Actions>
+                </Dialog>
+                
+                <Dialog visible={codigoDialogVisible} onDismiss={() => setCodigoDialogVisible(false)} style={styles.dialog}>
+                    <Dialog.Icon icon="information-outline" size={48} color={theme.colors.primary} />
+                    <Dialog.Title style={styles.dialogTitle}>Código de Acesso</Dialog.Title>
+                    <Dialog.Content>
+                        <Paragraph style={styles.dialogParagraph}>O código de acesso do condomínio é um identificador único. Você pode encontrá-lo na sua fatura ou consultar a administração.</Paragraph>
+                    </Dialog.Content>
+                    <Dialog.Actions>
+                        <Button onPress={() => setCodigoDialogVisible(false)} mode="contained">Entendi</Button>
+                    </Dialog.Actions>
+                </Dialog>
+
+                <Modal visible={forgotPasswordModalVisible} onDismiss={() => setForgotPasswordModalVisible(false)} contentContainerStyle={styles.modalContainerShort}>
+                    <View style={styles.modalHeader}>
+                        <Title style={styles.modalTitle}>Redefinir Senha</Title>
+                        <Paragraph style={styles.modalSubtitle}>Digite seu e-mail para receber um código de verificação.</Paragraph>
+                    </View>
+                    <Divider />
+                    <View style={styles.modalContent}>
+                        <TextInput label="Seu e-mail de cadastro" value={resetEmail} onChangeText={setResetEmail} style={styles.input} mode="outlined" keyboardType="email-address" autoCapitalize="none" left={<TextInput.Icon icon="email-outline" />} />
+                    </View>
+                    <View style={styles.modalFooterRow}>
+                        <Button onPress={() => setForgotPasswordModalVisible(false)} style={{ marginRight: 8 }}>Cancelar</Button>
+                        <GradientButton onPress={handleForgotPasswordRequest} loading={isLoading} disabled={isLoading}>Enviar</GradientButton>
+                    </View>
+                </Modal>
+
+                <Modal visible={resetPasswordModalVisible} onDismiss={() => setResetPasswordModalVisible(false)} contentContainerStyle={styles.modalContainerShort}>
+                    <View style={styles.modalHeader}>
+                        <Title style={styles.modalTitle}>Criar Nova Senha</Title>
+                        <Paragraph style={styles.modalSubtitle}>Insira o código recebido e defina sua nova senha.</Paragraph>
+                    </View>
+                    <Divider />
+                    <View style={styles.modalContent}>
+                        <TextInput label="Código de 6 dígitos" value={resetToken} onChangeText={setResetToken} style={styles.input} mode="outlined" keyboardType="number-pad" maxLength={6} />
+                        <TextInput label="Nova Senha" value={newPassword} onChangeText={setNewPassword} secureTextEntry style={styles.input} mode="outlined" />
+                        <TextInput label="Confirmar Nova Senha" value={confirmNewPassword} onChangeText={setConfirmNewPassword} secureTextEntry style={styles.input} mode="outlined" />
+                    </View>
+                    <View style={styles.modalFooterRow}>
+                        <Button onPress={() => setResetPasswordModalVisible(false)} style={{ marginRight: 8 }}>Cancelar</Button>
+                        <GradientButton onPress={handleResetPasswordSubmit} loading={isLoading} disabled={isLoading}>Salvar Senha</GradientButton>
+                    </View>
+                </Modal>
+
+            </Portal>
+
+            <Snackbar
+                visible={snackbar.visible}
+                onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+                duration={Snackbar.DURATION_MEDIUM}
+                style={{ backgroundColor: snackbar.type === 'error' ? theme.colors.error : snackbar.type === 'success' ? theme.colors.success : '#323232' }}
+            >
+                {snackbar.message}
+            </Snackbar>
+        </PaperProvider>
+    );
+}
+
+const styles = StyleSheet.create({
+    keyboardAvoidingView: { flex: 1, backgroundColor: theme.colors.background },
+    scrollContainer: { flexGrow: 1, justifyContent: 'center', paddingVertical: 20 },
+    container: { paddingHorizontal: 20 },
+    card: { width: '100%', maxWidth: 420, alignSelf: 'center', borderRadius: theme.roundness * 1.5, elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12 },
+    cardContent: { paddingHorizontal: 24, paddingVertical: 32 },
+    logoContainer: { alignItems: 'center', marginBottom: 24 },
+    title: { fontSize: 28, fontWeight: 'bold', color: theme.colors.primary, marginTop: 12, letterSpacing: 0.5 },
+    paragraph: { fontSize: 16, color: theme.colors.placeholder, textAlign: 'center', marginBottom: 24, lineHeight: 22 },
+    input: { marginBottom: 16, backgroundColor: theme.colors.background },
+    gradientButtonContainer: { borderRadius: theme.roundness * 5, elevation: 4, shadowColor: '#0A84FF', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 5 },
+    gradientButton: { paddingVertical: 14, paddingHorizontal: 20, alignItems: 'center', borderRadius: theme.roundness * 5, overflow: 'hidden' },
+    gradientButtonText: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF', letterSpacing: 0.5 },
+    switchButton: { marginTop: 16 },
+    customSegmentedContainer: { flexDirection: 'row', marginBottom: 24, borderWidth: 1, borderColor: theme.colors.placeholder, borderRadius: theme.roundness, overflow: 'hidden' },
+    customSegmentButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, backgroundColor: theme.colors.surface, paddingHorizontal: 5, },
+    customSegmentButtonActive: { backgroundColor: theme.colors.primary },
+    customSegmentLabel: { fontSize: 13, fontWeight: '600', color: theme.colors.primary, marginLeft: 6, flexShrink: 1, },
+    customSegmentLabelActive: { color: '#FFFFFF' },
+    infoIcon: { margin: -5 },
+    checkboxContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 16, backgroundColor: 'transparent', paddingVertical: 8 },
+    checkboxLabel: { marginLeft: 6, color: theme.colors.placeholder, flex: 1 },
+    checkboxLink: { fontWeight: 'bold', color: theme.colors.primary, textDecorationLine: 'underline' },
+    dialog: { borderRadius: theme.roundness * 1.5 },
+    dialogTitle: { textAlign: 'center', color: theme.colors.text },
+    dialogParagraph: { textAlign: 'center', color: theme.colors.placeholder, lineHeight: 20 },
+    modalContainer: { backgroundColor: 'white', margin: 20, borderRadius: theme.roundness * 1.5, height: '85%', elevation: 10 },
+    modalContainerShort: { backgroundColor: 'white', margin: 20, borderRadius: theme.roundness * 1.5, elevation: 10, alignSelf: 'center', width: '90%', maxWidth: 400 },
+    modalHeader: { paddingVertical: 20, paddingHorizontal: 20, alignItems: 'center' },
+    modalTitle: { fontSize: 22, fontWeight: 'bold', color: theme.colors.text },
+    modalSubtitle: { fontSize: 14, color: theme.colors.placeholder, textAlign: 'center' },
+    modalContent: { paddingHorizontal: 24, paddingTop: 16 },
+    modalScrollView: { paddingHorizontal: 24 },
+    termsText: { fontSize: 14, lineHeight: 22, marginBottom: 16, textAlign: 'justify', color: theme.colors.text },
+    termsSubheading: { fontSize: 16, fontWeight: 'bold', marginTop: 8, marginBottom: 8, color: theme.colors.text },
+    modalFooter: { padding: 20, borderTopWidth: 1, borderTopColor: '#EEEEEE' },
+    modalFooterRow: { padding: 20, borderTopWidth: 1, borderTopColor: '#EEEEEE', flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' },
+});
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Metas.jsx
+// =================================================================================
+
+import React from 'react';
+import { StyleSheet, View, ScrollView } from 'react-native';
+import { 
+  Provider as PaperProvider, 
+  DefaultTheme, 
+  Avatar, 
+  Button, 
+  Card, 
+  Title, 
+  Paragraph,
+  Text,
+  List,
+  ProgressBar,
+} from 'react-native-paper'; 
+import { LinearGradient } from 'expo-linear-gradient';
+import { MotiView, MotiText } from 'moti';
+import { MotiPressable } from 'moti/interactions';
+import * as Haptics from 'expo-haptics';
+
+// --- TEMA VISUAL CONSISTENTE ---
+const theme = {
+  ...DefaultTheme,
+  roundness: 12,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#0A84FF',
+    accent: '#005ecb',
+    background: '#F2F2F7',
+    surface: '#FFFFFF',
+    text: '#1C1C1E',
+    placeholder: '#8A8A8E',
+    success: '#34C759',
+    danger: '#FF3B30',
+    warning: '#FF9500',
+    gold: '#FFD700', // Cor para pontos e recompensas
+  },
+};
+
+// --- DADOS MOCKADOS (PARA VISUALIZAÇÃO) ---
+const generalProgress = {
+  active: 5,
+  completed: 10,
+  points: 1500,
+};
+
+const myGoals = [
+  { id: '1', title: 'Economizar 100L de água esta semana', progress: 0.75, status: 'Em andamento', icon: 'water-percent' },
+  { id: '2', title: 'Reduzir o tempo de banho para 5 minutos', progress: 1, status: 'Concluída', icon: 'clock-check-outline' },
+  { id: '3', title: 'Consertar o vazamento da torneira', progress: 0, status: 'Pendente', icon: 'wrench-outline' },
+];
+
+const communityChallenge = {
+  title: 'Desafio Coletivo de Dezembro',
+  description: 'Todo o condomínio unido para reduzir o consumo em 15% e ganhar uma recompensa especial!',
+  progress: 0.6,
+};
+
+const ranking = [
+  { id: '1', name: 'Apto 12B', points: 2000, avatar: 'numeric-1-circle' },
+  { id: '2', name: 'Você', points: 1500, avatar: 'account-circle' },
+  { id: '3', name: 'Apto 8A', points: 1200, avatar: 'numeric-3-circle' },
+];
+
+
+// --- COMPONENTE PRINCIPAL ---
+const MetasScreen = () => {
+  return (
+    <PaperProvider theme={theme}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        
+        {/* Card de Progresso Geral */}
+        <MotiView from={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'timing', duration: 500 }}>
+          <LinearGradient
+            colors={['#4A00E0', '#8E2DE2']} // Gradiente Roxo para destaque
+            start={{x: 0, y: 0}}
+            end={{x: 1, y: 1}}
+            style={styles.gradientCard}
+          >
+            <View style={styles.cardHeader}>
+              <Title style={styles.cardTitleWhite}>Seu Progresso</Title>
+              <Avatar.Icon size={40} icon="trophy-award" color={theme.colors.gold} style={{ backgroundColor: 'rgba(255,255,255,0.1)' }} />
+            </View>
+
+            <View style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <Title style={styles.statNumeroBranco}>{generalProgress.active}</Title>
+                <Paragraph style={styles.statLabelBranco}>Ativas</Paragraph>
+              </View>
+              <View style={styles.statItem}>
+                <Title style={styles.statNumeroBranco}>{generalProgress.completed}</Title>
+                <Paragraph style={styles.statLabelBranco}>Concluídas</Paragraph>
+              </View>
+              <View style={styles.statItem}>
+                <Title style={styles.statNumeroBranco}>{generalProgress.points}</Title>
+                <Paragraph style={styles.statLabelBranco}>Pontos</Paragraph>
+              </View>
+            </View>
+          </LinearGradient>
+        </MotiView>
+
+        {/* Botões de Ação Rápida */}
+        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 100 }} style={styles.actionsContainer}>
+            <MotiPressable 
+              style={styles.actionButton}
+              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+              animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })}
+            >
+                <List.Icon icon="plus-circle-outline" color={theme.colors.primary} />
+                <Text style={styles.actionText}>Criar Nova Meta</Text>
+            </MotiPressable>
+            <MotiPressable 
+              style={[styles.actionButton, { backgroundColor: '#FFFBE6' }]}
+              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+              animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })}
+            >
+                <List.Icon icon="gift-outline" color={theme.colors.gold} />
+                <Text style={[styles.actionText, { color: theme.colors.gold }]}>Recompensas</Text>
+            </MotiPressable>
+        </MotiView>
+
+        {/* Card "Minhas Metas" */}
+        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 200 }}>
+          <Card style={styles.card} elevation={2}>
+            <Card.Title title="Minhas Metas Atuais" titleStyle={styles.cardTitle} />
+            <Card.Content>
+              {myGoals.map((meta, index) => (
+                <View key={meta.id} style={styles.goalItem}>
+                  <List.Icon icon={meta.icon} color={meta.progress === 1 ? theme.colors.success : theme.colors.primary} style={{ marginLeft: -10 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.goalTitle}>{meta.title}</Text>
+                    <ProgressBar progress={meta.progress} color={meta.progress === 1 ? theme.colors.success : theme.colors.primary} style={styles.goalProgressBar} />
+                  </View>
+                  <Text style={[styles.goalStatus, { color: meta.progress === 1 ? theme.colors.success : theme.colors.placeholder }]}>
+                    {meta.status}
+                  </Text>
+                </View>
+              ))}
+            </Card.Content>
+          </Card>
+        </MotiView>
+        
+        {/* Card "Desafio da Comunidade" */}
+        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 300 }}>
+          <Card style={styles.card} elevation={2}>
+            <Card.Title title={communityChallenge.title} subtitle="Participe com seus vizinhos!" titleStyle={styles.cardTitle} />
+            <Card.Content>
+              <Paragraph style={styles.challengeDescription}>{communityChallenge.description}</Paragraph>
+              <View style={{ marginTop: 10 }}>
+                <Text style={styles.goalText}>Progresso do Condomínio:</Text>
+                <ProgressBar progress={communityChallenge.progress} color={theme.colors.success} style={styles.goalProgressBar} />
+              </View>
+            </Card.Content>
+          </Card>
+        </MotiView>
+
+        {/* Card "Ranking" */}
+        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 400 }}>
+          <Card style={styles.card} elevation={2}>
+            <Card.Title title="Ranking de Pontos" titleStyle={styles.cardTitle} />
+            <Card.Content>
+              {ranking.map((item, index) => (
+                <List.Item
+                  key={item.id}
+                  title={item.name}
+                  titleStyle={item.name === 'Você' ? styles.rankingYou : styles.rankingOthers}
+                  left={() => <Avatar.Icon size={40} icon={item.avatar} color={item.name === 'Você' ? theme.colors.primary : theme.colors.placeholder} style={{backgroundColor: 'transparent'}} />}
+                  right={() => <Text style={styles.rankingPoints}>{item.points} pts</Text>}
+                />
+              ))}
+            </Card.Content>
+          </Card>
+        </MotiView>
+      </ScrollView>
+    </PaperProvider>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  contentContainer: {
+    padding: 16,
+    paddingBottom: 48,
+  },
+  card: {
+    marginBottom: 20,
+    borderRadius: theme.roundness * 1.5,
+    backgroundColor: theme.colors.surface,
+  },
+  cardTitle: {
+    fontWeight: 'bold',
+  },
+  gradientCard: {
+    marginBottom: 20,
+    borderRadius: theme.roundness * 1.5,
+    elevation: 8,
+    shadowColor: '#4A00E0',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  cardHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cardTitleWhite: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 22,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingBottom: 20,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumeroBranco: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  statLabelBranco: {
+    fontSize: 14,
+    color: '#E0E0E0',
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 16,
+    marginBottom: 20,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.roundness,
+    paddingVertical: 10,
+    elevation: 2,
+  },
+  actionText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: theme.colors.text,
+  },
+  goalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  goalTitle: {
+    fontSize: 15,
+    color: theme.colors.text,
+    marginBottom: 6,
+  },
+  goalProgressBar: {
+    height: 8,
+    borderRadius: 4,
+  },
+  goalStatus: {
+    marginLeft: 16,
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  challengeDescription: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: theme.colors.placeholder,
+  },
+  goalText: {
+    marginBottom: 8,
+    fontSize: 14,
+    color: theme.colors.placeholder,
+  },
+  rankingYou: {
+    fontWeight: 'bold',
+    color: theme.colors.primary,
+  },
+  rankingOthers: {
+    color: theme.colors.text,
+  },
+  rankingPoints: {
+    alignSelf: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: theme.colors.gold,
+  }
+});
+
+export default MetasScreen;
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Perfil.jsx
+// =================================================================================
+
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import {
+  Avatar,
+  Card,
+  Title,
+  Paragraph,
+  Icon,
+  Divider,
+  List,
+  Switch,
+  Button,
+  useTheme,
+} from 'react-native-paper';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// URL padronizada para localhost, compatível com adb reverse.
+const API_URL = 'http://localhost:3334/api';
+
+const ProfileScreen = ({ navigation, onLogout }) => {
+  const { colors } = useTheme();
+
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLeakAlertsEnabled, setIsLeakAlertsEnabled] = useState(true);
+  const [isConsumptionAlertsEnabled, setIsConsumptionAlertsEnabled] = useState(true);
+  const [isGoalsAlertsEnabled, setIsGoalsAlertsEnabled] = useState(true);
+  const [isCommunityAlertsEnabled, setIsCommunityAlertsEnabled] = useState(false);
+  const [isReportsEnabled, setIsReportsEnabled] = useState(true);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      setIsLoading(true);
+      try {
+        const authToken = await AsyncStorage.getItem('token');
+        
+        if (!authToken) {
+          setUser(null); 
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await axios.get(`${API_URL}/profile`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        setUser(response.data);
+
+      } catch (error) {
+        console.error("ERRO AO BUSCAR PERFIL:", error.response?.data || error.message);
+        if (error.response?.status === 401) {
+            await AsyncStorage.removeItem('token');
+            onLogout();
+        } else {
+            setUser(null);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProfileData();
+  }, [onLogout]);
+
+  const handleLogoutPress = async () => {
+    await AsyncStorage.removeItem('token');
+    onLogout();
+  };
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Title style={{textAlign: 'center'}}>Não foi possível carregar o perfil.</Title>
+        <Paragraph style={{textAlign: 'center'}}>Por favor, faça o login novamente.</Paragraph>
+        <Button onPress={onLogout} style={{marginTop: 20}}>Voltar ao Login</Button>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container}>
+      <Card style={styles.card}>
+        <Card.Content>
+          <View style={styles.userInfoTopContainer}>
+            <Avatar.Image
+              size={80}
+              source={{ uri: `https://api.dicebear.com/8.x/initials/svg?seed=${user.user_name}` }}
+              style={styles.avatar}
+            />
+            <View style={styles.userInfoTextContainer}>
+              <Title style={styles.userName}>{user.user_name}</Title>
+              <View style={styles.userInfoDetailRow}>
+                <Icon source="email" size={16} color="#666" />
+                <Paragraph style={styles.infoText}>{user.user_email}</Paragraph>
+              </View>
+              <View style={styles.userInfoDetailRow}>
+                <Icon source="office-building" size={16} color="#666" />
+                <Paragraph style={styles.infoText}>{user.logradouro}, {user.numero}</Paragraph>
+              </View>
+            </View>
+          </View>
+          <Divider style={styles.divider} />
+          <View style={styles.userStatsContainer}>
+            <View style={styles.statItem}>
+              <Title style={styles.statValue}>1500</Title>
+              <Paragraph style={styles.statLabel}>Pontos</Paragraph>
+            </View>
+            <View style={styles.statItem}>
+              <Title style={styles.statValue}>#2</Title>
+              <Paragraph style={styles.statLabel}>Ranking</Paragraph>
+            </View>
+          </View>
+        </Card.Content>
+      </Card>
+
+      <Card style={styles.card}>
+        <Card.Title title="Minhas Estatísticas" />
+        <Card.Content>
+          <List.Item title="Tempo no app" left={props => <List.Icon {...props} icon="clock-time-eight-outline" color="#3498db" />} right={props => <Title {...props} style={styles.statListValue}>120 dias</Title>} />
+          <Divider />
+          <List.Item title="Economia total" left={props => <List.Icon {...props} icon="cash" color="#2ecc71" />} right={props => <Title {...props} style={styles.statListValue}>R$ 250</Title>} />
+          <Divider />
+          <List.Item title="Água poupada" left={props => <List.Icon {...props} icon="water" color="#5dade2" />} right={props => <Title {...props} style={styles.statListValue}>500 L</Title>} />
+          <Divider />
+          <List.Item title="Metas cumpridas" left={props => <List.Icon {...props} icon="check-circle" color="#f1c40f" />} right={props => <Title {...props} style={styles.statListValue}>12</Title>} />
+        </Card.Content>
+      </Card>
+
+      <Card style={styles.card}>
+        <Card.Title title="Notificações" subtitle="Escolha o que você quer receber" />
+        <Card.Content>
+          <List.Item title="Alertas de Vazamento" left={props => <List.Icon {...props} icon="pipe-leak" />} right={() => <Switch value={isLeakAlertsEnabled} onValueChange={setIsLeakAlertsEnabled} />} />
+          <Divider />
+          <List.Item title="Alto Consumo" left={props => <List.Icon {...props} icon="chart-line" />} right={() => <Switch value={isConsumptionAlertsEnabled} onValueChange={setIsConsumptionAlertsEnabled} />} />
+          <Divider />
+          <List.Item title="Metas e Objetivos" left={props => <List.Icon {...props} icon="flag-checkered" />} right={() => <Switch value={isGoalsAlertsEnabled} onValueChange={setIsGoalsAlertsEnabled} />} />
+          <Divider />
+          <List.Item title="Desafios da Comunidade" left={props => <List.Icon {...props} icon="account-group" />} right={() => <Switch value={isCommunityAlertsEnabled} onValueChange={setIsCommunityAlertsEnabled} />} />
+          <Divider />
+          <List.Item title="Relatórios de Economia" left={props => <List.Icon {...props} icon="file-chart" />} right={() => <Switch value={isReportsEnabled} onValueChange={setIsReportsEnabled} />} />
+        </Card.Content>
+      </Card>
+      
+      <Card style={styles.card}>
+        <Card.Title title="Ajuda & Suporte" />
+        <Card.Content>
+          <List.Item title="Central de Ajuda" left={props => <List.Icon {...props} icon="help-circle-outline" />} onPress={() => navigation.navigate('HelpCenter')} />
+          <Divider />
+          <List.Item title="Suporte Técnico" left={props => <List.Icon {...props} icon="headset" />} onPress={() => navigation.navigate('Support')} />
+          <Divider />
+          <List.Item title="Privacidade" left={props => <List.Icon {...props} icon="shield-lock-outline" />} onPress={() => navigation.navigate('PrivacyPolicy')} />
+          <Divider />
+          <List.Item title="Avaliar App" left={props => <List.Icon {...props} icon="star-outline" />} onPress={() => {}} />
+        </Card.Content>
+      </Card>
+      
+      <Button
+        icon="logout"
+        mode="contained"
+        onPress={handleLogoutPress}
+        style={styles.logoutButton}
+        buttonColor={colors.error}
+      >
+        Sair da Conta
+      </Button>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    padding: 10,
+  },
+  card: {
+    marginBottom: 15,
+  },
+  userInfoTopContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatar: {
+    marginRight: 15,
+  },
+  userInfoTextContainer: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  userInfoDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 3,
+  },
+  infoText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#666',
+  },
+  divider: {
+    marginVertical: 15,
+  },
+  userStatsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#555',
+  },
+  statListValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    alignSelf: 'center',
+  },
+  logoutButton: {
+    marginTop: 15,
+    marginBottom: 20,
+    paddingVertical: 5,
+  },
+});
+
+export default ProfileScreen;
+
+
+// =================================================================================
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Relatorios.jsx
+// =================================================================================
+
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, Dimensions, Text as RNText } from 'react-native';
+import {
+  SegmentedButtons,
+  Card,
+  List,
+  Title,
+  Paragraph,
+  Icon,
+} from 'react-native-paper';
+// Importações do Skia
+import { Canvas, Rect, Text } from "@shopify/react-native-skia";
+
+const screenWidth = Dimensions.get('window').width;
+
+const reportData = [
+  { date: '01/11', consumption: 170, savings: 5 },
+  { date: '02/11', consumption: 120, savings: 15 },
+  { date: '03/11', consumption: 140, savings: 12 },
+  { date: '04/11', consumption: 110, savings: 20 },
+  { date: '05/11', consumption: 165, savings: 8 },
+  { date: '06/11', consumption: 150, savings: 10 },
+  { date: '07/11', consumption: 130, savings: 18 },
+];
+
+const LOW_CONSUMPTION_THRESHOLD = 130;
+const HIGH_CONSUMPTION_THRESHOLD = 160;
+
+// Função de cor, agora fora do componente para ser acessada pelo SkiaChart
+const getBarColor = (consumption) => {
+  if (consumption >= HIGH_CONSUMPTION_THRESHOLD) return '#f31212ff';
+  if (consumption < LOW_CONSUMPTION_THRESHOLD) return '#2ecc71';
+  return '#3498db';
+};
+
+// --- NOSSO NOVO COMPONENTE DE GRÁFICO COM SKIA ---
+const SkiaBarChart = ({ data, width, height }) => {
+  const PADDING = { top: 30, bottom: 30, left: 10, right: 10 };
+  const BAR_WIDTH = 35;
+  const VISUAL_BASE_HEIGHT = 20;
+
+  const chartHeight = height - PADDING.top - PADDING.bottom;
+  const chartWidth = width - PADDING.left - PADDING.right;
+
+  const values = data.map(d => d.consumption);
+  const minConsumption = Math.min(...values);
+  const maxConsumption = Math.max(...values);
+  const dataRange = maxConsumption - minConsumption;
+
+  const totalBarWidth = data.length * BAR_WIDTH;
+  const totalSpacing = chartWidth - totalBarWidth;
+  const gapWidth = data.length > 1 ? totalSpacing / (data.length - 1) : 0;
+
+  return (
+    <Canvas style={{ width, height }}>
+      {data.map((item, index) => {
+        const barHeight = dataRange === 0 
+          ? chartHeight
+          : ((item.consumption - minConsumption) / dataRange) * (chartHeight - VISUAL_BASE_HEIGHT) + VISUAL_BASE_HEIGHT;
+        
+        const x = PADDING.left + index * (BAR_WIDTH + gapWidth);
+        const y = PADDING.top + chartHeight - barHeight;
+
+        return (
+          <React.Fragment key={index}>
+            <Rect x={x} y={y} width={BAR_WIDTH} height={barHeight} color={getBarColor(item.consumption)} rx={4} />
+            <Text x={x + BAR_WIDTH / 2 - 15} y={y - 8} text={`${item.consumption}`} color="black" />
+            <Text x={x + BAR_WIDTH / 2 - 15} y={height - 10} text={item.date} color="gray" />
+          </React.Fragment>
+        );
+      })}
+    </Canvas>
+  );
+};
+
+const ReportsScreen = () => {
+  const [timeframe, setTimeframe] = useState('7d');
+  const [viewMode, setViewMode] = useState('graph');
+
+  // Os cálculos de resumo continuam os mesmos
+  const totalConsumption = reportData.reduce((acc, item) => acc + item.consumption, 0);
+  const totalSavings = reportData.reduce((acc, item) => acc + item.savings, 0);
+  const dailyAverage = Math.round(totalConsumption / reportData.length);
+  const bestDay = reportData.reduce(
+    (best, current) => (current.consumption < best.consumption ? current : best),
+    reportData[0]
+  );
+
+  const renderContent = () => {
+    if (viewMode === 'graph') {
+      return (
+        <Card style={styles.card}>
+          <Card.Content style={styles.chartCardContent}>
+            <Title style={styles.chartTitle}>Consumo Diário (Litros)</Title>
+            <SkiaBarChart
+              data={reportData}
+              width={screenWidth - 40}
+              height={250}
+            />
+          </Card.Content>
+        </Card>
+      );
+    }
+
+    return (
+      <View>
+        {reportData.map((item, index) => (
+          <Card key={index} style={styles.card}>
+            <List.Item
+              title={`Consumo: ${item.consumption} L`}
+              description={`Economia: ${item.savings} L`}
+              left={props => <List.Icon {...props} icon="calendar" />}
+              right={props => <Paragraph {...props} style={styles.reportDate}>{item.date}</Paragraph>}
+            />
+          </Card>
+        ))}
+      </View>
+    );
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      {/* Controles do Topo */}
+      <View style={styles.controlsContainer}>
+        <SegmentedButtons
+          value={timeframe}
+          onValueChange={setTimeframe}
+          buttons={[
+            { value: '7d', label: '7 Dias' },
+            { value: '30d', label: '30 Dias' },
+            { value: '90d', label: '90 Dias' },
+          ]}
+          style={styles.segmentedButton}
+        />
+        <SegmentedButtons
+          value={viewMode}
+          onValueChange={setViewMode}
+          buttons={[
+            { value: 'graph', label: 'Gráfico', icon: 'chart-bar' },
+            { value: 'list', label: 'Lista', icon: 'format-list-bulleted' },
+          ]}
+          style={styles.segmentedButton}
+        />
+      </View>
+      
+      {/* Área de Conteúdo Principal */}
+      <View style={styles.contentContainer}>
+        {renderContent()}
+      </View>
+      
+      {/* Grade de Resumo */}
+      <View style={styles.summaryGridContainer}>
+        <View style={styles.summaryRow}>
+          <Card style={styles.summaryCard}>
+            <Card.Content style={styles.summaryCardContent}>
+              <Icon source="water-outline" size={30} color="#3498db" />
+              <View>
+                <Paragraph style={styles.summaryLabel}>Consumo Total</Paragraph>
+                <Title style={styles.summaryValue}>{totalConsumption} L</Title>
+              </View>
+            </Card.Content>
+          </Card>
+          <Card style={styles.summaryCard}>
+            <Card.Content style={styles.summaryCardContent}>
+              <Icon source="leaf-outline" size={30} color="#2ecc71" />
+              <View>
+                <Paragraph style={styles.summaryLabel}>Economia</Paragraph>
+                <Title style={styles.summaryValue}>{totalSavings} L</Title>
+              </View>
+            </Card.Content>
+          </Card>
+        </View>
+        <View style={styles.summaryRow}>
+          <Card style={styles.summaryCard}>
+            <Card.Content style={styles.summaryCardContent}>
+              <Icon source="chart-line" size={30} color="#9b59b6" />
+              <View>
+                <Paragraph style={styles.summaryLabel}>Média Diária</Paragraph>
+                <Title style={styles.summaryValue}>{dailyAverage} L</Title>
+              </View>
+            </Card.Content>
+          </Card>
+          <Card style={styles.summaryCard}>
+            <Card.Content style={styles.summaryCardContent}>
+              <Icon source="trophy-outline" size={30} color="#f1c40f" />
+              <View>
+                <Paragraph style={styles.summaryLabel}>Melhor Dia</Paragraph>
+                <Title style={styles.summaryValue}>{bestDay.consumption} L</Title>
+                <Paragraph style={styles.bestDayDate}>({bestDay.date})</Paragraph>
+              </View>
+            </Card.Content>
+          </Card>
+        </View>
+      </View>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#f5f5f5' },
+    controlsContainer: { padding: 10, backgroundColor: '#fff' },
+    segmentedButton: { marginBottom: 10 },
+    contentContainer: { paddingHorizontal: 10, alignItems: 'center' },
+    chartTitle: { textAlign: 'center', marginBottom: 10 },
+    card: { marginBottom: 10, width: screenWidth - 20 },
+    reportDate: { alignSelf: 'center', marginRight: 10, color: '#666' },
+    summaryGridContainer: { paddingHorizontal: 10, marginTop: 10, marginBottom: 20 },
+    summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+    summaryCard: { width: '48%' },
+    summaryCardContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 5, paddingVertical: 15 },
+    summaryLabel: { fontSize: 12, color: '#666' },
+    summaryValue: { fontSize: 18, lineHeight: 20 },
+    bestDayDate: { fontSize: 11, lineHeight: 12, color: '#666' },
+    chartCardContent: {
+      alignItems: 'center',
+      paddingHorizontal: 0,
+      paddingVertical: 10,
+    },
+});
+
+export default ReportsScreen;
+
