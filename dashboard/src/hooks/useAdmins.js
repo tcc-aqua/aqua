@@ -15,49 +15,16 @@ export function useAdmins() {
     setError(null);
     try {
       const res = await api.get("/admins");
-      const data = Array.isArray(res) ? res : res?.data || [];
-      setAdmins(data);
+      setAdmins(res?.data || []);
     } catch (err) {
-      toast.error(err?.message || "Erro ao buscar administradores!");
-      setError(err?.message || "Erro ao buscar administradores!");
+      toast.error("Erro ao buscar administradores!");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔹 Buscar administradores ativos
-  const fetchAtivos = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get("/admins/ativos");
-      const data = Array.isArray(res) ? res : res?.data || [];
-      setAdmins(data);
-    } catch (err) {
-      toast.error("Erro ao buscar administradores ativos!");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 🔹 Buscar administradores inativos
-  const fetchInativos = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get("/admins/inativos");
-      const data = Array.isArray(res) ? res : res?.data || [];
-      setAdmins(data);
-    } catch (err) {
-      toast.error("Erro ao buscar administradores inativos!");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAdmins();
-  }, []);
-
-  // 🔹 Criar novo administrador (sem o campo name)
+  // 🔹 Criar novo admin
   const addAdmin = async (novo) => {
     setLoading(true);
     try {
@@ -68,60 +35,56 @@ export function useAdmins() {
       };
 
       const res = await api.post("/admins", payload);
-      const data = res?.data || res;
-      if (!data || data.error) throw new Error(data?.error || "Erro ao criar administrador!");
 
-      setAdmins((prev) => (Array.isArray(prev) ? [...prev, data] : [data]));
+      setAdmins((prev) => [...prev, res.data]);
       toast.success("Administrador criado com sucesso!");
     } catch (err) {
-      toast.error(err?.message || "Erro ao criar administrador!");
+      toast.error("Erro ao criar administrador!");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔹 Atualizar dados de administrador (email, role, etc.)
+  // 🔹 Atualizar administrador
   const editAdmin = async (id, dados) => {
     setLoading(true);
     try {
       const res = await api.put(`/admins/${id}`, dados);
-      const data = res?.data || res;
-      if (!data || data.error) throw new Error(data?.error || "Erro ao atualizar administrador!");
 
       setAdmins((prev) =>
-        Array.isArray(prev) ? prev.map((a) => (a.id === id ? data : a)) : [data]
+        prev.map((a) => (a.id === id ? res.data : a))
       );
+
       toast.success("Administrador atualizado com sucesso!");
     } catch (err) {
-      toast.error(err?.message || "Erro ao atualizar administrador!");
+      toast.error("Erro ao atualizar administrador!");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔹 Atualizar senha do administrador logado
+  // 🔹 Atualizar senha do admin logado
   const updatePassword = async (dados) => {
     setLoading(true);
     try {
-      const res = await api.patch("/admins/me", dados);
-      const data = res?.data || res;
-      if (data?.error) throw new Error(data.error);
-
+      await api.patch("/admins/me", dados);
       toast.success("Senha atualizada com sucesso!");
     } catch (err) {
-      toast.error(err?.message || "Erro ao atualizar senha!");
+      toast.error("Erro ao atualizar senha!");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAdmins();
+  }, []);
 
   return {
     admins,
     loading,
     error,
     fetchAdmins,
-    fetchAtivos,
-    fetchInativos,
     addAdmin,
     editAdmin,
     updatePassword,

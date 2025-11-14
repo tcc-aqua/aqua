@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   UserCircle2,
   Crown,
+  Edit,
 } from "lucide-react";
 import {
   Dialog,
@@ -43,15 +44,21 @@ export default function SettingsDashboard() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editForm, setEditForm] = useState({})
+
 
   const [showNewAdminModal, setShowNewAdminModal] = useState(false);
+  const [openEditAdmin, setOpenEditAdmin] = useState(false);
   const [newAdmin, setNewAdmin] = useState({
     email: "",
     password: "",
-    role: "superadmin",
+    role: "admin",
   });
 
-  const { addAdmin, fetchAdmins } = useAdmins();
+
+
+  const { addAdmin, fetchAdmins, editAdmin } = useAdmins();
+
 
   const API_URL =
     activeTab === "admins"
@@ -131,6 +138,33 @@ export default function SettingsDashboard() {
     }
   };
 
+  const handleEditAdmin = (admin) => {
+    setEditForm({
+      id: admin.id,
+      role: admin.type || "admin",
+    });
+
+    setOpenEditAdmin(true);
+  };
+
+  const saveEditAdmin = async () => {
+    if (!editForm.email) {
+      toast.error("Email obrigatório!");
+      return;
+    }
+
+    const payload = {
+      email: editForm.email,
+      type: editForm.role
+    };
+
+    await editAdmin(editForm.id, payload);
+
+    await fetchData();
+    setOpenEditAdmin(false);
+  };
+
+
   if (loading) return <Loading />;
   if (error)
     return (
@@ -155,8 +189,8 @@ export default function SettingsDashboard() {
             <button
               onClick={() => setActiveTab("admins")}
               className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${activeTab === "admins"
-                  ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
-                  : "text-sidebar-foreground hover:text-accent"
+                ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
+                : "text-sidebar-foreground hover:text-accent"
                 }`}
             >
               <Shield size={18} />
@@ -166,8 +200,8 @@ export default function SettingsDashboard() {
             <button
               onClick={() => setActiveTab("users")}
               className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${activeTab === "users"
-                  ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
-                  : "text-sidebar-foreground hover:text-accent"
+                ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
+                : "text-sidebar-foreground hover:text-accent"
                 }`}
             >
               <User size={18} />
@@ -232,7 +266,7 @@ export default function SettingsDashboard() {
                               Criado em
                             </th>
                           )}
-                          <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
+                          <th className="px-2 sm:px-4 py-2 text-center text-xs font-medium uppercase">
                             Ações
                           </th>
                         </tr>
@@ -309,8 +343,8 @@ export default function SettingsDashboard() {
                               <td className="px-2 sm:px-4 py-2">
                                 <span
                                   className={`inline-block w-3 h-3 rounded-full mt-3 ${status === "ativo"
-                                      ? "bg-green-600"
-                                      : "bg-destructive"
+                                    ? "bg-green-600"
+                                    : "bg-destructive"
                                     }`}
                                 />
                               </td>
@@ -328,29 +362,43 @@ export default function SettingsDashboard() {
 
                               <td className="px-2 sm:px-4 py-2 text-center">
                                 {activeTab === "admins" && (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => confirmToggleStatus(item)}
-                                    disabled={role === "superadmin"}
-                                    className={
-                                      role === "superadmin"
-                                        ? "opacity-50 cursor-not-allowed"
-                                        : ""
-                                    }
-                                  >
-                                    {status === "ativo" ? (
-                                      <Check
-                                        className="text-green-500"
-                                        size={14}
-                                      />
-                                    ) : (
-                                      <X
-                                        className="text-destructive"
-                                        size={14}
-                                      />
-                                    )}
-                                  </Button>
+                                  <div className="">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => confirmToggleStatus(item)}
+                                      disabled={role === "superadmin"}
+                                      className={
+                                        role === "superadmin"
+                                          ? "opacity-50 cursor-not-allowed"
+                                          : ""
+                                      }
+                                    >
+                                      {status === "ativo" ? (
+                                        <Check
+                                          className="text-green-500"
+                                          size={14}
+                                        />
+                                      ) : (
+                                        <X
+                                          className="text-destructive"
+                                          size={14}
+                                        />
+                                      )}
+                                    </Button>
+
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      disabled={role === "superadmin"}  // superadmin não pode editar outro superadmin
+                                      onClick={() => handleEditAdmin(item)}
+                                    >
+                                      <Edit className="text-accent" size={14} />
+                                    </Button>
+
+
+                                  </div>
+
                                 )}
                               </td>
                             </tr>
@@ -370,23 +418,23 @@ export default function SettingsDashboard() {
           <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
             <div
               className={`h-2 w-full rounded-t-md ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
-                  ? "bg-red-600"
-                  : "bg-green-600"
+                ? "bg-red-600"
+                : "bg-green-600"
                 }`}
             />
 
             <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
               <div
                 className={`p-4 rounded-full ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
-                    ? "bg-red-100 dark:bg-red-900"
-                    : "bg-green-100 dark:bg-green-900"
+                  ? "bg-red-100 dark:bg-red-900"
+                  : "bg-green-100 dark:bg-green-900"
                   }`}
               >
                 <AlertTriangle
                   className={`h-10 w-10 ${(selectedItem?.status || selectedItem?.user_status) ===
-                      "ativo"
-                      ? "text-red-600 dark:text-red-400"
-                      : "text-green-600 dark:text-green-400"
+                    "ativo"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
                     }`}
                 />
               </div>
@@ -400,9 +448,9 @@ export default function SettingsDashboard() {
                 Deseja realmente{" "}
                 <span
                   className={`font-semibold ${(selectedItem?.status || selectedItem?.user_status) ===
-                      "ativo"
-                      ? "text-red-600 dark:text-red-400"
-                      : "text-green-600 dark:text-green-400"
+                    "ativo"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
                     }`}
                 >
                   {(selectedItem?.status || selectedItem?.user_status) ===
@@ -427,8 +475,8 @@ export default function SettingsDashboard() {
 
               <Button
                 className={`flex items-center gap-2 px-6 py-3 text-white transition ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
-                    ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                    : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                  ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
                   }`}
                 onClick={toggleStatus}
               >
@@ -444,49 +492,115 @@ export default function SettingsDashboard() {
         {/* Modal Criar Novo Admin */}
         <Dialog open={showNewAdminModal} onOpenChange={setShowNewAdminModal}>
           <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
-            <DialogHeader className="flex items-center space-x-2 border-b border-border pb-4 px-4">
-              <UserPlus className="h-5 w-5 text-primary" />
-              <DialogTitle className="text-lg font-semibold text-foreground">
-                Criar Novo Admin
-              </DialogTitle>
+
+            {/* Barra superior */}
+            <div className="h-2 w-full bg-primary rounded-t-md" />
+
+            <DialogHeader className="flex items-center space-x-2 pb-3 mt-3">
+              <UserPlus className="h-6 w-6 text-primary" />
+              <DialogTitle className="text-xl font-bold">Criar Novo Administrador</DialogTitle>
             </DialogHeader>
 
-            <div className="flex flex-col gap-4 py-4 px-4">
-              <Input
-                type="email"
-                placeholder="Email"
-                value={newAdmin.email}
-                onChange={(e) => handleNewAdminChange("email", e.target.value)}
-                className="text-foreground border border-border focus:border-primary focus:ring focus:ring-primary/20 rounded-md"
-              />
-              <Input
-                type="password"
-                placeholder="Senha"
-                value={newAdmin.password}
-                onChange={(e) => handleNewAdminChange("password", e.target.value)}
-                className="text-foreground border border-border focus:border-primary focus:ring focus:ring-primary/20 rounded-md"
-              />
+            <div className="px-4 mt-4">
+              <div className="grid grid-cols-1 gap-4">
+
+                {/* Email */}
+                <div>
+                  <label className="text-sm font-medium mb-1">Email</label>
+                  <Input
+                    type="email"
+                    value={newAdmin.email}
+                    onChange={(e) => handleNewAdminChange("email", e.target.value)}
+                    placeholder="email@exemplo.com"
+                    className="border border-border"
+                  />
+                </div>
+
+                {/* Senha */}
+                <div>
+                  <label className="text-sm font-medium mb-1">Senha</label>
+                  <Input
+                    type="password"
+                    value={newAdmin.password}
+                    onChange={(e) => handleNewAdminChange("password", e.target.value)}
+                    placeholder="••••••••"
+                    className="border border-border"
+                  />
+                </div>
+              </div>
+
+              <DialogFooter className="pt-6 flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowNewAdminModal(false)}
+                  className="w-32"
+                >
+                  Cancelar
+                </Button>
+
+                <Button
+                  onClick={handleCreateAdmin}
+                  className="w-32 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Criar
+                </Button>
+              </DialogFooter>
             </div>
 
-            <DialogFooter className="flex justify-end mt-4 border-t border-border pt-4 space-x-2 px-4">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2 border-border text-foreground hover:bg-muted"
-                onClick={() => setShowNewAdminModal(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                variant="default"
-                className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={handleCreateAdmin}
-              >
-                <UserPlus className="h-4 w-4" />
-                Criar
-              </Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
+
+
+
+        <Dialog open={openEditAdmin} onOpenChange={setOpenEditAdmin}>
+          <DialogContent className="sm:max-w-[600px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+
+            {/* Barra superior */}
+            <div className="h-2 w-full bg-primary rounded-t-md" />
+
+            <DialogHeader className="flex items-center space-x-2 pb-3 mt-3">
+              <Edit className="h-6 w-6 text-primary" />
+              <DialogTitle className="text-xl font-bold">Editar Administrador</DialogTitle>
+            </DialogHeader>
+
+            <div className="px-4 mt-4">
+              <div className="grid grid-cols-1 gap-4">
+
+                {/* Email */}
+                <div>
+                  <label className="text-sm font-medium mb-1">Email</label>
+                  <Input
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    placeholder="email@exemplo.com"
+                    className="border border-border"
+                  />
+                </div>
+
+              </div>
+
+              <DialogFooter className="pt-6 flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setOpenEditAdmin(false)}
+                  className="w-32"
+                >
+                  Cancelar
+                </Button>
+
+                <Button
+                  onClick={saveEditAdmin}
+                  className="w-32 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Salvar
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+
+
       </div>
     </>
 

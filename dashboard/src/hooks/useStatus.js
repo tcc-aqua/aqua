@@ -20,8 +20,9 @@ export default function useToggleConfirm(baseURL, refreshFn) {
         selectedItem.user_id ||
         selectedItem.casa_id ||
         selectedItem.apartamento_id ||
-        selectedItem.condominio_id ||
+        selectedItem.condominio_id ||  
         selectedItem.sensor_id;
+
 
       if (!idField) {
         toast.error("Não foi possível identificar o ID do item.");

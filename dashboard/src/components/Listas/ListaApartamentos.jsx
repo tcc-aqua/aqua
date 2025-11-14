@@ -393,15 +393,7 @@ export default function ApartamentosDashboard() {
                             </div>
                           </Button>
 
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() =>
-                              console.log("Editar apartamento:", ap)
-                            }
-                          >
-                            <Pencil size={14} className="text-accent" />
-                          </Button>
+                      
                         </td>
                       </tr>
                     ))}

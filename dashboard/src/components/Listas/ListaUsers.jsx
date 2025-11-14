@@ -253,7 +253,7 @@ export default function UsersDashboard() {
                             </div>
                           </div>
                         </td>
-                        <td className="text-sm">
+                        <td className="text-sm ">
                           <span
                             className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-white font-semibold uppercase 
                               ${user.user_type === "casa"
@@ -319,82 +319,14 @@ export default function UsersDashboard() {
                               {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
                             </div>
                           </Button>
-                          <Button size="sm" variant='ghost' onClick={() => editItem(user)}>
-                            <div className="flex items-center gap-1">
-                              <Pencil className="text-accent" size={14} />
-                            </div>
-                          </Button>
+                        
                         </td>
                       </tr>
                     ))}
                   </tbody>
 
 
-                  <tbody className="divide-y divide-border">
-                    {users.map((user) => (
-                      <tr key={user.user_id} className="hover:bg-muted/10 text-foreground">
-                        <td className="px-4 py-2">
-                          <div className="text-sm font-semibold">{user.user_name}</div>
-                          <div className="text-xs text-foreground/80">{user.user_email}</div>
-                          <div className="text-xs text-foreground/60">{user.user_cpf}</div>
-                        </td>
-                        <td className="px-4 py-2 text-sm">
-                          {user.user_type === "casa" ? (
-                            <>
-                              {user.logradouro}, {user.numero}
-                            </>
-                          ) : (
-                            <>
-                              Bloco {user.logradouro}, {user.numero}
-                            </>
-                          )
-                          }
-                          <div className="text-xs text-foreground/80">{user.bairro}, {user.cidade} / {user.uf}</div>
-                          <div className="text-[10px] text-foreground/60">CEP: {user.cep}</div>
-                        </td>
-                        <td className=" text-sm">
-                          <span
-                            className={`px-2 py-1 rounded-full text-white font-semibold ${user.user_type === "casa"
-                              ? "bg-sky-700"
-                              : user.user_type === "condominio"
-                                ? "bg-purple-400"
-                                : "bg-gray-500"
-                              }`}
-                          >
-                            {user.user_type === "casa" ? "casa" : user.user_type === "condominio" ? "condomínio" : "desconhecido"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2 text-sm">
-                          <span
-                            className={`px-2 py-1 rounded-full text-white font-semibold  ${user.user_role === "morador"
-                              ? "bg-sky-500"
-                              : user.user_role === "sindico"
-                                ? "bg-yellow-500"
-                                : "bg-gray-500"
-                              }`}
-                          >
-                            {user.user_role === "morador" ? "morador" : user.user_role === "sindico" ? "síndico" : "Desconhecido"}
-                          </span>
-                        </td>
-                        <td className=" text-sm font-bold flex items-center px-9 py-4">
-                          <span className={`inline-block w-3 h-3 rounded-full mt-3  ${user.user_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={user.user_status} />
-                        </td>
-
-                        <td className="px-4 py-2 text-sm text-center -">
-                          <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
-                            <div className="flex items-center gap-1">
-                              {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
-                            </div>
-                          </Button>
-                          <Button size="sm" variant='ghost' onClick={() => editItem(user)}>
-                            <div className="flex items-center gap-1">
-                              <Pencil className="text-accent" size={14} />
-                            </div>
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
+                  
                 </table>
               )}
             </CardContent>
