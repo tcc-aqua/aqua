@@ -1,6 +1,7 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import sequelizePaginate from "sequelize-paginate";
+import Apartamento from "./Apartamento.js";
 
 export default class UserView extends Model {}
 
@@ -50,5 +51,8 @@ UserView.init(
     timestamps: false,
   }
 );
+
+UserView.belongsTo(Apartamento, { foreignKey: 'residencia_id', as: 'apartamento' });
+Apartamento.hasMany(UserView, { foreignKey: 'residencia_id', as: 'moradores' });
 
 sequelizePaginate.paginate(UserView);

@@ -9,6 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import userRoutes from './routes/user.routes.js';
+import dashboardRoutes from './routes/dashboard.routes.js';
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
@@ -88,5 +89,6 @@ fastify.get('/api', {
 
 // routes
 await fastify.register(userRoutes, {prefix: '/api/users'})
+await fastify.register(dashboardRoutes, {prefix: '/api/dashboard'})
 
 export default fastify;
