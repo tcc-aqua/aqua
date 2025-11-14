@@ -72,6 +72,16 @@ export default async function condominioRoutes(fastify) {
         },
         CondominioController.update);
 
+    fastify.put('/:id/name',
+        {
+            schema: {
+                summary: 'Atualizando cadastro do nome de um condominio',
+                tags: ['condominios'],
+                description: 'Atualizando informações de um condominio do sistema'
+            }
+        },
+        CondominioController.updateName);
+
     fastify.patch('/:id/sindico',
         {
             schema: {
