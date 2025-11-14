@@ -14,6 +14,7 @@ import passwordRoutes from './routes/password.routes.js';
 import cepRoutes from './routes/cep.routes.js';
 import metasRoutes from './routes/metas.routes.js';
 import profileRoutes from './routes/profile.routes.js';
+import comunicadosRoutes from './routes/comunicados.routes.js';
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
@@ -103,5 +104,6 @@ fastify.register(profileRoutes, {prefix: '/api/profile'});
 // Assim, '/api/password' + '/forgot' = '/api/password/forgot' (CORRETO!)
 // ==================================================================
 fastify.register(passwordRoutes, {prefix: '/api/password'});
+fastify.register(comunicadosRoutes, {prefix: '/api/comunicados'});
 
 export default fastify;
