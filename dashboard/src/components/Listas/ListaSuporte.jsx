@@ -339,9 +339,10 @@ export default function SuporteDashboard() {
                       </CardFooter>
                     )}
                     <Separator></Separator>
-                    <PaginationDemo className='my-20' />
+                   
                   </Card>
                 </AnimationWrapper>
+                
               );
             })
           )}
@@ -375,7 +376,7 @@ export default function SuporteDashboard() {
           </DialogContent>
 
         </Dialog>
-
+        <PaginationDemo className='my-20' />
       </div>
     </>
   );
