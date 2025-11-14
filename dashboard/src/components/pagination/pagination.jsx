@@ -10,7 +10,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-export function PaginationDemo({ currentPage = 1, totalPages = 1, onChangePage }) {
+export function  PaginationDemo({ currentPage = 1, totalPages = 1, onChangePage }) {
   const handlePageClick = (page) => {
     if (page < 1 || page > totalPages) return;
     if (onChangePage) onChangePage(page);

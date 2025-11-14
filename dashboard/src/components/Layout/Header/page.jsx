@@ -53,6 +53,7 @@ export default function Header() {
     if (pathname.startsWith("/users")) return "Gerenciamento de Usuários";
     if (pathname.startsWith("/condominios")) return "Gerenciamento de Condomínios";
     if (pathname.startsWith("/suporte")) return "Central de Suporte";
+    if (pathname.startsWith("/comunicados")) return "Central de Comunicados";
     if (pathname.startsWith("/settings")) return "Configurações do Sistema";
     if (pathname.startsWith("/apartamentos")) return "Gerenciamento de Apartamentos";
     if (pathname.startsWith("/alerts")) return "Gerenciamento de Alertas";
