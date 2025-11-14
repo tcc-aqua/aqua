@@ -8,6 +8,8 @@ import fastifyFormbody from '@fastify/formbody'
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import userRoutes from './routes/user.routes.js';
+
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
 const __filename = fileURLToPath(import.meta.url);
@@ -83,5 +85,8 @@ fastify.get('/api', {
 }, (req, reply) => {
     return reply.status(200).send('Hello API!')
 })
+
+// routes
+await fastify.register(userRoutes, {prefix: '/api/users'})
 
 export default fastify;
