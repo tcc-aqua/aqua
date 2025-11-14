@@ -1,3 +1,6 @@
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\app.js
+// CÓDIGO COMPLETO E ATUALIZADO
+
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyFormbody from '@fastify/formbody';
@@ -14,6 +17,9 @@ import passwordRoutes from './routes/password.routes.js';
 import cepRoutes from './routes/cep.routes.js';
 import metasRoutes from './routes/metas.routes.js';
 import profileRoutes from './routes/profile.routes.js';
+// =====> INÍCIO DA ALTERAÇÃO
+import casaRoutes from './routes/casa.routes.js'; // 1. Importa a nova rota de casas
+// =====> FIM DA ALTERAÇÃO
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
@@ -91,17 +97,14 @@ fastify.get('/api', {
 
 fastify.register(authRoutes, {prefix: '/api/auth'});
 fastify.register(apartamentoRoutes, {prefix: '/api/apartamentos'});
+// =====> INÍCIO DA ALTERAÇÃO
+fastify.register(casaRoutes, {prefix: '/api/casas'}); // 2. Registra a rota para o prefixo /api/casas
+// =====> FIM DA ALTERAÇÃO
 fastify.register(dicaRoutes, {prefix: '/api/dica'});
 fastify.register(userRoutes, {prefix: '/api/user'});
 fastify.register(metasRoutes, {prefix: '/api/metas'});
 fastify.register(cepRoutes, {prefix: '/api/cep'});
 fastify.register(profileRoutes, {prefix: '/api/profile'});
-
-// ==================================================================
-// A CORREÇÃO ESTÁ AQUI
-// O prefixo deve ser '/api/password' para agrupar as rotas de senha.
-// Assim, '/api/password' + '/forgot' = '/api/password/forgot' (CORRETO!)
-// ==================================================================
 fastify.register(passwordRoutes, {prefix: '/api/password'});
 
 export default fastify;

@@ -17,7 +17,6 @@ import { MotiView, MotiText } from 'moti';
 import { MotiPressable } from 'moti/interactions';
 import * as Haptics from 'expo-haptics';
 
-// --- TEMA VISUAL CONSISTENTE ---
 const theme = {
   ...DefaultTheme,
   roundness: 12,
@@ -32,11 +31,10 @@ const theme = {
     success: '#34C759',
     danger: '#FF3B30',
     warning: '#FF9500',
-    gold: '#FFD700', // Cor para pontos e recompensas
+    gold: '#FFD700',
   },
 };
 
-// --- DADOS MOCKADOS (PARA VISUALIZAÇÃO) ---
 const generalProgress = {
   active: 5,
   completed: 10,
@@ -61,17 +59,14 @@ const ranking = [
   { id: '3', name: 'Apto 8A', points: 1200, avatar: 'numeric-3-circle' },
 ];
 
-
-// --- COMPONENTE PRINCIPAL ---
 const MetasScreen = () => {
   return (
     <PaperProvider theme={theme}>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         
-        {/* Card de Progresso Geral */}
         <MotiView from={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'timing', duration: 500 }}>
           <LinearGradient
-            colors={['#4A00E0', '#8E2DE2']} // Gradiente Roxo para destaque
+            colors={['#4A00E0', '#8E2DE2']}
             start={{x: 0, y: 0}}
             end={{x: 1, y: 1}}
             style={styles.gradientCard}
@@ -98,7 +93,6 @@ const MetasScreen = () => {
           </LinearGradient>
         </MotiView>
 
-        {/* Botões de Ação Rápida */}
         <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 100 }} style={styles.actionsContainer}>
             <MotiPressable 
               style={styles.actionButton}
@@ -118,7 +112,6 @@ const MetasScreen = () => {
             </MotiPressable>
         </MotiView>
 
-        {/* Card "Minhas Metas" */}
         <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 200 }}>
           <Card style={styles.card} elevation={2}>
             <Card.Title title="Minhas Metas Atuais" titleStyle={styles.cardTitle} />
@@ -139,7 +132,6 @@ const MetasScreen = () => {
           </Card>
         </MotiView>
         
-        {/* Card "Desafio da Comunidade" */}
         <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 300 }}>
           <Card style={styles.card} elevation={2}>
             <Card.Title title={communityChallenge.title} subtitle="Participe com seus vizinhos!" titleStyle={styles.cardTitle} />
@@ -153,7 +145,6 @@ const MetasScreen = () => {
           </Card>
         </MotiView>
 
-        {/* Card "Ranking" */}
         <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 400 }}>
           <Card style={styles.card} elevation={2}>
             <Card.Title title="Ranking de Pontos" titleStyle={styles.cardTitle} />
