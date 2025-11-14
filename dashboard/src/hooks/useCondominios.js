@@ -48,23 +48,32 @@ export function useCondominios() {
   };
 
   // Editar condomínio
-  const editCondominio = async (id, dados) => {
-    setLoading(true);
-    try {
-      const res = await api.put(`/condominios/${id}`, dados);
-      const data = res?.data || res;
-      if (!data || data.error) throw new Error(data?.error || "Erro ao atualizar");
 
-      setCondominios((prev) =>
-        Array.isArray(prev) ? prev.map((c) => (c.id === id ? data : c)) : [data]
-      );
-      toast.success("Condomínio atualizado com sucesso!");
-    } catch (err) {
-      toast.error(err?.message || "Erro ao atualizar condomínio!");
-    } finally {
-      setLoading(false);
-    }
-  };
+const editCondominio = async (id, dados) => {
+  setLoading(true);
+  try {
+    const res = await api.put(`/condominios/${selected.condominio_id}`, form);
+
+
+    const updated = res?.data?.data || res?.data || res;
+
+    if (!updated || updated.error)
+      throw new Error(updated?.error || "Erro ao atualizar");
+
+    setCondominios((prev) =>
+      Array.isArray(prev)
+        ? prev.map((c) => (c.condominio_id === id ? updated : c))
+        : [updated]
+    );
+
+    toast.success("Condomínio atualizado com sucesso!");
+  } catch (err) {
+    toast.error(err?.message || "Erro ao atualizar condomínio!");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Excluir condomínio
   const removeCondominio = async (id) => {

@@ -8,10 +8,10 @@ import AnimationWrapper from "@/components/Layout/Animation/Animation";
 export default function UnauthorizedPage() {
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-950 to-black text-white overflow-hidden">
-      {/* Fundo animado */}
+   
   <AnimationWrapper/>
 
-      {/* Conteúdo principal */}
+
       <div className="z-10 flex flex-col items-center text-center px-6">
         <div className="flex justify-center mb-6">
           <ShieldOff className="w-20 h-20 text-red-500 drop-shadow-lg animate-pulse" />
@@ -53,9 +53,9 @@ export default function UnauthorizedPage() {
         </div>
       </div>
 
-      {/* Rodapé */}
+
       <div className="absolute bottom-6 text-sm text-gray-400 z-10 opacity-70">
-        © {new Date().getFullYear()} AquaMonitor - Todos os direitos reservados
+        © {new Date().getFullYear()} Aqua - Todos os direitos reservados
       </div>
     </div>
   );

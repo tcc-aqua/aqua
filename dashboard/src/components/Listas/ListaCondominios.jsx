@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Building, X, Check, UserStar, Droplet, Pencil, AlertTriangle, XCircle, CheckCircle, Crown, Signal } from "lucide-react";
+import { Building, X, Check, UserStar, Droplet, Pencil, AlertTriangle, XCircle, CheckCircle, Crown, Signal, Edit } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +27,8 @@ import { PaginationDemo } from "../pagination/pagination";
 import { Separator } from "../ui/separator";
 import ExportarTabela from "../Layout/ExportTable/page";
 import { useAtribuirSindico } from "@/hooks/useAtribuirSIndico";
+import { Input } from "@/components/ui/input";
+
 
 export default function CondominiosDashboard() {
   const [condominios, setCondominios] = useState([]);
@@ -47,12 +49,20 @@ export default function CondominiosDashboard() {
 
   const [showSindicoModal, setShowSindicoModal] = useState(false);
   const [sindicoId, setSindicoId] = useState("");
-  const [sindicos, setSindicos] = useState([]); // lista vinda da API
+  const [sindicos, setSindicos] = useState([]);
 
-
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const [form, setForm] = useState({
+    condominio_nome: "",
+    cep: "",
+    numero: "",
+  });
 
   const API_URL = "http://localhost:3333/api/condominios";
   const { atribuirSindico, loading: atribuindo } = useAtribuirSindico(API_URL);
+
+
   const fetchData = async (filters = {}) => {
     try {
       setLoading(true);
@@ -178,12 +188,65 @@ export default function CondominiosDashboard() {
   }, [showSindicoModal]);
 
 
-
-
   const confirmToggleStatus = (condominio) => {
     setSelectedCondominio(condominio);
     setShowModal(true);
   };
+  const editItem = (condominio) => {
+    setSelected(condominio);
+    setForm({
+      condominio_nome: condominio.condominio_nome,
+      cep: condominio.cep,
+      numero: condominio.numero,
+    });
+    setOpen(true);
+  };
+
+ const handleSave = async () => {
+  try {
+    const id = selected?.condominio_id; 
+
+   const res = await fetch(`${API_URL}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    if (!res.ok) throw new Error("Erro ao salvar");
+
+    toast.success("Condomínio atualizado!");
+    setOpen(false);
+    fetchData();
+  } catch (err) {
+    toast.error(err.message);
+  }
+};
+
+const handleBuscarCep = async () => {
+  if (!form.cep || form.cep.length < 8) return;
+
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${form.cep}/json/`);
+    const data = await res.json();
+
+    if (data.erro) {
+      toast.error("CEP não encontrado!");
+      return;
+    }
+
+    setForm(f => ({
+      ...f,
+      logradouro: data.logradouro || "",
+      bairro: data.bairro || "",
+      cidade: data.localidade || "",
+      estado: data.uf || "",
+    }));
+
+    toast.success("CEP encontrado!");
+  } catch (err) {
+    toast.error("Erro ao buscar CEP");
+  }
+};
 
   const toggleStatus = async () => {
     if (!selectedCondominio) return;
@@ -383,9 +446,9 @@ export default function CondominiosDashboard() {
                                   minute: "2-digit",
                                 })}
                               </span>
-                                <span className={`text-[10px] font-bold ${condominio.condominio_status === "ativo" ? "text-green-600" : "text-destructive"}`}>
-                                  {condominio.condominio_status === "ativo" ? "Ativo" : "Inativo"}
-                                </span>
+                              <span className={`text-[10px] font-bold ${condominio.condominio_status === "ativo" ? "text-green-600" : "text-destructive"}`}>
+                                {condominio.condominio_status === "ativo" ? "Ativo" : "Inativo"}
+                              </span>
                             </div>
                           </div>
                         </td>
@@ -436,7 +499,11 @@ export default function CondominiosDashboard() {
                               <UserStar size={14} className="text-accent" />
                             </Button>
 
-
+                            <Button size="sm" variant='ghost' onClick={() => editItem(condominio)}>
+                              <div className="flex items-center gap-1">
+                                <Edit className="text-accent" size={14} />
+                              </div>
+                            </Button>
                           </div>
                         </td>
                       </tr>
@@ -625,6 +692,112 @@ export default function CondominiosDashboard() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={open} onOpenChange={setOpen}>
+  <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+
+    {/* Barra superior */}
+    <div className="h-2 w-full bg-primary rounded-t-md" />
+
+    <DialogHeader className="flex items-center space-x-2 pb-3 mt-3">
+      <Edit className="h-6 w-6 text-primary" />
+      <DialogTitle className="text-xl font-bold">Editar Condomínio</DialogTitle>
+    </DialogHeader>
+
+    <div className="px-4 mt-4">
+      <div className="grid grid-cols-2 gap-4">
+
+        {/* Nome */}
+        <div className="col-span-2">
+          <label className="text-sm font-medium mb-1">Nome</label>
+          <Input
+            value={form.condominio_nome}
+            onChange={(e) => setForm({ ...form, condominio_nome: e.target.value })}
+            placeholder="Nome do condomínio"
+          />
+        </div>
+
+        {/* CEP */}
+        <div>
+          <label className="text-sm font-medium mb-1">CEP</label>
+          <Input
+            value={form.cep}
+            onChange={(e) => setForm({ ...form, cep: e.target.value })}
+            onBlur={handleBuscarCep}
+            maxLength={8}
+            placeholder="00000000"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium mb-1">Número</label>
+          <Input
+            value={form.numero}
+            onChange={(e) => setForm({ ...form, numero: e.target.value })}
+            placeholder="Nº"
+          />
+        </div>
+
+        {/* Logradouro */}
+        <div className="col-span-2">
+          <label className="text-sm font-medium mb-1">Logradouro</label>
+          <Input
+            value={form.logradouro}
+            onChange={(e) => setForm({ ...form, logradouro: e.target.value })}
+            placeholder="Rua..."
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium mb-1">Bairro</label>
+          <Input
+            value={form.bairro}
+            onChange={(e) => setForm({ ...form, bairro: e.target.value })}
+            placeholder="Bairro"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium mb-1">Cidade</label>
+          <Input
+            value={form.cidade}
+            onChange={(e) => setForm({ ...form, cidade: e.target.value })}
+            placeholder="Cidade"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium mb-1">Estado</label>
+          <Input
+            value={form.estado}
+            onChange={(e) => setForm({ ...form, estado: e.target.value })}
+            placeholder="UF"
+          />
+        </div>
+
+      </div>
+
+     
+      <DialogFooter className="pt-6 flex justify-end gap-3">
+        <Button
+          variant="outline"
+          onClick={() => setOpen(false)}
+          className="w-32"
+        >
+          Cancelar
+        </Button>
+
+        <Button
+          onClick={handleSave}
+          className="w-32 bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          Salvar
+        </Button>
+      </DialogFooter>
+    </div>
+
+  </DialogContent>
+</Dialog>
 
 
       </div>

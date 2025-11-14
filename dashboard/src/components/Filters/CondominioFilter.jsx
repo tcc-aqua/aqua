@@ -54,13 +54,14 @@ export default function CondominioFilter({ onApply }) {
         return;
       }
 
-      setFormData((prev) => ({
-        ...prev,
-        logradouro: data.logradouro || "",
-        bairro: data.bairro || "",
-        cidade: data.localidade || "",
-        estado: data.uf || "",
-      }));
+    setFormData((prev) => ({
+  ...prev,
+  logradouro: data.logradouro || "",
+  bairro: data.bairro || "",
+  cidade: data.cidade || data.localidade || "",
+  estado: data.estado || data.uf || "",
+}));
+
 
       toast.success("Endereço preenchido automaticamente!");
     } catch (err) {
@@ -108,10 +109,9 @@ const handleCreateCondominio = async (e) => {
     // adiciona no backend
     await addCondominio(payload);
 
-    // fecha modal
     setIsOpen(false);
 
-    // limpa formulário
+ 
     setFormData({
       nome: "",
       cep: "",
