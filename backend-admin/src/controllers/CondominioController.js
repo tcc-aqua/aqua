@@ -2,6 +2,7 @@ import CondominioService from "../services/CondominioService.js";
 import { createCondominioDTO } from "../dto/condominio/createCondominioDTO.js";
 import {updateCondominioDTO} from '../dto/condominio/updateCondominioDTO.js'
 import { atribuirSindicoDTO } from "../dto/condominio/atribuirSindicoDTO.js";
+import { updateNameCondominioDTO } from "../dto/condominio/updateNameCondominioDTO.js";
 
 export default class CondominioController {
     static async getAll(req, reply) {
@@ -40,6 +41,13 @@ export default class CondominioController {
         const { id } = req.params;
         const validateCondominio = updateCondominioDTO.parse(req.body);
         const updateCondominio = await CondominioService.updateCondominio(id, validateCondominio);
+        return reply.status(200).send(updateCondominio)
+    }
+
+    static async updateName(req, reply) {
+        const { id } = req.params;
+        const validateCondominio = updateNameCondominioDTO.parse(req.body);
+        const updateCondominio = await CondominioService.updateNameCondominio(id, validateCondominio);
         return reply.status(200).send(updateCondominio)
     }
 
