@@ -19,6 +19,7 @@ import AnimationWrapper from "../Layout/Animation/Animation";
 import { PaginationDemo } from "../pagination/pagination";
 import { Separator } from "../ui/separator";
 import ExportarTabela from "../Layout/ExportTable/page";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default function UsersDashboard() {
   const [users, setUsers] = useState([]);
@@ -67,39 +68,30 @@ export default function UsersDashboard() {
 
       const usersArray = Array.isArray(allData) ? allData : allData.docs || allData.users || [];
 
-      const filteredUsers = usersArray.filter(user => {
-        const matchesSearch = filters.search
-          ? user.user_name.toLowerCase().includes(filters.search.toLowerCase()) ||
-          (user.user_email?.toLowerCase().includes(filters.search.toLowerCase()))
-          : true;
+   const filteredUsers = usersArray.filter(user => {
+  const matchesSearch = filters.search
+    ? user.user_name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      (user.user_email?.toLowerCase().includes(filters.search.toLowerCase()))
+    : true;
 
-        const matchesStatus = filters.status
-          ? user.user_status === filters.status
-          : true;
+  const matchesStatus = filters.status ? user.user_status === filters.status : true;
+  const matchesRole = filters.role ? user.user_role === filters.role : true;
+  const matchesType = filters.type ? user.user_type === filters.type : true;
 
-        const matchesRole = filters.role
-          ? user.user_role === filters.role
-          : true;
-
-        const matchesType = filters.type
-          ? user.user_type === filters.type
-          : true;
-
-        return matchesSearch && matchesStatus && matchesRole && matchesType;
-      });
+  return matchesSearch && matchesStatus && matchesRole && matchesType;
+});
 
       setUsers(filteredUsers);
 
-
-      setUserStats({
-        total: usersArray.length, // pega todos os usuários retornados do backend
-        ativos: usersArray.filter(u => u.user_status === "ativo").length,
-        inativos: usersArray.filter(u => u.user_status === "inativo").length,
-        sindicos: usersArray.filter(u => u.user_role === "sindico").length,
-        moradores: usersArray.filter(u => u.user_role === "morador").length,
-        casas: usersArray.filter(u => u.user_type === "casa").length,
-        condominios: usersArray.filter(u => u.user_type === "condominio").length,
-      });
+setUserStats({
+  total: allData.total ?? usersArray.length, // total real do backend
+  ativos: allData.docs.filter(u => u.user_status === "ativo").length,
+  inativos: allData.docs.filter(u => u.user_status === "inativo").length,
+  sindicos: allData.docs.filter(u => u.user_role === "sindico").length,
+  moradores: allData.docs.filter(u => u.user_role === "morador").length,
+  casas: allData.docs.filter(u => u.user_type === "casa").length,
+  condominios: allData.docs.filter(u => u.user_type === "condominio").length,
+});
 
 
     } catch (err) {
@@ -223,9 +215,9 @@ export default function UsersDashboard() {
                               <span className="text-sm font-semibold text-foreground">{user.user_name}</span>
                               <span className="text-xs text-foreground/80">{user.user_email}</span>
                               <span className="text-xs text-foreground/60">{user.user_cpf}</span>
-                                <span className={`text-[10px] font-bold ${user.user_status === "ativo" ? "text-green-600" : "text-destructive"}`}>
-                                  {user.user_status === "ativo" ? "Ativo" : "Inativo"}
-                                </span>
+                              <span className={`text-[10px] font-bold ${user.user_status === "ativo" ? "text-green-600" : "text-destructive"}`}>
+                                {user.user_status === "ativo" ? "Ativo" : "Inativo"}
+                              </span>
                             </div>
                           </div>
                         </td>
@@ -278,7 +270,7 @@ export default function UsersDashboard() {
                             )}
                           </span>
                         </td>
-                       
+
 
                         <td className="text-sm">
                           <span
@@ -314,106 +306,115 @@ export default function UsersDashboard() {
                         </td>
 
                         <td className="px-4 py-2 text-sm text-center -">
+                          <Tooltip>
+                            <TooltipTrigger  asChild> 
                           <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
                             <div className="flex items-center gap-1">
                               {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
                             </div>
                           </Button>
-                        
-                        </td>
+                             </TooltipTrigger>
+                          <TooltipContent>
+                            {user.user_status === "ativo"
+                              ? "Inativar usuário"
+                              : "Ativar usuário"}
+                          </TooltipContent>
+                        </Tooltip>
+
+                      </td>
                       </tr>
                     ))}
-                  </tbody>
+                </tbody>
 
 
                   
                 </table>
               )}
-            </CardContent>
-            <Separator />
-            <PaginationDemo className='my-20' />
-          </Card>
-        </AnimationWrapper >
+          </CardContent>
+          <Separator />
+          <PaginationDemo className='my-20' />
+        </Card>
+      </AnimationWrapper >
 
-        <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
-            {/* Barra superior colorida */}
+          {/* Barra superior colorida */}
+          <div
+            className={`h-2 w-full rounded-t-md ${selectedItem?.user_status === "ativo" ? "bg-red-600" : "bg-green-600"
+              }`}
+          />
+
+          <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
             <div
-              className={`h-2 w-full rounded-t-md ${selectedItem?.user_status === "ativo" ? "bg-red-600" : "bg-green-600"
+              className={`p-4 rounded-full ${selectedItem?.user_status === "ativo"
+                ? "bg-red-100 dark:bg-red-900"
+                : "bg-green-100 dark:bg-green-900"
                 }`}
-            />
-
-            <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
-              <div
-                className={`p-4 rounded-full ${selectedItem?.user_status === "ativo"
-                  ? "bg-red-100 dark:bg-red-900"
-                  : "bg-green-100 dark:bg-green-900"
+            >
+              <AlertTriangle
+                className={`h-10 w-10 ${selectedItem?.user_status === "ativo"
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-green-600 dark:text-green-400"
                   }`}
-              >
-                <AlertTriangle
-                  className={`h-10 w-10 ${selectedItem?.user_status === "ativo"
-                    ? "text-red-600 dark:text-red-400"
-                    : "text-green-600 dark:text-green-400"
-                    }`}
-                />
-              </div>
-              <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
-                Confirmação
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
-              <p className="text-lg">
-                Deseja realmente{" "}
-                <span
-                  className={`font-semibold ${selectedItem?.user_status === "ativo"
-                    ? "text-red-600 dark:text-red-400"
-                    : "text-green-600 dark:text-green-400"
-                    }`}
-                >
-                  {selectedItem?.user_status === "ativo" ? "inativar" : "ativar"}
-                </span>{" "}
-                o usuário <strong>{selectedItem?.user_name}</strong>?
-              </p>
-
-              {/* Exemplo de card com informações extras do usuário */}
-              <div className="bg-muted/40 rounded-xl p-4 border border-border mt-3">
-                <p className="text-xs uppercase text-muted-foreground mb-1">Email</p>
-                <p className="font-semibold">{selectedItem?.user_email ?? "-"}</p>
-              </div>
-              <div className="bg-muted/40 rounded-xl p-4 border border-border">
-                <p className="text-xs uppercase text-muted-foreground mb-1">Perfil</p>
-                <p className="font-semibold">{selectedItem?.user_role ?? "-"}</p>
-              </div>
+              />
             </div>
+            <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+              Confirmação
+            </DialogTitle>
+          </DialogHeader>
 
-            <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowModal(false)}
-                className="flex items-center gap-2"
-              >
-                <X className="h-5 w-5" />
-                Cancelar
-              </Button>
-
-              <Button
-                className={`flex items-center gap-2 px-6 py-3 text-white transition ${selectedItem?.user_status === "ativo"
-                  ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+          <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
+            <p className="text-lg">
+              Deseja realmente{" "}
+              <span
+                className={`font-semibold ${selectedItem?.user_status === "ativo"
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-green-600 dark:text-green-400"
                   }`}
-                onClick={toggleStatus}
               >
-                <Check className="h-5 w-5" />
-                {selectedItem?.user_status === "ativo" ? "Inativar" : "Ativar"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                {selectedItem?.user_status === "ativo" ? "inativar" : "ativar"}
+              </span>{" "}
+              o usuário <strong>{selectedItem?.user_name}</strong>?
+            </p>
+
+            {/* Exemplo de card com informações extras do usuário */}
+            <div className="bg-muted/40 rounded-xl p-4 border border-border mt-3">
+              <p className="text-xs uppercase text-muted-foreground mb-1">Email</p>
+              <p className="font-semibold">{selectedItem?.user_email ?? "-"}</p>
+            </div>
+            <div className="bg-muted/40 rounded-xl p-4 border border-border">
+              <p className="text-xs uppercase text-muted-foreground mb-1">Perfil</p>
+              <p className="font-semibold">{selectedItem?.user_role ?? "-"}</p>
+            </div>
+          </div>
+
+          <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowModal(false)}
+              className="flex items-center gap-2"
+            >
+              <X className="h-5 w-5" />
+              Cancelar
+            </Button>
+
+            <Button
+              className={`flex items-center gap-2 px-6 py-3 text-white transition ${selectedItem?.user_status === "ativo"
+                ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                }`}
+              onClick={toggleStatus}
+            >
+              <Check className="h-5 w-5" />
+              {selectedItem?.user_status === "ativo" ? "Inativar" : "Ativar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
 
-      </div >
+    </div >
     </>
   );
 }

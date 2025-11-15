@@ -18,7 +18,8 @@ import {
   HousePlus,
   Siren,
   Headset,
-  Grid
+  Grid,
+  Megaphone
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -33,7 +34,7 @@ const navigationItems = [
   { id: "sensors", name: "Sensores", icon: Droplets, href: "/sensors" },
   { id: "alerts", name: "Alertas", icon: Siren, href: "/alerts" },
   { id: "suporte", name: "Suporte", icon: Headset, href: "/suporte" },
-  { id: "comunicados", name: "Comunicados", icon: Headset, href: "/comunicados" },
+  { id: "comunicados", name: "Comunicados", icon: Megaphone, href: "/comunicados" },
   // { id: "profile", name: "Perfil", icon: User, href: "/profile" },
 ];
 

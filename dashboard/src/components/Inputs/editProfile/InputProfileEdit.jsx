@@ -23,20 +23,29 @@ export default function FotoPerfil() {
 
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    try {
-      const token = Cookies.get("token");
-      if (token) {
-        const decoded = jwtDecode(token);
-        setUserInfo({
-          email: decoded.email || decoded.user_email || "usuario@dominio.com",
-          role: decoded.type || decoded.role || "Usuário",
-        });
-      }
-    } catch (error) {
-      console.error("Erro ao decodificar token:", error);
+useEffect(() => {
+  // Ao carregar o componente, tenta recuperar a foto salva
+  const savedFoto = localStorage.getItem("fotoPerfil");
+  if (savedFoto) {
+    setFoto(savedFoto);
+  } else {
+    setFoto("/perfilImage/default-avatar.png");
+  }
+
+  // Decodifica token normalmente
+  try {
+    const token = Cookies.get("token");
+    if (token) {
+      const decoded = jwtDecode(token);
+      setUserInfo({
+        email: decoded.email || decoded.user_email || "usuario@dominio.com",
+        role: decoded.type || decoded.role || "Usuário",
+      });
     }
-  }, []);
+  } catch (error) {
+    console.error("Erro ao decodificar token:", error);
+  }
+}, []);
 
 
 
@@ -53,20 +62,22 @@ export default function FotoPerfil() {
 
   try {
     const res = await fetch("http://localhost:3333/api/admins/upload-img", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    });
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+  body: formData,
+});
 
-    const data = await res.json();
-    if (res.ok) {
-      console.log(" Upload concluído:", data);
-      if (data.img_url) setFoto(data.img_url);
-    } else {
-      console.error(" Erro no upload:", data.message);
-    }
+const data = await res.json();
+if (res.ok) {
+  console.log("Upload concluído:", data);
+  if (data.img_url) {
+    // Adiciona o host do backend à URL retornada
+    setFoto(`http://localhost:3333/${data.img_url}`);
+  }
+}
+
   } catch (error) {
     console.error(" Erro ao enviar imagem:", error);
   }

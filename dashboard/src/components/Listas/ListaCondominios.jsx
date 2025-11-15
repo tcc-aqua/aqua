@@ -20,7 +20,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-
+import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import CondominioFilter from "../Filters/CondominioFilter";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { PaginationDemo } from "../pagination/pagination";
@@ -476,335 +476,357 @@ export default function CondominiosDashboard() {
 
                         <td className="px-4 py-2 text-sm">
                           <div className="flex justify-center gap-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => confirmToggleStatus(condominio)}
-                            >
-                              <div className="flex items-center gap-1">
-                                {condominio.condominio_status === "ativo" ? (
-                                  <Check className="text-green-500" size={14} />
-                                ) : (
-                                  <X className="text-destructive" size={14} />
-                                )}
-                              </div>
-                            </Button>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
 
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setSelectedCondominio(condominio);
-                              setSindicoId(condominio.sindico_id ? String(condominio.sindico_id) : "");
-                              setShowSindicoModal(true);
-                            }}
-                          >
-                            <UserStar size={14} className="text-accent" />
-                          </Button>
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => confirmToggleStatus(condominio)}
+                                >
+                                  <div className="flex items-center gap-1">
+                                    {condominio.condominio_status === "ativo" ? (
+                                      <Check className="text-green-500" size={14} />
+                                    ) : (
+                                      <X className="text-destructive" size={14} />
+                                    )}
+                                  </div>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {condominio.condominio_status === "ativo"
+                                  ? "Inativar condomínio"
+                                  : "Ativar condomínio"}
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setSelectedCondominio(condominio);
+                                    setSindicoId(condominio.sindico_id ? String(condominio.sindico_id) : "");
+                                    setShowSindicoModal(true);
+                                  }}
+                                >
+                                  <UserStar size={14} className="text-accent" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Atribuir Síndico</TooltipContent>
+                            </Tooltip>
 
-                          <Button size="sm" variant='ghost' onClick={() => editItem(condominio)}>
-                            <div className="flex items-center gap-1">
-                              <Edit className="text-accent" size={14} />
-                            </div>
-                          </Button>
-                        </div>
-                      </td>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => editItem(condominio)}
+                                >
+                                  <Edit className="text-accent" size={14} />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Editar condomínio</TooltipContent>
+                            </Tooltip>
+
+                          </div>
+                        </td>
                       </tr>
                     ))}
-                </tbody>
+                  </tbody>
                 </table>
               )}
-          </CardContent>
-          <Separator></Separator>
-          <PaginationDemo className='my-20' />
-        </Card>
-      </AnimationWrapper>
+            </CardContent>
+            <Separator></Separator>
+            <PaginationDemo className='my-20' />
+          </Card>
+        </AnimationWrapper>
 
 
 
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+        <Dialog open={showModal} onOpenChange={setShowModal}>
+          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
-          <div
-            className={`h-2 w-full rounded-t-md ${selectedCondominio?.condominio_status === "ativo"
-              ? "bg-red-600"
-              : "bg-green-600"
-              }`}
-          />
-
-          <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
             <div
-              className={`p-4 rounded-full ${selectedCondominio?.condominio_status === "ativo"
-                ? "bg-red-100 dark:bg-red-900"
-                : "bg-green-100 dark:bg-green-900"
+              className={`h-2 w-full rounded-t-md ${selectedCondominio?.condominio_status === "ativo"
+                ? "bg-red-600"
+                : "bg-green-600"
                 }`}
-            >
-              <AlertTriangle
-                className={`h-10 w-10 ${selectedCondominio?.condominio_status === "ativo"
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-green-600 dark:text-green-400"
-                  }`}
-              />
-            </div>
-            <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
-              Confirmação
-            </DialogTitle>
-          </DialogHeader>
+            />
 
-          <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
-            <p className="text-lg">
-              Deseja realmente{" "}
-              <span
-                className={`font-semibold ${selectedCondominio?.condominio_status === "ativo"
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-green-600 dark:text-green-400"
+            <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+              <div
+                className={`p-4 rounded-full ${selectedCondominio?.condominio_status === "ativo"
+                  ? "bg-red-100 dark:bg-red-900"
+                  : "bg-green-100 dark:bg-green-900"
                   }`}
               >
-                {selectedCondominio?.condominio_status === "ativo" ? "inativar" : "ativar"}
-              </span>{" "}
-              o condomínio <strong>{selectedCondominio?.condominio_nome}</strong>?
-            </p>
-            <div className="bg-muted/40 rounded-xl p-4 border border-border mt-3">
-              <p className="text-xs uppercase text-muted-foreground mb-1">Código do condomínio</p>
-              <p className="font-semibold">{selectedCondominio?.condominio_codigo ?? "-"}</p>
-            </div>
-            <div className="bg-muted/40 rounded-xl p-4 border border-border">
-              <p className="text-xs uppercase text-muted-foreground mb-1">Endereço</p>
-              <p className="font-semibold">
-                {`${selectedCondominio?.logradouro}, ${selectedCondominio?.numero} - ${selectedCondominio?.bairro}, ${selectedCondominio?.cidade} / ${selectedCondominio?.uf}`}
-              </p>
-            </div>
-          </div>
-
-          <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowModal(false)}
-              className="flex items-center gap-2"
-            >
-              <X className="h-5 w-5" />
-              Cancelar
-            </Button>
-
-            <Button
-              className={`flex items-center gap-2 px-6 py-3 text-white transition ${selectedCondominio?.condominio_status === "ativo"
-                ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
-                }`}
-             
-                onClick={toggleStatus}
-              >
-              <Check className="h-5 w-5" />
-              {selectedCondominio?.condominio_status === "ativo" ? "Inativar" : "Ativar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-
-      <Dialog open={showSindicoModal} onOpenChange={setShowSindicoModal}>
-        <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
-
-
-          <div className="h-2 w-full rounded-t-md text-yellow-500" />
-
-          <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
-            <Crown className="h-10 w-10 text-yellow-500 " />
-            <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
-              Atribuir Síndico
-            </DialogTitle>
-          </DialogHeader>
-
-
-          <div className="mt-5 space-y-6 px-4 text-sm text-foreground/90">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="bg-muted/40 rounded-xl p-4 border border-border">
-                <p className="text-xs uppercase text-muted-foreground mb-2">Síndico</p>
-                <Select value={sindicoId} onValueChange={(v) => setSindicoId(v)}>
-                  <SelectTrigger className="w-full bg-background border border-input text-foreground">
-                    <SelectValue placeholder="Escolha um síndico" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sindicos.length > 0 ? (
-                      sindicos.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>
-                          {s.nome}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="none" disabled>
-                        Nenhum síndico encontrado
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
+                <AlertTriangle
+                  className={`h-10 w-10 ${selectedCondominio?.condominio_status === "ativo"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
+                    }`}
+                />
               </div>
+              <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+                Confirmação
+              </DialogTitle>
+            </DialogHeader>
 
+            <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
+              <p className="text-lg">
+                Deseja realmente{" "}
+                <span
+                  className={`font-semibold ${selectedCondominio?.condominio_status === "ativo"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
+                    }`}
+                >
+                  {selectedCondominio?.condominio_status === "ativo" ? "inativar" : "ativar"}
+                </span>{" "}
+                o condomínio <strong>{selectedCondominio?.condominio_nome}</strong>?
+              </p>
+              <div className="bg-muted/40 rounded-xl p-4 border border-border mt-3">
+                <p className="text-xs uppercase text-muted-foreground mb-1">Código do condomínio</p>
+                <p className="font-semibold">{selectedCondominio?.condominio_codigo ?? "-"}</p>
+              </div>
               <div className="bg-muted/40 rounded-xl p-4 border border-border">
-                <p className="text-xs uppercase text-muted-foreground mb-2">Condomínio</p>
-                <p className="font-semibold text-foreground mt-1">
-                  {selectedCondominio?.condominio_nome ?? "-"}
+                <p className="text-xs uppercase text-muted-foreground mb-1">Endereço</p>
+                <p className="font-semibold">
+                  {`${selectedCondominio?.logradouro}, ${selectedCondominio?.numero} - ${selectedCondominio?.bairro}, ${selectedCondominio?.cidade} / ${selectedCondominio?.uf}`}
                 </p>
               </div>
             </div>
-          </div>
 
-          <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setShowSindicoModal(false);
-                setSindicoId("");
-              }}
-              className="flex items-center gap-2"
-            >
-              <X className="h-5 w-5" />
-              Cancelar
-            </Button>
-
-            <Button
-              onClick={async () => {
-                if (!sindicoId || sindicoId === "none" || !selectedCondominio) {
-                  toast.warning("Selecione um síndico antes de salvar.");
-                  return;
-                }
-
-                try {
-                  const idCondominio = selectedCondominio.condominio_id ?? selectedCondominio.id;
-                  const res = await fetch(`http://localhost:3333/api/condominios/${idCondominio}/sindico`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ sindico_id: sindicoId }),
-                  });
-
-                  if (!res.ok) throw new Error("Erro ao atribuir síndico");
-
-                  toast.success("Síndico atribuído com sucesso!");
-                  setShowSindicoModal(false);
-                  setSindicoId("");
-                  fetchData();
-                } catch (err) {
-                  toast.error(err.message);
-                }
-              }}
-              disabled={atribuindo}
-              className="bg-yellow-400 hover:bg-yellow-450 text-white"
-            >
-              <Check className="h-5 w-5" />
-              Salvar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
-
-          {/* Barra superior */}
-          <div className="h-2 w-full bg-primary rounded-t-md" />
-
-          <DialogHeader className="flex items-center space-x-2 pb-3 mt-3">
-            <Edit className="h-6 w-6 text-primary" />
-            <DialogTitle className="text-xl font-bold">Editar Condomínio</DialogTitle>
-          </DialogHeader>
-
-          <div className="px-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
-
-              {/* Nome */}
-              <div className="col-span-2">
-                <label className="text-sm font-medium mb-1">Nome</label>
-                <Input
-                  value={form.condominio_nome}
-                  onChange={(e) => setForm({ ...form, condominio_nome: e.target.value })}
-                  placeholder="Nome do condomínio"
-                />
-              </div>
-
-              {/* CEP */}
-              <div>
-                <label className="text-sm font-medium mb-1">CEP</label>
-                <Input
-                  value={form.cep}
-                  onChange={(e) => setForm({ ...form, cep: e.target.value })}
-                  onBlur={handleBuscarCep}
-                  maxLength={8}
-                  placeholder="00000000"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-1">Número</label>
-                <Input
-                  value={form.numero}
-                  onChange={(e) => setForm({ ...form, numero: e.target.value })}
-                  placeholder="Nº"
-                />
-              </div>
-
-              {/* Logradouro */}
-              <div className="col-span-2">
-                <label className="text-sm font-medium mb-1">Logradouro</label>
-                <Input
-                  value={form.logradouro}
-                  onChange={(e) => setForm({ ...form, logradouro: e.target.value })}
-                  placeholder="Rua..."
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-1">Bairro</label>
-                <Input
-                  value={form.bairro}
-                  onChange={(e) => setForm({ ...form, bairro: e.target.value })}
-                  placeholder="Bairro"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-1">Cidade</label>
-                <Input
-                  value={form.cidade}
-                  onChange={(e) => setForm({ ...form, cidade: e.target.value })}
-                  placeholder="Cidade"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-1">Estado</label>
-                <Input
-                  value={form.estado}
-                  onChange={(e) => setForm({ ...form, estado: e.target.value })}
-                  placeholder="UF"
-                />
-              </div>
-
-            </div>
-
-
-            <DialogFooter className="pt-6 flex justify-end gap-3">
+            <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
               <Button
                 variant="outline"
-                onClick={() => setOpen(false)}
-                className="w-32"
+                onClick={() => setShowModal(false)}
+                className="flex items-center gap-2"
               >
+                <X className="h-5 w-5" />
                 Cancelar
               </Button>
 
               <Button
-                onClick={handleSave}
-                className="w-32 bg-primary text-primary-foreground hover:bg-primary/90"
+                className={`flex items-center gap-2 px-6 py-3 text-white transition ${selectedCondominio?.condominio_status === "ativo"
+                  ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                  }`}
+
+                onClick={toggleStatus}
               >
+                <Check className="h-5 w-5" />
+                {selectedCondominio?.condominio_status === "ativo" ? "Inativar" : "Ativar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+
+        <Dialog open={showSindicoModal} onOpenChange={setShowSindicoModal}>
+          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+
+
+            <div className="h-2 w-full rounded-t-md text-yellow-500" />
+
+            <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+              <Crown className="h-10 w-10 text-yellow-500 " />
+              <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+                Atribuir Síndico
+              </DialogTitle>
+            </DialogHeader>
+
+
+            <div className="mt-5 space-y-6 px-4 text-sm text-foreground/90">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="bg-muted/40 rounded-xl p-4 border border-border">
+                  <p className="text-xs uppercase text-muted-foreground mb-2">Síndico</p>
+                  <Select value={sindicoId} onValueChange={(v) => setSindicoId(v)}>
+                    <SelectTrigger className="w-full bg-background border border-input text-foreground">
+                      <SelectValue placeholder="Escolha um síndico" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sindicos.length > 0 ? (
+                        sindicos.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.nome}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="none" disabled>
+                          Nenhum síndico encontrado
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="bg-muted/40 rounded-xl p-4 border border-border">
+                  <p className="text-xs uppercase text-muted-foreground mb-2">Condomínio</p>
+                  <p className="font-semibold text-foreground mt-1">
+                    {selectedCondominio?.condominio_nome ?? "-"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowSindicoModal(false);
+                  setSindicoId("");
+                }}
+                className="flex items-center gap-2"
+              >
+                <X className="h-5 w-5" />
+                Cancelar
+              </Button>
+
+              <Button
+                onClick={async () => {
+                  if (!sindicoId || sindicoId === "none" || !selectedCondominio) {
+                    toast.warning("Selecione um síndico antes de salvar.");
+                    return;
+                  }
+
+                  try {
+                    const idCondominio = selectedCondominio.condominio_id ?? selectedCondominio.id;
+                    const res = await fetch(`http://localhost:3333/api/condominios/${idCondominio}/sindico`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ sindico_id: sindicoId }),
+                    });
+
+                    if (!res.ok) throw new Error("Erro ao atribuir síndico");
+
+                    toast.success("Síndico atribuído com sucesso!");
+                    setShowSindicoModal(false);
+                    setSindicoId("");
+                    fetchData();
+                  } catch (err) {
+                    toast.error(err.message);
+                  }
+                }}
+                disabled={atribuindo}
+                className="bg-yellow-400 hover:bg-yellow-450 text-white"
+              >
+                <Check className="h-5 w-5" />
                 Salvar
               </Button>
             </DialogFooter>
-          </div>
+          </DialogContent>
+        </Dialog>
 
-        </DialogContent>
-      </Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+
+            {/* Barra superior */}
+            <div className="h-2 w-full bg-primary rounded-t-md" />
+
+            <DialogHeader className="flex items-center space-x-2 pb-3 mt-3">
+              <Edit className="h-6 w-6 text-primary" />
+              <DialogTitle className="text-xl font-bold">Editar Condomínio</DialogTitle>
+            </DialogHeader>
+
+            <div className="px-4 mt-4">
+              <div className="grid grid-cols-2 gap-4">
+
+                {/* Nome */}
+                <div className="col-span-2">
+                  <label className="text-sm font-medium mb-1">Nome</label>
+                  <Input
+                    value={form.condominio_nome}
+                    onChange={(e) => setForm({ ...form, condominio_nome: e.target.value })}
+                    placeholder="Nome do condomínio"
+                  />
+                </div>
+
+                {/* CEP */}
+                <div>
+                  <label className="text-sm font-medium mb-1">CEP</label>
+                  <Input
+                    value={form.cep}
+                    onChange={(e) => setForm({ ...form, cep: e.target.value })}
+                    onBlur={handleBuscarCep}
+                    maxLength={8}
+                    placeholder="00000000"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-1">Número</label>
+                  <Input
+                    value={form.numero}
+                    onChange={(e) => setForm({ ...form, numero: e.target.value })}
+                    placeholder="Nº"
+                  />
+                </div>
+
+                {/* Logradouro */}
+                <div className="col-span-2">
+                  <label className="text-sm font-medium mb-1">Logradouro</label>
+                  <Input
+                    value={form.logradouro}
+                    onChange={(e) => setForm({ ...form, logradouro: e.target.value })}
+                    placeholder="Rua..."
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-1">Bairro</label>
+                  <Input
+                    value={form.bairro}
+                    onChange={(e) => setForm({ ...form, bairro: e.target.value })}
+                    placeholder="Bairro"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-1">Cidade</label>
+                  <Input
+                    value={form.cidade}
+                    onChange={(e) => setForm({ ...form, cidade: e.target.value })}
+                    placeholder="Cidade"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-1">Estado</label>
+                  <Input
+                    value={form.estado}
+                    onChange={(e) => setForm({ ...form, estado: e.target.value })}
+                    placeholder="UF"
+                  />
+                </div>
+
+              </div>
 
 
-    </div >
+              <DialogFooter className="pt-6 flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setOpen(false)}
+                  className="w-32"
+                >
+                  Cancelar
+                </Button>
+
+                <Button
+                  onClick={handleSave}
+                  className="w-32 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Salvar
+                </Button>
+              </DialogFooter>
+            </div>
+
+          </DialogContent>
+        </Dialog>
+
+
+      </div >
 
     </>
   );

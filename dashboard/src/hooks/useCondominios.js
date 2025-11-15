@@ -93,6 +93,35 @@ const editCondominio = async (id, dados) => {
     }
   };
 
+const updateCondominioName = async (id, novoNome) => {
+  setLoading(true);
+  try {
+    const res = await api.put(`/condominios/${id}/name`, { name: novoNome });
+
+    const updated = res?.data || res;
+
+    if (!updated || updated.error)
+      throw new Error(updated?.error || "Erro ao atualizar nome");
+
+    // Atualiza o estado local corretamente
+    setCondominios((prev) =>
+      Array.isArray(prev)
+        ? prev.map((c) =>
+            c.id === id ? { ...c, nome: novoNome } : c
+          )
+        : [updated]
+    );
+
+    toast.success("Nome do condomínio atualizado com sucesso!");
+  } catch (err) {
+    toast.error(err?.message || "Erro ao atualizar nome do condomínio!");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
   return {
     condominios,
     loading,
@@ -101,5 +130,6 @@ const editCondominio = async (id, dados) => {
     addCondominio,
     editCondominio,
     removeCondominio,
+    updateCondominioName,
   };
 }
