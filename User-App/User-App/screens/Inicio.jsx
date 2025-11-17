@@ -18,10 +18,9 @@ import 'react-native-svg';
 import { MotiView, MotiText } from 'moti';
 import { MotiPressable } from 'moti/interactions';
 import * as Haptics from 'expo-haptics';
-import axios from 'axios'; // Importa o axios
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa o AsyncStorage
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// ALTERAÇÃO: URL padronizada para localhost, compatível com adb reverse.
 const API_URL = 'http://localhost:3334/api';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -61,97 +60,109 @@ export default function Inicio() {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [residenciaId, setResidenciaId] = useState(null); // ID da residência do usuário
 
   const [consumptionData, setConsumptionData] = useState({ todayConsumption: 0, todaySavings: 0, comparison: 0 });
-  const [dailyGoal, setDailyGoal] = useState(0);
+  const [dailyGoal, setDailyGoal] = useState(200);
   const [chartData, setChartData] = useState(mockChartData);
   const [recentHistory, setRecentHistory] = useState(mockRecentHistory);
   const [dicaDoPingo, setDicaDoPingo] = useState("Carregando dica...");
   const [filter, setFilter] = useState('hoje');
 
-  useEffect(() => {
-    // Simulando a obtenção do ID da residência (você deve pegar do usuário logado)
-    const loadUserData = async () => {
-      const id = '1'; 
-      setResidenciaId(id);
-    };
-    loadUserData();
-  }, []);
+  const loadDashboardData = useCallback(async (isRefresh = false) => {
+    if (!isRefresh) {
+      setIsLoading(true);
+    }
+    // Não definimos o erro como nulo aqui para que a mensagem de erro permaneça visível até que uma atualização bem-sucedida ocorra.
 
-  // ALTERAÇÃO: Função refatorada para usar Axios com token de autorização.
-  const fetchDashboardData = useCallback(async () => {
-    if (!residenciaId) return;
-
-    setIsLoading(true);
-    setError(null);
     try {
       const authToken = await AsyncStorage.getItem('token');
-      if (!authToken) {
-        throw new Error("Token de autenticação não encontrado.");
+      const userDataString = await AsyncStorage.getItem('user');
+
+      if (!authToken || !userDataString) {
+        throw new Error("Usuário não autenticado. Por favor, faça login novamente.");
+      }
+      
+      const user = JSON.parse(userDataString);
+      if (!user || !user.residencia_id || !user.residencia_type) {
+        throw new Error("Dados da residência do usuário estão incompletos. Tente fazer login de novo.");
       }
 
       const headers = { 'Authorization': `Bearer ${authToken}` };
+      const residenciaEndpoint = user.residencia_type === 'apartamento' ? 'apartamentos' : 'casas';
+      const consumoUrl = `${API_URL}/${residenciaEndpoint}/${user.residencia_id}/consumo-total`;
 
-      // Usando Promise.all com axios para chamadas paralelas
       const [consumoResponse, metasResponse, dicaResponse] = await Promise.all([
-        axios.get(`${API_URL}/apartamentos/${residenciaId}/consumo-total`, { headers }),
+        axios.get(consumoUrl, { headers }),
         axios.get(`${API_URL}/metas`, { headers }),
         axios.get(`${API_URL}/dica`, { headers }),
       ]);
       
-      const consumoResult = consumoResponse.data;
-      const metasResult = metasResponse.data;
-      const dicaResult = dicaResponse.data;
+      // Se as chamadas foram bem-sucedidas, limpamos qualquer erro anterior.
+      setError(null);
 
-      if (consumoResult) {
-        setConsumptionData({
-          todayConsumption: consumoResult.consumoTotal || 0,
-          todaySavings: 11.2, // Mockado
-          comparison: -12.5,  // Mockado
-        });
+      const consumoResult = consumoResponse.data;
+      if (consumoResult && typeof consumoResult.consumoTotal !== 'undefined') {
+        setConsumptionData(prev => ({
+          ...prev,
+          todayConsumption: parseFloat(consumoResult.consumoTotal) || 0,
+        }));
       }
 
-      if (metasResult && metasResult.length > 0) {
-        setDailyGoal(metasResult[0].limite_consumo); 
+      const metasResult = metasResponse.data;
+      if (metasResult?.docs?.length > 0) {
+        setDailyGoal(parseFloat(metasResult.docs[0].limite_consumo));
       }
       
-      if (dicaResult && dicaResult.mensagem) {
-        setDicaDoPingo(dicaResult.mensagem);
+      const dicaResult = dicaResponse.data;
+      if (dicaResult?.dica) {
+        setDicaDoPingo(dicaResult.dica);
       }
 
-      // Mantendo mocks para partes visuais
-      setChartData(mockChartData);
-      setRecentHistory(mockRecentHistory);
-
     } catch (err) {
-      setError(err.message);
-      console.error("Erro ao buscar dados do dashboard:", err.response?.data || err.message);
+      const errorMessage = err.response?.data?.error || err.message || "Erro desconhecido ao carregar dados.";
+      setError(errorMessage);
+      console.error("Erro em loadDashboardData:", errorMessage);
     } finally {
-      setIsLoading(false);
+      // Garante que o spinner de carregamento inicial seja desativado.
+      if (!isRefresh) {
+        setIsLoading(false);
+      }
+      // Garante que o indicador de "puxar para atualizar" seja desativado.
       setRefreshing(false);
     }
-  }, [residenciaId]);
+  }, []);
 
+  // Efeito para a carga inicial dos dados
   useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
-  
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+    loadDashboardData(false);
+  }, [loadDashboardData]);
 
-  const comparisonColor = useMemo(() => (consumptionData?.comparison <= 0 ? theme.colors.success : theme.colors.danger), [consumptionData?.comparison]);
-  const comparisonText = useMemo(() => { if (consumptionData?.comparison == null) return ''; return consumptionData.comparison <= 0 ? `${consumptionData.comparison}% em relação a ontem` : `+${consumptionData.comparison}% em relação a ontem`; }, [consumptionData?.comparison]);
-  const consumptionProgress = useMemo(() => (dailyGoal > 0 ? Math.min(consumptionData.todayConsumption / dailyGoal, 1) : 0), [consumptionData?.todayConsumption, dailyGoal]);
+  // Efeito para a atualização automática a cada 2 segundos
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      loadDashboardData(true); // 'true' para indicar que é uma atualização em segundo plano
+    }, 2000); // 2000 ms = 2 segundos
+
+    // Função de limpeza: para o intervalo quando o componente é desmontado
+    return () => clearInterval(intervalId);
+  }, [loadDashboardData]);
+
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadDashboardData(true);
+  };
+  
+  const comparisonColor = useMemo(() => (consumptionData.comparison <= 0 ? theme.colors.success : theme.colors.danger), [consumptionData.comparison]);
+  const comparisonText = useMemo(() => { if (consumptionData.comparison == null) return ''; return consumptionData.comparison <= 0 ? `${consumptionData.comparison}% em relação a ontem` : `+${consumptionData.comparison}% em relação a ontem`; }, [consumptionData.comparison]);
+  const consumptionProgress = useMemo(() => (dailyGoal > 0 ? Math.min(consumptionData.todayConsumption / dailyGoal, 1) : 0), [consumptionData.todayConsumption, dailyGoal]);
 
   const handleFilterChange = (newFilter) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setFilter(newFilter);
   };
   
-  if (isLoading && !residenciaId) {
+  if (isLoading && !refreshing) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -159,11 +170,11 @@ export default function Inicio() {
     );
   }
   
-  if (error) {
+  if (error && !isLoading) {
      return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <Title>Ocorreu um erro</Title>
-        <Paragraph style={{textAlign: 'center'}}>Não foi possível carregar os dados. Verifique sua conexão.</Paragraph>
+        <Title style={{ textAlign: 'center' }}>Ocorreu um erro</Title>
+        <Paragraph style={{textAlign: 'center'}}>{error}</Paragraph>
         <Button onPress={onRefresh} style={{marginTop: 10}}>Tentar Novamente</Button>
       </View>
     );
@@ -177,7 +188,6 @@ export default function Inicio() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        {isLoading && !refreshing ? <ActivityIndicator style={{ margin: 20 }} size="large" color={theme.colors.primary} /> : (
           <>
             <MotiView from={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'timing', duration: 500 }}>
               <Card style={styles.card} elevation={4}>
@@ -193,21 +203,21 @@ export default function Inicio() {
                       <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardBlue }]}>
                         <List.Icon icon="water-outline" color={theme.colors.primary} style={styles.innerCardIcon} />
                         <View>
-                          <MotiText style={styles.innerCardValue}>{consumptionData?.todayConsumption.toFixed(1)} L</MotiText>
+                          <MotiText style={styles.innerCardValue}>{consumptionData.todayConsumption.toFixed(1)} L</MotiText>
                           <Text style={styles.innerCardLabel}>Consumido</Text>
                         </View>
                       </Surface>
                       <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardGreen }]}>
                         <List.Icon icon="leaf-circle-outline" color={theme.colors.success} style={styles.innerCardIcon}/>
                         <View>
-                          <MotiText style={styles.innerCardValue}>{consumptionData?.todaySavings.toFixed(1)} L</MotiText>
+                          <MotiText style={styles.innerCardValue}>{consumptionData.todaySavings.toFixed(1)} L</MotiText>
                           <Text style={styles.innerCardLabel}>Economizado</Text>
                         </View>
                       </Surface>
                     </View>
                     
                     <View style={styles.goalContainer}>
-                      <Text style={styles.goalText}>Meta Diária: {consumptionData?.todayConsumption.toFixed(0)}L / {dailyGoal}L</Text>
+                      <Text style={styles.goalText}>Meta Diária: {consumptionData.todayConsumption.toFixed(0)}L / {dailyGoal.toFixed(0)}L</Text>
                       <ProgressBar progress={consumptionProgress} color={theme.colors.primary} style={styles.progressBar} />
                     </View>
 
@@ -274,7 +284,7 @@ export default function Inicio() {
                     <Text style={styles.actionText}>Ver Relatórios</Text>
                 </MotiPressable>
                 <MotiPressable animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })} style={styles.actionButton} onPress={() => console.log('Metas')}>
-                    <List.Icon icon="target-arrow" color={theme.colors.success} />
+                    <List.Icon icon="bullseye-arrow" color={theme.colors.success} />
                     <Text style={styles.actionText}>Ajustar Metas</Text>
                 </MotiPressable>
             </MotiView>
@@ -304,7 +314,6 @@ export default function Inicio() {
               </Card>
             </MotiView>
           </>
-        )}
       </ScrollView>
     </PaperProvider>
   );
