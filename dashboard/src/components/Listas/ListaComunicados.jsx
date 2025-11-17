@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Trash, Plus, Bell, BellOff, Users, Shield, Edit } from "lucide-react";
+import { Pencil, Trash, Plus, Bell, BellOff, Users, Shield, Edit, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,8 +35,8 @@ export default function ComunicadosDashboard() {
     const comunicadoStats = {
         total: comunicados.length,
         lidos: 0,
-           naoLidos: comunicados.filter(c => !c.lido).length, 
-       usuários: comunicados.filter(c => c.addressee === "usuários").length,
+        naoLidos: comunicados.filter(c => !c.lido).length,
+        usuários: comunicados.filter(c => c.addressee === "usuários").length,
         administradores: comunicados.filter(c => c.addressee === "administradores").length,
     };
 
@@ -82,7 +82,7 @@ export default function ComunicadosDashboard() {
             </section>
 
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Comunicados</h1>
+                <h1 className="text-2xl font-bold ">Comunicados</h1>
 
                 <Button className="flex gap-2" onClick={() => setShowCreateModal(true)}>
                     <Plus size={18} /> Criar Comunicado
@@ -90,10 +90,10 @@ export default function ComunicadosDashboard() {
             </div>
 
             <Tabs value={filtro} onValueChange={setFiltro}>
-                <TabsList className="flex flex-wrap">
-                    <TabsTrigger value="todos">Todos</TabsTrigger>
-                    <TabsTrigger value="administradores">Administradores</TabsTrigger>
-                    <TabsTrigger value="usuários">Usuários</TabsTrigger>
+                <TabsList className="flex flex-wrap  ">
+                    <TabsTrigger className="cursor-pointer" value="todos">Todos</TabsTrigger>
+                    <TabsTrigger className="cursor-pointer" value="administradores">Administradores</TabsTrigger>
+                    <TabsTrigger className="cursor-pointer" value="usuários">Usuários</TabsTrigger>
                 </TabsList>
             </Tabs>
 
@@ -135,7 +135,7 @@ export default function ComunicadosDashboard() {
                                             setShowDeleteModal(true);
                                         }}
                                     >
-                                        <Trash size={16} />
+                                        <Trash2 size={16} />
                                     </Button>
                                 </div>
                             </div>
@@ -145,7 +145,7 @@ export default function ComunicadosDashboard() {
 
 
 
-                {/* Modal Criar */}
+
                 <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
                     <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
                         <div className="h-2 w-full rounded-t-md bg-primary" />
@@ -223,7 +223,7 @@ export default function ComunicadosDashboard() {
                     </DialogContent>
                 </Dialog>
 
-                {/* Modal Editar */}
+
                 <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
                     <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
                         <div className="h-2 w-full rounded-t-md bg-primary" />
@@ -256,7 +256,7 @@ export default function ComunicadosDashboard() {
                                     />
                                 </div>
 
-                                <div className="flex flex-col">
+                                <div className="flex flex-col ">
                                     <label className="text-sm font-medium text-foreground mb-1">Destinatário</label>
                                     <Select
                                         value={selectedComunicado?.addressee || "usuários"}
@@ -300,7 +300,7 @@ export default function ComunicadosDashboard() {
                     </DialogContent>
                 </Dialog>
 
-                {/* Modal Deletar */}
+
                 <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
                     <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
                         <div className="h-2 w-full rounded-t-md bg-red-600" />
