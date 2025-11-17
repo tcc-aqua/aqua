@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useRef, useState } from "react";
-// Importações de componentes do shadcn/ui
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,6 @@ export default function Chat({
   const [sending, setSending] = useState(false);
   const listRef = useRef(null);
 
-  // Scroll para o fim da lista de mensagens
   useEffect(() => {
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
@@ -69,10 +67,8 @@ export default function Chat({
   };
 
   return (
-    // Removido o max-w para que ocupe a largura do pai. Altura fixada para visualização.
     <Card className="flex flex-col h-[700px] w-full border shadow-2xl rounded-xl overflow-hidden bg-white dark:bg-gray-900">
       
-      {/* HEADER PROFISSIONAL E LIMPO */}
       <CardHeader className="border-b bg-background p-4 flex flex-row items-center justify-between shadow-sm">
         <div className="flex items-center gap-4">
           <Avatar className="h-11 w-11 border-2 border-primary/50">
@@ -81,7 +77,6 @@ export default function Chat({
           </Avatar>
           <div className="flex flex-col">
             <CardTitle className="text-xl font-bold text-foreground">Equipe Administrativa</CardTitle>
-            {/* Indicador de status mais profissional */}
             <div className="flex items-center text-sm text-muted-foreground">
                 <Circle className="h-2 w-2 mr-2 fill-green-500 text-green-500 animate-pulse" />
                 Online
@@ -90,17 +85,15 @@ export default function Chat({
         </div>
       </CardHeader>
       
-      {/* ÁREA DE MENSAGENS COM FUNDO SUAVE */}
       <CardContent ref={listRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50 dark:bg-gray-800">
         {messages.length === 0 && (
           <p className="text-center text-base text-muted-foreground pt-10">
-            🤝 Bem-vindo! Sua comunicação com a equipe é importante.
+             Bem-vindo! Sua comunicação com a equipe é importante.
           </p>
         )}
 
         {messages.map((m) => {
           const mine = m.userId === currentUserId;
-          // Estilo retangular e clean
           const bubbleClasses = mine
             ? "bg-primary text-primary-foreground rounded-l-xl rounded-tr-xl shadow-md"
             : "bg-white dark:bg-gray-700 text-foreground rounded-r-xl rounded-tl-xl shadow-sm border border-border/50";
@@ -109,7 +102,6 @@ export default function Chat({
 
           return (
             <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-              {/* Balão da Mensagem */}
               <div
                 className={`max-w-[70%] p-4 text-base flex flex-col transition-all duration-150 ${bubbleClasses}`}
               >
@@ -117,7 +109,6 @@ export default function Chat({
                 
                 <p className="whitespace-pre-wrap leading-relaxed break-words">{m.text}</p>
                 
-                {/* Hora discreta no canto */}
                 <span className={`text-[11px] mt-2 self-end ${mine ? "text-primary-foreground/80" : "text-muted-foreground/80"}`}>
                     {formatTime(m.createdAt)}
                 </span>
@@ -127,7 +118,6 @@ export default function Chat({
         })}
       </CardContent>
 
-      {/* CAMPO DE ENTRADA GRANDE E FUNCIONAL */}
       <div className="border-t p-4 bg-white dark:bg-gray-900">
         <div className="flex gap-3 items-end">
           <Textarea
@@ -142,7 +132,6 @@ export default function Chat({
           <Button
             onClick={handleSend}
             disabled={sending || !text.trim()}
-            // Botão estilizado para envio (com ícone)
             className="h-11 w-11 p-0 flex items-center justify-center rounded-xl shadow-lg transition-all duration-200"
             title={sending ? "Enviando..." : "Enviar Mensagem"}
           >
