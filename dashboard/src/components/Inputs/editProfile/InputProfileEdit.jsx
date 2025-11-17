@@ -70,12 +70,21 @@ useEffect(() => {
 });
 
 const data = await res.json();
-if (res.ok) {
-  console.log("Upload concluído:", data);
-  if (data.img_url) {
-    // Adiciona o host do backend à URL retornada
-    setFoto(`http://localhost:3333/${data.img_url}`);
+if (data.img_url) {
+  // remove barra inicial
+  let url = data.img_url.replace(/^\/+/, "");
+
+  // garante prefixo /uploads/
+  if (!url.startsWith("uploads/")) {
+    url = `uploads/${url}`;
   }
+
+  // URL final correta SEM /api/
+const fullUrl = `http://localhost:3333/${url}`;
+
+
+  setFoto(fullUrl);
+  localStorage.setItem("fotoPerfil", fullUrl);
 }
 
   } catch (error) {
@@ -84,10 +93,12 @@ if (res.ok) {
 };
 
 
-  const handleRemove = () => {
-    setFile(null);
-    setFoto("/perfilImage/default-avatar.png");
-  };
+
+const handleRemove = () => {
+  setFile(null);
+  setFoto("/perfilImage/default-avatar.png");
+  localStorage.removeItem("fotoPerfil");
+};
 
   const handleChangeEmail = () => {
     const newEmail = prompt("Digite seu novo e-mail:", userInfo.email);

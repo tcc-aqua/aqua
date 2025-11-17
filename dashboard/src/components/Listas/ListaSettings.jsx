@@ -27,17 +27,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import useToggleConfirm from "@/hooks/useStatus";
 import { useAdmins } from "@/hooks/useAdmins";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default function SettingsDashboard() {
   const [activeTab, setActiveTab] = useState("admins");
@@ -138,14 +132,16 @@ export default function SettingsDashboard() {
     }
   };
 
-  const handleEditAdmin = (admin) => {
-    setEditForm({
-      id: admin.id,
-      role: admin.type || "admin",
-    });
+const handleEditAdmin = (admin) => {
+ setEditForm({
+  id: admin.id,
+  email: admin.email,    
+  role: admin.role || admin.type || "admin",
+});
 
-    setOpenEditAdmin(true);
-  };
+  setOpenEditAdmin(true);
+};
+
 
   const saveEditAdmin = async () => {
     if (!editForm.email) {
@@ -155,7 +151,7 @@ export default function SettingsDashboard() {
 
     const payload = {
       email: editForm.email,
-      type: editForm.role
+     role: editForm.role,
     };
 
     await editAdmin(editForm.id, payload);
@@ -363,43 +359,61 @@ export default function SettingsDashboard() {
                               <td className="px-2 sm:px-4 py-2 text-center">
                                 {activeTab === "admins" && (
                                   <div className="">
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => confirmToggleStatus(item)}
-                                      disabled={role === "superadmin"}
-                                      className={
-                                        role === "superadmin"
-                                          ? "opacity-50 cursor-not-allowed"
-                                          : ""
-                                      }
-                                    >
-                                      {status === "ativo" ? (
-                                        <Check
-                                          className="text-green-500"
-                                          size={14}
-                                        />
-                                      ) : (
-                                        <X
-                                          className="text-destructive"
-                                          size={14}
-                                        />
-                                      )}
-                                    </Button>
 
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      disabled={role === "superadmin"}  // superadmin não pode editar outro superadmin
-                                      onClick={() => handleEditAdmin(item)}
-                                    >
-                                      <Edit className="text-accent" size={14} />
-                                    </Button>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => confirmToggleStatus(item)}
+                                          disabled={role === "superadmin"}
+                                          className={
+                                            role === "superadmin"
+                                              ? "opacity-50 cursor-not-allowed"
+                                              : ""
+                                          }
+                                        >
+                                          {status === "ativo" ? (
+                                            <Check
+                                              className="text-green-500"
+                                              size={14}
+                                            />
+                                          ) : (
+                                            <X
+                                              className="text-destructive"
+                                              size={14}
+                                            />
+                                          )}
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        {status === "ativo"
+                                          ? "Inativar admin"
+                                          : "Ativar admin"}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        disabled={role === "superadmin"}  // superadmin não pode editar outro superadmin
+                                        onClick={() => handleEditAdmin(item)}
+                                      >
+                                        <Edit className="text-accent" size={14} />
+                                      </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        Editar
+                                      </TooltipContent>
+                                   </Tooltip>
+
 
 
                                   </div>
 
-                                )}
+                                )
+                                }
                               </td>
                             </tr>
                           );
@@ -411,10 +425,10 @@ export default function SettingsDashboard() {
               </CardContent>
             </Card>
           </AnimationWrapper>
-        </main>
+        </main >
 
         {/* Modal de Confirmação */}
-        <Dialog open={showModal} onOpenChange={setShowModal}>
+        < Dialog open={showModal} onOpenChange={setShowModal} >
           <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
             <div
               className={`h-2 w-full rounded-t-md ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
@@ -487,10 +501,10 @@ export default function SettingsDashboard() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </Dialog >
 
         {/* Modal Criar Novo Admin */}
-        <Dialog open={showNewAdminModal} onOpenChange={setShowNewAdminModal}>
+        < Dialog open={showNewAdminModal} onOpenChange={setShowNewAdminModal} >
           <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
             {/* Barra superior */}
@@ -548,7 +562,7 @@ export default function SettingsDashboard() {
             </div>
 
           </DialogContent>
-        </Dialog>
+        </Dialog >
 
 
 
@@ -601,7 +615,7 @@ export default function SettingsDashboard() {
 
 
 
-      </div>
+      </div >
     </>
 
   );

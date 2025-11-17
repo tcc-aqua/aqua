@@ -155,12 +155,12 @@ setUserStats({
           <UserFilter onApply={(filters) => fetchData(filters)} />
         </div>
 
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
+    <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {cards.map((card, i) => {
             const Icon = card.icon;
             return (
               <AnimationWrapper key={card.title} delay={i * 0.2}>
-                <Card className=" hover:border-sky-400 dark:hover:border-sky-950">
+                <Card className=" hover:border-sky-400 dark:hover:border-sky-950 ">
                   <CardHeader>
                     <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                   </CardHeader>

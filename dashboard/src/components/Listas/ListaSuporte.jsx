@@ -14,6 +14,7 @@ import { PaginationDemo } from "../pagination/pagination";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode"
 import { Separator } from "../ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default function SuporteDashboard() {
   const [tickets, setTickets] = useState([]);
@@ -248,27 +249,59 @@ export default function SuporteDashboard() {
                         </div>
 
                         <div className="flex gap-1.5 shrink-0">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleReply(ticket.id);
-                            }}
-                            className={`p-1.5 text-white rounded-full shadow-md transition ${isReplying ? 'bg-orange-600 hover:bg-orange-700 focus:ring-orange-500/50' : 'bg-sky-600 hover:bg-sky-700 focus:ring-sky-500/50'}`}
-                            title={isReplying ? "Fechar Resposta" : "Responder Ticket"}
-                          >
-                            <MessageCircle className="w-4 h-4 cursor-pointer" />
-                          </button>
+                          {/* BOTÃO RESPONDER */}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleReply(ticket.id);
+                                }}
+                                title={isReplying ? "Fechar " : "Responder "}
+                                className={isReplying ? "text-orange-600" : "text-sky-600"}
+                              >
+                                <MessageCircle className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {isReplying ? "Fechar" : "Responder "}
+                            </TooltipContent>
+                          </Tooltip>
 
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              alert(`Excluir ticket ${ticket.id}`);
-                            }}
-                            className="p-1.5 cursor-pointer text-red-500 bg-gray-100 dark:bg-gray-700 rounded-full shadow-md hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition"
-                            title="Excluir Ticket"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                          </button>
+                     
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  alert(`Excluir ticket ${ticket.id}`);
+                                }}
+                                title="Excluir Ticket"
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Excluir Menssagem</TooltipContent>
+                          </Tooltip>
+
+
                         </div>
                       </div>
 
@@ -303,7 +336,7 @@ export default function SuporteDashboard() {
                           {ticket.mensagem}
                         </p>
 
-                    
+
                         {ticket.resposta && (
                           <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/50 rounded-md border-l-4 border-green-500">
                             <h4 className="text-xs font-semibold uppercase text-green-700 dark:text-green-300 mb-1">Resposta</h4>
@@ -339,10 +372,10 @@ export default function SuporteDashboard() {
                       </CardFooter>
                     )}
                     <Separator></Separator>
-                   
+
                   </Card>
                 </AnimationWrapper>
-                
+
               );
             })
           )}

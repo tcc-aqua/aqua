@@ -157,7 +157,7 @@ async function handleLogout(router) {
                         <TooltipContent
                           sideOffset={5}
                           side="right"
-                          className="bg-accent text-white rounded-md px-2 py-1 text-sm shadow-lg"
+                         
                         >
                           {item.name}
                         </TooltipContent>
@@ -185,7 +185,7 @@ async function handleLogout(router) {
                 <TooltipContent
                   sideOffset={5}
                   side="right"
-                  className="bg-accent text-white rounded-md px-2 py-1 text-sm shadow-lg"
+                
                 >
                   Configurações
                 </TooltipContent>
@@ -209,15 +209,16 @@ async function handleLogout(router) {
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => handleLogout(router)}
-                    className="flex items-center justify-center p-2.5 text-sidebar-foreground hover:bg-muted hover:text-accent rounded-md transition-all duration-200"
-                  >
+                  className="flex items-center rounded-md px-5 py-2.5 space-x-2.5 text-sidebar-foreground hover:bg-muted hover:text-accent transition-all duration-200"
+            >
+                  
                     <LogOut className="h-5 w-5 transition-colors duration-200" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent
                   sideOffset={5}
                   side="right"
-                  className="bg-destructive text-white rounded-md px-2 py-1 text-sm shadow-lg"
+             
                 >
                   Sair
                 </TooltipContent>

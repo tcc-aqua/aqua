@@ -48,22 +48,21 @@ export function useCondominios() {
   };
 
   // Editar condomínio
-
 const editCondominio = async (id, dados) => {
   setLoading(true);
   try {
-    const res = await api.put(`/condominios/${selected.condominio_id}`, form);
+    // Chama a rota correta passando os dados certos
+    const res = await api.put(`/condominios/${id}`, dados);
 
+    const updated = res?.data || res;
 
-    const updated = res?.data?.data || res?.data || res;
-
-    if (!updated || updated.error)
+    if (!updated || updated.error) {
       throw new Error(updated?.error || "Erro ao atualizar");
+    }
 
+    // Atualiza no estado pela chave 'id'
     setCondominios((prev) =>
-      Array.isArray(prev)
-        ? prev.map((c) => (c.condominio_id === id ? updated : c))
-        : [updated]
+      prev.map((c) => (c.id === id ? { ...c, ...updated } : c))
     );
 
     toast.success("Condomínio atualizado com sucesso!");
@@ -73,7 +72,6 @@ const editCondominio = async (id, dados) => {
     setLoading(false);
   }
 };
-
 
   // Excluir condomínio
   const removeCondominio = async (id) => {

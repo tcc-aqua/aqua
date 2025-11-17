@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Building, X, Check, UserStar, Droplet, Pencil, AlertTriangle, XCircle, CheckCircle, Crown, Signal, Edit } from "lucide-react";
+import { Building, X, Check, UserStar, AlertTriangle, Crown, Signal, Edit } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +28,6 @@ import { Separator } from "../ui/separator";
 import ExportarTabela from "../Layout/ExportTable/page";
 import { useAtribuirSindico } from "@/hooks/useAtribuirSIndico";
 import { Input } from "@/components/ui/input";
-import useToggleConfirm from "@/hooks/useStatus";
 
 
 export default function CondominiosDashboard() {
@@ -476,29 +475,7 @@ export default function CondominiosDashboard() {
 
                         <td className="px-4 py-2 text-sm">
                           <div className="flex justify-center gap-1">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => confirmToggleStatus(condominio)}
-                                >
-                                  <div className="flex items-center gap-1">
-                                    {condominio.condominio_status === "ativo" ? (
-                                      <Check className="text-green-500" size={14} />
-                                    ) : (
-                                      <X className="text-destructive" size={14} />
-                                    )}
-                                  </div>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {condominio.condominio_status === "ativo"
-                                  ? "Inativar condomínio"
-                                  : "Ativar condomínio"}
-                              </TooltipContent>
-                            </Tooltip>
+                           
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -527,6 +504,29 @@ export default function CondominiosDashboard() {
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>Editar condomínio</TooltipContent>
+                            </Tooltip>
+                             <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => confirmToggleStatus(condominio)}
+                                >
+                                  <div className="flex items-center gap-1">
+                                    {condominio.condominio_status === "ativo" ? (
+                                      <Check className="text-green-500" size={14} />
+                                    ) : (
+                                      <X className="text-destructive" size={14} />
+                                    )}
+                                  </div>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {condominio.condominio_status === "ativo"
+                                  ? "Inativar condomínio"
+                                  : "Ativar condomínio"}
+                              </TooltipContent>
                             </Tooltip>
 
                           </div>

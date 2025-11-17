@@ -12,6 +12,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { useComunicados } from "@/hooks/useComunicados";
 import Loading from "../Layout/Loading/page";
+import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 
 export default function ComunicadosDashboard() {
 
@@ -35,8 +36,8 @@ export default function ComunicadosDashboard() {
     const comunicadoStats = {
         total: comunicados.length,
         lidos: 0,
-           naoLidos: comunicados.filter(c => !c.lido).length, 
-       usuários: comunicados.filter(c => c.addressee === "usuários").length,
+        naoLidos: comunicados.filter(c => !c.lido).length,
+        usuários: comunicados.filter(c => c.addressee === "usuários").length,
         administradores: comunicados.filter(c => c.addressee === "administradores").length,
     };
 
@@ -115,28 +116,38 @@ export default function ComunicadosDashboard() {
                                 <div className="w-36 text-sm text-center">{c.addressee === "administradores" ? "Administradores" : "Usuários"}</div>
                                 <div className="w-40 text-sm text-center">{c.criado_em ? new Date(c.criado_em).toLocaleString("pt-BR") : "-"}</div>
                                 <div className="flex gap-2 ml-auto">
-                                    <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        onClick={() => {
-                                            setSelectedComunicado(c);
-                                            setShowEditModal(true);
-                                        }}
-                                    >
-                                        <Pencil size={16} />
-                                    </Button>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                onClick={() => {
+                                                    setSelectedComunicado(c);
+                                                    setShowEditModal(true);
+                                                }}
+                                            >
+                                                <Pencil size={16} />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Editar</TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="text-red-600"
+                                                onClick={() => {
+                                                    setSelectedComunicado(c);
+                                                    setShowDeleteModal(true);
+                                                }}
+                                            >
+                                                <Trash size={16} />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Excluir</TooltipContent>
+                                    </Tooltip>
 
-                                    <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className="text-red-600"
-                                        onClick={() => {
-                                            setSelectedComunicado(c);
-                                            setShowDeleteModal(true);
-                                        }}
-                                    >
-                                        <Trash size={16} />
-                                    </Button>
                                 </div>
                             </div>
                         ))}
@@ -145,7 +156,6 @@ export default function ComunicadosDashboard() {
 
 
 
-                {/* Modal Criar */}
                 <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
                     <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
                         <div className="h-2 w-full rounded-t-md bg-primary" />

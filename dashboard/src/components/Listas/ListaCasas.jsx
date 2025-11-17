@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
-import { Home, X, Check, User, Droplet, AlertTriangle, XCircle, CheckCircle, MapPin, Signal } from "lucide-react";
+import { Home, X, Check, User, Droplet, AlertTriangle,MapPin, Signal } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,7 @@ import AnimationWrapper from "../Layout/Animation/Animation";
 import { PaginationDemo } from "../pagination/pagination";
 import { Separator } from "../ui/separator";
 import ExportarTabela from "../Layout/ExportTable/page";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 
 export default function CasasDashboard() {
@@ -319,6 +320,8 @@ export default function CasasDashboard() {
                           <span className={`inline-block w-3 h-3 rounded-full ${casa.casa_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={casa.casa_status} />
                         </td>
                         <td className="px-4 py-2 text-sm">
+                               <Tooltip>
+                            <TooltipTrigger asChild>
                           <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(casa)}>
                             <div className="flex items-center gap-1">
                               {casa.casa_status === "ativo" ? (
@@ -328,6 +331,14 @@ export default function CasasDashboard() {
                               )}
                             </div>
                           </Button>
+                             </TooltipTrigger>
+                            <TooltipContent>
+                              {casa.casa_status === "ativo"
+                                ? "Inativar casa"
+                                : "Ativar casa"}
+                            </TooltipContent>
+                          </Tooltip>
+
                         </td>
                       </tr>
                     ))}

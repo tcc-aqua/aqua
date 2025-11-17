@@ -28,18 +28,26 @@ export default function Header() {
       const decoded = jwtDecode(token);
       const userId = decoded.id || decoded.user_id;
 
-      // Buscar dados do admin no backend
-      fetch(`${backendURL}/api/admins/${userId}`, {
+      // Sempre limpa /api duplicado
+      const cleanURL = backendURL.replace(/\/api$/, "");
+
+      fetch(`${cleanURL}/api/admins/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
         .then((data) => {
+          // Monta foto do backend (se existir)
+          let imageUrl = "./perfilImage/default-avatar.png";
+
+          if (data.img_url) {
+            const cleanPath = data.img_url.replace(/^\/+/, "");
+            imageUrl = `${cleanURL}/${cleanPath}`;
+          }
+
           setUserInfo({
             email: data.email || decoded.email,
             role: data.role || decoded.role || "Admin",
-            image: data.image
-              ? `${backendURL}/uploads/perfilImage/${data.image}`
-              : "./perfilImage/default-avatar.png",
+            image: imageUrl,
           });
         })
         .catch((err) => console.error("Erro ao buscar admin:", err));
@@ -47,6 +55,7 @@ export default function Header() {
       console.error("Erro ao decodificar token:", error);
     }
   }, []);
+
 
   const getTituloByPath = () => {
     if (pathname.startsWith("/dashboard")) return "Painel Administrativo";
@@ -68,19 +77,16 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 w-full h-auto z-50 bg-sidebar backdrop-blur-lg border-b border-border shadow-sm transition-all">
       <div
-        className={`flex flex-col sm:flex-row items-center justify-between ${
-          isMobile ? "px-4 py-3 space-y-2" : "px-10 py-4"
-        }`}
+        className={`flex flex-col sm:flex-row items-center justify-between ${isMobile ? "px-4 py-3 space-y-2" : "px-10 py-4"
+          }`}
       >
         <div
-          className={`text-center select-none ${
-            isMobile ? "order-1 w-full" : "absolute left-1/2 -translate-x-1/2"
-          }`}
+          className={`text-center select-none ${isMobile ? "order-1 w-full" : "absolute left-1/2 -translate-x-1/2"
+            }`}
         >
           <h1
-            className={`font-semibold tracking-wide bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent drop-shadow-sm ${
-              isMobile ? "text-lg leading-tight" : "text-3xl"
-            }`}
+            className={`font-semibold tracking-wide bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent drop-shadow-sm ${isMobile ? "text-lg leading-tight" : "text-3xl"
+              }`}
           >
             {titulo}
           </h1>
@@ -103,17 +109,18 @@ export default function Header() {
             href="/profile"
             className="flex items-center space-x-3 pl-5 cursor-pointer group"
           >
-            <div className="relative">
+            <div className="relative w-10 h-10 rounded-full overflow-hidden border shadow-sm group-hover:scale-105 transition-transform">
               <img
                 src={userInfo.image}
                 alt="Avatar"
-                className="w-10 h-10 rounded-full object-cover border shadow-sm group-hover:scale-105 transition-transform"
+                className="w-full h-full object-cover"
               />
               <div
-                className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-card"
+                className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-card"
                 title="Online"
               />
             </div>
+
 
             {!isMobile && (
               <div className="leading-tight group-hover:opacity-80 transition-opacity">

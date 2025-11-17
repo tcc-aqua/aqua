@@ -19,6 +19,7 @@ import AnimationWrapper from "../Layout/Animation/Animation";
 import { PaginationDemo } from "../pagination/pagination";
 import { Separator } from "../ui/separator";
 import ExportarTabela from "../Layout/ExportTable/page";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default function SensorsDashboard() {
   const [sensores, setSensores] = useState([]);
@@ -281,11 +282,22 @@ export default function SensorsDashboard() {
                           <div className="text-[10px] text-foreground/60">Horário do Último Envio</div>
                         </td>
                         <td className="px-4 py-2 text-sm text-center">
+                                <Tooltip>
+                            <TooltipTrigger asChild>
                           <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(sensor)}>
                             <div className="flex items-center gap-1">
                               {sensor.sensor_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
                             </div>
                           </Button>
+                                </TooltipTrigger>
+                            <TooltipContent>
+                              {sensor.sensor_status === "ativo"
+                                ? "Inativar sensor"
+                                : "Ativar sensor"}
+                            </TooltipContent>
+                          </Tooltip>
+
+                          
                         </td>
                       </tr>
                     ))}

@@ -6,19 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
 import {
-  Building2,
   UserCheck,
-  SignalHigh,
   X,
   Check,
-  Pencil,
   Droplet,
   Grid,
   AlertTriangle,
-  XCircle,
-  CheckCircle,
   MapPin,
-  Zap,
   Signal,
 } from "lucide-react";
 import {
@@ -34,6 +28,7 @@ import AnimationWrapper from "../Layout/Animation/Animation";
 import { PaginationDemo } from "../pagination/pagination";
 import { Separator } from "../ui/separator";
 import ExportarTabela from "../Layout/ExportTable/page";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default function ApartamentosDashboard() {
   const [apartamentos, setApartamentos] = useState([]);
@@ -379,21 +374,30 @@ export default function ApartamentosDashboard() {
                           />
                         </td>
                         <td className="px-4 py-2 text-sm">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => confirmToggleStatus(ap)}
-                          >
-                            <div className="flex items-center gap-1">
-                              {ap.apartamento_status === "ativo" ? (
-                                <Check className="text-green-500" size={14} />
-                              ) : (
-                                <X className="text-destructive" size={14} />
-                              )}
-                            </div>
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => confirmToggleStatus(ap)}
+                              >
+                                <div className="flex items-center gap-1">
+                                  {ap.apartamento_status === "ativo" ? (
+                                    <Check className="text-green-500" size={14} />
+                                  ) : (
+                                    <X className="text-destructive" size={14} />
+                                  )}
+                                </div>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {ap.apartamento_status === "ativo"
+                                ? "Inativar apartamneto"
+                                : "Ativar apartamneto"}
+                            </TooltipContent>
+                          </Tooltip>
 
-                      
+
                         </td>
                       </tr>
                     ))}
