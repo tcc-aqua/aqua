@@ -6,7 +6,8 @@ export default function CardCondominioInfo() {
         nome: "Residencial Sol Nascente",
         endereco: "Rua das Flores, 120 - Centro - São Paulo/SP",
         apartamentos: 48,
-        sindico: "Carlos Henrique"
+        sindico: "Carlos Henrique",
+        codigo: "11102025"
     };
 
     return (
@@ -18,7 +19,6 @@ export default function CardCondominioInfo() {
                 </CardTitle>
             </CardHeader>
 
-            {/* AGORA EM COLUNA, TUDO EMBAIXO DO TÍTULO */}
             <CardContent className="flex justify-between items-center">
                 <p className="text-foreground text-lg flex flex-col">
                     <span className="font-semibold">Nome</span>
@@ -45,6 +45,13 @@ export default function CardCondominioInfo() {
                     <span className="font-semibold">Síndico</span>
                     <span>
                         {condominio.sindico}
+                    </span>
+                </p>
+
+                <p className="text-foreground flex flex-col">
+                    <span className="font-semibold">Código acesso</span>
+                    <span>
+                        {condominio.codigo  }
                     </span>
                 </p>
             </CardContent>
