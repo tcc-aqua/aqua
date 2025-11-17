@@ -1,40 +1,36 @@
-'use client'
+"use client";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import MyChart1 from "./blocks/relatorios/charts/MyChart1";
-import MyChart2 from "./blocks/relatorios/charts/MyChart2";
+import MyChart2 from "./blocks/relatorios/charts/StatusSensores";
 import { BarChartIcon } from "lucide-react";
+import ChartPieInteractive from "./blocks/relatorios/charts/StatusSensores";
+import { ChartTooltipLabelFormatter } from "./blocks/relatorios/charts/UsuariosAtivos";
+import { ChartRadarMultiple } from "./blocks/relatorios/charts/ComunicadosEmitidosVsVisualizados";
 
 const tabs = [
   {
-    name: "Acessos",
-    value: "acessos",
+    name: "Status Sensores",
+    value: "status_sensores",
     icon: <BarChartIcon className="w-4 h-4" />,
-    render: <MyChart1 />,
+    render: <ChartPieInteractive />,
   },
   {
-    name: "Monitoramento",
-    value: "monitoramento",
+    name: "Usuários Ativos",
+    value: "usuarios_ativos",
     icon: <BarChartIcon className="w-4 h-4" />,
-    render: <MyChart2 />,
+    render: <ChartTooltipLabelFormatter />,
   },
   {
-    name: "Graficos",
-    value: "graficos",
+    name: "Comunicados Emitidos x Visualizados",
+    value: "dados_gerais",
     icon: <BarChartIcon className="w-4 h-4" />,
-    render: <MyChart2 />,
-  },
-  {
-    name: "dados",
-    value: "dados",
-    icon: <BarChartIcon className="w-4 h-4" />,
-    render: <MyChart2 />,
+    render: <ChartRadarMultiple />,
   },
 ];
 
 export default function TabsIconDemo() {
   return (
     <Tabs defaultValue={tabs[0].value} className="w-full">
-
       <TabsList className="p-1">
         {tabs.map((tab) => (
           <TabsTrigger key={tab.value} value={tab.value}>
