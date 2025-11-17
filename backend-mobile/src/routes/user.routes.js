@@ -1,5 +1,3 @@
-
-
 import UserController from "../controllers/UserController.js";
 import { authMiddleware } from "../middlewares/AuthMidlleweare.js";
 
@@ -12,4 +10,13 @@ export default async function userRoutes(fastify) {
         },
         preHandler: [authMiddleware]
     }, UserController.updateMe);
+
+    fastify.get('/me/stats', {
+        schema: {
+            summary: 'Puxa as estatísticas do usuário logado',
+            tags: ['users'],
+            description: 'Retorna dados como metas cumpridas, pontos, etc.'
+        },
+        preHandler: [authMiddleware]
+    }, UserController.getStats);
 }

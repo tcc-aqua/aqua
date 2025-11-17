@@ -5,7 +5,6 @@ import bcrypt from 'bcryptjs'
 import sequelizePaginate from 'sequelize-paginate'
 
 export default class User extends Model {
-    // compare hash password
     async checkPassword(password) {
         return bcrypt.compare(password, this.password)
     }
@@ -33,7 +32,6 @@ User.init({
         type: DataTypes.STRING(255),
         allowNull: false
     },
-    // representa de onde o usuário vem
     type: {
         type: DataTypes.ENUM('casa', 'condominio'),
         allowNull: false
@@ -43,13 +41,10 @@ User.init({
         allowNull: true,
         references: {model: 'users', key: 'id'}
     },
-    // indica para a residencia/unidade para atribuir para a tabela correta
-    // uma especie de polimorfismo em banco de dados
     residencia_type: {
         type: DataTypes.ENUM('casa', 'apartamento'),
         allowNull: true
     },
-    // id da residencia
     residencia_id: {
         type: DataTypes.INTEGER,
         allowNull: true
@@ -64,25 +59,44 @@ User.init({
         defaultValue: 'morador',
         allowNull: false
     },
+    notif_vazamento: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        allowNull: false
+    },
+    notif_consumo_alto: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        allowNull: false
+    },
+    notif_metas: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        allowNull: false
+    },
+    notif_comunidade: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
+    },
+    notif_relatorios: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        allowNull: false
+    }
 }, {
     sequelize,
     tableName: 'users',
     timestamps: true,
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em',
-
-    // hooks hash password
     hooks: {
-        
-        // hash create user
         beforeCreate: async (user, options) => {
             if (user.password) {
                 const salt = await bcrypt.genSalt(10);
                 user.password = await bcrypt.hash(user.password, salt);
             }
         },
-        
-        // hash update user
         beforeUpdate: async (user, options) => {
             if (user.changed('password')) {
                 const salt = await bcrypt.genSalt(10);

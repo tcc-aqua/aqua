@@ -26,9 +26,10 @@ import passwordRoutes from './routes/password.routes.js';
 import cepRoutes from './routes/cep.routes.js';
 import metasRoutes from './routes/metas.routes.js';
 import profileRoutes from './routes/profile.routes.js';
-// =====> INÍCIO DA ALTERAÇÃO
-import casaRoutes from './routes/casa.routes.js'; // 1. Importa a nova rota de casas
-// =====> FIM DA ALTERAÇÃO
+import comunicadosRoutes from './routes/comunicados.routes.js';
+import casaRoutes from './routes/casa.routes.js'; 
+
+
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
@@ -115,6 +116,7 @@ fastify.register(metasRoutes, {prefix: '/api/metas'});
 fastify.register(cepRoutes, {prefix: '/api/cep'});
 fastify.register(profileRoutes, {prefix: '/api/profile'});
 fastify.register(passwordRoutes, {prefix: '/api/password'});
+fastify.register(comunicadosRoutes, {prefix: '/api/comunicados'});
 
 export default fastify;
 
@@ -318,6 +320,21 @@ export default class CepController {
 
 
 =================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\ComunicadosController.js
+=================================================================================
+
+import ComunicadosService from "../services/ComunicadosService.js";
+
+export default class ComunicadosController {
+    static async getAll(req, reply) {
+        const comunicados = await ComunicadosService.getAll();
+        return reply.status(200).send(comunicados);
+    }
+}
+
+
+
+=================================================================================
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\DicaController.js
 =================================================================================
 
@@ -435,12 +452,13 @@ export default new ProfileController();
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\UserController.js
 =================================================================================
 
-import UpdateService from "../services/UserService.js";
+import UserService from "../services/UserService.js";
 
-export default class UpdateController {
+export default class UserController {
     static async updateMe(req, reply) {
+
         const userId = req.user.id;
-        const user = await UpdateService.updateMe(userId, req.body);
+        const user = await UserService.updateMe(userId, req.body);
         return reply.status(200).send({ message: 'Perfil atualizado com sucesso!', user });
     }
 }
@@ -811,6 +829,42 @@ Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Casa.js
 
 
 =================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Comunicados.js
+=================================================================================
+
+import { Model, DataTypes } from "sequelize";
+import sequelize from "../config/sequelize.js";
+
+export default class Comunicados extends Model {}
+
+Comunicados.init({
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    title: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    subject: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    addressee: {
+        type: DataTypes.ENUM('adminstradores', 'usuários'),
+        allowNull: false
+    }
+}, {
+    sequelize,
+    tableName: 'comunicados',
+    timestamps: true,
+    createdAt: 'criado_em',
+    updatedAt: 'atualizado_em'
+})
+
+
+=================================================================================
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Condominio.js
 =================================================================================
 
@@ -1027,6 +1081,8 @@ sequelizePaginate.paginate(LeituraSensor);
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Metas.js
 =================================================================================
 
+
+
 import {Model, DataTypes } from 'sequelize';
 import sequelize from '../config/sequelize.js';
 import User from './User.js';
@@ -1049,7 +1105,7 @@ Metas.init({
         type: DataTypes.ENUM('casa', 'apartamento'),
         allowNull: false
     },
-    residencia_type: {
+    residencia_id: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
@@ -1385,6 +1441,17 @@ export default async function cepRoutes(fastify) {
 
 
 =================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\comunicados.routes.js
+=================================================================================
+
+import ComunicadosController from "../controllers/ComunicadosController.js";
+
+export default async function comunicadosRoutes(fastify){
+    fastify.get('/', ComunicadosController.getAll);
+}
+
+
+=================================================================================
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\dica.routes.js
 =================================================================================
 
@@ -1491,7 +1558,10 @@ export default profileRoutes;
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\user.routes.js
 =================================================================================
 
-import UpdateController from "../controllers/UserController.js";
+
+
+import UserController from "../controllers/UserController.js";
+import { authMiddleware } from "../middlewares/AuthMidlleweare.js";
 
 export default async function userRoutes(fastify) {
     fastify.put('/me', {
@@ -1499,8 +1569,9 @@ export default async function userRoutes(fastify) {
             summary: 'Alterando informações pessoal',
             tags: ['users'],
             description: 'Listando informações do usuário'
-        }
-    }, UpdateController.updateMe);
+        },
+        preHandler: [authMiddleware]
+    }, UserController.updateMe);
 }
 
 
@@ -1841,6 +1912,27 @@ export default class CepService {
 
 
 =================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\ComunicadosService.js
+=================================================================================
+
+import Comunicados from "../models/Comunicados.js";
+
+export default class ComunicadosService {
+    static async getAll(req, reply){
+        try {
+            const comunicados = await Comunicados.findAll({
+                where: {addressee: 'usuários'}
+            });
+            return comunicados;
+        } catch (error) {
+            console.error('Erro ao listar comunicados', error);
+            throw error;
+        }
+    }
+}
+
+
+=================================================================================
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\DicaService.js
 =================================================================================
 
@@ -1895,7 +1987,7 @@ const transporter = nodemailer.createTransport({
     secure: EMAIL_PORT === 465,
     auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS.replace(/\s/g, ''),
+        pass: process.env.EMAIL_PASS,
     },
 });
 
@@ -2133,15 +2225,19 @@ export default new ProfileService();
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\UserService.js
 =================================================================================
 
+
+
 import User from "../models/User.js";
 
-export default class UpdateService {
+
+export default class UserService {
     static async updateMe(userId, data) {
         try {
             const user = await User.findByPk(userId);
             if (!user) throw new Error('Usuário não encontrado');
 
             const { name, email } = data;
+
             await user.update({ name, email });
             return user;
         } catch (error) {
@@ -2173,12 +2269,12 @@ import {
   List,
   Surface,
   ProgressBar,
-  Button,
-  Avatar
+  Button
 } from 'react-native-paper';
 import { LineChart } from 'react-native-gifted-charts';
 import 'react-native-svg';
 import { MotiView, MotiText } from 'moti';
+import { MotiPressable } from 'moti/interactions';
 import * as Haptics from 'expo-haptics';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -2186,26 +2282,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const API_URL = 'http://localhost:3334/api';
 
 const { width: screenWidth } = Dimensions.get('window');
-const chartWidth = screenWidth - 64;
+const chartWidth = screenWidth - 80;
 
 const theme = {
   ...DefaultTheme,
-  roundness: 16,
+  roundness: 12,
   colors: { 
     ...DefaultTheme.colors, 
-    primary: '#007AFF', 
-    accent: '#0A84FF', 
-    background: '#F0F2F5', 
+    primary: '#0A84FF', 
+    accent: '#005ecb', 
+    background: '#F2F2F7', 
     surface: '#FFFFFF', 
     text: '#1C1C1E', 
-    placeholder: '#8A8A8E',
-    disabled: '#C7C7CC',
+    placeholder: '#8A8A8E', 
     success: '#34C759', 
     danger: '#FF3B30', 
     warning: '#FF9500', 
-    info: '#5AC8FA',
-    cardBlue: 'rgba(0, 122, 255, 0.08)', 
-    cardGreen: 'rgba(52, 199, 89, 0.1)',
+    cardBlue: '#E3F2FD', 
+    cardGreen: '#E8F5E9' 
   },
 };
 
@@ -2216,33 +2310,14 @@ const mockChartData = {
 };
 const mockRecentHistory = [
     { id: '1', icon: 'shower-head', description: 'Banho (Ducha Principal)', time: '14:32', value: '-25 L', type: 'expense' },
-    { id: '2', icon: 'pipe-leak', description: 'Pequeno vazamento detectado', time: '12:15', value: 'Verificar', type: 'alert' },
-    { id: '3', icon: 'leaf-outline', description: 'Meta de economia diária', time: '08:00', value: '+5 L', type: 'saving' },
+    { id: '2', icon: 'alert-decagram', description: 'Pequeno vazamento detectado', time: '12:15', value: 'Verificar', type: 'alert' },
+    { id: '3', icon: 'leaf-circle', description: 'Meta de economia diária', time: '08:00', value: '+5 L', type: 'saving' },
 ];
-
-const WelcomeHeader = ({ name }) => (
-  <MotiView
-    from={{ opacity: 0, translateY: -20 }}
-    animate={{ opacity: 1, translateY: 0 }}
-    transition={{ type: 'timing', duration: 400 }}
-    style={styles.headerContainer}
-  >
-    <View>
-      <Text style={styles.headerSubtitle}>Bem-vindo de volta,</Text>
-      <Title style={styles.headerTitle}>{name}</Title>
-    </View>
-    <Avatar.Image
-      size={48}
-      source={{ uri: `https://api.dicebear.com/8.x/initials/svg?seed=${name}` }}
-    />
-  </MotiView>
-);
 
 export default function Inicio() {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [userName, setUserName] = useState('');
 
   const [consumptionData, setConsumptionData] = useState({ todayConsumption: 0, todaySavings: 0, comparison: 0 });
   const [dailyGoal, setDailyGoal] = useState(200);
@@ -2252,8 +2327,10 @@ export default function Inicio() {
   const [filter, setFilter] = useState('hoje');
 
   const loadDashboardData = useCallback(async (isRefresh = false) => {
-    if (!isRefresh) setIsLoading(true);
-    setError(null);
+    if (!isRefresh) {
+      setIsLoading(true);
+    }
+    // Não definimos o erro como nulo aqui para que a mensagem de erro permaneça visível até que uma atualização bem-sucedida ocorra.
 
     try {
       const authToken = await AsyncStorage.getItem('token');
@@ -2267,7 +2344,6 @@ export default function Inicio() {
       if (!user || !user.residencia_id || !user.residencia_type) {
         throw new Error("Dados da residência do usuário estão incompletos. Tente fazer login de novo.");
       }
-      setUserName(user.name);
 
       const headers = { 'Authorization': `Bearer ${authToken}` };
       const residenciaEndpoint = user.residencia_type === 'apartamento' ? 'apartamentos' : 'casas';
@@ -2278,6 +2354,9 @@ export default function Inicio() {
         axios.get(`${API_URL}/metas`, { headers }),
         axios.get(`${API_URL}/dica`, { headers }),
       ]);
+      
+      // Se as chamadas foram bem-sucedidas, limpamos qualquer erro anterior.
+      setError(null);
 
       const consumoResult = consumoResponse.data;
       if (consumoResult && typeof consumoResult.consumoTotal !== 'undefined') {
@@ -2296,18 +2375,36 @@ export default function Inicio() {
       if (dicaResult?.dica) {
         setDicaDoPingo(dicaResult.dica);
       }
+
     } catch (err) {
       const errorMessage = err.response?.data?.error || err.message || "Erro desconhecido ao carregar dados.";
       setError(errorMessage);
+      console.error("Erro em loadDashboardData:", errorMessage);
     } finally {
-      setIsLoading(false);
+      // Garante que o spinner de carregamento inicial seja desativado.
+      if (!isRefresh) {
+        setIsLoading(false);
+      }
+      // Garante que o indicador de "puxar para atualizar" seja desativado.
       setRefreshing(false);
     }
   }, []);
 
+  // Efeito para a carga inicial dos dados
   useEffect(() => {
     loadDashboardData(false);
   }, [loadDashboardData]);
+
+  // Efeito para a atualização automática a cada 2 segundos
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      loadDashboardData(true); // 'true' para indicar que é uma atualização em segundo plano
+    }, 2000); // 2000 ms = 2 segundos
+
+    // Função de limpeza: para o intervalo quando o componente é desmontado
+    return () => clearInterval(intervalId);
+  }, [loadDashboardData]);
+
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -2315,7 +2412,7 @@ export default function Inicio() {
   };
   
   const comparisonColor = useMemo(() => (consumptionData.comparison <= 0 ? theme.colors.success : theme.colors.danger), [consumptionData.comparison]);
-  const comparisonText = useMemo(() => { if (consumptionData.comparison == null) return ''; return consumptionData.comparison <= 0 ? `↓ ${Math.abs(consumptionData.comparison)}% vs ontem` : `↑ ${consumptionData.comparison}% vs ontem`; }, [consumptionData.comparison]);
+  const comparisonText = useMemo(() => { if (consumptionData.comparison == null) return ''; return consumptionData.comparison <= 0 ? `${consumptionData.comparison}% em relação a ontem` : `+${consumptionData.comparison}% em relação a ontem`; }, [consumptionData.comparison]);
   const consumptionProgress = useMemo(() => (dailyGoal > 0 ? Math.min(consumptionData.todayConsumption / dailyGoal, 1) : 0), [consumptionData.todayConsumption, dailyGoal]);
 
   const handleFilterChange = (newFilter) => {
@@ -2331,7 +2428,7 @@ export default function Inicio() {
     );
   }
   
-  if (error) {
+  if (error && !isLoading) {
      return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
         <Title style={{ textAlign: 'center' }}>Ocorreu um erro</Title>
@@ -2347,131 +2444,134 @@ export default function Inicio() {
         style={styles.container} 
         contentContainerStyle={styles.contentContainer} 
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} tintColor={theme.colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <WelcomeHeader name={userName} />
+          <>
+            <MotiView from={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'timing', duration: 500 }}>
+              <Card style={styles.card} elevation={4}>
+                  <Card.Content>
+                    <View style={styles.dailyCardHeader}>
+                      <Title style={styles.dailyCardTitle}>Resumo de Hoje</Title>
+                      <MotiText from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 300 }} style={[styles.comparisonText, { color: comparisonColor }]}>
+                        {comparisonText}
+                      </MotiText>
+                    </View>
 
-        <MotiView from={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'timing', duration: 500, delay: 100 }}>
-          <Card style={styles.card} elevation={1}>
-            <Card.Content>
-              <View style={styles.dailyCardHeader}>
-                <Title style={styles.dailyCardTitle}>Resumo do Dia</Title>
-                <MotiText from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 300 }} style={[styles.comparisonText, { color: comparisonColor }]}>
-                  {comparisonText}
-                </MotiText>
-              </View>
+                    <View style={styles.innerCardsContainer}>
+                      <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardBlue }]}>
+                        <List.Icon icon="water-outline" color={theme.colors.primary} style={styles.innerCardIcon} />
+                        <View>
+                          <MotiText style={styles.innerCardValue}>{consumptionData.todayConsumption.toFixed(1)} L</MotiText>
+                          <Text style={styles.innerCardLabel}>Consumido</Text>
+                        </View>
+                      </Surface>
+                      <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardGreen }]}>
+                        <List.Icon icon="leaf-circle-outline" color={theme.colors.success} style={styles.innerCardIcon}/>
+                        <View>
+                          <MotiText style={styles.innerCardValue}>{consumptionData.todaySavings.toFixed(1)} L</MotiText>
+                          <Text style={styles.innerCardLabel}>Economizado</Text>
+                        </View>
+                      </Surface>
+                    </View>
+                    
+                    <View style={styles.goalContainer}>
+                      <Text style={styles.goalText}>Meta Diária: {consumptionData.todayConsumption.toFixed(0)}L / {dailyGoal.toFixed(0)}L</Text>
+                      <ProgressBar progress={consumptionProgress} color={theme.colors.primary} style={styles.progressBar} />
+                    </View>
 
-              <View style={styles.innerCardsContainer}>
-                <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardBlue }]}>
-                  <Avatar.Icon size={40} icon="water-outline" color={theme.colors.primary} style={styles.innerCardIcon} />
-                  <View>
-                    <Text style={styles.innerCardLabel}>Consumido</Text>
-                    <MotiText style={styles.innerCardValue}>{consumptionData.todayConsumption.toFixed(1)} <Text style={styles.unitText}>L</Text></MotiText>
-                  </View>
-                </Surface>
-                <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardGreen }]}>
-                  <Avatar.Icon size={40} icon="leaf-outline" color={theme.colors.success} style={styles.innerCardIcon} />
-                  <View>
-                    <Text style={styles.innerCardLabel}>Economia</Text>
-                    <MotiText style={styles.innerCardValue}>{consumptionData.todaySavings.toFixed(1)} <Text style={styles.unitText}>L</Text></MotiText>
-                  </View>
-                </Surface>
-              </View>
-              
-              <View style={styles.goalContainer}>
-                <View style={styles.goalTextContainer}>
-                  <Text style={styles.goalText}>Meta Diária</Text>
-                  <Text style={styles.goalValues}>{consumptionData.todayConsumption.toFixed(0)}L / {dailyGoal.toFixed(0)}L</Text>
-                </View>
-                <ProgressBar progress={consumptionProgress} color={theme.colors.primary} style={styles.progressBar} />
-              </View>
-            </Card.Content>
-          </Card>
-        </MotiView>
-
-        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 200 }}>
-          <Card style={styles.card} elevation={1}>
-            <Card.Title title="Evolução do Consumo" titleStyle={styles.cardTitle}/>
-            <Card.Content>
-              <SegmentedButtons value={filter} onValueChange={handleFilterChange} style={styles.filterButtons} buttons={[ { value: 'hoje', label: 'Hoje' }, { value: 'semana', label: '7d' }, { value: 'mes', label: '30d' }, ]} />
-              <MotiView key={filter} from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ type: 'timing', duration: 300 }}>
-                <LineChart 
-                  data={chartData[filter]}
-                  width={chartWidth}
-                  height={180}
-                  color1={theme.colors.primary} 
-                  dataPointsColor1={theme.colors.primary} 
-                  thickness1={3} 
-                  curved
-                  yAxisTextStyle={{ color: theme.colors.placeholder, fontSize: 10 }} 
-                  xAxisLabelTextStyle={{ color: theme.colors.placeholder, fontSize: 10, paddingTop: 5 }} 
-                  startFillColor1={'rgba(0, 122, 255, 0.1)'} 
-                  endFillColor1={'rgba(0, 122, 255, 0.01)'}
-                  areaChart
-                  initialSpacing={15}
-                  endSpacing={15}
-                  noOfSections={4}
-                  yAxisThickness={0}
-                  rulesType="dashed"
-                  rulesColor="#EAEAEA"
-                  pointerConfig={{
-                    pointerStripHeight: 160,
-                    pointerStripColor: 'rgba(0, 122, 255, 0.5)',
-                    pointerStripWidth: 2,
-                    pointerColor: theme.colors.primary,
-                    radius: 6,
-                    pointerLabelWidth: 100,
-                    pointerLabelHeight: 90,
-                    activatePointersOnLongPress: true,
-                    autoAdjustPointerLabelPosition: false,
-                    pointerLabelComponent: items => (
-                      <View style={styles.pointerLabel}>
-                        <Text style={styles.pointerLabelValue}>{items[0].value} L</Text>
-                        <Text style={styles.pointerLabelDate}>{items[0].label}</Text>
-                      </View>
-                    ),
-                  }}
-                />
-              </MotiView>
-            </Card.Content>
-          </Card>
-        </MotiView>
-        
-        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 300 }}>
-          <Card style={[styles.card, {backgroundColor: '#FFFBE6'}]} elevation={1}>
-              <Card.Content style={styles.insightContainer}>
-                  <Avatar.Icon size={40} icon="lightbulb-on-outline" color={'#B26E00'} style={{backgroundColor: 'rgba(255, 149, 0, 0.2)'}} />
-                  <Paragraph style={styles.insightText}>
-                      <Text style={{fontWeight: 'bold'}}>Dica do Pingo: </Text> {dicaDoPingo}
-                  </Paragraph>
-              </Card.Content>
-          </Card>
-        </MotiView>
-        
-        <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 400 }}>
-          <Card style={styles.card} elevation={1}>
-            <Card.Title title="Atividade Recente" titleStyle={styles.cardTitle}/>
-            <Card.Content style={{paddingHorizontal: 0}}>
-              {recentHistory.map((item, index) => {
-                const itemColor = item.type === 'expense' ? theme.colors.danger : 
-                                  item.type === 'saving' ? theme.colors.success : 
-                                  theme.colors.warning;
-                return (
-                  <MotiView key={item.id} from={{ opacity: 0, translateX: -20 }} animate={{ opacity: 1, translateX: 0 }} transition={{ type: 'timing', delay: 100 + index * 100 }}>
-                    <List.Item 
-                      title={item.description} 
-                      description={item.time} 
-                      titleNumberOfLines={2} 
-                      left={props => <Avatar.Icon {...props} size={40} icon={item.icon} color={itemColor} style={{backgroundColor: 'transparent'}} />} 
-                      right={() => <Text style={[styles.historyValue, { color: itemColor }]}>{item.value}</Text>} 
-                      style={styles.listItem}
+                    <View style={styles.insightContainer}>
+                        <List.Icon icon="lightbulb-on-outline" color={theme.colors.warning} style={styles.innerCardIcon} />
+                        <Paragraph style={styles.insightText}>
+                            <Text style={{fontWeight: 'bold'}}>Dica do Pingo:</Text> {dicaDoPingo}
+                        </Paragraph>
+                    </View>
+                  </Card.Content>
+              </Card>
+            </MotiView>
+            
+            <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 150 }}>
+              <Card style={styles.card} elevation={2}>
+                <Card.Content>
+                  <SegmentedButtons value={filter} onValueChange={handleFilterChange} style={styles.filterButtons} buttons={[ { value: 'hoje', label: 'Hoje' }, { value: 'semana', label: '7d' }, { value: 'mes', label: '30d' }, ]} />
+                  <MotiView key={filter} from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ type: 'timing', duration: 300 }}>
+                    <LineChart 
+                      data={chartData[filter]}
+                      width={chartWidth}
+                      height={180}
+                      color1={theme.colors.primary} 
+                      dataPointsColor1={theme.colors.primary} 
+                      thickness1={3} 
+                      curved
+                      yAxisTextStyle={{ color: theme.colors.placeholder, fontSize: 10 }} 
+                      xAxisLabelTextStyle={{ color: theme.colors.placeholder, fontSize: 10, paddingTop: 5 }} 
+                      startFillColor1={theme.colors.primary} 
+                      endFillColor1={theme.colors.background}
+                      areaChart
+                      initialSpacing={15}
+                      endSpacing={15}
+                      noOfSections={4}
+                      yAxisThickness={0}
+                      rulesType="dashed"
+                      rulesColor="#EAEAEA"
+                      pointerConfig={{
+                        pointerStripHeight: 160,
+                        pointerStripColor: theme.colors.primary,
+                        pointerStripWidth: 2,
+                        pointerColor: theme.colors.primary,
+                        radius: 6,
+                        pointerLabelWidth: 100,
+                        pointerLabelHeight: 90,
+                        activatePointersOnLongPress: true,
+                        autoAdjustPointerLabelPosition: true,
+                        pointerLabelComponent: items => (
+                          <View style={styles.pointerLabel}>
+                            <Text style={styles.pointerLabelValue}>{items[0].value} L</Text>
+                            <Text style={styles.pointerLabelDate}>{items[0].label}</Text>
+                          </View>
+                        ),
+                      }}
                     />
                   </MotiView>
-                )
-              })}
-            </Card.Content>
-          </Card>
-        </MotiView>
+                </Card.Content>
+              </Card>
+            </MotiView>
+            
+            <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 300 }} style={styles.actionsContainer}>
+                <MotiPressable animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })} style={styles.actionButton} onPress={() => console.log('Relatórios')}>
+                    <List.Icon icon="file-chart-outline" color={theme.colors.primary} />
+                    <Text style={styles.actionText}>Ver Relatórios</Text>
+                </MotiPressable>
+                <MotiPressable animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })} style={styles.actionButton} onPress={() => console.log('Metas')}>
+                    <List.Icon icon="bullseye-arrow" color={theme.colors.success} />
+                    <Text style={styles.actionText}>Ajustar Metas</Text>
+                </MotiPressable>
+            </MotiView>
+            
+            <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 450 }}>
+              <Card style={styles.card} elevation={2}>
+                <Card.Content>
+                  <Title>Histórico Recente</Title>
+                  {recentHistory.map((item, index) => {
+                    const itemColor = item.type === 'expense' ? theme.colors.danger : 
+                                      item.type === 'saving' ? theme.colors.success : 
+                                      theme.colors.warning;
+                    return (
+                      <MotiView key={item.id} from={{ opacity: 0, translateX: -20 }} animate={{ opacity: 1, translateX: 0 }} transition={{ type: 'timing', delay: 100 + index * 100 }}>
+                        <List.Item 
+                          title={item.description} 
+                          description={item.time} 
+                          titleNumberOfLines={1} 
+                          left={props => <List.Icon {...props} icon={item.icon} color={itemColor} />} 
+                          right={() => <Text style={[styles.historyValue, { color: itemColor }]}>{item.value}</Text>} 
+                          style={[styles.listItem, index === 0 && styles.firstListItem]} 
+                        />
+                      </MotiView>
+                    )
+                  })}
+                </Card.Content>
+              </Card>
+            </MotiView>
+          </>
       </ScrollView>
     </PaperProvider>
   );
@@ -2486,26 +2586,9 @@ const styles = StyleSheet.create({
     padding: 16, 
     paddingBottom: 48,
   },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-    paddingHorizontal: 8,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: theme.colors.placeholder,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: theme.colors.text,
-    lineHeight: 34,
-  },
   card: { 
     marginBottom: 20, 
-    borderRadius: theme.roundness,
+    borderRadius: theme.roundness * 1.5,
     backgroundColor: theme.colors.surface,
   },
   dailyCardHeader: {
@@ -2516,7 +2599,6 @@ const styles = StyleSheet.create({
   },
   dailyCardTitle: {
     fontWeight: 'bold',
-    fontSize: 18,
   },
   comparisonText: { 
     fontSize: 14, 
@@ -2530,81 +2612,65 @@ const styles = StyleSheet.create({
   innerCard: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    padding: 16, 
+    padding: 12, 
     borderRadius: theme.roundness, 
     flex: 1,
   },
   innerCardIcon: {
-    marginRight: 12,
-    backgroundColor: '#FFFFFF',
+    marginRight: 8,
+    marginLeft: 0,
+    marginTop: 0,
+    marginBottom: 0,
   },
   innerCardValue: { 
-    fontSize: 24, 
+    fontSize: 20, 
     fontWeight: 'bold',
     color: theme.colors.text,
   },
   innerCardLabel: { 
-    fontSize: 14, 
-    color: theme.colors.placeholder,
-  },
-  unitText: {
-    fontSize: 14,
-    fontWeight: 'normal',
+    fontSize: 13, 
     color: theme.colors.placeholder,
   },
   goalContainer: {
     marginTop: 20,
   },
-  goalTextContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
   goalText: {
+    marginBottom: 8,
     fontSize: 14,
     color: theme.colors.placeholder,
-    fontWeight: '500',
-  },
-  goalValues: {
-    fontSize: 14,
-    color: theme.colors.text,
-    fontWeight: '600',
   },
   progressBar: {
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+    height: 8,
+    borderRadius: 4,
   },
   insightContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 4,
+      backgroundColor: '#FFFBE6',
+      borderRadius: theme.roundness,
+      padding: 12,
+      marginTop: 20,
   },
   insightText: {
       flex: 1,
       fontSize: 14,
-      color: '#8C5A00',
+      color: '#B26E00',
       lineHeight: 20,
-      marginLeft: 12,
-  },
-  cardTitle: {
-    fontWeight: 'bold',
-    fontSize: 18,
-    paddingTop: 4,
   },
   filterButtons: { 
     marginBottom: 16,
   },
   pointerLabel: {
+    height: 60,
+    width: 100,
     backgroundColor: 'white',
     borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    justifyContent: 'center',
+    padding: 12,
     elevation: 4,
     shadowColor: '#000',
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.1,
     shadowRadius: 5,
-    shadowOffset: {width: 0, height: 2},
   },
   pointerLabelValue: {
     fontWeight: 'bold',
@@ -2616,14 +2682,40 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.placeholder,
   },
+  actionsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: 16,
+      marginBottom: 20,
+  },
+  actionButton: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.roundness,
+      paddingVertical: 12,
+      elevation: 2,
+  },
+  actionText: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: theme.colors.text,
+  },
   listItem: {
-      paddingHorizontal: 16,
-      paddingVertical: 8,
+      paddingLeft: 0,
+  },
+  firstListItem: {
+      borderTopWidth: 1, 
+      borderTopColor: '#F0F0F0', 
+      paddingTop: 16, 
+      marginTop: 10,
   },
   historyValue: {
       fontWeight: 'bold', 
       alignSelf: 'center',
-      fontSize: 16,
+      fontSize: 15,
   },
 });
 
@@ -2633,10 +2725,10 @@ Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Login.j
 =================================================================================
 
 import React, { useState } from 'react';
-import { 
-    StyleSheet, 
-    View, 
-    ScrollView, 
+import {
+    StyleSheet,
+    View,
+    ScrollView,
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
@@ -2673,7 +2765,9 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const API_BASE_URL = 'http://localhost:3334'; // Para Expo Go, use o IP da sua máquina. Ex: 'http://192.168.1.10:3334'
+// ATENÇÃO: Se estiver usando o Expo Go no seu celular, substitua 'localhost'
+// pelo endereço IP da sua máquina na rede. Ex: 'http://192.168.1.10:3334'
+const API_BASE_URL = 'http://localhost:3334';
 
 const theme = {
     ...DefaultTheme,
@@ -2720,7 +2814,7 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
     const [codigoAcesso, setCodigoAcesso] = useState('');
     const [bloco, setBloco] = useState('');
     const [numeroMoradores, setNumeroMoradores] = useState('1');
-    
+
     // Estados para o fluxo de "Esqueci minha senha"
     const [forgotPasswordModalVisible, setForgotPasswordModalVisible] = useState(false);
     const [resetPasswordModalVisible, setResetPasswordModalVisible] = useState(false);
@@ -2750,18 +2844,18 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
     const fetchAddressFromCep = async (cepValue) => {
         const unmaskedCep = cepValue.replace(/\D/g, '');
         if (unmaskedCep.length !== 8) return null;
-        
+
         setIsLoading(true);
         try {
             const response = await axios.get(`${API_BASE_URL}/api/cep/${unmaskedCep}`);
             const addressData = response.data;
             setLogradouro(addressData.logradouro || ''); setBairro(addressData.bairro || '');
-            setCidade(addressData.localidade || ''); setUf(addressData.uf || ''); setEstado(addressData.estado || '');
-            return { logradouro: addressData.logradouro, bairro: addressData.bairro, cidade: addressData.localidade, uf: addressData.uf, estado: addressData.estado };
+            setCidade(addressData.cidade || ''); setUf(addressData.uf || '');
+            return addressData;
         } catch (error) {
             console.error("Erro ao buscar CEP:", error);
             showSnackbar('CEP não encontrado ou inválido.', 'error');
-            setLogradouro(''); setBairro(''); setCidade(''); setUf(''); setEstado('');
+            setLogradouro(''); setBairro(''); setCidade(''); setUf('');
             return null;
         } finally {
             setIsLoading(false);
@@ -2797,16 +2891,22 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
         if (!agreeToTerms) { showSnackbar('Você precisa aceitar os Termos e Condições para continuar.', 'error'); return; }
 
         setIsLoading(true);
-        
-        const residenciaType = registrationType === 'condominio' ? 'apartamento' : 'casa';
-        let userData = { name, email, password: senha, cpf, residencia_type: residenciaType, numero_moradores: parseInt(numeroMoradores, 10) || 1 };
 
-        if (residenciaType === 'casa') {
-            Object.assign(userData, { logradouro, bairro, cidade, uf, estado, cep: cep.replace(/\D/g, ''), numero });
-        } else {
-            Object.assign(userData, { codigo_acesso: codigoAcesso, bloco, numero });
-        }
-        
+        const residencia_type = registrationType === 'condominio' ? 'apartamento' : 'casa';
+        let userData = {
+            name,
+            email,
+            password: senha,
+            cpf,
+            residencia_type,
+            numero_moradores: parseInt(numeroMoradores, 10) || 1,
+            // Campos específicos de cada tipo
+            cep,
+            numero,
+            bloco,
+            codigo_acesso: codigoAcesso,
+        };
+
         try {
             await axios.post(`${API_BASE_URL}/api/auth/register`, userData);
             showSnackbar('Cadastro realizado com sucesso! Faça o login.', 'success');
@@ -2909,7 +3009,7 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
         <View>
             <Paragraph style={styles.paragraph}>Selecione o tipo de plano para começar.</Paragraph>
             <View style={styles.customSegmentedContainer}>
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={[styles.customSegmentButton, registrationType === 'casa' && styles.customSegmentButtonActive]}
                     onPress={() => setRegistrationType('casa')}
                 >
@@ -2917,15 +3017,15 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                     <Text style={[styles.customSegmentLabel, registrationType === 'casa' && styles.customSegmentLabelActive]}>
                         Residência Própria
                     </Text>
-                    <IconButton 
-                        icon="help-circle-outline" 
-                        size={20} 
+                    <IconButton
+                        icon="help-circle-outline"
+                        size={20}
                         iconColor={registrationType === 'casa' ? '#FFFFFF' : theme.colors.primary}
                         onPress={() => setPlanoIndividualDialog(true)}
                         style={styles.infoIcon}
                     />
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={[styles.customSegmentButton, registrationType === 'condominio' && styles.customSegmentButtonActive]}
                     onPress={() => setRegistrationType('condominio')}
                 >
@@ -2933,9 +3033,9 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                     <Text style={[styles.customSegmentLabel, registrationType === 'condominio' && styles.customSegmentLabelActive]}>
                         Plano Condomínio
                     </Text>
-                    <IconButton 
-                        icon="help-circle-outline" 
-                        size={20} 
+                    <IconButton
+                        icon="help-circle-outline"
+                        size={20}
                         iconColor={registrationType === 'condominio' ? '#FFFFFF' : theme.colors.primary}
                         onPress={() => setPlanoCondoDialog(true)}
                         style={styles.infoIcon}
@@ -2947,14 +3047,14 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
             <TextInput label="Email" style={styles.input} value={email} onChangeText={setEmail} mode="outlined" keyboardType="email-address" autoCapitalize="none"/>
             <TextInput label="Senha (mín. 6 caracteres)" style={styles.input} value={senha} onChangeText={setSenha} secureTextEntry mode="outlined" />
             <TextInput label="CPF" style={styles.input} value={cpf} onChangeText={(text) => setCpf(mask(text, '999.999.999-99'))} mode="outlined" keyboardType="numeric" />
-            
+
             {registrationType === 'casa' && (
                 <>
                     <TextInput label="CEP" style={styles.input} value={cep} onChangeText={(text) => setCep(mask(text, '99999-999'))} onBlur={() => fetchAddressFromCep(cep)} mode="outlined" keyboardType="numeric" />
-                    <TextInput label="Logradouro" style={styles.input} value={logradouro} onChangeText={setLogradouro} mode="outlined" disabled={isLoading} />
-                    <TextInput label="Bairro" style={styles.input} value={bairro} onChangeText={setBairro} mode="outlined" disabled={isLoading} />
-                    <TextInput label="Cidade" style={styles.input} value={cidade} onChangeText={setCidade} mode="outlined" disabled={isLoading} />
-                    <TextInput label="UF" style={styles.input} value={uf} onChangeText={setUf} mode="outlined" disabled={isLoading} />
+                    <TextInput label="Logradouro" style={styles.input} value={logradouro} onChangeText={setLogradouro} mode="outlined" disabled={true} />
+                    <TextInput label="Bairro" style={styles.input} value={bairro} onChangeText={setBairro} mode="outlined" disabled={true} />
+                    <TextInput label="Cidade" style={styles.input} value={cidade} onChangeText={setCidade} mode="outlined" disabled={true} />
+                    <TextInput label="UF" style={styles.input} value={uf} onChangeText={setUf} mode="outlined" disabled={true} />
                     <TextInput label="Número da Casa" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" keyboardType="numeric" />
                     <TextInput label="Número de Moradores" style={styles.input} value={numeroMoradores} onChangeText={setNumeroMoradores} mode="outlined" keyboardType="numeric" />
                 </>
@@ -2963,8 +3063,9 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
             {registrationType === 'condominio' && (
                 <>
                     <TextInput label="Código de Acesso do Condomínio" style={styles.input} value={codigoAcesso} onChangeText={setCodigoAcesso} mode="outlined" />
-                    <TextInput label="Bloco" style={styles.input} value={bloco} onChangeText={setBloco} mode="outlined" />
-                    <TextInput label="Código de acesso do apartamento" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" keyboardType="numeric" />
+                    <TextInput label="Bloco (Opcional)" style={styles.input} value={bloco} onChangeText={setBloco} mode="outlined" />
+                    {/* CORREÇÃO APLICADA AQUI: O label foi ajustado para maior clareza. */}
+                    <TextInput label="Número do Apartamento" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" keyboardType="numeric" />
                     <TextInput label="Número de Moradores" style={styles.input} value={numeroMoradores} onChangeText={setNumeroMoradores} mode="outlined" keyboardType="numeric" />
                     <HelperText type="info" visible={true} style={{ textAlign: 'center' }}>
                         Não sabe o código? <Button mode="text" compact onPress={() => setCodigoDialogVisible(true)} labelStyle={{ fontSize: 12 }}>Clique aqui</Button>
@@ -2994,6 +3095,7 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                         <Card style={styles.card}>
                             <Card.Content style={styles.cardContent}>
                                 <View style={styles.logoContainer}>
+                                    {/* Certifique-se de que o caminho para o logo está correto em 'assets/logo.png' */}
                                     <Avatar.Image size={80} source={require('../assets/logo.png')} style={{ backgroundColor: 'transparent' }} />
                                     <Title style={styles.title}>Aqua Services</Title>
                                 </View>
@@ -3055,7 +3157,7 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                         <Button onPress={() => setPlanoCondoDialog(false)} mode="contained">Entendi</Button>
                     </Dialog.Actions>
                 </Dialog>
-                
+
                 <Dialog visible={codigoDialogVisible} onDismiss={() => setCodigoDialogVisible(false)} style={styles.dialog}>
                     <Dialog.Icon icon="information-outline" size={48} color={theme.colors.primary} />
                     <Dialog.Title style={styles.dialogTitle}>Código de Acesso</Dialog.Title>
@@ -3960,6 +4062,7 @@ import leituraRoutes from './routes/leitura.routes.js';
 import suporteRoutes from './routes/suporte.routes.js';
 import crescimentoRoutes from './routes/crescimento.routes.js';
 import vazamentoRoutes from './routes/vazamento.routes.js';
+import comunicadoRoutes from './routes/comunicado.routes.js';
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
@@ -4057,6 +4160,7 @@ await fastify.register(leituraRoutes, { prefix: '/api/leituras' });
 await fastify.register(suporteRoutes, { prefix: '/api/suporte' });
 await fastify.register(crescimentoRoutes, { prefix: '/api/crescimento' });
 await fastify.register(vazamentoRoutes, { prefix: '/api/vazamentos' });
+await fastify.register(comunicadoRoutes, { prefix: '/api/comunicados' });
 await fastify.register(cepRoutes, { prefix: '/api/cep' });
 await fastify.register(errorHandler);
 
@@ -4144,7 +4248,7 @@ export default class AdminController {
 
     static async update(req, reply) {
         const validateAdmin = updateAdminDTO.parse(req.body);
-        const admin = await AdminService.update(validateAdmin);
+        const admin = await AdminService.updateAdmin(validateAdmin);
         return reply.status(200).send(admin);
     }
 
@@ -4522,6 +4626,41 @@ export default class CepController {
 
 
 =================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\controllers\ComunicadosController.js
+=================================================================================
+
+import { createComunicado } from "../dto/comunicados/createComunicadoDTO.js";
+import { updateComunicado } from "../dto/comunicados/updateComunicadoDTO.js";
+import ComunicadosService from "../services/ComunicadosService.js";
+
+export default class ComunicadosController {
+    static async getAll(req, reply){
+        const comunicados = await ComunicadosService.getAll();
+        return reply.status(200).send(comunicados);
+    }
+
+    static async create(req, reply) {
+        const validateComunicado = createComunicado.parse(req.body);
+        const comunicado = await ComunicadosService.create(validateComunicado);
+        return reply.status(201).send(comunicado);
+    }
+
+    static async update(req, reply){
+        const { id } = req.params;
+        const validateComunicado = updateComunicado.parse(req.body);
+        const comunicado = await ComunicadosService.update(id, validateComunicado);
+        return reply.status(200).send(comunicado);
+    }
+
+    static async delete(req, reply){
+        const {id} = req.params;
+        const comunicado = await ComunicadosService.deleteComunicado(id);
+        return reply.status(200).send(comunicado);
+    }
+}
+
+
+=================================================================================
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\controllers\CondominioController.js
 =================================================================================
 
@@ -4529,6 +4668,7 @@ import CondominioService from "../services/CondominioService.js";
 import { createCondominioDTO } from "../dto/condominio/createCondominioDTO.js";
 import {updateCondominioDTO} from '../dto/condominio/updateCondominioDTO.js'
 import { atribuirSindicoDTO } from "../dto/condominio/atribuirSindicoDTO.js";
+import { updateNameCondominioDTO } from "../dto/condominio/updateNameCondominioDTO.js";
 
 export default class CondominioController {
     static async getAll(req, reply) {
@@ -4567,6 +4707,13 @@ export default class CondominioController {
         const { id } = req.params;
         const validateCondominio = updateCondominioDTO.parse(req.body);
         const updateCondominio = await CondominioService.updateCondominio(id, validateCondominio);
+        return reply.status(200).send(updateCondominio)
+    }
+
+    static async updateName(req, reply) {
+        const { id } = req.params;
+        const validateCondominio = updateNameCondominioDTO.parse(req.body);
+        const updateCondominio = await CondominioService.updateNameCondominio(id, validateCondominio);
         return reply.status(200).send(updateCondominio)
     }
 
@@ -4905,6 +5052,32 @@ export const updatePasswordDTO = z.object({
 
 
 =================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\dto\comunicados\createComunicadoDTO.js
+=================================================================================
+
+import {z} from 'zod';
+
+export const createComunicado = z.object({
+   title: z.string(),
+   subject: z.string(),
+   addressee: z.enum(["administradores", "usuários"]),
+})
+
+
+=================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\dto\comunicados\updateComunicadoDTO.js
+=================================================================================
+
+import {z} from 'zod';
+
+export const updateComunicado = z.object({
+   title: z.string().optional(),
+   subject: z.string().optional(),
+   addressee: z.enum(["administradores", "usuários"]).optional(),
+})
+
+
+=================================================================================
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\dto\condominio\atribuirSindicoDTO.js
 =================================================================================
 
@@ -4940,6 +5113,17 @@ export const updateCondominioDTO = z.object({
     numero: z.string().optional(),
     cep: z.string().min(8).max(9).optional(),
     sindico_id: z.string().uuid().optional()
+})
+
+
+=================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\dto\condominio\updateNameCondominioDTO.js
+=================================================================================
+
+import { z } from "zod";
+
+export const updateNameCondominioDTO = z.object({
+    name: z.string(),
 })
 
 
@@ -5602,6 +5786,42 @@ CasaView.init(
 
 sequelizePaginate.paginate(CasaView);
 
+
+
+=================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\models\Comunicados.js
+=================================================================================
+
+import { Model, DataTypes } from "sequelize";
+import sequelize from "../config/sequelize.js";
+
+export default class Comunicados extends Model {}
+
+Comunicados.init({
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    title: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    subject: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    addressee: {
+        type: DataTypes.ENUM('adminstradores', 'usuários'),
+        allowNull: false
+    }
+}, {
+    sequelize,
+    tableName: 'comunicados',
+    timestamps: true,
+    createdAt: 'criado_em',
+    updatedAt: 'atualizado_em'
+})
 
 
 =================================================================================
@@ -6646,6 +6866,20 @@ export default async function cepRoutes(fastify) {
 
 
 =================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\routes\comunicado.routes.js
+=================================================================================
+
+import ComunicadosController from "../controllers/ComunicadosController.js";
+
+export default async function comunicadoRoutes(fastify) {
+    fastify.get('/', ComunicadosController.getAll);
+    fastify.post('/', ComunicadosController.create);
+    fastify.put('/:id', ComunicadosController.update);
+    fastify.delete('/:id', ComunicadosController.delete);
+}
+
+
+=================================================================================
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\routes\condominio.routes.js
 =================================================================================
 
@@ -6722,6 +6956,16 @@ export default async function condominioRoutes(fastify) {
             }
         },
         CondominioController.update);
+
+    fastify.put('/:id/name',
+        {
+            schema: {
+                summary: 'Atualizando cadastro do nome de um condominio',
+                tags: ['condominios'],
+                description: 'Atualizando informações de um condominio do sistema'
+            }
+        },
+        CondominioController.updateName);
 
     fastify.patch('/:id/sindico',
         {
@@ -7930,6 +8174,70 @@ export default class CepService {
 
 
 =================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\services\ComunicadosService.js
+=================================================================================
+
+import Comunicados from "../models/Comunicados.js";
+
+export default class ComunicadosService {
+
+    static async getAll() {
+        try {
+            const comunicados = await Comunicados.findAll();
+            return comunicados;
+        } catch (error) {
+            console.error('Erro ao listar comunicados', error);
+            throw error;
+        }
+    }
+
+    static async create({ title, subject, addressee }) {
+        try {
+            const comunicado = await Comunicados.create({
+                title, subject, addressee
+            });
+            return comunicado;
+        } catch (error) {
+            console.error('Erro ao criar comunicado.', error);
+            throw error;
+        }
+    }
+
+    static async update(id, {title, subject, addressee}){
+        try {
+            const comunicado = await Comunicados.findByPk(id);
+            if(!comunicado) throw new Error('Comunicado não encontrado');
+
+            await comunicado.update({
+                title, subject, addressee
+            })
+            return comunicado;
+
+        } catch (error) {
+            console.error("Erro ao atualizar comunicado.", error);
+            throw error;
+        }
+    }
+
+    static async deleteComunicado(id) {
+        try {
+            const comunicado = await Comunicados.findByPk(id);
+            if(!comunicado) throw new Error('Comunicado não encontrado');
+
+            await comunicado.destroy();
+            return {
+                success: true,
+                message: 'Comunicado deletado com sucesso!'
+            };
+        } catch (error) {
+            console.error('Erro ao deletar comunicado', error);
+            throw error;
+        }
+    }
+}
+
+
+=================================================================================
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\services\CondominioService.js
 =================================================================================
 
@@ -8050,6 +8358,26 @@ export default class CondominioService {
                 return condominio;
         } catch (error) {
             console.error("Erro ao criar condomínio:", error);
+            throw error;
+        }
+    }
+
+    static async updateNameCondominio(id, { name }) {
+        try {
+            
+            const condominio = await Condominio.findByPk(id);
+            
+            if (!condominio) {
+                throw new Error('Condominio não encontrado.')
+            }
+
+            await condominio.update({
+                name,
+            })
+
+            return condominio;
+        } catch (error) {
+            console.error('Erro ao atualizar condominio', error);
             throw error;
         }
     }
