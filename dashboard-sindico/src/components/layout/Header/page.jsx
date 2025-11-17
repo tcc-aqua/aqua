@@ -87,7 +87,7 @@ export default function Header() {
 
           {!isMobile && (
             <p className="text-xs text-muted-foreground/80 mt-1">
-              Sistema de gestão e monitoramento
+              Sistema de gestão e monitoramento para síndicos
             </p>
           )}
         </div>
