@@ -4,11 +4,42 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { User, MapPin, Home, Building, Crown, UserCircle2, Check, X } from "lucide-react";
+import { PaginationDemo } from "@/components/pagination";
 
 export default function UsersTableOnly() {
   const [users] = useState([
     {
       user_id: "1",
+      user_name: "Fulano de Tal",
+      user_email: "fulano@email.com",
+      user_cpf: "123.456.789-00",
+      user_status: "ativo",
+      user_type: "casa",
+      user_role: "morador",
+      logradouro: "Rua A",
+      numero: "100",
+      bairro: "Centro",
+      cidade: "São Paulo",
+      uf: "SP",
+      cep: "00000-000",
+    },
+    {
+      user_id: "2",
+      user_name: "Fulano de Tal",
+      user_email: "fulano@email.com",
+      user_cpf: "123.456.789-00",
+      user_status: "ativo",
+      user_type: "casa",
+      user_role: "morador",
+      logradouro: "Rua A",
+      numero: "100",
+      bairro: "Centro",
+      cidade: "São Paulo",
+      uf: "SP",
+      cep: "00000-000",
+    },
+    {
+      user_id: "3",
       user_name: "Fulano de Tal",
       user_email: "fulano@email.com",
       user_cpf: "123.456.789-00",
@@ -128,6 +159,7 @@ export default function UsersTableOnly() {
             </tbody>
           </table>
         )}
+        <PaginationDemo/> 
       </CardContent>
     </Card>
   );

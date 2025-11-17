@@ -1,4 +1,5 @@
 import CardsRelatorio from "@/components/blocks/relatorios/card-principal";
+import MyChart5 from "@/components/blocks/relatorios/charts/MyChart5";
 import Content from "@/components/blocks/relatorios/content/page";
 import Header from "@/components/layout/Header/page";
 import LayoutDashboard from "@/components/layout/LayoutDashboard/page";
@@ -15,8 +16,9 @@ export default function Moradores() {
         <h1 className=" opacity-65 mb-3">Análises detalhadas do Jardim das Flores</h1>
           <div className="">
             <CardsRelatorio />
-            <section> 
+            <section className="grid grid-cols-2 gap-10"> 
                 <Content/>
+                <MyChart5/>
             </section>
             <section>
             </section>

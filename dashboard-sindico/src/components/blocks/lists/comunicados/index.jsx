@@ -35,6 +35,7 @@ import {
 
 import AnimationWrapper from "../../../layout/Animation/Animation";
 import { Bell, BellOff, Users, Shield } from "lucide-react";
+import { PaginationDemo } from "@/components/pagination";
 
 export default function ComunicadosDashboard() {
     const [open, setOpen] = useState(false);
@@ -273,6 +274,7 @@ export default function ComunicadosDashboard() {
                             </div>
                         ))}
                     </CardContent>
+                    <PaginationDemo/>
                 </Card>
             </div>
 

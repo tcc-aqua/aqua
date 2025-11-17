@@ -18,41 +18,39 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-export const description = "A bar chart with a label"
-
 const chartData = [
-  { month: "January", desktop: 186 },
-  { month: "February", desktop: 305 },
-  { month: "March", desktop: 237 },
-  { month: "April", desktop: 73 },
-  { month: "May", desktop: 209 },
-  { month: "June", desktop: 214 },
+  { month: "Janeiro", novos: 12 },
+  { month: "Fevereiro", novos: 18 },
+  { month: "Março", novos: 9 },
+  { month: "Abril", novos: 15 },
+  { month: "Maio", novos: 11 },
+  { month: "Junho", novos: 16 },
 ]
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
+  novos: {
+    label: "Novos Moradores",
     color: "var(--chart-1)",
   },
-} 
+}
 
 export function ChartBarLabel() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bar Chart - Label</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>Novos Moradores</CardTitle>
+        <CardDescription>Total registrado mês a mês</CardDescription>
       </CardHeader>
+
       <CardContent>
         <ChartContainer config={chartConfig}>
           <BarChart
             accessibilityLayer
             data={chartData}
-            margin={{
-              top: 20,
-            }}
+            margin={{ top: 20 }}
           >
             <CartesianGrid vertical={false} />
+
             <XAxis
               dataKey="month"
               tickLine={false}
@@ -60,11 +58,13 @@ export function ChartBarLabel() {
               axisLine={false}
               tickFormatter={(value) => value.slice(0, 3)}
             />
+
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
             />
-            <Bar dataKey="desktop" fill="var(--color-desktop)" radius={8}>
+
+            <Bar dataKey="novos" fill="var(--color-novos)" radius={8}>
               <LabelList
                 position="top"
                 offset={12}
@@ -75,12 +75,10 @@ export function ChartBarLabel() {
           </BarChart>
         </ChartContainer>
       </CardContent>
+
       <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
         <div className="text-muted-foreground leading-none">
-          Showing total visitors for the last 6 months
+          Histórico dos últimos 6 meses
         </div>
       </CardFooter>
     </Card>
