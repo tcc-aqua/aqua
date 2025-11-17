@@ -1,3 +1,5 @@
+
+
 import {Model, DataTypes } from 'sequelize';
 import sequelize from '../config/sequelize.js';
 import User from './User.js';
@@ -20,7 +22,7 @@ Metas.init({
         type: DataTypes.ENUM('casa', 'apartamento'),
         allowNull: false
     },
-    residencia_type: {
+    residencia_id: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
