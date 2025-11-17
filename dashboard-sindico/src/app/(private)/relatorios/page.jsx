@@ -11,9 +11,11 @@ export default function Moradores() {
           <Header />
         </header>
         <main className="container mx-auto pt-20 ">
+        <h1 className="text-4xl font-black py-2">Relatórios do Condomínio</h1>
+        <h1 className=" opacity-65 mb-3">Análises detalhadas do Jardim das Flores</h1>
           <div className="">
             <CardsRelatorio />
-            <section>
+            <section> 
                 <Content/>
             </section>
             <section>
