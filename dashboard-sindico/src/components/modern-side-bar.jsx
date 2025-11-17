@@ -25,7 +25,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import Cookies from "js-cookie";
 
 const navigationItems = [
-  { id: "dashboard", name: "Dashboard", icon: Home, href: "/dashboard" },
+  { id: "dashboard", name: "Dashboard", icon: Home, href: "/" },
   { id: "moradores", name: "Moradores", icon: Users, href: "/moradores" },
   { id: "relatorios", name: "Relatorios", icon: Building, href: "/relatorios" },
   { id: "chat", name: "Chat", icon: Grid, href: "/chat" },
