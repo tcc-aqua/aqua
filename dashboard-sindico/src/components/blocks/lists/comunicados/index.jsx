@@ -153,7 +153,6 @@ export default function ComunicadosDashboard() {
             </section>
 
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Comunicados</h1>
 
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>

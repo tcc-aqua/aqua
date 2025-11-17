@@ -12,8 +12,20 @@ const tabs = [
     render: <MyChart1 />,
   },
   {
-    name: "2",
-    value: "2",
+    name: "Monitoramento",
+    value: "monitoramento",
+    icon: <BarChartIcon className="w-4 h-4" />,
+    render: <MyChart2 />,
+  },
+  {
+    name: "Graficos",
+    value: "graficos",
+    icon: <BarChartIcon className="w-4 h-4" />,
+    render: <MyChart2 />,
+  },
+  {
+    name: "dados",
+    value: "dados",
     icon: <BarChartIcon className="w-4 h-4" />,
     render: <MyChart2 />,
   },
