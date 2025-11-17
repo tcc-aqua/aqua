@@ -1,8 +1,10 @@
-"use client";
+'use client';
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, MapPin, Home, Building, Check, X, AlertTriangle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { User, MapPin, AlertTriangle } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function AlertasRecentes() {
   const [alertas] = useState([
@@ -30,15 +32,84 @@ export default function AlertasRecentes() {
       cidade: "São Paulo",
       uf: "SP",
       tipo: "consumo_alto",
+      nivel: "alto",
       status: "ativo",
       data: "2025-11-16 13:10",
     },
   ]);
 
+  // Exportar CSV
+  const exportCSV = () => {
+    const headers = ["Usuário", "Residência", "Tipo", "Status", "Data"];
+    const rows = alertas.map(a => [
+      a.usuario,
+      a.residencia_type === "casa"
+        ? `${a.residencia_logradouro}, ${a.residencia_numero}`
+        : `Bloco ${a.residencia_logradouro}, ${a.residencia_numero}`,
+      a.tipo.replace("_", " "),
+      a.status,
+      a.data
+    ]);
+
+    let csvContent = "data:text/csv;charset=utf-8,"
+      + headers.join(",") + "\n"
+      + rows.map(r => r.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "alertas.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Exportar PDF
+  const exportPDF = () => {
+    const doc = new jsPDF({ orientation: "landscape" });
+    const tableColumn = ["Usuário", "Residência", "Tipo", "Status", "Data"];
+    const tableRows = alertas.map(a => [
+      a.usuario,
+      a.residencia_type === "casa"
+        ? `${a.residencia_logradouro}, ${a.residencia_numero}`
+        : `Bloco ${a.residencia_logradouro}, ${a.residencia_numero}`,
+      a.tipo.replace("_", " "),
+      a.status,
+      a.data
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+      theme: "grid",
+      headStyles: { fillColor: [79, 70, 229] }, // azul
+      styles: { fontSize: 10 },
+    });
+
+    doc.save("alertas.pdf");
+  };
+
   return (
     <Card className="mx-auto mt-10 hover:border-sky-400 dark:hover:border-sky-950">
       <CardHeader>
-        <CardTitle>Últimos Alertas</CardTitle>
+        <div className="flex items-center">
+          <CardTitle>Últimos Alertas</CardTitle>
+          <div className="ml-auto gap-3">
+            <button
+              onClick={exportCSV}
+              className="px-3 py-1.5 bg-accent mx-2 text-white rounded-md hover:bg-accent/80 transition-all"
+            >
+              Exportar CSV
+            </button>
+            <button
+              onClick={exportPDF}
+              className="px-3 py-1.5 bg-accent text-white rounded-md hover:bg-accent/80 transition-all"
+            >
+              Exportar PDF
+            </button>
+          </div>
+        </div>
       </CardHeader>
 
       <CardContent className="overflow-x-auto">
@@ -62,9 +133,7 @@ export default function AlertasRecentes() {
                   <td className="px-4 py-2">
                     <div className="flex items-start gap-2">
                       <User className="w-5 h-5 text-sky-600 mt-1" />
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold">{alerta.usuario}</span>
-                      </div>
+                      <span className="text-sm font-semibold">{alerta.usuario}</span>
                     </div>
                   </td>
 
@@ -90,24 +159,22 @@ export default function AlertasRecentes() {
                     </span>
                   </td>
 
-            
                   <td className="text-sm px-4 py-2">
                     <span
-                      className={`inline-block w-3 h-3 rounded-full ${
-                        alerta.status === "ativo" ? "bg-green-600" : "bg-destructive"
-                      }`}
+                      className={`inline-block w-3 h-3 rounded-full ${alerta.status === "ativo" ? "bg-green-600" : "bg-destructive"
+                        }`}
                     />
                   </td>
 
-                  <td className="text-sm px-4 py-2">
-                    {alerta.data}
-                  </td>
+                  <td className="text-sm px-4 py-2">{alerta.data}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </CardContent>
+
+
     </Card>
   );
 }
