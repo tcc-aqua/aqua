@@ -1,5 +1,5 @@
 import CardsRelatorio from "@/components/blocks/relatorios/card-principal";
-import MyChart5 from "@/components/blocks/relatorios/charts/MyChart5";
+import MyChart5 from "@/components/blocks/relatorios/charts/MediaDeMoradores";
 import Content from "@/components/blocks/relatorios/content/page";
 import Header from "@/components/layout/Header/page";
 import LayoutDashboard from "@/components/layout/LayoutDashboard/page";
