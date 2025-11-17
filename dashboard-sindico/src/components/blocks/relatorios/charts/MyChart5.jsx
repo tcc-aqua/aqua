@@ -33,7 +33,7 @@ const chartConfig = {
   },
 } 
 
-export default function MyChart5x() {
+export default function MyChart5() {
   const totalVisitors = chartData[0].desktop + chartData[0].mobile
 
   return (

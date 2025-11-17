@@ -1,34 +1,30 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import MyChart1 from "./blocks/relatorios/charts/MyChart1";
-import MyChart2 from "./blocks/relatorios/charts/MyChart2";
+import MyChart2 from "./blocks/relatorios/charts/StatusSensores";
 import { BarChartIcon } from "lucide-react";
+import ChartPieInteractive from "./blocks/relatorios/charts/StatusSensores";
+import { ChartTooltipLabelFormatter } from "./blocks/relatorios/charts/UsuariosAtivos";
+import { ChartRadarMultiple } from "./blocks/relatorios/charts/ComunicadosEmitidosVsVisualizados";
 
 const tabs = [
-  {
-    name: "Vazamento x Consumo Alto",
-    value: "vazamentos_consumo",
-    icon: <BarChartIcon className="w-4 h-4" />,
-    render: <MyChart1 />,
-  },
   {
     name: "Status Sensores",
     value: "status_sensores",
     icon: <BarChartIcon className="w-4 h-4" />,
-    render: <MyChart2 />,
+    render: <ChartPieInteractive />,
   },
   {
     name: "Usuários Ativos",
     value: "usuarios_ativos",
     icon: <BarChartIcon className="w-4 h-4" />,
-    render: <MyChart2 />,
+    render: <ChartTooltipLabelFormatter />,
   },
   {
-    name: "Dados Gerais",
+    name: "Comunicados Emitidos x Visualizados",
     value: "dados_gerais",
     icon: <BarChartIcon className="w-4 h-4" />,
-    render: <MyChart2 />,
+    render: <ChartRadarMultiple />,
   },
 ];
 
