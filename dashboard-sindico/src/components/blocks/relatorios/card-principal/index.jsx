@@ -21,17 +21,17 @@ const cardsData = [
         iconColor: "text-purple-500",
     },
     {
-        title: "Eficiência",
-        value: "12.480 L",
+        title: "Alertas de Vazamento",
+        value: 3, // número de alertas ativos
         icon: Droplet,
-        iconColor: "text-sky-500",
+        iconColor: "text-red-500",
     }
 ];
 
 export default function CardsRelatorio() {
     return (
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            {cardsData.map((card, i) => {
+            {cardsData.map((card) => {
                 const Icon = card.icon;
 
                 return (

@@ -1,7 +1,5 @@
 "use client";
-
 import { useRef } from "react";
-import { TrendingUp } from "lucide-react";
 import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -16,14 +14,13 @@ const chartData = [{ month: "january", desktop: 1260, mobile: 570 }];
 const totalVisitors = chartData[0].desktop + chartData[0].mobile;
 
 const chartConfig = {
-  desktop: { label: "Desktop", color: "#4f46e5" }, // azul
-  mobile: { label: "Mobile", color: "#22c55e" },   // verde
+  desktop: { label: "Desktop", color: "#4f46e5" }, 
+  mobile: { label: "Mobile", color: "#22c55e" },   
 };
 
 export default function MyChart5() {
   const chartRef = useRef(null);
 
-  // Export CSV
   const exportCSV = () => {
     const headers = ["Month", "Desktop", "Mobile"];
     const rows = chartData.map(d => [d.month, d.desktop, d.mobile]);
@@ -72,7 +69,6 @@ export default function MyChart5() {
       pdf.text("Radial Chart - Visitors", 20, 20);
       pdf.addImage(imgData, "PNG", 20, 40, canvas.width / scale, canvas.height / scale);
 
-      // Legenda
       let yLegend = canvas.height / scale + 60;
       Object.keys(chartConfig).forEach(key => {
         pdf.setFillColor(chartConfig[key].color);
@@ -82,7 +78,6 @@ export default function MyChart5() {
         yLegend += 20;
       });
 
-      // Tabela
       const tableColumn = ["Month", "Desktop", "Mobile"];
       const tableRows = chartData.map(d => [d.month, d.desktop, d.mobile]);
       autoTable(pdf, { head: [tableColumn], body: tableRows, startY: yLegend + 20 });
@@ -97,8 +92,7 @@ export default function MyChart5() {
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0 flex justify-between">
         <div>
-          <CardTitle>Média de moradores por apartamento</CardTitle>
-          <CardDescription>January - June 2024</CardDescription>
+          <CardTitle className={'text-xl'}>Média de Moradores Por Apartamento</CardTitle>
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="secondary" onClick={exportCSV}>Exportar CSV</Button>
@@ -119,7 +113,7 @@ export default function MyChart5() {
                         <tspan x={viewBox.cx} y={(viewBox.cy || 0) - 16} className="fill-foreground text-2xl font-bold">
                           {totalVisitors.toLocaleString()}
                         </tspan>
-                        <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 4} className="fill-muted-foreground">
+                        <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 4} className="fill-muted-foreground ">
                           Visitors
                         </tspan>
                       </text>
@@ -133,15 +127,6 @@ export default function MyChart5() {
           </RadialBarChart>
         </ChartContainer>
       </CardContent>
-
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="text-muted-foreground leading-none">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
     </Card>
   );
 }
