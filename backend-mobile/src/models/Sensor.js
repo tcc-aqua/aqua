@@ -2,6 +2,7 @@ import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import { nanoid } from 'nanoid';
 import sequelizePaginate from 'sequelize-paginate'
+import LeituraSensor from "./LeituraSensor.js";
 
 export default class Sensor extends Model { }
 
@@ -37,5 +38,7 @@ Sensor.init({
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em'
 })
+
+Sensor.hasMany(LeituraSensor, { foreignKey: 'sensor_id' });
 
 sequelizePaginate.paginate(Sensor);

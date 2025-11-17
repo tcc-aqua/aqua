@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { 
-    StyleSheet, 
-    View, 
-    ScrollView, 
+import {
+    StyleSheet,
+    View,
+    ScrollView,
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
@@ -39,7 +39,9 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const API_BASE_URL = 'http://localhost:3334'; // Para Expo Go, use o IP da sua máquina. Ex: 'http://192.168.1.10:3334'
+// ATENÇÃO: Se estiver usando o Expo Go no seu celular, substitua 'localhost'
+// pelo endereço IP da sua máquina na rede. Ex: 'http://192.168.1.10:3334'
+const API_BASE_URL = 'http://localhost:3334';
 
 const theme = {
     ...DefaultTheme,
@@ -86,7 +88,7 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
     const [codigoAcesso, setCodigoAcesso] = useState('');
     const [bloco, setBloco] = useState('');
     const [numeroMoradores, setNumeroMoradores] = useState('1');
-    
+
     // Estados para o fluxo de "Esqueci minha senha"
     const [forgotPasswordModalVisible, setForgotPasswordModalVisible] = useState(false);
     const [resetPasswordModalVisible, setResetPasswordModalVisible] = useState(false);
@@ -116,18 +118,18 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
     const fetchAddressFromCep = async (cepValue) => {
         const unmaskedCep = cepValue.replace(/\D/g, '');
         if (unmaskedCep.length !== 8) return null;
-        
+
         setIsLoading(true);
         try {
             const response = await axios.get(`${API_BASE_URL}/api/cep/${unmaskedCep}`);
             const addressData = response.data;
             setLogradouro(addressData.logradouro || ''); setBairro(addressData.bairro || '');
-            setCidade(addressData.localidade || ''); setUf(addressData.uf || ''); setEstado(addressData.estado || '');
-            return { logradouro: addressData.logradouro, bairro: addressData.bairro, cidade: addressData.localidade, uf: addressData.uf, estado: addressData.estado };
+            setCidade(addressData.cidade || ''); setUf(addressData.uf || '');
+            return addressData;
         } catch (error) {
             console.error("Erro ao buscar CEP:", error);
             showSnackbar('CEP não encontrado ou inválido.', 'error');
-            setLogradouro(''); setBairro(''); setCidade(''); setUf(''); setEstado('');
+            setLogradouro(''); setBairro(''); setCidade(''); setUf('');
             return null;
         } finally {
             setIsLoading(false);
@@ -163,16 +165,22 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
         if (!agreeToTerms) { showSnackbar('Você precisa aceitar os Termos e Condições para continuar.', 'error'); return; }
 
         setIsLoading(true);
-        
-        const residenciaType = registrationType === 'condominio' ? 'apartamento' : 'casa';
-        let userData = { name, email, password: senha, cpf, residencia_type: residenciaType, numero_moradores: parseInt(numeroMoradores, 10) || 1 };
 
-        if (residenciaType === 'casa') {
-            Object.assign(userData, { logradouro, bairro, cidade, uf, estado, cep: cep.replace(/\D/g, ''), numero });
-        } else {
-            Object.assign(userData, { codigo_acesso: codigoAcesso, bloco, numero });
-        }
-        
+        const residencia_type = registrationType === 'condominio' ? 'apartamento' : 'casa';
+        let userData = {
+            name,
+            email,
+            password: senha,
+            cpf,
+            residencia_type,
+            numero_moradores: parseInt(numeroMoradores, 10) || 1,
+            // Campos específicos de cada tipo
+            cep,
+            numero,
+            bloco,
+            codigo_acesso: codigoAcesso,
+        };
+
         try {
             await axios.post(`${API_BASE_URL}/api/auth/register`, userData);
             showSnackbar('Cadastro realizado com sucesso! Faça o login.', 'success');
@@ -275,7 +283,7 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
         <View>
             <Paragraph style={styles.paragraph}>Selecione o tipo de plano para começar.</Paragraph>
             <View style={styles.customSegmentedContainer}>
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={[styles.customSegmentButton, registrationType === 'casa' && styles.customSegmentButtonActive]}
                     onPress={() => setRegistrationType('casa')}
                 >
@@ -283,15 +291,15 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                     <Text style={[styles.customSegmentLabel, registrationType === 'casa' && styles.customSegmentLabelActive]}>
                         Residência Própria
                     </Text>
-                    <IconButton 
-                        icon="help-circle-outline" 
-                        size={20} 
+                    <IconButton
+                        icon="help-circle-outline"
+                        size={20}
                         iconColor={registrationType === 'casa' ? '#FFFFFF' : theme.colors.primary}
                         onPress={() => setPlanoIndividualDialog(true)}
                         style={styles.infoIcon}
                     />
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={[styles.customSegmentButton, registrationType === 'condominio' && styles.customSegmentButtonActive]}
                     onPress={() => setRegistrationType('condominio')}
                 >
@@ -299,9 +307,9 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                     <Text style={[styles.customSegmentLabel, registrationType === 'condominio' && styles.customSegmentLabelActive]}>
                         Plano Condomínio
                     </Text>
-                    <IconButton 
-                        icon="help-circle-outline" 
-                        size={20} 
+                    <IconButton
+                        icon="help-circle-outline"
+                        size={20}
                         iconColor={registrationType === 'condominio' ? '#FFFFFF' : theme.colors.primary}
                         onPress={() => setPlanoCondoDialog(true)}
                         style={styles.infoIcon}
@@ -313,14 +321,14 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
             <TextInput label="Email" style={styles.input} value={email} onChangeText={setEmail} mode="outlined" keyboardType="email-address" autoCapitalize="none"/>
             <TextInput label="Senha (mín. 6 caracteres)" style={styles.input} value={senha} onChangeText={setSenha} secureTextEntry mode="outlined" />
             <TextInput label="CPF" style={styles.input} value={cpf} onChangeText={(text) => setCpf(mask(text, '999.999.999-99'))} mode="outlined" keyboardType="numeric" />
-            
+
             {registrationType === 'casa' && (
                 <>
                     <TextInput label="CEP" style={styles.input} value={cep} onChangeText={(text) => setCep(mask(text, '99999-999'))} onBlur={() => fetchAddressFromCep(cep)} mode="outlined" keyboardType="numeric" />
-                    <TextInput label="Logradouro" style={styles.input} value={logradouro} onChangeText={setLogradouro} mode="outlined" disabled={isLoading} />
-                    <TextInput label="Bairro" style={styles.input} value={bairro} onChangeText={setBairro} mode="outlined" disabled={isLoading} />
-                    <TextInput label="Cidade" style={styles.input} value={cidade} onChangeText={setCidade} mode="outlined" disabled={isLoading} />
-                    <TextInput label="UF" style={styles.input} value={uf} onChangeText={setUf} mode="outlined" disabled={isLoading} />
+                    <TextInput label="Logradouro" style={styles.input} value={logradouro} onChangeText={setLogradouro} mode="outlined" disabled={true} />
+                    <TextInput label="Bairro" style={styles.input} value={bairro} onChangeText={setBairro} mode="outlined" disabled={true} />
+                    <TextInput label="Cidade" style={styles.input} value={cidade} onChangeText={setCidade} mode="outlined" disabled={true} />
+                    <TextInput label="UF" style={styles.input} value={uf} onChangeText={setUf} mode="outlined" disabled={true} />
                     <TextInput label="Número da Casa" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" keyboardType="numeric" />
                     <TextInput label="Número de Moradores" style={styles.input} value={numeroMoradores} onChangeText={setNumeroMoradores} mode="outlined" keyboardType="numeric" />
                 </>
@@ -329,8 +337,9 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
             {registrationType === 'condominio' && (
                 <>
                     <TextInput label="Código de Acesso do Condomínio" style={styles.input} value={codigoAcesso} onChangeText={setCodigoAcesso} mode="outlined" />
-                    <TextInput label="Bloco" style={styles.input} value={bloco} onChangeText={setBloco} mode="outlined" />
-                    <TextInput label="Código de acesso do apartamento" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" keyboardType="numeric" />
+                    <TextInput label="Bloco (Opcional)" style={styles.input} value={bloco} onChangeText={setBloco} mode="outlined" />
+                    {/* CORREÇÃO APLICADA AQUI: O label foi ajustado para maior clareza. */}
+                    <TextInput label="Número do Apartamento" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" keyboardType="numeric" />
                     <TextInput label="Número de Moradores" style={styles.input} value={numeroMoradores} onChangeText={setNumeroMoradores} mode="outlined" keyboardType="numeric" />
                     <HelperText type="info" visible={true} style={{ textAlign: 'center' }}>
                         Não sabe o código? <Button mode="text" compact onPress={() => setCodigoDialogVisible(true)} labelStyle={{ fontSize: 12 }}>Clique aqui</Button>
@@ -360,6 +369,7 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                         <Card style={styles.card}>
                             <Card.Content style={styles.cardContent}>
                                 <View style={styles.logoContainer}>
+                                    {/* Certifique-se de que o caminho para o logo está correto em 'assets/logo.png' */}
                                     <Avatar.Image size={80} source={require('../assets/logo.png')} style={{ backgroundColor: 'transparent' }} />
                                     <Title style={styles.title}>Aqua Services</Title>
                                 </View>
@@ -421,7 +431,7 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
                         <Button onPress={() => setPlanoCondoDialog(false)} mode="contained">Entendi</Button>
                     </Dialog.Actions>
                 </Dialog>
-                
+
                 <Dialog visible={codigoDialogVisible} onDismiss={() => setCodigoDialogVisible(false)} style={styles.dialog}>
                     <Dialog.Icon icon="information-outline" size={48} color={theme.colors.primary} />
                     <Dialog.Title style={styles.dialogTitle}>Código de Acesso</Dialog.Title>

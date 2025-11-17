@@ -112,4 +112,7 @@
         },
     })
 
+
+
+    Casa.belongsTo(Sensor, { foreignKey: "sensor_id", as: "sensor" }); // <-- ADICIONE ESTA LINHA
     sequelizePaginate.paginate(Casa);

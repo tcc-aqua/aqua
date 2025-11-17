@@ -1,4 +1,7 @@
-import UpdateController from "../controllers/UserController.js";
+
+
+import UserController from "../controllers/UserController.js";
+import { authMiddleware } from "../middlewares/AuthMidlleweare.js";
 
 export default async function userRoutes(fastify) {
     fastify.put('/me', {
@@ -6,6 +9,7 @@ export default async function userRoutes(fastify) {
             summary: 'Alterando informações pessoal',
             tags: ['users'],
             description: 'Listando informações do usuário'
-        }
-    }, UpdateController.updateMe);
+        },
+        preHandler: [authMiddleware]
+    }, UserController.updateMe);
 }

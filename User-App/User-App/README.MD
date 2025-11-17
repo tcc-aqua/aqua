@@ -90,4 +90,4 @@ Com o banco de dados e o backend rodando, configure e inicie o aplicativo.
 2.  Escaneie o QR Code exibido no terminal ou na página do navegador.
 3.  O aplicativo será carregado no seu dispositivo.
 
-> **⚠️ Atenção:** Se o aplicativo apresentar erros de conexão (`Network Error`), certifique-se de que a variável `API_BASE_URL` no arquivo `screens/Login.jsx` está configurada com o endereço IP de rede correto do seu computador (aquele que aparece no terminal do backend, ex: `http://192.168.0.10:3334`).
+> **⚠️ Atenção:** Se o aplicativo apresentar erros de conexão (`Network Error`), certifique-se de que a variável `API_BASE_URL` no arquivo `screens/Login.jsx` está configurada com o endereço IP de rede correto do seu computador (aquele que aparece no terminal do backend, ex: `http://192.168.0.10:3334`). além do mais, se preciso do componente @expo/ngrok@^4.1.0, qu eé instalado uma vez rodando --tunnel no seu computador

@@ -59,7 +59,7 @@ export default function Header() {
     if (pathname.startsWith("/alerts")) return "Gerenciamento de Alertas";
     if (pathname.startsWith("/casas")) return "Gerenciamento de Casas";
     if (pathname.startsWith("/sensors")) return "Gerenciamento de Sensores";
-    if (pathname.startsWith("/profile")) return "Perfil";
+    if (pathname.startsWith("/configuracoes")) return "Perfil";
     return "Bem-vindo(a)";
   };
 
@@ -87,7 +87,7 @@ export default function Header() {
 
           {!isMobile && (
             <p className="text-xs text-muted-foreground/80 mt-1">
-              Sistema de gestão e monitoramento
+              Sistema de gestão e monitoramento para síndicos
             </p>
           )}
         </div>
@@ -100,7 +100,7 @@ export default function Header() {
           </div>
 
           <Link
-            href="/profile"
+            href="/configuracoes"
             className="flex items-center space-x-3 pl-5 cursor-pointer group"
           >
             <div className="relative">

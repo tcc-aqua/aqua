@@ -38,17 +38,18 @@ export default class UserController {
         { expiresIn: "7d" }
       );
 
+      // A MUDANÇA ESTÁ AQUI: Retornamos o objeto 'user' completo
+      // que já contém residencia_id e residencia_type do banco.
+      // E removemos o password antes de enviar.
+      const userResponse = user.toJSON();
+      delete userResponse.password;
+
       return reply.code(200).send({
         message: "Login realizado com sucesso",
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          type: user.type,
-        },
+        user: userResponse,
         token,
       });
+
     } catch (error) {
       console.error("Erro no login:", error);
 
