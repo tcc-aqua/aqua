@@ -15,7 +15,7 @@ export default class DashboardController {
             const apartamentosAtivos = await GetApartamentosAtivo.getApartamentos(sindico_id);
             const totalUsuarios = await GetUsersTotal.getCountUsers(sindico_id);
             const sensoresAtivos = await GetSensoresAtivos.getSensoresAtivos(sindico_id);
-            // const consumoTotal = await ConsumoTotalService.getConsumoTotal(sindico_id);
+            const consumoTotal = await ConsumoTotalService.getConsumoTotal(sindico_id);
             const consumoXvazamento = await GetVazamentoConsumoService.getRelatorio(sindico_id)
             const condominio = await getCondomonioInfo.getCondominio(sindico_id);
             const alertasRecentes = await GetAlertasRecentes.getAlertasRecentes(sindico_id);
@@ -30,7 +30,7 @@ export default class DashboardController {
                 // totalUsuarios,
                 novosMoradores,
                 alertasRecentes,
-                // consumoTotal,
+                consumoTotal,
             });
 
         } catch (error) {
