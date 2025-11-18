@@ -1,13 +1,17 @@
 // Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\app.js
-// CÓDIGO COMPLETO E ATUALIZADO
+// CÓDIGO COMPLETO E CORRIGIDO
 
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyFormbody from '@fastify/formbody';
 import { fastifySwagger } from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
-import pino from 'pino'
-import fs from 'fs'
+import pino from 'pino';
+import fs from 'fs';
+import multipart from '@fastify/multipart';      // 1. IMPORTADO
+import fastifyStatic from '@fastify/static';  // 2. IMPORTADO
+import path from 'path';                         // 3. IMPORTADO
+import { fileURLToPath } from 'url';             // 4. IMPORTADO
 
 import authRoutes from './routes/auth.routes.js';
 import apartamentoRoutes from './routes/apartamento.routes.js';
@@ -18,9 +22,7 @@ import cepRoutes from './routes/cep.routes.js';
 import metasRoutes from './routes/metas.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import comunicadosRoutes from './routes/comunicados.routes.js';
-import casaRoutes from './routes/casa.routes.js'; 
-
-
+import casaRoutes from './routes/casa.routes.js';
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
@@ -52,12 +54,19 @@ const fastify = Fastify({
 });
 
 await fastify.register(cors, {
-    origin: '*', 
+    origin: '*',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
 });
 
 fastify.register(fastifyFormbody);
+await fastify.register(multipart); // 5. REGISTRADO PLUGIN MULTIPART
+
+// 6. REGISTRADO PLUGIN STATIC PARA SERVIR A PASTA 'uploads'
+fastify.register(fastifyStatic, {
+    root: path.join(process.cwd(), 'uploads'),
+    prefix: '/api/uploads/',
+});
 
 // docs api
 await fastify.register(fastifySwagger, {
@@ -96,17 +105,15 @@ fastify.get('/api', {
 })
 
 
-fastify.register(authRoutes, {prefix: '/api/auth'});
-fastify.register(apartamentoRoutes, {prefix: '/api/apartamentos'});
-// =====> INÍCIO DA ALTERAÇÃO
-fastify.register(casaRoutes, {prefix: '/api/casas'}); // 2. Registra a rota para o prefixo /api/casas
-// =====> FIM DA ALTERAÇÃO
-fastify.register(dicaRoutes, {prefix: '/api/dica'});
-fastify.register(userRoutes, {prefix: '/api/user'});
-fastify.register(metasRoutes, {prefix: '/api/metas'});
-fastify.register(cepRoutes, {prefix: '/api/cep'});
-fastify.register(profileRoutes, {prefix: '/api/profile'});
-fastify.register(passwordRoutes, {prefix: '/api/password'});
-fastify.register(comunicadosRoutes, {prefix: '/api/comunicados'});
+fastify.register(authRoutes, { prefix: '/api/auth' });
+fastify.register(apartamentoRoutes, { prefix: '/api/apartamentos' });
+fastify.register(casaRoutes, { prefix: '/api/casas' });
+fastify.register(dicaRoutes, { prefix: '/api/dica' });
+fastify.register(userRoutes, { prefix: '/api/user' });
+fastify.register(metasRoutes, { prefix: '/api/metas' });
+fastify.register(cepRoutes, { prefix: '/api/cep' });
+fastify.register(profileRoutes, { prefix: '/api/profile' });
+fastify.register(passwordRoutes, { prefix: '/api/password' });
+fastify.register(comunicadosRoutes, { prefix: '/api/comunicados' });
 
 export default fastify;

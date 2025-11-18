@@ -1,8 +1,7 @@
 import PasswordController from "../controllers/PasswordController.js";
 
 export default async function passwordRoutes(fastify) {
-    // Rota para solicitar o código de redefinição
-    // POST /api/password/forgot
+
     fastify.post('/forgot', {
         schema: {
             summary: 'Pedido de troca de senha',
@@ -11,8 +10,6 @@ export default async function passwordRoutes(fastify) {
         }
     }, PasswordController.forgotPassword);
 
-    // Rota para efetivar a redefinição com o código
-    // POST /api/password/reset
     fastify.post('/reset', {
         schema: {
             summary: 'Resetando e definindo uma nova senha',
