@@ -13,6 +13,11 @@ import dashboardRoutes from './routes/dashboard.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import moradoresRoutes from './routes/moradores.routes.js';
 
+import http from "http";
+import { Server } from "socket.io";
+
+import chatSocket from "./sockets/ChatSocket.js";
+
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
 const __filename = fileURLToPath(import.meta.url);
@@ -39,12 +44,25 @@ const multiStream = pino.multistream([
 ])
 
 
+
+
 const fastify = Fastify({
     logger: {
         level: 'info',
         stream: multiStream,
     }
 })
+
+const server = http.createServer(fastify.server);
+
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  }
+});
+
+chatSocket(io);
 
 await fastify.register(cors, {
     origin: 'http://localhost:3000',

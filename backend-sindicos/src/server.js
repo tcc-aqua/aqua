@@ -1,13 +1,16 @@
 import dotenv from 'dotenv';
 import { resolve } from "path";
 dotenv.config({ path: resolve("..", ".env") }); 
+import http from "http";
+import { Server } from "socket.io";
+import chatSocket from "./sockets/ChatSocket.js";
 
 import app from "./app.js";
 import { connectDB } from "./config/sequelize.js";
 import User from './models/User.js';
 
-const PORT = 8080;
-// dados mockados de um admin padrão...
+const PORT = process.env.PORT || 8080;
+
 const criaSindico = async () => {
     const existe = await User.findOne({ where: { email: 'paiva@gmail.com' } });
 
