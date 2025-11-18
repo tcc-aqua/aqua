@@ -2,24 +2,16 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('comunicados', {
+    await queryInterface.createTable('conversas', {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true,
         allowNull: false,
       },
-      title: {
-        type: Sequelize.STRING(200),
-        allowNull: false,
-      },
-      subject: {
-        type: Sequelize.TEXT,
-        allowNull: false,
-      },
-      addressee: {
-        type: Sequelize.ENUM('administradores', 'usuários', 'sindicos'),
-        allowNull: false,
+      titulo: {
+        type: Sequelize.STRING(100),
+        allowNull: true, 
       },
       criado_em: {
         type: Sequelize.DATE,
@@ -36,8 +28,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('comunicados');
-    // Limpar enums criados pelo Sequelize
-    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_comunicados_addressee";');
+    await queryInterface.dropTable('conversas');
   }
 };

@@ -1,3 +1,4 @@
+// npx sequelize-cli db:migrate --config src/config/config.js --migrations-path src/migrations --models-path src/models
 module.exports = {
   development: {
     username: "root",
