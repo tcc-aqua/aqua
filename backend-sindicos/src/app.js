@@ -7,6 +7,7 @@ import fs from 'fs'
 import fastifyFormbody from '@fastify/formbody'
 import path from 'path';
 import { fileURLToPath } from 'url';
+import Redis from 'ioredis';
 
 import userRoutes from './routes/user.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
@@ -61,6 +62,13 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
   }
 });
+
+// conectar ao Redis
+const pubClient = new Redis(process.env.REDIS_URL);
+const subClient = pubClient.duplicate();
+
+// adapter Redis
+io.adapter(createAdapter({ pubClient, subClient }));
 
 chatSocket(io);
 

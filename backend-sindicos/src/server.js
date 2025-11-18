@@ -1,9 +1,6 @@
 import dotenv from 'dotenv';
 import { resolve } from "path";
 dotenv.config({ path: resolve("..", ".env") }); 
-import http from "http";
-import { Server } from "socket.io";
-import chatSocket from "./sockets/ChatSocket.js";
 
 import app from "./app.js";
 import { connectDB } from "./config/sequelize.js";
