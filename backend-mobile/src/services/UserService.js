@@ -1,3 +1,6 @@
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\UserService.js
+// CÓDIGO COMPLETO E CORRIGIDO
+
 import { Op } from 'sequelize';
 import User from "../models/User.js";
 import Metas from "../models/Metas.js";
@@ -6,6 +9,9 @@ import Casa from '../models/Casa.js';
 import Apartamento from '../models/Apartamento.js';
 import GamificationService from './GamificationService.js';
 import sequelize from '../config/sequelize.js';
+import GamificationLog from '../models/GamificationLog.js';
+import path from 'path'; // <<<<<<< IMPORTADO
+import fs from 'fs';   // <<<<<<< IMPORTADO
 
 const PRECO_POR_LITRO = 0.015; // R$ 0,015 por litro (valor exemplo)
 
@@ -20,7 +26,7 @@ export default class UserService {
                 'notif_vazamento', 'notif_consumo_alto', 'notif_metas',
                 'notif_comunidade', 'notif_relatorios'
             ];
-            
+
             const updateData = {};
             for (const key of allowedUpdates) {
                 if (data[key] !== undefined) {
@@ -29,11 +35,40 @@ export default class UserService {
             }
 
             await user.update(updateData);
-            
+
             return user;
         } catch (error) {
             console.error('Erro ao atualizar usuário', error);
             throw error;
+        }
+    }
+
+    // NOVO MÉTODO PARA UPLOAD DE FOTO DE PERFIL
+    static async uploadProfilePicture(userId, file) {
+        try {
+            const user = await User.findByPk(userId);
+            if (!user) throw new Error('Usuário não encontrado');
+
+            const uploadDir = path.join(process.cwd(), 'uploads');
+
+            if (!fs.existsSync(uploadDir)) {
+                fs.mkdirSync(uploadDir, { recursive: true });
+            }
+
+            const fileName = `user-${userId}-${Date.now()}-${file.filename}`;
+            const filePath = path.join(uploadDir, fileName);
+
+            const buffer = await file.toBuffer();
+            await fs.promises.writeFile(filePath, buffer);
+
+            const fileUrl = `/api/uploads/${fileName}`;
+            user.img_url = fileUrl;
+            await user.save();
+
+            return fileUrl;
+        } catch (error) {
+            console.error('Erro ao salvar foto de perfil do usuário', error);
+            throw new Error('Erro interno ao processar a imagem.');
         }
     }
 
@@ -55,10 +90,10 @@ export default class UserService {
             const metas_cumpridas = await Metas.count({
                 where: { user_id: userId, status: 'atingida' }
             });
-            
+
             let agua_poupada = 0;
             const metasAtingidas = await Metas.findAll({ where: { user_id: userId, status: 'atingida' } });
-            
+
             const sensorId = user.residencia_type === 'casa' ? user.casa?.sensor_id : user.apartamento?.sensor_id;
 
             if (sensorId) {
@@ -75,11 +110,11 @@ export default class UserService {
                     }
                 }
             }
-            
+
             const economia_total = agua_poupada * PRECO_POR_LITRO;
-            
+
             const pontos = await GamificationService.calculateTotalPoints(userId);
-            
+
             const userScores = await GamificationLog.findAll({
                 attributes: ['user_id', [sequelize.fn('SUM', sequelize.col('points')), 'total_points']],
                 group: ['user_id'],

@@ -8,15 +8,19 @@ Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\app.js
 =================================================================================
 
 // Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\app.js
-// CÓDIGO COMPLETO E ATUALIZADO
+// CÓDIGO COMPLETO E CORRIGIDO
 
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyFormbody from '@fastify/formbody';
 import { fastifySwagger } from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
-import pino from 'pino'
-import fs from 'fs'
+import pino from 'pino';
+import fs from 'fs';
+import multipart from '@fastify/multipart';      // 1. IMPORTADO
+import fastifyStatic from '@fastify/static';  // 2. IMPORTADO
+import path from 'path';                         // 3. IMPORTADO
+import { fileURLToPath } from 'url';             // 4. IMPORTADO
 
 import authRoutes from './routes/auth.routes.js';
 import apartamentoRoutes from './routes/apartamento.routes.js';
@@ -27,9 +31,7 @@ import cepRoutes from './routes/cep.routes.js';
 import metasRoutes from './routes/metas.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import comunicadosRoutes from './routes/comunicados.routes.js';
-import casaRoutes from './routes/casa.routes.js'; 
-
-
+import casaRoutes from './routes/casa.routes.js';
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
@@ -61,12 +63,19 @@ const fastify = Fastify({
 });
 
 await fastify.register(cors, {
-    origin: '*', 
+    origin: '*',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
 });
 
 fastify.register(fastifyFormbody);
+await fastify.register(multipart); // 5. REGISTRADO PLUGIN MULTIPART
+
+// 6. REGISTRADO PLUGIN STATIC PARA SERVIR A PASTA 'uploads'
+fastify.register(fastifyStatic, {
+    root: path.join(process.cwd(), 'uploads'),
+    prefix: '/api/uploads/',
+});
 
 // docs api
 await fastify.register(fastifySwagger, {
@@ -105,18 +114,16 @@ fastify.get('/api', {
 })
 
 
-fastify.register(authRoutes, {prefix: '/api/auth'});
-fastify.register(apartamentoRoutes, {prefix: '/api/apartamentos'});
-// =====> INÍCIO DA ALTERAÇÃO
-fastify.register(casaRoutes, {prefix: '/api/casas'}); // 2. Registra a rota para o prefixo /api/casas
-// =====> FIM DA ALTERAÇÃO
-fastify.register(dicaRoutes, {prefix: '/api/dica'});
-fastify.register(userRoutes, {prefix: '/api/user'});
-fastify.register(metasRoutes, {prefix: '/api/metas'});
-fastify.register(cepRoutes, {prefix: '/api/cep'});
-fastify.register(profileRoutes, {prefix: '/api/profile'});
-fastify.register(passwordRoutes, {prefix: '/api/password'});
-fastify.register(comunicadosRoutes, {prefix: '/api/comunicados'});
+fastify.register(authRoutes, { prefix: '/api/auth' });
+fastify.register(apartamentoRoutes, { prefix: '/api/apartamentos' });
+fastify.register(casaRoutes, { prefix: '/api/casas' });
+fastify.register(dicaRoutes, { prefix: '/api/dica' });
+fastify.register(userRoutes, { prefix: '/api/user' });
+fastify.register(metasRoutes, { prefix: '/api/metas' });
+fastify.register(cepRoutes, { prefix: '/api/cep' });
+fastify.register(profileRoutes, { prefix: '/api/profile' });
+fastify.register(passwordRoutes, { prefix: '/api/password' });
+fastify.register(comunicadosRoutes, { prefix: '/api/comunicados' });
 
 export default fastify;
 
@@ -124,6 +131,9 @@ export default fastify;
 =================================================================================
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\config\sequelize.js
 =================================================================================
+
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\config\sequelize.js
+// CÓDIGO COMPLETO E CORRIGIDO
 
 import dotenv from 'dotenv';
 import { resolve } from "path";
@@ -156,9 +166,7 @@ export const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log('Conexão estabelecida com sucesso!!');
-    // await sequelize.sync();
-     await sequelize.sync({ alter: true });
-
+    await sequelize.sync({ alter: true });
     console.log('Tabelas sincronizadas com o banco!');
   } catch (error) {
     console.error('Erro ao conectar com o banco de dados:', error);
@@ -167,7 +175,6 @@ export const connectDB = async () => {
 };
 
 export default sequelize;
-
 
 
 =================================================================================
@@ -452,14 +459,44 @@ export default new ProfileController();
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\UserController.js
 =================================================================================
 
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\UserController.js
+// CÓDIGO COMPLETO E CORRIGIDO
+
 import UserService from "../services/UserService.js";
 
 export default class UserController {
     static async updateMe(req, reply) {
-
         const userId = req.user.id;
         const user = await UserService.updateMe(userId, req.body);
         return reply.status(200).send({ message: 'Perfil atualizado com sucesso!', user });
+    }
+
+    // NOVO MÉTODO PARA RECEBER O UPLOAD
+    static async uploadProfile(req, reply) {
+        try {
+            const userId = req.user.id;
+            const file = await req.file();
+
+            if (!file) {
+                return reply.status(400).send({ error: 'Nenhum arquivo enviado.' });
+            }
+
+            const imageUrl = await UserService.uploadProfilePicture(userId, file);
+
+            return reply.status(200).send({
+                message: 'Foto de perfil atualizada com sucesso!',
+                img_url: imageUrl
+            });
+        } catch (error) {
+            console.error('Erro no controller de upload:', error);
+            return reply.status(500).send({ error: 'Erro interno ao salvar a imagem.' });
+        }
+    }
+
+    static async getStats(req, reply) {
+        const userId = req.user.id;
+        const stats = await UserService.getUserStats(userId);
+        return reply.status(200).send(stats);
     }
 }
 
@@ -638,6 +675,9 @@ export default async function errorHandler(fastify) {
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Apartamento.js
 =================================================================================
 
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Apartamento.js
+// CÓDIGO COMPLETO E CORRIGIDO
+
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import Condominio from "./Condominio.js";
@@ -698,134 +738,75 @@ Apartamento.init({
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em'
 })
-Apartamento.belongsTo(Sensor, { foreignKey: "sensor_id", as: "sensor" });
-sequelizePaginate.paginate(Apartamento);
 
+sequelizePaginate.paginate(Apartamento);
 
 
 =================================================================================
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Casa.js
 =================================================================================
 
-    import { Model, DataTypes } from "sequelize";
-    import sequelize from "../config/sequelize.js";
-    import sequelizePaginate from 'sequelize-paginate'
-    import Sensor from "./Sensor.js";
-    import { nanoid } from "nanoid";
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Casa.js
+// CÓDIGO COMPLETO E CORRIGIDO
 
-    export const estados = {
-        AC: "Acre",
-        AL: "Alagoas",
-        AP: "Amapá",
-        AM: "Amazonas",
-        BA: "Bahia",
-        CE: "Ceará",
-        DF: "Distrito Federal",
-        ES: "Espírito Santo",
-        GO: "Goiás",
-        MA: "Maranhão",
-        MT: "Mato Grosso",
-        MS: "Mato Grosso do Sul",
-        MG: "Minas Gerais",
-        PA: "Pará",
-        PB: "Paraíba",
-        PR: "Paraná",
-        PE: "Pernambuco",
-        PI: "Piauí",
-        RJ: "Rio de Janeiro",
-        RN: "Rio Grande do Norte",
-        RS: "Rio Grande do Sul",
-        RO: "Rondônia",
-        RR: "Roraima",
-        SC: "Santa Catarina",
-        SP: "São Paulo",
-        SE: "Sergipe",
-        TO: "Tocantins",
-    };
+import { Model, DataTypes } from "sequelize";
+import sequelize from "../config/sequelize.js";
+import sequelizePaginate from 'sequelize-paginate'
+import Sensor from "./Sensor.js";
+import { nanoid } from "nanoid";
 
-    export default class Casa extends Model { }
+export const estados = {
+    AC: "Acre", AL: "Alagoas", AP: "Amapá", AM: "Amazonas", BA: "Bahia",
+    CE: "Ceará", DF: "Distrito Federal", ES: "Espírito Santo", GO: "Goiás",
+    MA: "Maranhão", MT: "Mato Grosso", MS: "Mato Grosso do Sul", MG: "Minas Gerais",
+    PA: "Pará", PB: "Paraíba", PR: "Paraná", PE: "Pernambuco", PI: "Piauí",
+    RJ: "Rio de Janeiro", RN: "Rio Grande do Norte", RS: "Rio Grande do Sul",
+    RO: "Rondônia", RR: "Roraima", SC: "Santa Catarina", SP: "São Paulo",
+    SE: "Sergipe", TO: "Tocantins",
+};
 
-    Casa.init({
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true
-        },
-        logradouro: {
-            type: DataTypes.STRING(255),
-            allowNull: false
-        },
-        bairro: {
-            type: DataTypes.STRING(255),
-            allowNull: false
-        },
-        numero: {
-            type: DataTypes.CHAR(10),
-            allowNull: false
-        },
-        cidade: {
-            type: DataTypes.STRING(100),
-            allowNull: false
-        },
-        uf: {
-            type: DataTypes.STRING(2),
-            allowNull: false,
-        },
-        estado: {
-            type: DataTypes.STRING(50),
-            allowNull: false,
-        },
-        cep: {
-            type: DataTypes.CHAR(10),
-            allowNull: false
-        },
-        numero_moradores: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 1
-        },
-        sensor_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: { model: Sensor, key: 'id' }
-        },
-        codigo_acesso: {
-            type: DataTypes.CHAR(10),
-            defaultValue: () => nanoid(5).replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
-            allowNull: false,
-            unique: true
-        },
-        status: {
-            type: DataTypes.ENUM('ativo', 'inativo'),
-            allowNull: false,
-            defaultValue: 'ativo'
-        },
-        responsavel_id: {
-    type: DataTypes.CHAR(36),
-    allowNull: true,
-    references: { model: 'users', key: 'id' }
-}
-    }, {
-        sequelize,
-        tableName: 'casas',
-        timestamps: true,
-        createdAt: 'criado_em',
-        updatedAt: 'atualizado_em',
+export default class Casa extends Model { }
 
-        hooks: {
-            beforeValidate: (casa) => {
-                if (casa.uf) {
-                    casa.estado = estados[casa.uf] || casa.estado;
-                }
-            },
+Casa.init({
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    logradouro: { type: DataTypes.STRING(255), allowNull: false },
+    bairro: { type: DataTypes.STRING(255), allowNull: false },
+    numero: { type: DataTypes.CHAR(10), allowNull: false },
+    cidade: { type: DataTypes.STRING(100), allowNull: false },
+    uf: { type: DataTypes.STRING(2), allowNull: false },
+    estado: { type: DataTypes.STRING(50), allowNull: false },
+    cep: { type: DataTypes.CHAR(10), allowNull: false },
+    numero_moradores: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
+    sensor_id: { type: DataTypes.INTEGER, allowNull: false, references: { model: Sensor, key: 'id' } },
+    codigo_acesso: {
+        type: DataTypes.CHAR(10),
+        defaultValue: () => nanoid(5).replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
+        allowNull: false,
+        unique: true
+    },
+    status: { type: DataTypes.ENUM('ativo', 'inativo'), allowNull: false, defaultValue: 'ativo' },
+    responsavel_id: { type: DataTypes.CHAR(36), allowNull: true, references: { model: 'users', key: 'id' } }
+}, {
+    sequelize,
+    tableName: 'casas',
+    timestamps: true,
+    createdAt: 'criado_em',
+    updatedAt: 'atualizado_em',
+    hooks: {
+        beforeValidate: (casa) => {
+            if (casa.uf) {
+                casa.estado = estados[casa.uf] || casa.estado;
+            }
         },
-    })
+    },
+})
 
 
-
-    Casa.belongsTo(Sensor, { foreignKey: "sensor_id", as: "sensor" }); // <-- ADICIONE ESTA LINHA
-    sequelizePaginate.paginate(Casa);
-
+sequelizePaginate.paginate(Casa);
 
 
 =================================================================================
@@ -978,6 +959,58 @@ Condominio.init({
 
 sequelizePaginate.paginate(Condominio);
 
+
+
+=================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\GamificationLog.js
+=================================================================================
+
+import { Model, DataTypes } from "sequelize";
+import sequelize from "../config/sequelize.js";
+import User from "./User.js";
+
+export default class GamificationLog extends Model {}
+
+GamificationLog.init({
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    user_id: {
+        type: DataTypes.CHAR(36),
+        allowNull: false,
+        references: { model: User, key: 'id' }
+    },
+    points: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    reason: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        comment: 'Ex: "Meta semanal concluída", "Economia de 50L"'
+    },
+    related_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        comment: 'ID da meta ou outra entidade relacionada'
+    },
+    related_type: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: 'Ex: "meta", "economia_diaria"'
+    }
+}, {
+    sequelize,
+    tableName: 'gamification_logs',
+    timestamps: true,
+    createdAt: 'criado_em',
+    updatedAt: false
+});
+
+GamificationLog.belongsTo(User, { foreignKey: 'user_id' });
+User.hasMany(GamificationLog, { foreignKey: 'user_id' });
 
 
 =================================================================================
@@ -1236,6 +1269,9 @@ sequelizePaginate.paginate(Sensor);
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\User.js
 =================================================================================
 
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\User.js
+// CÓDIGO COMPLETO E CORRIGIDO
+
 import sequelize from "../config/sequelize.js";
 import { DataTypes, Model } from "sequelize";
 import { v4 as uuidv4 } from 'uuid';
@@ -1243,7 +1279,6 @@ import bcrypt from 'bcryptjs'
 import sequelizePaginate from 'sequelize-paginate'
 
 export default class User extends Model {
-    // compare hash password
     async checkPassword(password) {
         return bcrypt.compare(password, this.password)
     }
@@ -1271,7 +1306,10 @@ User.init({
         type: DataTypes.STRING(255),
         allowNull: false
     },
-    // representa de onde o usuário vem
+    img_url: { // <<<<<<<<<<<< CAMPO ADICIONADO
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     type: {
         type: DataTypes.ENUM('casa', 'condominio'),
         allowNull: false
@@ -1279,15 +1317,12 @@ User.init({
     responsavel_id: {
         type: DataTypes.CHAR(36),
         allowNull: true,
-        references: {model: 'users', key: 'id'}
+        references: { model: 'users', key: 'id' }
     },
-    // indica para a residencia/unidade para atribuir para a tabela correta
-    // uma especie de polimorfismo em banco de dados
     residencia_type: {
         type: DataTypes.ENUM('casa', 'apartamento'),
         allowNull: true
     },
-    // id da residencia
     residencia_id: {
         type: DataTypes.INTEGER,
         allowNull: true
@@ -1302,25 +1337,44 @@ User.init({
         defaultValue: 'morador',
         allowNull: false
     },
+    notif_vazamento: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        allowNull: false
+    },
+    notif_consumo_alto: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        allowNull: false
+    },
+    notif_metas: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        allowNull: false
+    },
+    notif_comunidade: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
+    },
+    notif_relatorios: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        allowNull: false
+    }
 }, {
     sequelize,
     tableName: 'users',
     timestamps: true,
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em',
-
-    // hooks hash password
     hooks: {
-        
-        // hash create user
         beforeCreate: async (user, options) => {
             if (user.password) {
                 const salt = await bcrypt.genSalt(10);
                 user.password = await bcrypt.hash(user.password, salt);
             }
         },
-        
-        // hash update user
         beforeUpdate: async (user, options) => {
             if (user.changed('password')) {
                 const salt = await bcrypt.genSalt(10);
@@ -1331,7 +1385,6 @@ User.init({
 })
 
 sequelizePaginate.paginate(User);
-
 
 
 =================================================================================
@@ -1506,8 +1559,7 @@ Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\passwor
 import PasswordController from "../controllers/PasswordController.js";
 
 export default async function passwordRoutes(fastify) {
-    // Rota para solicitar o código de redefinição
-    // POST /api/password/forgot
+
     fastify.post('/forgot', {
         schema: {
             summary: 'Pedido de troca de senha',
@@ -1516,8 +1568,6 @@ export default async function passwordRoutes(fastify) {
         }
     }, PasswordController.forgotPassword);
 
-    // Rota para efetivar a redefinição com o código
-    // POST /api/password/reset
     fastify.post('/reset', {
         schema: {
             summary: 'Resetando e definindo uma nova senha',
@@ -1559,7 +1609,6 @@ Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\user.ro
 =================================================================================
 
 
-
 import UserController from "../controllers/UserController.js";
 import { authMiddleware } from "../middlewares/AuthMidlleweare.js";
 
@@ -1572,6 +1621,25 @@ export default async function userRoutes(fastify) {
         },
         preHandler: [authMiddleware]
     }, UserController.updateMe);
+
+
+    fastify.post('/upload-img', {
+        schema: {
+            summary: 'Upload da foto de perfil do usuário',
+            tags: ['users'],
+            description: 'Envia uma imagem para ser usada como foto de perfil do usuário logado.'
+        },
+        preHandler: [authMiddleware]
+    }, UserController.uploadProfile);
+
+    fastify.get('/me/stats', {
+        schema: {
+            summary: 'Puxa as estatísticas do usuário logado',
+            tags: ['users'],
+            description: 'Retorna dados como metas cumpridas, pontos, etc.'
+        },
+        preHandler: [authMiddleware]
+    }, UserController.getStats);
 }
 
 
@@ -1579,23 +1647,36 @@ export default async function userRoutes(fastify) {
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\server.js
 =================================================================================
 
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\server.js
+// CÓDIGO COMPLETO E CORRIGIDO
+
 import dotenv from 'dotenv';
 import { resolve } from "path";
 dotenv.config({ path: resolve("..", ".env") });
 import app from "./app.js";
 import { connectDB } from "./config/sequelize.js";
+import { initializeAssociations } from './models/index.js'; // Importa a função de associações
 
 const PORT = 3334;
 
 const start = async () => {
     try {
+        // 1. Conecta ao banco de dados primeiro
         await connectDB();
+        
+        // 2. Depois de conectar, inicializa as associações dos modelos
+        initializeAssociations();
+        console.log('Associações entre modelos foram inicializadas com sucesso!');
+
+        // 3. Finalmente, inicia o servidor
         await app.listen({
             host: '0.0.0.0', port: PORT
-        })
-        console.log(`Server Mobile listening on ${PORT}`);
+        });
+        
+        // A mensagem de "Server listening" agora é mais precisa
+        
     } catch (error){
-        console.error(error);
+        console.error('Erro fatal ao iniciar o servidor:', error);
         process.exit(1);
     }
 }
@@ -2096,11 +2177,74 @@ export { sendPasswordResetEmail };
 
 
 =================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\GamificationService.js
+=================================================================================
+
+import GamificationLog from '../models/GamificationLog.js';
+
+const PONTOS_POR_META_ATINGIDA = 50;
+
+export default class GamificationService {
+
+    static async awardPointsForCompletedGoal(userId, meta) {
+        try {
+            const reason = `Meta '${meta.periodo}' concluída com sucesso.`;
+            await GamificationLog.create({
+                user_id: userId,
+                points: PONTOS_POR_META_ATINGIDA,
+                reason: reason,
+                related_id: meta.id,
+                related_type: 'meta'
+            });
+            console.log(`+${PONTOS_POR_META_ATINGIDA} pontos para o usuário ${userId} por completar a meta ${meta.id}.`);
+            return { success: true };
+        } catch (error) {
+            console.error('Erro ao atribuir pontos por meta concluída:', error);
+            throw error;
+        }
+    }
+
+    static async awardPointsForWaterSaved(userId, litersSaved) {
+        try {
+            // Lógica simples: 1 ponto a cada 20 litros economizados
+            const points = Math.floor(litersSaved / 20);
+            if (points > 0) {
+                await GamificationLog.create({
+                    user_id: userId,
+                    points: points,
+                    reason: `Economia de ${litersSaved.toFixed(2)}L de água.`,
+                    related_type: 'economia'
+                });
+                console.log(`+${points} pontos para o usuário ${userId} por economizar água.`);
+            }
+            return { success: true };
+        } catch (error) {
+            console.error('Erro ao atribuir pontos por economia de água:', error);
+            throw error;
+        }
+    }
+
+    static async calculateTotalPoints(userId) {
+        try {
+            const totalPoints = await GamificationLog.sum('points', {
+                where: { user_id: userId }
+            });
+            return totalPoints || 0;
+        } catch (error) {
+            console.error(`Erro ao calcular pontos totais para o usuário ${userId}:`, error);
+            return 0;
+        }
+    }
+}
+
+
+=================================================================================
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\MetasService.js
 =================================================================================
 
 import Metas from "../models/Metas.js";
 import User from "../models/User.js";
+import GamificationService from "./GamificationService.js"; // Importado
 
 export default class MetasService {
 
@@ -2126,14 +2270,22 @@ export default class MetasService {
 
             const { residencia_id, residencia_type, periodo, limite_consumo, inicio_periodo } = data;
 
-            await user.create({ residencia_id, residencia_type, periodo, limite_consumo, inicio_periodo });
-            return user;
+            const meta = await Metas.create({ 
+                user_id: userId,
+                residencia_id, 
+                residencia_type, 
+                periodo, 
+                limite_consumo, 
+                inicio_periodo 
+            });
+
+
+            return meta;
         } catch (error) {
             console.error("Erro ao criar meta", error);
             throw error;
         }
     }
-
 }
 
 
@@ -2225,10 +2377,22 @@ export default new ProfileService();
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\UserService.js
 =================================================================================
 
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\UserService.js
+// CÓDIGO COMPLETO E CORRIGIDO
 
-
+import { Op } from 'sequelize';
 import User from "../models/User.js";
+import Metas from "../models/Metas.js";
+import LeituraSensor from '../models/LeituraSensor.js';
+import Casa from '../models/Casa.js';
+import Apartamento from '../models/Apartamento.js';
+import GamificationService from './GamificationService.js';
+import sequelize from '../config/sequelize.js';
+import GamificationLog from '../models/GamificationLog.js';
+import path from 'path'; // <<<<<<< IMPORTADO
+import fs from 'fs';   // <<<<<<< IMPORTADO
 
+const PRECO_POR_LITRO = 0.015; // R$ 0,015 por litro (valor exemplo)
 
 export default class UserService {
     static async updateMe(userId, data) {
@@ -2236,12 +2400,121 @@ export default class UserService {
             const user = await User.findByPk(userId);
             if (!user) throw new Error('Usuário não encontrado');
 
-            const { name, email } = data;
+            const allowedUpdates = [
+                'name', 'email',
+                'notif_vazamento', 'notif_consumo_alto', 'notif_metas',
+                'notif_comunidade', 'notif_relatorios'
+            ];
 
-            await user.update({ name, email });
+            const updateData = {};
+            for (const key of allowedUpdates) {
+                if (data[key] !== undefined) {
+                    updateData[key] = data[key];
+                }
+            }
+
+            await user.update(updateData);
+
             return user;
         } catch (error) {
             console.error('Erro ao atualizar usuário', error);
+            throw error;
+        }
+    }
+
+    // NOVO MÉTODO PARA UPLOAD DE FOTO DE PERFIL
+    static async uploadProfilePicture(userId, file) {
+        try {
+            const user = await User.findByPk(userId);
+            if (!user) throw new Error('Usuário não encontrado');
+
+            const uploadDir = path.join(process.cwd(), 'uploads');
+
+            if (!fs.existsSync(uploadDir)) {
+                fs.mkdirSync(uploadDir, { recursive: true });
+            }
+
+            const fileName = `user-${userId}-${Date.now()}-${file.filename}`;
+            const filePath = path.join(uploadDir, fileName);
+
+            const buffer = await file.toBuffer();
+            await fs.promises.writeFile(filePath, buffer);
+
+            const fileUrl = `/api/uploads/${fileName}`;
+            user.img_url = fileUrl;
+            await user.save();
+
+            return fileUrl;
+        } catch (error) {
+            console.error('Erro ao salvar foto de perfil do usuário', error);
+            throw new Error('Erro interno ao processar a imagem.');
+        }
+    }
+
+    static async getUserStats(userId) {
+        try {
+            const user = await User.findByPk(userId, {
+                include: [
+                    { model: Casa, as: 'casa' },
+                    { model: Apartamento, as: 'apartamento' }
+                ]
+            });
+            if (!user) throw new Error('Usuário não encontrado');
+
+            const hoje = new Date();
+            const dataCriacao = new Date(user.criado_em);
+            const diffTime = Math.abs(hoje - dataCriacao);
+            const tempo_no_app = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            const metas_cumpridas = await Metas.count({
+                where: { user_id: userId, status: 'atingida' }
+            });
+
+            let agua_poupada = 0;
+            const metasAtingidas = await Metas.findAll({ where: { user_id: userId, status: 'atingida' } });
+
+            const sensorId = user.residencia_type === 'casa' ? user.casa?.sensor_id : user.apartamento?.sensor_id;
+
+            if (sensorId) {
+                for (const meta of metasAtingidas) {
+                    const consumoNoPeriodo = await LeituraSensor.sum('consumo', {
+                        where: {
+                            sensor_id: sensorId,
+                            data_registro: { [Op.between]: [meta.inicio_periodo, meta.fim_periodo] }
+                        }
+                    });
+                    const economia = parseFloat(meta.limite_consumo) - (consumoNoPeriodo || 0);
+                    if (economia > 0) {
+                        agua_poupada += economia;
+                    }
+                }
+            }
+
+            const economia_total = agua_poupada * PRECO_POR_LITRO;
+
+            const pontos = await GamificationService.calculateTotalPoints(userId);
+
+            const userScores = await GamificationLog.findAll({
+                attributes: ['user_id', [sequelize.fn('SUM', sequelize.col('points')), 'total_points']],
+                group: ['user_id'],
+                order: [[sequelize.fn('SUM', sequelize.col('points')), 'DESC']],
+                raw: true
+            });
+
+            const userRankIndex = userScores.findIndex(score => score.user_id === userId);
+            const ranking = userRankIndex !== -1 ? userRankIndex + 1 : userScores.length + 1;
+
+            return {
+                tempo_no_app: tempo_no_app || 0,
+                metas_cumpridas: metas_cumpridas || 0,
+                pontos: pontos || 0,
+                ranking: ranking || 0,
+                economia_total: parseFloat(economia_total.toFixed(2)) || 0,
+                agua_poupada: parseFloat(agua_poupada.toFixed(2)) || 0
+            };
+
+        } catch (error) {
+            console.error('Erro ao buscar estatísticas do usuário', error);
             throw error;
         }
     }
@@ -3556,244 +3829,209 @@ export default MetasScreen;
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Perfil.jsx
 =================================================================================
 
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Perfil.jsx
+// CÓDIGO COMPLETO E CORRIGIDO
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import {
-  Avatar,
   Card,
-  Title,
-  Paragraph,
-  Icon,
   Divider,
   List,
   Switch,
   Button,
   useTheme,
+  Snackbar,
+  Title,
+  Paragraph,
 } from 'react-native-paper';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ProfileHeader from '../components/Perfil/ProfileHeader';
+import StatCard from '../components/Perfil/StatCard';
 
-// URL padronizada para localhost, compatível com adb reverse.
+// ATENÇÃO: Se estiver usando o Expo Go no celular, troque 'localhost' pelo IP da sua máquina.
 const API_URL = 'http://localhost:3334/api';
 
 const ProfileScreen = ({ navigation, onLogout }) => {
   const { colors } = useTheme();
 
   const [user, setUser] = useState(null);
+  const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLeakAlertsEnabled, setIsLeakAlertsEnabled] = useState(true);
-  const [isConsumptionAlertsEnabled, setIsConsumptionAlertsEnabled] = useState(true);
-  const [isGoalsAlertsEnabled, setIsGoalsAlertsEnabled] = useState(true);
-  const [isCommunityAlertsEnabled, setIsCommunityAlertsEnabled] = useState(false);
-  const [isReportsEnabled, setIsReportsEnabled] = useState(true);
+  const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
 
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      setIsLoading(true);
-      try {
-        const authToken = await AsyncStorage.getItem('token');
-        
-        if (!authToken) {
-          setUser(null); 
-          setIsLoading(false);
-          return;
-        }
+  const [notificationPrefs, setNotificationPrefs] = useState({
+    notif_vazamento: true,
+    notif_consumo_alto: true,
+    notif_metas: true,
+    notif_comunidade: false,
+    notif_relatorios: true,
+  });
 
-        const response = await axios.get(`${API_URL}/profile`, {
-          headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-
-        setUser(response.data);
-
-      } catch (error) {
-        console.error("ERRO AO BUSCAR PERFIL:", error.response?.data || error.message);
-        if (error.response?.status === 401) {
-            await AsyncStorage.removeItem('token');
-            onLogout();
-        } else {
-            setUser(null);
-        }
-      } finally {
-        setIsLoading(false);
+  const fetchProfileData = useCallback(async () => {
+    // Para recargas, não mostramos o spinner de tela cheia
+    if (isLoading) setIsLoading(true);
+    
+    try {
+      const authToken = await AsyncStorage.getItem('token');
+      if (!authToken) {
+        onLogout();
+        return;
       }
-    };
-    fetchProfileData();
+      const headers = { Authorization: `Bearer ${authToken}` };
+      const [profileResponse, statsResponse] = await Promise.all([
+        axios.get(`${API_URL}/profile`, { headers }),
+        axios.get(`${API_URL}/user/me/stats`, { headers })
+      ]);
+
+      if (profileResponse.data) {
+        setUser(profileResponse.data);
+        setNotificationPrefs({
+          notif_vazamento: profileResponse.data.notif_vazamento,
+          notif_consumo_alto: profileResponse.data.notif_consumo_alto,
+          notif_metas: profileResponse.data.notif_metas,
+          notif_comunidade: profileResponse.data.notif_comunidade,
+          notif_relatorios: profileResponse.data.notif_relatorios,
+        });
+      }
+      if (statsResponse.data) {
+        setStats(statsResponse.data);
+      }
+    } catch (error) {
+      console.error("ERRO AO BUSCAR DADOS:", error.response?.data || error.message);
+      if (error.response?.status === 401) onLogout();
+      else Alert.alert("Erro", "Não foi possível carregar seus dados.");
+    } finally {
+      setIsLoading(false);
+    }
   }, [onLogout]);
 
+  useEffect(() => {
+    fetchProfileData();
+  }, [fetchProfileData]);
+
+  const handleProfileUpdate = () => {
+    setSnackbar({ visible: true, message: 'Foto atualizada! Recarregando perfil...' });
+    fetchProfileData(); // Recarrega todos os dados
+  };
+
+  const handleNotificationChange = async (key, value) => {
+    const originalPrefs = { ...notificationPrefs };
+    setNotificationPrefs(prev => ({ ...prev, [key]: value }));
+
+    try {
+      const authToken = await AsyncStorage.getItem('token');
+      await axios.put(`${API_URL}/user/me`, { [key]: value }, { headers: { Authorization: `Bearer ${authToken}` } });
+      setSnackbar({ visible: true, message: 'Preferência salva!' });
+    } catch (error) {
+      setNotificationPrefs(originalPrefs);
+      Alert.alert("Erro", "Não foi possível salvar sua preferência.");
+    }
+  };
+
   const handleLogoutPress = async () => {
-    await AsyncStorage.removeItem('token');
+    await AsyncStorage.multiRemove(['token', 'user']);
     onLogout();
   };
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+      <View style={styles.centeredContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
-  if (!user) {
+  if (!user || !stats) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <Title style={{textAlign: 'center'}}>Não foi possível carregar o perfil.</Title>
-        <Paragraph style={{textAlign: 'center'}}>Por favor, faça o login novamente.</Paragraph>
-        <Button onPress={onLogout} style={{marginTop: 20}}>Voltar ao Login</Button>
+      <View style={styles.centeredContainer}>
+        <Title>Erro ao carregar perfil.</Title>
+        <Paragraph>Por favor, tente novamente.</Paragraph>
+        <Button onPress={onLogout} style={{ marginTop: 20 }}>Voltar ao Login</Button>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Card style={styles.card}>
-        <Card.Content>
-          <View style={styles.userInfoTopContainer}>
-            <Avatar.Image
-              size={80}
-              source={{ uri: `https://api.dicebear.com/8.x/initials/svg?seed=${user.user_name}` }}
-              style={styles.avatar}
-            />
-            <View style={styles.userInfoTextContainer}>
-              <Title style={styles.userName}>{user.user_name}</Title>
-              <View style={styles.userInfoDetailRow}>
-                <Icon source="email" size={16} color="#666" />
-                <Paragraph style={styles.infoText}>{user.user_email}</Paragraph>
-              </View>
-              <View style={styles.userInfoDetailRow}>
-                <Icon source="office-building" size={16} color="#666" />
-                <Paragraph style={styles.infoText}>{user.logradouro}, {user.numero}</Paragraph>
-              </View>
-            </View>
-          </View>
-          <Divider style={styles.divider} />
-          <View style={styles.userStatsContainer}>
-            <View style={styles.statItem}>
-              <Title style={styles.statValue}>1500</Title>
-              <Paragraph style={styles.statLabel}>Pontos</Paragraph>
-            </View>
-            <View style={styles.statItem}>
-              <Title style={styles.statValue}>#2</Title>
-              <Paragraph style={styles.statLabel}>Ranking</Paragraph>
-            </View>
-          </View>
-        </Card.Content>
-      </Card>
+    <>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <ProfileHeader user={user} onProfileUpdate={handleProfileUpdate} />
 
-      <Card style={styles.card}>
-        <Card.Title title="Minhas Estatísticas" />
-        <Card.Content>
-          <List.Item title="Tempo no app" left={props => <List.Icon {...props} icon="clock-time-eight-outline" color="#3498db" />} right={props => <Title {...props} style={styles.statListValue}>120 dias</Title>} />
-          <Divider />
-          <List.Item title="Economia total" left={props => <List.Icon {...props} icon="cash" color="#2ecc71" />} right={props => <Title {...props} style={styles.statListValue}>R$ 250</Title>} />
-          <Divider />
-          <List.Item title="Água poupada" left={props => <List.Icon {...props} icon="water" color="#5dade2" />} right={props => <Title {...props} style={styles.statListValue}>500 L</Title>} />
-          <Divider />
-          <List.Item title="Metas cumpridas" left={props => <List.Icon {...props} icon="check-circle" color="#f1c40f" />} right={props => <Title {...props} style={styles.statListValue}>12</Title>} />
-        </Card.Content>
-      </Card>
+        <Title style={styles.sectionTitle}>Minhas Estatísticas</Title>
+        <View style={styles.statsGrid}>
+          <StatCard icon="trophy-award" color="#FFD700" label="Pontos" value={stats.pontos} delay={0} />
+          <StatCard icon="podium" color="#C0C0C0" label="Ranking" value={stats.ranking} unit="º" delay={100} />
+          <StatCard icon="water-sync" color="#5dade2" label="Água Poupada" value={stats.agua_poupada} unit=" L" delay={200} />
+          <StatCard icon="cash-multiple" color="#2ecc71" label="Economia Total" value={stats.economia_total} unit=" R$" delay={300} />
+          <StatCard icon="flag-checkered" color="#f1c40f" label="Metas Cumpridas" value={stats.metas_cumpridas} delay={400} />
+          <StatCard icon="clock-time-eight-outline" color="#3498db" label="Dias no App" value={stats.tempo_no_app} delay={500} />
+        </View>
 
-      <Card style={styles.card}>
-        <Card.Title title="Notificações" subtitle="Escolha o que você quer receber" />
-        <Card.Content>
-          <List.Item title="Alertas de Vazamento" left={props => <List.Icon {...props} icon="pipe-leak" />} right={() => <Switch value={isLeakAlertsEnabled} onValueChange={setIsLeakAlertsEnabled} />} />
+        <Card style={styles.card}>
+          <List.Accordion title="Notificações" id="1" left={props => <List.Icon {...props} icon="bell-outline" />}>
+            <List.Item title="Alertas de Vazamento" right={() => <Switch value={notificationPrefs.notif_vazamento} onValueChange={(v) => handleNotificationChange('notif_vazamento', v)} />} />
+            <List.Item title="Alto Consumo" right={() => <Switch value={notificationPrefs.notif_consumo_alto} onValueChange={(v) => handleNotificationChange('notif_consumo_alto', v)} />} />
+            <List.Item title="Metas e Objetivos" right={() => <Switch value={notificationPrefs.notif_metas} onValueChange={(v) => handleNotificationChange('notif_metas', v)} />} />
+            <List.Item title="Desafios da Comunidade" right={() => <Switch value={notificationPrefs.notif_comunidade} onValueChange={(v) => handleNotificationChange('notif_comunidade', v)} />} />
+            <List.Item title="Relatórios de Economia" right={() => <Switch value={notificationPrefs.notif_relatorios} onValueChange={(v) => handleNotificationChange('notif_relatorios', v)} />} />
+          </List.Accordion>
           <Divider />
-          <List.Item title="Alto Consumo" left={props => <List.Icon {...props} icon="chart-line" />} right={() => <Switch value={isConsumptionAlertsEnabled} onValueChange={setIsConsumptionAlertsEnabled} />} />
-          <Divider />
-          <List.Item title="Metas e Objetivos" left={props => <List.Icon {...props} icon="flag-checkered" />} right={() => <Switch value={isGoalsAlertsEnabled} onValueChange={setIsGoalsAlertsEnabled} />} />
-          <Divider />
-          <List.Item title="Desafios da Comunidade" left={props => <List.Icon {...props} icon="account-group" />} right={() => <Switch value={isCommunityAlertsEnabled} onValueChange={setIsCommunityAlertsEnabled} />} />
-          <Divider />
-          <List.Item title="Relatórios de Economia" left={props => <List.Icon {...props} icon="file-chart" />} right={() => <Switch value={isReportsEnabled} onValueChange={setIsReportsEnabled} />} />
-        </Card.Content>
-      </Card>
-      
-      <Card style={styles.card}>
-        <Card.Title title="Ajuda & Suporte" />
-        <Card.Content>
-          <List.Item title="Central de Ajuda" left={props => <List.Icon {...props} icon="help-circle-outline" />} onPress={() => navigation.navigate('HelpCenter')} />
-          <Divider />
-          <List.Item title="Suporte Técnico" left={props => <List.Icon {...props} icon="headset" />} onPress={() => navigation.navigate('Support')} />
-          <Divider />
-          <List.Item title="Privacidade" left={props => <List.Icon {...props} icon="shield-lock-outline" />} onPress={() => navigation.navigate('PrivacyPolicy')} />
-          <Divider />
-          <List.Item title="Avaliar App" left={props => <List.Icon {...props} icon="star-outline" />} onPress={() => {}} />
-        </Card.Content>
-      </Card>
-      
-      <Button
-        icon="logout"
-        mode="contained"
-        onPress={handleLogoutPress}
-        style={styles.logoutButton}
-        buttonColor={colors.error}
-      >
-        Sair da Conta
-      </Button>
-    </ScrollView>
+          <List.Accordion title="Ajuda & Suporte" id="2" left={props => <List.Icon {...props} icon="help-circle-outline" />}>
+            <List.Item title="Central de Ajuda" onPress={() => { }} />
+            <List.Item title="Suporte Técnico" onPress={() => { }} />
+            <List.Item title="Termos de Serviço" onPress={() => { }} />
+          </List.Accordion>
+        </Card>
+
+        <Button icon="logout" mode="contained" onPress={handleLogoutPress} style={styles.logoutButton} buttonColor={colors.error}>
+          Sair da Conta
+        </Button>
+      </ScrollView>
+      <Snackbar visible={snackbar.visible} onDismiss={() => setSnackbar({ ...snackbar, visible: false })} duration={3000}>
+        {snackbar.message}
+      </Snackbar>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F2F2F7',
+  },
+  contentContainer: {
     padding: 10,
+    paddingBottom: 20,
+  },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#F2F2F7',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginLeft: 5,
+    marginBottom: 10,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 15,
   },
   card: {
     marginBottom: 15,
-  },
-  userInfoTopContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    marginRight: 15,
-  },
-  userInfoTextContainer: {
-    flex: 1,
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  userInfoDetailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 3,
-  },
-  infoText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: '#666',
-  },
-  divider: {
-    marginVertical: 15,
-  },
-  userStatsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#555',
-  },
-  statListValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    alignSelf: 'center',
+    borderRadius: 16,
   },
   logoutButton: {
     marginTop: 15,
-    marginBottom: 20,
-    paddingVertical: 5,
+    paddingVertical: 8,
+    borderRadius: 16,
   },
 });
 

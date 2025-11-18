@@ -1,3 +1,6 @@
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Perfil.jsx
+// CÓDIGO COMPLETO E CORRIGIDO
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import {
@@ -16,6 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProfileHeader from '../components/Perfil/ProfileHeader';
 import StatCard from '../components/Perfil/StatCard';
 
+// ATENÇÃO: Se estiver usando o Expo Go no celular, troque 'localhost' pelo IP da sua máquina.
 const API_URL = 'http://localhost:3334/api';
 
 const ProfileScreen = ({ navigation, onLogout }) => {
@@ -35,6 +39,9 @@ const ProfileScreen = ({ navigation, onLogout }) => {
   });
 
   const fetchProfileData = useCallback(async () => {
+    // Para recargas, não mostramos o spinner de tela cheia
+    if (isLoading) setIsLoading(true);
+    
     try {
       const authToken = await AsyncStorage.getItem('token');
       if (!authToken) {
@@ -72,6 +79,11 @@ const ProfileScreen = ({ navigation, onLogout }) => {
   useEffect(() => {
     fetchProfileData();
   }, [fetchProfileData]);
+
+  const handleProfileUpdate = () => {
+    setSnackbar({ visible: true, message: 'Foto atualizada! Recarregando perfil...' });
+    fetchProfileData(); // Recarrega todos os dados
+  };
 
   const handleNotificationChange = async (key, value) => {
     const originalPrefs = { ...notificationPrefs };
@@ -113,7 +125,7 @@ const ProfileScreen = ({ navigation, onLogout }) => {
   return (
     <>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <ProfileHeader user={user} />
+        <ProfileHeader user={user} onProfileUpdate={handleProfileUpdate} />
 
         <Title style={styles.sectionTitle}>Minhas Estatísticas</Title>
         <View style={styles.statsGrid}>
@@ -133,11 +145,11 @@ const ProfileScreen = ({ navigation, onLogout }) => {
             <List.Item title="Desafios da Comunidade" right={() => <Switch value={notificationPrefs.notif_comunidade} onValueChange={(v) => handleNotificationChange('notif_comunidade', v)} />} />
             <List.Item title="Relatórios de Economia" right={() => <Switch value={notificationPrefs.notif_relatorios} onValueChange={(v) => handleNotificationChange('notif_relatorios', v)} />} />
           </List.Accordion>
-          <Divider/>
+          <Divider />
           <List.Accordion title="Ajuda & Suporte" id="2" left={props => <List.Icon {...props} icon="help-circle-outline" />}>
-            <List.Item title="Central de Ajuda" onPress={() => {}} />
-            <List.Item title="Suporte Técnico" onPress={() => {}} />
-            <List.Item title="Termos de Serviço" onPress={() => {}} />
+            <List.Item title="Central de Ajuda" onPress={() => { }} />
+            <List.Item title="Suporte Técnico" onPress={() => { }} />
+            <List.Item title="Termos de Serviço" onPress={() => { }} />
           </List.Accordion>
         </Card>
 
