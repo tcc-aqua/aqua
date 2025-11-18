@@ -1,8 +1,8 @@
 import UserView from "../../models/UserView.js";
 import User from "../../models/User.js"; 
 
-export default class getUsers {
-    static async getAllUsers(page = 1, limit = 10, sindico_id) {
+export default class getUsersRegistrados {
+    static async getAllUsersRegistrados(page = 1, limit = 10, sindico_id) {
         try {
             const sindico = await User.findByPk(sindico_id, {
                 attributes: ['condominio_id']
