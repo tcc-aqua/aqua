@@ -8,6 +8,6 @@ export default async function dashboardRoutes(fastify) {
             tags: ['dashboard'],
             description: 'Get das infos'
         },
-        prehandler: [autenticarSindico]
+        preHandler: [autenticarSindico]
     }, DashboardController.info);
 }
