@@ -5,6 +5,7 @@ import getCondomonioInfo from "../services/dashboard/getCondomonioInfo.js";
 import GetAlertasRecentes from "../services/dashboard/getAlertasRecentes.js";
 import GetNovosMoradoresService from "../services/dashboard/getNovosMoradores.js";
 import GetApartamentosAtivo from "../services/dashboard/getApartamentosAtivos.js";
+import GetVazamentoConsumoService from "../services/dashboard/getVazamentoConsumo.js";
 
 export default class DashboardController {
     static async info(req, reply) {
@@ -15,19 +16,21 @@ export default class DashboardController {
             const totalUsuarios = await GetUsersTotal.getCountUsers(sindico_id);
             const sensoresAtivos = await GetSensoresAtivos.getSensoresAtivos(sindico_id);
             // const consumoTotal = await ConsumoTotalService.getConsumoTotal(sindico_id);
+            const consumoXvazamento = await GetVazamentoConsumoService.getRelatorio(sindico_id)
             const condominio = await getCondomonioInfo.getCondominio(sindico_id);
             const alertasRecentes = await GetAlertasRecentes.getAlertasRecentes(sindico_id);
             const usuariosRegistrados = await GetUsersTotal.getCountUsers(sindico_id);
 
             return reply.status(200).send({
-                novosMoradores,
-                apartamentosAtivos,
-                totalUsuarios,
-                sensoresAtivos,
-                // consumoTotal,
                 condominio,
+                apartamentosAtivos,
+                sensoresAtivos,
+                usuariosRegistrados,
+                consumoXvazamento,
+                // totalUsuarios,
+                novosMoradores,
                 alertasRecentes,
-                usuariosRegistrados
+                // consumoTotal,
             });
 
         } catch (error) {
