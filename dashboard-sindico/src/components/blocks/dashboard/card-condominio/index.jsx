@@ -7,7 +7,8 @@ export default function CardCondominioInfo() {
         endereco: "Rua das Flores, 120 - Centro - São Paulo/SP",
         apartamentos: 48,
         sindico: "Carlos Henrique",
-        codigo: "11102025"
+        codigo: "11102025",
+        cep: "09181-720"
     };
 
     return (
@@ -58,6 +59,14 @@ export default function CardCondominioInfo() {
                     <div>
                         <p className="text-sm font-semibold opacity-70">Código de Acesso</p>
                         <p className="font-medium">{condominio.codigo}</p>
+                    </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                    <Hash className="w-5 h-5 text-sky-500 mt-1" />
+                    <div>
+                        <p className="text-sm font-semibold opacity-70">CEP</p>
+                        <p className="font-medium">{condominio.cep}</p>
                     </div>
                 </div>
             </CardContent>
