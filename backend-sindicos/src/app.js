@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import userRoutes from './routes/user.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import moradoresRoutes from './routes/moradores.routes.js';
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
@@ -92,5 +93,6 @@ fastify.get('/api', {
 await fastify.register(userRoutes, {prefix: '/api/users'})
 await fastify.register(dashboardRoutes, {prefix: '/api/dashboard'})
 await fastify.register(authRoutes, {prefix: '/api/auth'})
+await fastify.register(moradoresRoutes, {prefix: '/api/moradores'})
 
 export default fastify;

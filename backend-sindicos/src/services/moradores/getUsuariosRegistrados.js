@@ -1,7 +1,7 @@
 import User from "../../models/User.js";
 
 export default class GetUsuariosRegistradosAtivos {
-  static async getUsersRegistrados(sindico_id) {
+  static async getUsersAtivosRegistrados(sindico_id) {
     try {
       const users = await User.count({
         where: {
