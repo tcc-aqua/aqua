@@ -1,5 +1,4 @@
 
-
 import UserController from "../controllers/UserController.js";
 import { authMiddleware } from "../middlewares/AuthMidlleweare.js";
 
@@ -12,4 +11,23 @@ export default async function userRoutes(fastify) {
         },
         preHandler: [authMiddleware]
     }, UserController.updateMe);
+
+
+    fastify.post('/upload-img', {
+        schema: {
+            summary: 'Upload da foto de perfil do usuário',
+            tags: ['users'],
+            description: 'Envia uma imagem para ser usada como foto de perfil do usuário logado.'
+        },
+        preHandler: [authMiddleware]
+    }, UserController.uploadProfile);
+
+    fastify.get('/me/stats', {
+        schema: {
+            summary: 'Puxa as estatísticas do usuário logado',
+            tags: ['users'],
+            description: 'Retorna dados como metas cumpridas, pontos, etc.'
+        },
+        preHandler: [authMiddleware]
+    }, UserController.getStats);
 }

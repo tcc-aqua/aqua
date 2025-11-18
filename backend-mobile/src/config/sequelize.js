@@ -1,3 +1,6 @@
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\config\sequelize.js
+// CÓDIGO COMPLETO E CORRIGIDO
+
 import dotenv from 'dotenv';
 import { resolve } from "path";
 dotenv.config({ path: resolve("..", ".env") });
@@ -29,9 +32,7 @@ export const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log('Conexão estabelecida com sucesso!!');
-    // await sequelize.sync();
-     await sequelize.sync({ alter: true });
-
+    await sequelize.sync({ alter: true });
     console.log('Tabelas sincronizadas com o banco!');
   } catch (error) {
     console.error('Erro ao conectar com o banco de dados:', error);
