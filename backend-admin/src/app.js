@@ -65,29 +65,21 @@ const fastify = Fastify({
 })
 
 // redis // socket
-const server = http.createServer(fastify.server);
-const io = new Server(server, {
-    cors: {
-        origin: "http://localhost:3000",
-        methods: ["GET", "POST"],
-    }
-});
+export function createSocketServer(server) {
+    const io = new Server(server, {
+        cors: { origin: "http://localhost:3001" }
+    });
 
-const pubClient = new Redis(process.env.REDIS_URL);
-const subClient = new Redis(process.env.REDIS_URL);
+    const pubClient = new Redis(process.env.REDIS_URL);
+    const subClient = new Redis(process.env.REDIS_URL);
 
-// Tratar erros
-pubClient.on("error", (err) => {
-  console.error("Redis PUB error:", err);
-});
+    io.adapter(createAdapter(pubClient, subClient));
 
-subClient.on("error", (err) => {
-  console.error("Redis SUB error:", err);
-});
+    chatSocket(io);
 
-io.adapter(createAdapter(pubClient, subClient)); // forma correta
+    return io;
+}
 
-chatSocket(io);
 
 await fastify.register(cors, {
     origin: 'http://localhost:3000',
@@ -157,5 +149,4 @@ await fastify.register(comunicadoRoutes, { prefix: '/api/comunicados' });
 await fastify.register(cepRoutes, { prefix: '/api/cep' });
 await fastify.register(errorHandler);
 
-export { server };
 export default fastify;

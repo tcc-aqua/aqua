@@ -1,14 +1,27 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-const gerarToken = (payload) => {
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+// ------------------------------
+// TOKEN
+// ------------------------------
+const gerarToken = (user) => {
+    return jwt.sign(
+        {
+            sub: user.id,
+            email: user.email,
+            role: user.role,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+    );
 };
 
-// Blacklist de tokens 
+// Blacklist na memória (temporário)
 const tokenBlacklist = new Set();
 
-
+// ------------------------------
+// LOGIN
+// ------------------------------
 export const Login = async (req, reply) => {
     const { email, password } = req.body;
 
@@ -16,99 +29,104 @@ export const Login = async (req, reply) => {
         const user = await User.findOne({ where: { email } });
 
         if (!user) {
-            return reply.status(404).send({ message: 'Síndico não encontrado.' });
+            return reply.code(404).send({ message: 'Síndico não encontrado.' });
         }
 
         if (user.status !== 'ativo') {
-            return reply.status(403).send({ message: 'Síndico inativo.' });
+            return reply.code(403).send({ message: 'Síndico inativo.' });
         }
 
         if (user.role !== 'sindico') {
-            return reply.status(403).send({ message: 'Esse usuário não é um síndico.' });
+            return reply.code(403).send({ message: 'Esse usuário não é um síndico.' });
         }
 
-        const senhaCorreta = await user.checkPassword(password);
-
-        if (!senhaCorreta) {
-            return reply.status(401).send({ message: 'Senha incorreta.' });
+        if (!user.checkPassword || !(await user.checkPassword(password))) {
+            return reply.code(401).send({ message: 'Senha incorreta.' });
         }
 
-        const token = gerarToken({
-            id: user.id,
-            email: user.email,
-            role: user.role
-        });
+        const token = gerarToken(user);
 
-        return reply.status(200).send({
+        return reply.code(200).send({
             message: 'Login efetuado com sucesso!',
             token
         });
 
     } catch (error) {
         console.error("Erro ao efetuar login:", error);
-        return reply.status(500).send({ message: 'Erro ao efetuar login.' });
+        return reply.code(500).send({ message: 'Erro ao efetuar login.' });
     }
-}
+};
 
+// ------------------------------
+// LOGOUT
+// ------------------------------
 export const Logout = async (req, reply) => {
     try {
         const authHeader = req.headers.authorization;
 
         if (!authHeader) {
-            return reply.status(400).send({ message: 'Token não fornecido.' });
+            return reply.code(400).send({ message: 'Token não fornecido.' });
         }
 
-        const token = authHeader.split(' ')[1]; // espera "Bearer <token>"
+        const token = authHeader.split(' ')[1];
 
-        // adiciona o token na blacklist
-        tokenBlacklist.add(token);
+        tokenBlacklist.add(token); // remover depois no Redis
 
-        return reply.status(200).send({ message: 'Logout realizado com sucesso.' });
+        return reply.code(200).send({ message: 'Logout realizado com sucesso.' });
+
     } catch (error) {
         console.error("Erro ao efetuar logout:", error);
-        return reply.status(500).send({ message: 'Erro ao efetuar logout.' });
+        return reply.code(500).send({ message: 'Erro ao efetuar logout.' });
     }
 };
 
-export const verifyToken = async (req, reply, done) => {
+// ------------------------------
+// MIDDLEWARE DE AUTENTICAÇÃO
+// ------------------------------
+export const verifyToken = async (req, reply) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-        return reply.status(401).send({ message: 'Token não fornecido.' });
+        return reply.code(401).send({ message: 'Token não fornecido.' });
     }
 
     const token = authHeader.split(' ')[1];
 
     if (tokenBlacklist.has(token)) {
-        return reply.status(401).send({ message: 'Token inválido (logout realizado).' });
+        return reply.code(401).send({ message: 'Token inválido (logout realizado).' });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
-        done();
+        req.user = decoded; // sub, email, role
     } catch (error) {
-        return reply.status(401).send({ message: 'Token inválido ou expirado.' });
+        return reply.code(401).send({ message: 'Token inválido ou expirado.' });
     }
 };
 
+// ------------------------------
+// GET ME
+// ------------------------------
 export const getMe = async (req, reply) => {
     try {
-        const user = await User.findByPk(req.user.id);
+        const user = await User.findByPk(req.user.sub);
 
         if (!user) {
-            return reply.status(404).send({ message: 'Síndico não encontrado.' });
+            return reply.code(404).send({ message: 'Síndico não encontrado.' });
         }
 
-        const adminData = user.toJSON();
-        delete adminData.password;
+        const data = {
+            id: user.id,
+            nome: user.nome,
+            email: user.email,
+            role: user.role,
+            status: user.status
+        };
 
-        // retornando sem a senha
-        return reply.status(200).send(adminData);
+        return reply.code(200).send(data);
 
     } catch (error) {
         console.error("Erro ao listar dados do administrador:", error);
-        return reply.status(500).send({ message: 'Erro ao listar dados do administrador.' });
+        return reply.code(500).send({ message: 'Erro ao listar dados do administrador.' });
     }
 };
-
