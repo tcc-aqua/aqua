@@ -13,9 +13,7 @@ export function useAdminProfile() {
 
   const token = Cookies.get("token");
 
-  // ==========================================
-  // CARREGA ADMIN DO TOKEN
-  // ==========================================
+
   useEffect(() => {
     if (!token) {
       setLoading(false);
@@ -35,17 +33,12 @@ export function useAdminProfile() {
         id: decoded.id,
         first_name: decoded.first_name || "",
         last_name: decoded.last_name || "",
-        position: decoded.position || "",
-        department: decoded.department || "",
-        bio: decoded.bio || "",
         phone: decoded.phone || "",
         email: decoded.email || "",
         address: decoded.address || "",
-        linkedin: decoded.linkedin || "",
-        github: decoded.github || "",
+
         image: decoded.image || "",
 
-        // ROLE direto do token
         role: decoded.role || decoded.type || "admin",
       });
 
@@ -56,9 +49,7 @@ export function useAdminProfile() {
     setLoading(false);
   }, [token]);
 
-  // ==========================================
-  // SALVAR PERFIL
-  // ==========================================
+
   const saveProfile = async (data) => {
     if (!token) return false;
 
@@ -68,7 +59,6 @@ export function useAdminProfile() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Atualiza local
       setAdmin((prev) => ({
         ...prev,
         ...data,
@@ -87,15 +77,11 @@ export function useAdminProfile() {
     }
   };
 
-  // ==========================================
-  // UPLOAD DE FOTO
-  // ==========================================
   const uploadPhoto = async (file) => {
     if (!file || !token) return;
 
     const form = new FormData();
-    form.append("image", file); // nome pode ser qualquer, fastify aceita
-
+    form.append("image", file); 
     try {
       const res = await api.post("/admins/upload-img", form, {
         headers: {
@@ -104,18 +90,17 @@ export function useAdminProfile() {
         },
       });
 
-      // Backend retorna: img_url
       if (!res.data?.img_url) {
         toast.error("Erro no retorno do servidor");
         return;
       }
 
-      // Corrige URL final
+
       const fullUrl = res.data.img_url.startsWith("http")
         ? res.data.img_url
         : `http://localhost:3333/${res.data.img_url.replace(/^\/+/, "")}`;
 
-      // Atualiza local
+
       setAdmin((prev) => ({
         ...prev,
         image: fullUrl,

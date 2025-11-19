@@ -49,23 +49,23 @@ export async function apiFetch(path, options = {}) {
     }
 
     // 
-if (!response.ok) {
-  if (Array.isArray(data)) {
-    
-    const messages = data.map((e) => e.message).join(", ");
-    console.warn("Erros do backend:", messages);
-    return { error: true, message: messages };
-  } else if (data?.message) {
-    console.warn("Aviso do backend:", data.message);
-    return { error: true, message: data.message };
-  } else if (data?.errors) {
-    console.warn("Erros do backend:", data.errors);
-    return { error: true, message: data.errors };
-  } else {
-    console.warn(`Erro ${response.status}`);
-    return { error: true, message: `Erro ${response.status}` };
-  }
-}
+    if (!response.ok) {
+      if (Array.isArray(data)) {
+
+        const messages = data.map((e) => e.message).join(", ");
+        console.warn("Erros do backend:", messages);
+        return { error: true, message: messages };
+      } else if (data?.message) {
+        console.warn("Aviso do backend:", data.message);
+        return { error: true, message: data.message };
+      } else if (data?.errors) {
+        console.warn("Erros do backend:", data.errors);
+        return { error: true, message: data.errors };
+      } else {
+        console.warn(`Erro ${response.status}`);
+        return { error: true, message: `Erro ${response.status}` };
+      }
+    }
 
     return data;
   } catch (err) {
@@ -81,11 +81,8 @@ export const api = {
   get: (path) => apiFetch(path),
   post: (path, body) => apiFetch(path, { method: "POST", body: JSON.stringify(body) }),
   put: (path, body) => apiFetch(path, { method: "PUT", body: JSON.stringify(body) }),
- 
-del: (path) =>
-  apiFetch(path, {
-    method: "DELETE",
-    body: JSON.stringify({}), // corpo vazio
+  patch: (path, body) => apiFetch(path, { method: "PATCH", body: JSON.stringify(body) }),
+  del: (path) => apiFetch(path, { method: "DELETE", body: JSON.stringify({}),
   }),
 
 }
