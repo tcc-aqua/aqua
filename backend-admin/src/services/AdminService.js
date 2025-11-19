@@ -137,37 +137,40 @@ export default class AdminService {
         }
     }
 
-    static async uploadProfilePicture(adminId, file) {
-        try {
+       static async uploadProfilePicture(adminId, file) {
+    try {
+      const baseUploadDir = path.join(process.cwd(), 'uploads');
+      const profileDir = path.join(baseUploadDir, 'profile_images');
 
-            const uploadDir = path.join(process.cwd(), 'uploads');
+      if (!fs.existsSync(baseUploadDir)) fs.mkdirSync(baseUploadDir);
+      if (!fs.existsSync(profileDir)) fs.mkdirSync(profileDir);
 
-            // cria a pasta uploads se não existir
-            if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+      const extension = path.extname(file.filename);
+      const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}${extension}`;
+      const filePath = path.join(profileDir, uniqueFilename);
 
-            // gera nome único
-            const fileName = `${Date.now()}-${file.filename}`;
-            const filePath = path.join(uploadDir, fileName);
+      const buffer = await file.toBuffer();
+      await fs.promises.writeFile(filePath, buffer);
 
-            // salva o arquivo
-            const buffer = await file.toBuffer();
-            await fs.promises.writeFile(filePath, buffer);
+      const admin = await Admin.findByPk(adminId);
+      if (!admin) {
+        await fs.promises.unlink(filePath);
+        throw new Error('Administrador não encontrado');
+      }
 
-            // atualiza campo img_url do admin
-            const admin = await Admin.findByPk(adminId);
-            if (!admin) throw new Error('Administrador não encontrado');
+      // Remove imagem antiga se existir
+      if (admin.img_url) {
+        const oldPath = path.join(baseUploadDir, admin.img_url.replace('/api/uploads/', ''));
+        if (fs.existsSync(oldPath)) await fs.promises.unlink(oldPath).catch(console.error);
+      }
 
-            admin.img_url = `/api/uploads/${fileName}`;
+      admin.img_url = `/api/uploads/profile_images/${uniqueFilename}`;
+      await admin.save();
 
-            console.log('path importado:', path);
-            console.log('file recebido:', file);
-            await admin.save();
-
-            return admin.img_url;
-        } catch (error) {
-            console.error('Erro ao atualizar foto de usuário', error);
-            throw error;
-        }
+      return admin.img_url;
+    } catch (err) {
+      console.error('Erro ao atualizar foto de usuário', err);
+      throw err;
     }
-
+  }
 }
