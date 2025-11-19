@@ -7,6 +7,10 @@ import fs from 'fs'
 import fastifyFormbody from '@fastify/formbody'
 import path from 'path';
 import { fileURLToPath } from 'url';
+import Redis from 'ioredis';
+import { createAdapter } from "@socket.io/redis-adapter";
+
+
 
 import userRoutes from './routes/user.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
@@ -22,6 +26,8 @@ if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// conectar ao Redis
 
 
 // cria log diário
@@ -56,11 +62,26 @@ const fastify = Fastify({
 const server = http.createServer(fastify.server);
 
 const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-  }
+    cors: {
+        origin: "http://localhost:3000",
+        methods: ["GET", "POST"],
+    }
 });
+
+
+const pubClient = new Redis(process.env.REDIS_URL);
+const subClient = new Redis(process.env.REDIS_URL);
+
+// Tratar erros
+pubClient.on("error", (err) => {
+  console.error("Redis PUB error:", err);
+});
+
+subClient.on("error", (err) => {
+  console.error("Redis SUB error:", err);
+});
+
+io.adapter(createAdapter(pubClient, subClient)); // forma correta
 
 chatSocket(io);
 
@@ -108,9 +129,10 @@ fastify.get('/api', {
 })
 
 // routes
-await fastify.register(userRoutes, {prefix: '/api/users'})
-await fastify.register(dashboardRoutes, {prefix: '/api/dashboard'})
-await fastify.register(authRoutes, {prefix: '/api/auth'})
-await fastify.register(moradoresRoutes, {prefix: '/api/moradores'})
+await fastify.register(userRoutes, { prefix: '/api/users' })
+await fastify.register(dashboardRoutes, { prefix: '/api/dashboard' })
+await fastify.register(authRoutes, { prefix: '/api/auth' })
+await fastify.register(moradoresRoutes, { prefix: '/api/moradores' })
 
+export { server };
 export default fastify;
