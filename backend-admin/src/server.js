@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { resolve } from "path";
 dotenv.config({ path: resolve("..", ".env") }); 
 
-import app from "./app.js";
+import app, { server } from "./app.js";
 import { connectDB } from "./config/sequelize.js";
 import Admin from "./models/Admin.js"; 
 
@@ -26,6 +26,7 @@ const criarSuperadminPadrao = async () => {
 
 const start = async () => {
     try {
+        console.log("URL DO REDIS:", process.env.REDIS_URL);
         await connectDB();               
         await criarSuperadminPadrao();     
 

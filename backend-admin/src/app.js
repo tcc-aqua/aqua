@@ -9,6 +9,10 @@ import fastifyStatic from '@fastify/static';
 import fastifyFormbody from '@fastify/formbody'
 import path from 'path';
 import { fileURLToPath } from 'url';
+import Redis from 'ioredis';
+import { createAdapter } from "@socket.io/redis-adapter";
+import http from "http";
+import { Server } from "socket.io";
 
 import userRoutes from './routes/user.routes.js';
 import errorHandler from './middlewares/errorHandler.js';
@@ -26,6 +30,7 @@ import suporteRoutes from './routes/suporte.routes.js';
 import crescimentoRoutes from './routes/crescimento.routes.js';
 import vazamentoRoutes from './routes/vazamento.routes.js';
 import comunicadoRoutes from './routes/comunicado.routes.js';
+import chatSocket from "./sockets/ChatSocket.js";
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
@@ -58,6 +63,31 @@ const fastify = Fastify({
         stream: multiStream,
     }
 })
+
+// redis // socket
+const server = http.createServer(fastify.server);
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:3000",
+        methods: ["GET", "POST"],
+    }
+});
+
+const pubClient = new Redis(process.env.REDIS_URL);
+const subClient = new Redis(process.env.REDIS_URL);
+
+// Tratar erros
+pubClient.on("error", (err) => {
+  console.error("Redis PUB error:", err);
+});
+
+subClient.on("error", (err) => {
+  console.error("Redis SUB error:", err);
+});
+
+io.adapter(createAdapter(pubClient, subClient)); // forma correta
+
+chatSocket(io);
 
 await fastify.register(cors, {
     origin: 'http://localhost:3000',
@@ -127,4 +157,5 @@ await fastify.register(comunicadoRoutes, { prefix: '/api/comunicados' });
 await fastify.register(cepRoutes, { prefix: '/api/cep' });
 await fastify.register(errorHandler);
 
+export { server };
 export default fastify;

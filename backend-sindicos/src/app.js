@@ -9,26 +9,19 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import Redis from 'ioredis';
 import { createAdapter } from "@socket.io/redis-adapter";
-
-
+import http from "http";
+import { Server } from "socket.io";
 
 import userRoutes from './routes/user.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import moradoresRoutes from './routes/moradores.routes.js';
-
-import http from "http";
-import { Server } from "socket.io";
-
 import chatSocket from "./sockets/ChatSocket.js";
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// conectar ao Redis
-
 
 // cria log diário
 const date = new Date().toISOString().slice(0, 10)
@@ -49,9 +42,6 @@ const multiStream = pino.multistream([
     { stream: fileStream },
 ])
 
-
-
-
 const fastify = Fastify({
     logger: {
         level: 'info',
@@ -59,15 +49,14 @@ const fastify = Fastify({
     }
 })
 
+// redis // socket
 const server = http.createServer(fastify.server);
-
 const io = new Server(server, {
     cors: {
         origin: "http://localhost:3000",
         methods: ["GET", "POST"],
     }
 });
-
 
 const pubClient = new Redis(process.env.REDIS_URL);
 const subClient = new Redis(process.env.REDIS_URL);
