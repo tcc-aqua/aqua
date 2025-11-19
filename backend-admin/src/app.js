@@ -4,7 +4,7 @@ import { fastifySwagger } from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
 import pino from 'pino'
 import fs from 'fs'
-import multipart from '@fastify/multipart'
+import fastifyMultipart from '@fastify/multipart'
 import fastifyStatic from '@fastify/static';
 import fastifyFormbody from '@fastify/formbody'
 import path from 'path';
@@ -66,7 +66,11 @@ await fastify.register(cors, {
 })
 
 fastify.register(fastifyFormbody);
-await fastify.register(multipart);
+fastify.register(fastifyMultipart , {
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB
+  }
+});
 
 fastify.register(fastifyStatic, {
     root: path.join(process.cwd(), 'uploads'),

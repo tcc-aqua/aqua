@@ -38,7 +38,6 @@ import {
 } from "lucide-react";
 
 export default function EmployeeProfile() {
-
   const { admin, loading, saving, saveProfile, uploadPhoto } = useAdminProfile();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -48,7 +47,7 @@ export default function EmployeeProfile() {
   const [localImagePreview, setLocalImagePreview] = useState(null);
   const [showAllTimeline, setShowAllTimeline] = useState(false);
 
- 
+
   useEffect(() => {
     if (!loading) {
       if (!admin) {
@@ -138,15 +137,21 @@ export default function EmployeeProfile() {
     }
   };
 
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setLocalImagePreview(ev.target.result);
-    reader.readAsDataURL(file);
-    uploadPhoto(file);
-  };
+  /**
+   * 🚨 CORREÇÃO CRÍTICA APLICADA AQUI!
+   * Envia o arquivo como FormData, que é o formato multipart esperado pelo Fastify.
+   */
+ const handlePhotoUpload = (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
+  const reader = new FileReader();
+  reader.onload = (ev) => setLocalImagePreview(ev.target.result);
+  reader.readAsDataURL(file);
+
+  // Passa o file puro para o hook
+  uploadPhoto(file); 
+};
 
   const getRoleBadge = (role) => {
     if (!role) return null;
@@ -266,9 +271,9 @@ export default function EmployeeProfile() {
               </div>
             </Card>
 
-     
+          
 
-           
+            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
             
@@ -416,6 +421,3 @@ export default function EmployeeProfile() {
     </div>
   );
 }
-
-
-

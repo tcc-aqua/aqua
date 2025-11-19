@@ -52,11 +52,16 @@ export default class AdminController {
     }
 
     static async uploadProfile(req, reply) {
+        if (!req.isMultipart()) {
+            return reply.status(400).send({ message: 'O request não é multipart' });
+        }
+
         try {
-            const file = await req.file(); // fastify-multipart
-            if (!file) {
-                return reply.status(400).send({ message: 'Arquivo não enviado ou tipo inválido' });
-            }
+            const file = await req.file({ fieldname: 'profileImage' }).catch(() => null);
+            console.log("Arquivo recebido:", file);
+            if (!file) return reply.status(400).send({ message: 'Arquivo não enviado ou tipo inválido.' });
+
+            if (!req.admin?.id) return reply.status(401).send({ message: 'Não autorizado' });
 
             const imgUrl = await AdminService.uploadProfilePicture(req.admin.id, file);
 
@@ -65,8 +70,8 @@ export default class AdminController {
                 img_url: imgUrl
             });
         } catch (err) {
-            console.error('Erro no upload', err);
-            return reply.status(500).send({ message: 'Erro ao enviar arquivo' });
+            console.error('Erro no upload de perfil:', err);
+            return reply.status(500).send({ message: err.message || 'Erro interno ao enviar arquivo.' });
         }
     }
 
