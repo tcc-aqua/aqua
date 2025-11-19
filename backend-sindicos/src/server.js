@@ -1,8 +1,8 @@
 import dotenv from 'dotenv';
-import { resolve } from "path";
 dotenv.config({ path: resolve("..", ".env") }); 
+import { resolve } from "path";
 
-import app from "./app.js";
+import app, { server } from "./app.js"; // note o 'server' exportado
 import { connectDB } from "./config/sequelize.js";
 import User from './models/User.js';
 
@@ -30,14 +30,13 @@ const criaSindico = async () => {
 
 const start = async () => {
     try {
+        console.log("URL DO REDIS:", process.env.REDIS_URL);
         await connectDB();               
         await criaSindico();     
-        await app.listen({
-            host: '0.0.0.0',
-            port: PORT
+        
+        server.listen(PORT, '0.0.0.0', () => {
+            console.log(`HTTP Server rodando na porta ${PORT}`);
         });
-
-        console.log(`HTTP Server rodando na porta ${PORT}`);
     } catch (error) {
         console.error(' Erro ao iniciar servidor:', error);
         process.exit(1);
