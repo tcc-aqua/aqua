@@ -28,7 +28,8 @@ import { Separator } from "../ui/separator";
 import ExportarTabela from "../Layout/ExportTable/page";
 import { useAtribuirSindico } from "@/hooks/useAtribuirSIndico";
 import { Input } from "@/components/ui/input";
-
+import { useCondominios } from "@/hooks/useCondominios";
+import { api } from "@/lib/api";
 
 export default function CondominiosDashboard() {
   const [condominios, setCondominios] = useState([]);
@@ -41,6 +42,7 @@ export default function CondominiosDashboard() {
     alertas: 0,
     sensoresAtivos: 0,
   });
+  const { fetchCondominios, editCondominio, updateCondominioName } = useCondominios();
 
   const [showModal, setShowModal] = useState(false);
   const [selectedCondominio, setSelectedCondominio] = useState(null);
@@ -53,11 +55,15 @@ export default function CondominiosDashboard() {
 
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
-  const [form, setForm] = useState({
-    condominio_nome: "",
-    cep: "",
-    numero: "",
-  });
+const [form, setForm] = useState({
+  condominio_nome: "",
+  cep: "",
+  numero: "",
+  logradouro: "",
+  bairro: "",
+  cidade: "",
+  estado: "",
+});
 
   const API_URL = "http://localhost:3333/api/condominios";
   const { atribuirSindico, loading: atribuindo } = useAtribuirSindico(API_URL);
@@ -104,7 +110,7 @@ export default function CondominiosDashboard() {
       setCondominios(filteredCondominios);
 
       const stats = {
-        total: dataCount.total ?? filteredCondominios.length,
+   total: dataAll.total ?? usersArray.length, 
         ativos:
           Array.isArray(dataAtivos.docs) && dataAtivos.docs.length
             ? dataAtivos.docs.length
@@ -194,33 +200,58 @@ export default function CondominiosDashboard() {
   };
   const editItem = (condominio) => {
     setSelected(condominio);
-    setForm({
-      condominio_nome: condominio.condominio_nome,
-      cep: condominio.cep,
-      numero: condominio.numero,
-    });
+setForm({
+  condominio_nome: condominio.condominio_nome,
+  cep: condominio.cep,
+  numero: condominio.numero,
+  logradouro: condominio.logradouro,
+  bairro: condominio.bairro,
+  cidade: condominio.cidade,
+  estado: condominio.uf,
+});
+
     setOpen(true);
   };
+const handleSave = async () => {
+  if (!selected) return toast.error("Nenhum condomínio selecionado.");
 
-  const handleSave = async () => {
-    try {
-      const id = selected?.condominio_id;
+  const id = selected.condominio_id;
 
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+ try {
+  if (form.condominio_nome !== selected.condominio_nome) {
+    await updateCondominioName(id, form.condominio_nome);
+    toast.success("Condomínio atualizado!"); // toast certo vem daqui
+    setOpen(false);
+    fetchData();
+    return;
+  }
 
-      if (!res.ok) throw new Error("Erro ao salvar");
-
-      toast.success("Condomínio atualizado!");
-      setOpen(false);
-      fetchData();
-    } catch (err) {
-      toast.error(err.message);
-    }
+  // PUT completo
+  const body = {
+    condominio_nome: form.condominio_nome,
+    numero: form.numero,
+    logradouro: form.logradouro,
+    bairro: form.bairro,
+    cidade: form.cidade,
+    estado: form.estado,
   };
+  if (form.cep && form.cep.trim() !== "" && form.cep !== selected.cep) {
+    body.cep = form.cep;
+  }
+
+  const res = await api.put(`/condominios/${id}`, body);
+  const data = res?.data || res;
+  if (data?.error) throw new Error(data.error || "Erro ao atualizar condomínio");
+
+  toast.success("Condomínio atualizado!");
+  setOpen(false);
+  fetchData();
+} catch (err) {
+  toast.error(err.message || "Erro ao atualizar condomínio.");
+}
+}
+
+
 
   const handleBuscarCep = async () => {
     if (!form.cep || form.cep.length < 8) return;
@@ -249,31 +280,34 @@ export default function CondominiosDashboard() {
   };
 
   const toggleStatus = async () => {
-    if (!selectedCondominio) return;
-    try {
-      const action =
-        selectedCondominio.condominio_status === "ativo"
-          ? "inativar"
-          : "ativar";
-      const res = await fetch(
-        `${API_URL}/${selectedCondominio.id}/${action}`,
-        { method: "PATCH" }
-      );
-      if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
-      toast.success(
-        `Condomínio ${selectedCondominio.condominio_status === "ativo"
-          ? "inativado"
-          : "ativado"
-        } com sucesso!`
-      );
-      fetchData();
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setShowModal(false);
-      setSelectedCondominio(null);
-    }
-  };
+  if (!selectedCondominio) return;
+  try {
+    const action =
+      selectedCondominio.condominio_status.toLowerCase() === "ativo"
+        ? "inativar"
+        : "ativar";
+
+    const res = await fetch(
+      `${API_URL}/${selectedCondominio.condominio_id}/${action}`,
+      { method: "PATCH" }
+    );
+
+    if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
+
+    toast.success(
+      `Condomínio ${selectedCondominio.condominio_status.toLowerCase() === "ativo"
+        ? "inativado"
+        : "ativado"} com sucesso!`
+    );
+    fetchData();
+  } catch (err) {
+    toast.error(err.message);
+  } finally {
+    setShowModal(false);
+    setSelectedCondominio(null);
+  }
+};
+
 
   if (loading) return <Loading />;
   if (error) return <p className="text-destructive">Erro: {error}</p>;

@@ -15,31 +15,13 @@ import InputAppearance from "@/components/Inputs/editProfile/inputsAppearance";
 import AnimationWrapper from "../Layout/Animation/Animation";
 
 
-export default function ProfileCards() {
+export default function SettingsGeral() {
   return (
     <>
-
 
       <main className="container mx-auto ">
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
           <AnimationWrapper delay={0.1}>
-
-
-            <Card className="bg-card rounded-md shadow-md h-auto  hover:border-sky-400 dark:hover:border-sky-950">
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <User size={18} /> Profile Settings
-                </CardTitle>
-              </CardHeader>
-              <Separator />
-              <CardContent className="space-y-4">
-                <FotoPerfil />
-
-              </CardContent>
-            </Card>
-          </AnimationWrapper>
-
-          <AnimationWrapper delay={0.1} >
 
 
             <Card className="bg-card rounded-md shadow-md h-auto  hover:border-sky-400 dark:hover:border-sky-950">

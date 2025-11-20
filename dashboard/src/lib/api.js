@@ -1,8 +1,7 @@
+// lib/api.js
 import { toast } from "sonner";
 
-// ----------------------------
-// PEGAR TOKEN DO COOKIE
-// ----------------------------
+// Função para pegar token do cookie
 export function getTokenFromCookie(ctx) {
   if (ctx && ctx.req) {
     const cookie = ctx.req.headers.cookie || "";
@@ -15,22 +14,22 @@ export function getTokenFromCookie(ctx) {
   return null;
 }
 
-// ----------------------------
-// FUNÇÃO PRINCIPAL DE FETCH
-// ----------------------------
+// Função principal de fetch
 export async function apiFetch(path, options = {}) {
   const token = getTokenFromCookie();
 
-  let headers = { ...options.headers };
+  const isFormData =
+    options.body instanceof FormData ||
+    (options.headers && options.headers["Content-Type"] === "multipart/form-data");
 
-  // ❗ Se o body NÃO for FormData → é JSON
-  if (!(options.body instanceof FormData)) {
-    headers["Content-Type"] = "application/json";
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-  } else {
-    // multipart/form-data → deixa o browser definir o Content-Type
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-  }
+  const headers = {
+    ...(token && { Authorization: `Bearer ${token}` }),
+
+    // ❗Só aplica JSON se NÃO for FormData
+    ...( !isFormData && { "Content-Type": "application/json" }),
+
+    ...options.headers,
+  };
 
   try {
     const url =
@@ -38,7 +37,7 @@ export async function apiFetch(path, options = {}) {
         ? path
         : `${process.env.NEXT_PUBLIC_API_URL}${path}`;
 
-    console.log("API Fetch URL:", url);
+    console.log("API Fetch URL:", url, " | isFormData:", isFormData);
 
     const response = await fetch(url, {
       ...options,
@@ -49,33 +48,18 @@ export async function apiFetch(path, options = {}) {
     const isJson = contentType && contentType.includes("application/json");
     const data = isJson ? await response.json() : null;
 
-    // ----------------------------
-    // TOKEN EXPIRADO
-    // ----------------------------
     if (response.status === 401) {
       toast.error("Sessão expirada. Faça login novamente.");
       document.cookie = "token=; Max-Age=0; path=/";
       return null;
     }
 
-    // ----------------------------
-    // ERROS
-    // ----------------------------
     if (!response.ok) {
-      if (Array.isArray(data)) {
-        const messages = data.map((e) => e.message).join(", ");
-        console.warn("Erros do backend:", messages);
-        return { error: true, message: messages };
-      } else if (data?.message) {
+      if (data?.message) {
         console.warn("Aviso do backend:", data.message);
         return { error: true, message: data.message };
-      } else if (data?.errors) {
-        console.warn("Erros do backend:", data.errors);
-        return { error: true, message: data.errors };
-      } else {
-        console.warn(`Erro ${response.status}`);
-        return { error: true, message: `Erro ${response.status}` };
       }
+      return { error: true, message: `Erro ${response.status}` };
     }
 
     return data;
@@ -85,21 +69,19 @@ export async function apiFetch(path, options = {}) {
   }
 }
 
-// ----------------------------
-// ATALHOS HTTP
-// ----------------------------
+// Atalhos HTTP
 export const api = {
   get: (path) => apiFetch(path),
-
   post: (path, body, options = {}) =>
-    apiFetch(path, { method: "POST", body, ...options }),
-
-  put: (path, body, options = {}) =>
-    apiFetch(path, { method: "PUT", body, ...options }),
-
-  patch: (path, body, options = {}) =>
-    apiFetch(path, { method: "PATCH", body, ...options }),
-
-  del: (path, options = {}) =>
-    apiFetch(path, { method: "DELETE", ...options }),
+    apiFetch(path, {
+      method: "POST",
+      body: body instanceof FormData ? body : JSON.stringify(body),
+      ...options,
+    }),
+  put: (path, body) =>
+    apiFetch(path, { method: "PUT", body: JSON.stringify(body) }),
+  patch: (path, body) =>
+    apiFetch(path, { method: "PATCH", body: JSON.stringify(body) }),
+  del: (path) =>
+    apiFetch(path, { method: "DELETE", body: JSON.stringify({}) }),
 };

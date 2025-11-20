@@ -27,6 +27,9 @@ export default function SensorsDashboard() {
   const [error, setError] = useState(null);
   const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
   const [filters, setFilters] = useState({});
+const [page, setPage] = useState(1);
+const itemsPerPage = 10;
+const [totalItems, setTotalItems] = useState(0);
 
   const API_URL = "http://localhost:3333/api/sensores";
   const fetchData = async (filters = {}) => {

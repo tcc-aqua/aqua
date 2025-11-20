@@ -10,16 +10,27 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-export function  PaginationDemo({ currentPage = 1, totalPages = 1, onChangePage }) {
+export function PaginationDemo({
+  currentPage = 1,
+  totalPages = 1,
+  onChangePage,
+  maxVisible = 5, // Máximo de páginas visíveis
+}) {
   const handlePageClick = (page) => {
     if (page < 1 || page > totalPages) return;
-    if (onChangePage) onChangePage(page);
+    onChangePage?.(page);
   };
 
-  // Exibe no máximo 5 páginas por vez
+  // Calcula páginas visíveis
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+  let endPage = startPage + maxVisible - 1;
+
+  if (endPage > totalPages) {
+    endPage = totalPages;
+    startPage = Math.max(1, endPage - maxVisible + 1);
+  }
+
   const visiblePages = [];
-  const startPage = Math.max(1, currentPage - 2);
-  const endPage = Math.min(totalPages, startPage + 4);
   for (let i = startPage; i <= endPage; i++) visiblePages.push(i);
 
   return (
@@ -37,11 +48,17 @@ export function  PaginationDemo({ currentPage = 1, totalPages = 1, onChangePage 
           />
         </PaginationItem>
 
-        {/* Números de página */}
+        {/* Primeira página + ellipsis */}
         {startPage > 1 && (
           <>
             <PaginationItem>
-              <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageClick(1); }}>
+              <PaginationLink
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePageClick(1);
+                }}
+              >
                 1
               </PaginationLink>
             </PaginationItem>
@@ -49,6 +66,7 @@ export function  PaginationDemo({ currentPage = 1, totalPages = 1, onChangePage 
           </>
         )}
 
+        {/* Páginas visíveis */}
         {visiblePages.map((page) => (
           <PaginationItem key={page}>
             <PaginationLink
@@ -64,17 +82,25 @@ export function  PaginationDemo({ currentPage = 1, totalPages = 1, onChangePage 
           </PaginationItem>
         ))}
 
+        {/* Última página + ellipsis */}
         {endPage < totalPages && (
           <>
             {endPage < totalPages - 1 && <PaginationEllipsis />}
             <PaginationItem>
-              <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageClick(totalPages); }}>
+              <PaginationLink
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePageClick(totalPages);
+                }}
+              >
                 {totalPages}
               </PaginationLink>
             </PaginationItem>
           </>
         )}
 
+        {/* Botão próximo */}
         <PaginationItem>
           <PaginationNext
             href="#"

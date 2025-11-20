@@ -37,6 +37,7 @@ import {
   EyeOff,
 } from "lucide-react";
 
+export const adminEvent = new EventTarget();
 export default function EmployeeProfile() {
   const { admin, loading, saving, saveProfile, uploadPhoto } = useAdminProfile();
 
@@ -63,19 +64,15 @@ export default function EmployeeProfile() {
   const completeness = useMemo(() => {
     if (!admin) return 0;
     const fields = [
-      { ok: !!admin.image, weight: 20 },
-      { ok: !!admin.phone, weight: 15 },
-      { ok: !!admin.address, weight: 15 },
-      { ok: !!admin.department, weight: 10 },
-      { ok: !!admin.email, weight: 20 },
-      { ok: !!admin.first_name && !!admin.last_name, weight: 20 },
+      { ok: !!admin.image, weight: 40 },
+      { ok: !!admin.email, weight: 30 },
+      { ok: !!admin.first_name && !!admin.last_name, weight: 30 },
     ];
     return Math.min(
       100,
       fields.reduce((acc, f) => acc + (f.ok ? f.weight : 0), 0)
     );
   }, [admin]);
-
 
   const passwordStrength = useMemo(() => {
     const p = formData.password || "";
@@ -137,20 +134,19 @@ export default function EmployeeProfile() {
     }
   };
 
-  /**
-   * 🚨 CORREÇÃO CRÍTICA APLICADA AQUI!
-   * Envia o arquivo como FormData, que é o formato multipart esperado pelo Fastify.
-   */
- const handlePhotoUpload = (e) => {
+const handlePhotoUpload = async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = (ev) => setLocalImagePreview(ev.target.result);
+  reader.onload = (ev) => setLocalImagePreview(ev.target.result); // preview local
   reader.readAsDataURL(file);
 
-  // Passa o file puro para o hook
-  uploadPhoto(file); 
+  await uploadPhoto(file); // envia para backend
+
+  // ⚡️ dispara evento global para Header atualizar a imagem instantaneamente
+  const event = new CustomEvent("imageUpdate", { detail: URL.createObjectURL(file) });
+  adminEvent.dispatchEvent(event);
 };
 
   const getRoleBadge = (role) => {
@@ -174,7 +170,7 @@ export default function EmployeeProfile() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
+    <div className="max-w-8xl mx-auto px-4 py-10 space-y-8">
       <AnimationWrapper>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -189,7 +185,7 @@ export default function EmployeeProfile() {
                   "https://ui-avatars.com/api/?name=User"
                 }
                 alt="profile"
-                className="w-44 h-44 rounded-full object-cover shadow-xl ring-4 ring-sky-300 group-hover:scale-105 transition-transform bg-accent"
+                className="w-44 h-44 rounded-full object-cover shadow-xl ring-1 group-hover:scale-105 transition-transform bg-accent"
               />
 
               <div className="absolute bottom-2 right-2 bg-sky-600 p-2 rounded-full cursor-pointer hover:bg-sky-700 transition-colors">
@@ -211,13 +207,6 @@ export default function EmployeeProfile() {
 
             {getRoleBadge(admin.role)}
 
-            <Button
-              onClick={() => setIsOpen(true)}
-              variant="outline"
-              className="mt-6 w-full flex gap-2 justify-center"
-            >
-              <Edit3 className="w-4 h-4" /> Editar Perfil
-            </Button>
 
             <div className="w-full mt-6">
               <div className="flex justify-between text-sm mb-2">
@@ -251,9 +240,9 @@ export default function EmployeeProfile() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  ["Telefone", admin.phone, Phone],
+            
                   ["E-mail", admin.email, Mail],
-                  ["Endereço", admin.address, MapPin],
+      
                   ["Criado em", admin.criado_em, Clock],
                 ].map(([label, value, Icon]) => (
                   <motion.div

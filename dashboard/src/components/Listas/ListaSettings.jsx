@@ -17,6 +17,7 @@ import {
   UserCircle2,
   Crown,
   Edit,
+  BookOpen,
 } from "lucide-react";
 import {
   Dialog,
@@ -32,6 +33,7 @@ import { useAdmins } from "@/hooks/useAdmins";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import Link from "next/link";
 
 export default function SettingsDashboard() {
   const [activeTab, setActiveTab] = useState("admins");
@@ -132,15 +134,15 @@ export default function SettingsDashboard() {
     }
   };
 
-const handleEditAdmin = (admin) => {
- setEditForm({
-  id: admin.id,
-  email: admin.email,    
-  role: admin.role || admin.type || "admin",
-});
+  const handleEditAdmin = (admin) => {
+    setEditForm({
+      id: admin.id,
+      email: admin.email,
+      role: admin.role || admin.type || "admin",
+    });
 
-  setOpenEditAdmin(true);
-};
+    setOpenEditAdmin(true);
+  };
 
 
   const saveEditAdmin = async () => {
@@ -151,7 +153,7 @@ const handleEditAdmin = (admin) => {
 
     const payload = {
       email: editForm.email,
-     role: editForm.role,
+      role: editForm.role,
     };
 
     await editAdmin(editForm.id, payload);
@@ -175,7 +177,7 @@ const handleEditAdmin = (admin) => {
         <Toaster position="top-right" richColors />
 
         {/* Sidebar (no topo em telas pequenas, lateral no desktop) */}
-        <aside className="w-full md:w-64 md:h-50 bg-sidebar border-b md:border-b-0 md:border-r border-border flex-shrink-0 flex flex-col rounded-none md:rounded-md ">
+        <aside className="w-full md:w-64 md:h-65 bg-sidebar border-b md:border-b-0 md:border-r border-border flex-shrink-0 flex flex-col rounded-none md:rounded-md ">
           <div className="flex items-center gap-2 p-6 text-lg font-semibold border-b border-border text-accent">
             <Settings className="text-accent" size={20} />
             Configurações
@@ -203,11 +205,24 @@ const handleEditAdmin = (admin) => {
               <User size={18} />
               Usuários
             </button>
+
+            <button
+              onClick={() => setActiveTab("geral")}
+              className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${activeTab === "geral"
+                ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
+                : "text-sidebar-foreground hover:text-accent"
+                }`}
+            >
+              <BookOpen size={18} />
+              Geral
+            </button>
+
           </nav>
         </aside>
 
 
         <main className="flex-1 p-4 sm:p-6 md:p-10 overflow-x-auto">
+          
           <AnimationWrapper delay={0.2}>
             <Card className="mx-auto">
               <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -230,6 +245,7 @@ const handleEditAdmin = (admin) => {
                   )}
                 </div>
               </CardHeader>
+              
 
               <CardContent className="overflow-x-auto">
                 <div className="w-full overflow-x-auto">
@@ -394,21 +410,19 @@ const handleEditAdmin = (admin) => {
                                     </Tooltip>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        disabled={role === "superadmin"}  // superadmin não pode editar outro superadmin
-                                        onClick={() => handleEditAdmin(item)}
-                                      >
-                                        <Edit className="text-accent" size={14} />
-                                      </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          disabled={role === "superadmin"}  // superadmin não pode editar outro superadmin
+                                          onClick={() => handleEditAdmin(item)}
+                                        >
+                                          <Edit className="text-accent" size={14} />
+                                        </Button>
                                       </TooltipTrigger>
                                       <TooltipContent>
                                         Editar
                                       </TooltipContent>
-                                   </Tooltip>
-
-
+                                    </Tooltip>
 
                                   </div>
 
@@ -421,10 +435,15 @@ const handleEditAdmin = (admin) => {
                       </tbody>
                     </table>
                   )}
+                  
                 </div>
+                
               </CardContent>
-            </Card>
+            </Card>  
+        
+        
           </AnimationWrapper>
+          
         </main >
 
         {/* Modal de Confirmação */}

@@ -2,7 +2,7 @@
 import ProfileCards from "@/components/Cards/SettingsGeral";
 import Header from "@/components/Layout/Header/page";
 import LayoutDashboard from "@/components/Layout/LayoutDashboard/page";
-import EmployeeProfile from "@/components/Listas/Profile";
+
 
 export default function Profile() {
     return (<>
@@ -13,7 +13,7 @@ export default function Profile() {
                 </header>
                 <main className="container mx-auto pt-20 ">
                     <div className="">
-                      <EmployeeProfile></EmployeeProfile>
+                     <ProfileCards></ProfileCards>
                     </div>
                 </main>
             </div>
