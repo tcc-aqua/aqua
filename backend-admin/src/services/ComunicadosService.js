@@ -12,22 +12,70 @@ export default class ComunicadosService {
         }
     }
 
-    static async create({ title, subject, addressee, condominio_id }) {
+    static async create({ title, subject, addressee, condominio_id = null, casa_ids = [], sindico_ids = [] }) {
         try {
-            const comunicado = await Comunicados.create({
-                title, subject, addressee, condominio_id
-            });
-            return comunicado;
+            const comunicados = [];
+
+            // Comuniado geral para todos de um tipo
+            if (!condominio_id && casa_ids.length === 0 && sindico_ids.length === 0) {
+                const comunicado = await Comunicados.create({
+                    title,
+                    subject,
+                    addressee,
+                    condominio_id: null
+                });
+                comunicados.push(comunicado);
+            }
+
+            // Comuniado para um condomínio específico
+            if (condominio_id) {
+                const comunicado = await Comunicados.create({
+                    title,
+                    subject,
+                    addressee,
+                    condominio_id
+                });
+                comunicados.push(comunicado);
+            }
+
+            // Comuniados para casas específicas
+            if (casa_ids.length > 0) {
+                for (const casaId of casa_ids) {
+                    const comunicado = await Comunicados.create({
+                        title,
+                        subject,
+                        addressee: 'usuários',
+                        condominio_id: casaId
+                    });
+                    comunicados.push(comunicado);
+                }
+            }
+
+            // Comuniados para síndicos específicos
+            if (sindico_ids.length > 0) {
+                for (const sindicoId of sindico_ids) {
+                    const comunicado = await Comunicados.create({
+                        title,
+                        subject,
+                        addressee: 'sindicos',
+                        condominio_id: sindicoId
+                    });
+                    comunicados.push(comunicado);
+                }
+            }
+
+            return comunicados;
+
         } catch (error) {
             console.error('Erro ao criar comunicado.', error);
             throw error;
         }
     }
 
-    static async update(id, {title, subject, addressee, condominio_id}){
+    static async update(id, { title, subject, addressee, condominio_id }) {
         try {
             const comunicado = await Comunicados.findByPk(id);
-            if(!comunicado) throw new Error('Comunicado não encontrado');
+            if (!comunicado) throw new Error('Comunicado não encontrado');
 
             await comunicado.update({
                 title, subject, addressee, condominio_id
@@ -43,7 +91,7 @@ export default class ComunicadosService {
     static async deleteComunicado(id) {
         try {
             const comunicado = await Comunicados.findByPk(id);
-            if(!comunicado) throw new Error('Comunicado não encontrado');
+            if (!comunicado) throw new Error('Comunicado não encontrado');
 
             await comunicado.destroy();
             return {
