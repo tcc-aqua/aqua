@@ -142,4 +142,13 @@ export default async function userRoutes(fastify) {
                 description: "Atribuindo como sindico",
             }
         }, UserController.sindico);
+
+    fastify.get('/novos-moradores',
+        {
+            schema: {
+                summary: "Contagem de novos usuários nos ultimos 6 meses",
+                tags: ['usuários'],
+                description: "Listando quantidade de novos usuários",
+            }
+        }, UserController.novosMoradores);
 }

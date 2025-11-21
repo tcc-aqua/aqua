@@ -88,7 +88,7 @@ export function Instruction() {
                     </Button>
                 </AlertDialogCancel>
 
-                <div className="flex justify-center w-full">
+                <div className="flex justify-center ">
                     <TabsShadowDemo value={currentTab} onValueChange={setCurrentTab} />
                 </div>
 

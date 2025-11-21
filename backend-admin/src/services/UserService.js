@@ -1,65 +1,67 @@
 import User from "../models/User.js";
 import UserView from "../models/UserView.js";
+import { Sequelize } from "sequelize";
+
 
 export default class UserService {
 
     static async getAllUsers(page = 1, limit = 10) {
-            try {
-                const options = {
-                    page,
-                    paginate: limit,
-                    order: [['user_id', 'DESC']]
-                }
-                const usuarios = await UserView.paginate(options);
-                return usuarios;
-            } catch (error) {
-                console.error("Erro ao listar todas as usuarios", error);
-                throw error;
+        try {
+            const options = {
+                page,
+                paginate: limit,
+                order: [['user_id', 'DESC']]
             }
+            const usuarios = await UserView.paginate(options);
+            return usuarios;
+        } catch (error) {
+            console.error("Erro ao listar todas as usuarios", error);
+            throw error;
         }
+    }
 
-         static async getAllUsersSindicos(page = 1, limit = 10) {
-            try {
-                const options = {
-                    page,
-                    paginate: limit,
-                    where: {user_role: 'sindico'},
-                    order: [['user_id', 'DESC']]
-                }
-                const sindicos = await UserView.paginate(options);
-                return sindicos;
-            } catch (error) {
-                console.error("Erro ao listar todas as sindicos", error);
-                throw error;
+    static async getAllUsersSindicos(page = 1, limit = 10) {
+        try {
+            const options = {
+                page,
+                paginate: limit,
+                where: { user_role: 'sindico' },
+                order: [['user_id', 'DESC']]
             }
+            const sindicos = await UserView.paginate(options);
+            return sindicos;
+        } catch (error) {
+            console.error("Erro ao listar todas as sindicos", error);
+            throw error;
         }
+    }
 
 
     static async getAllUserActives(page = 1, limit = 10) {
         try {
-            
-                const options = {
-                    page,
-                    paginate: limit,
-                    where: {user_status: 'ativo'},
-                    order: [['user_id', 'DESC']]
-                }
-                const usuarios = await UserView.paginate(options);
-                return usuarios;
-            } catch (error) {
-                console.error("Erro ao listar todas as usuarios", error);
-                throw error;
+
+            const options = {
+                page,
+                paginate: limit,
+                where: { user_status: 'ativo' },
+                order: [['user_id', 'DESC']]
             }
+            const usuarios = await UserView.paginate(options);
+            return usuarios;
+        } catch (error) {
+            console.error("Erro ao listar todas as usuarios", error);
+            throw error;
         }
-    
-    
+    }
+
+
 
     static async getAllUsersDeactivated(page = 1, limit = 10) {
         try {
             const options = {
                 page,
                 paginate: limit,
-                where: {user_status: 'inativo'},
+                where: { user_status: 'inativo' },
                 order: [['user_id', 'DESC']]
             }
             const usuarios = await UserView.paginate(options);
@@ -209,21 +211,41 @@ export default class UserService {
         }
     }
 
-    static async setarSindico(id){
+    static async setarSindico(id) {
         try {
             const user = await User.findByPk(id);
-            if(!user) throw new Error('Usuario nao encontrado');
+            if (!user) throw new Error('Usuario nao encontrado');
 
-            if(user.type === 'casa') throw new Error('Esse usuário não faz parte de um condominio')
-            if(user.role === 'sindico') throw new Error('Esse usuário ja é sindico')
+            if (user.type === 'casa') throw new Error('Esse usuário não faz parte de um condominio')
+            if (user.role === 'sindico') throw new Error('Esse usuário ja é sindico')
 
-                await user.update({
-                    role: "sindico"
-                })
+            await user.update({
+                role: "sindico"
+            })
 
-                return user;
+            return user;
         } catch (error) {
             console.error('Erro ao atualizar para sindico', error);
+            throw error;
+        }
+    }
+
+    static async novosUsuariosUltimos6Meses() {
+        const hoje = new Date();
+        const seisMesesAtras = new Date(hoje.getFullYear(), hoje.getMonth() - 5, 1);
+
+        try {
+            const total = await User.count({
+                where: {
+                    criado_em: {
+                        [Sequelize.Op.gte]: seisMesesAtras
+                    }
+                }
+            });
+
+            return total;
+        } catch (error) {
+            console.error("Erro ao contar novos usuários dos últimos 6 meses:", error);
             throw error;
         }
     }
