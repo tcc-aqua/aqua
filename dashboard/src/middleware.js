@@ -2,15 +2,6 @@ import { NextResponse } from "next/server";
 
 // Rotas protegidas
 const protectedPrefixes = [
-  "/dashboard",
-  "/sensors",
-  "/alerts",
-  "/apartamentos",
-  "/condominios",
-  "/profile",
-  "/settings",
-  "/users",
-  "/suporte",
   "/comunicados"
 ];
 

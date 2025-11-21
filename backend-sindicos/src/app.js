@@ -7,20 +7,11 @@ import fs from 'fs'
 import fastifyFormbody from '@fastify/formbody'
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Redis from 'ioredis';
-import { createAdapter } from "@socket.io/redis-adapter";
-
-
 
 import userRoutes from './routes/user.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import moradoresRoutes from './routes/moradores.routes.js';
-
-import http from "http";
-import { Server } from "socket.io";
-
-import chatSocket from "./sockets/ChatSocket.js";
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
@@ -59,34 +50,9 @@ const fastify = Fastify({
     }
 })
 
-const server = http.createServer(fastify.server);
-
-const io = new Server(server, {
-    cors: {
-        origin: "http://localhost:3000",
-        methods: ["GET", "POST"],
-    }
-});
-
-
-const pubClient = new Redis(process.env.REDIS_URL);
-const subClient = new Redis(process.env.REDIS_URL);
-
-// Tratar erros
-pubClient.on("error", (err) => {
-  console.error("Redis PUB error:", err);
-});
-
-subClient.on("error", (err) => {
-  console.error("Redis SUB error:", err);
-});
-
-io.adapter(createAdapter(pubClient, subClient)); // forma correta
-
-chatSocket(io);
 
 await fastify.register(cors, {
-    origin: 'http://localhost:3000',
+    origin: 'http://localhost:3001',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
 })
@@ -134,5 +100,4 @@ await fastify.register(dashboardRoutes, { prefix: '/api/dashboard' })
 await fastify.register(authRoutes, { prefix: '/api/auth' })
 await fastify.register(moradoresRoutes, { prefix: '/api/moradores' })
 
-export { server };
 export default fastify;
