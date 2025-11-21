@@ -75,7 +75,7 @@ const LoginFormContent = () => {
       <div className="relative isolate flex flex-col items-center z-10">
         
         <h1 className="text-2xl font-bold tracking-tight text-center">
-          Acesso ao Sistema
+          Acesso ao Sistema de Síndicos
         </h1>
         <ModeToggle/>
         <p className="mt-2 text-sm text-muted-foreground text-center">
@@ -162,9 +162,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-black/30"></div>
       </div>
 
-      {/* Coluna do Formulário */}
       <div className="flex flex-col p-6 md:p-10">
-        {/* Cabeçalho */}
         <div className="flex justify-between items-center mb-10">
           <div className="flex items-center gap-2">
             <img src="./logo.svg" className="w-12" alt="Logo Principal" />
@@ -174,7 +172,6 @@ export default function LoginPage() {
           <Instruction className="h-16 w-16" />
         </div>
 
-        {/* Centraliza o Formulário */}
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-lg">
             <LoginFormContent />
