@@ -99,4 +99,9 @@ export default class UserController {
         return reply.status(200).send(user);
     }
 
+    static async novosMoradores(req, reply) {
+        const users = await UserService.novosUsuariosUltimos6Meses();
+        return reply.status(200).send(users);
+    }
+
 }
