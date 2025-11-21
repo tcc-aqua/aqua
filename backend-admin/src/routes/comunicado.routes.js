@@ -5,4 +5,6 @@ export default async function comunicadoRoutes(fastify) {
     fastify.post('/', ComunicadosController.create);
     fastify.put('/:id', ComunicadosController.update);
     fastify.delete('/:id', ComunicadosController.delete);
+    fastify.post("/ler", ComunicadosController.marcarComoLido);
+    fastify.get("/nao-lidos", ComunicadosController.getNaoLidos);
 }

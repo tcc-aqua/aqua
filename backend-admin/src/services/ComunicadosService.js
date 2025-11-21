@@ -1,3 +1,4 @@
+import ComunicadosLidos from "../models/ComunicadoLido.js";
 import Comunicados from "../models/Comunicados.js";
 
 export default class ComunicadosService {
@@ -100,6 +101,44 @@ export default class ComunicadosService {
             };
         } catch (error) {
             console.error('Erro ao deletar comunicado', error);
+            throw error;
+        }
+    }
+
+
+    // Marca um comunicado como lido
+    static async marcarComoLido(user_id, comunicado_id) {
+        try {
+            let registro = await ComunicadosLidos.findOne({
+                where: { user_id, comunicado_id }
+            });
+
+            if (!registro) {
+                registro = await ComunicadosLidos.create({
+                    user_id,
+                    comunicado_id,
+                    lido: true
+                });
+            } else {
+                await registro.update({ lido: true });
+            }
+
+            return registro;
+        } catch (error) {
+            console.error("Erro ao marcar comunicado como lido", error);
+            throw error;
+        }
+    }
+
+    // Busca todos os comunicados não lidos de um usuário
+    static async getNaoLidos(user_id) {
+        try {
+            return await ComunicadosLidos.findAll({
+                where: { user_id, lido: false },
+                include: ["comunicado"] // se quiser incluir dados do comunicado
+            });
+        } catch (error) {
+            console.error("Erro ao buscar comunicados não lidos", error);
             throw error;
         }
     }
