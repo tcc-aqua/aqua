@@ -1,5 +1,7 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
+import sequelizePaginate from 'sequelize-paginate'
+import Casa from "./Casa.js";
 
 export default class Comunicados extends Model {}
 
@@ -35,7 +37,7 @@ Comunicados.init({
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-            model: 'casas', // se tiver uma tabela de casas
+            model: Casa, 
             key: 'id'
         },
         onDelete: "CASCADE",
@@ -58,3 +60,5 @@ Comunicados.init({
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em'
 });
+
+sequelizePaginate.paginate(Comunicados);

@@ -5,7 +5,6 @@ import { Op } from "sequelize";
 export default class getComunicadosService {
   static async getAllComunicados(page = 1, limit = 10, sindico_id) {
     try {
-      // pega o condomínio que o síndico gerencia
       const condominio = await Condominio.findOne({
         where: { sindico_id },
         attributes: ['id']
@@ -18,10 +17,15 @@ export default class getComunicadosService {
         paginate: limit,
         order: [['criado_em', 'DESC']],
         where: {
-          addressee: 'sindicos',  // só síndicos
           [Op.or]: [
-            { condominio_id: null },     // comunicados gerais
-            { condominio_id }            // comunicados específicos do condomínio
+            // comunicados gerais para todos os usuários
+            { addressee: 'usuários', condominio_id: null },
+            // comunicados gerais para todos os síndicos
+            { addressee: 'sindicos', condominio_id: null },
+            // comunicados específicos do condomínio
+            { condominio_id },
+            // comunicados direcionados a esse síndico especificamente
+            { sindico_id }
           ]
         }
       };
