@@ -21,6 +21,16 @@ module.exports = {
         type: Sequelize.ENUM('administradores', 'usuários', 'sindicos'),
         allowNull: false,
       },
+      condominio_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'condominios',
+          key: 'id'
+        },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+      },
       criado_em: {
         type: Sequelize.DATE,
         allowNull: false,

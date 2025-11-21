@@ -23,7 +23,6 @@ const navigationItems = [
   { id: "dashboard", name: "Dashboard", icon: Home, href: "/" },
   { id: "moradores", name: "Moradores", icon: Users, href: "/moradores" },
   { id: "relatorios", name: "Relatórios", icon: Building, href: "/relatorios" },
-  { id: "chat", name: "Chat", icon: Grid, href: "/chat" },
   { id: "comunicados", name: "Comunicados", icon: HousePlus, href: "/comunicados" },
 ];
 

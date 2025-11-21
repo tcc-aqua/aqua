@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: resolve("..", ".env") }); 
 import { resolve } from "path";
 
-import app, { server } from "./app.js"; // note o 'server' exportado
+import app from "./app.js"; // note o 'server' exportado
 import { connectDB } from "./config/sequelize.js";
 import User from './models/User.js';
 
@@ -34,9 +34,12 @@ const start = async () => {
         await connectDB();               
         await criaSindico();     
         
-        server.listen(PORT, '0.0.0.0', () => {
-            console.log(`HTTP Server rodando na porta ${PORT}`);
-        });
+               await app.listen({
+                   host: '0.0.0.0',
+                   port: PORT
+               });
+       
+               console.log(`HTTP Server rodando na porta ${PORT}`);
     } catch (error) {
         console.error(' Erro ao iniciar servidor:', error);
         process.exit(1);
