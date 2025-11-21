@@ -12,6 +12,7 @@ import userRoutes from './routes/user.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import moradoresRoutes from './routes/moradores.routes.js';
+import comunicadosRoutes from './routes/comunicados.routes.js';
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
@@ -99,5 +100,6 @@ await fastify.register(userRoutes, { prefix: '/api/users' })
 await fastify.register(dashboardRoutes, { prefix: '/api/dashboard' })
 await fastify.register(authRoutes, { prefix: '/api/auth' })
 await fastify.register(moradoresRoutes, { prefix: '/api/moradores' })
+await fastify.register(comunicadosRoutes, { prefix: '/api/comunicados' })
 
 export default fastify;

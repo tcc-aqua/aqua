@@ -20,7 +20,18 @@ Comunicados.init({
     addressee: {
         type: DataTypes.ENUM('adminstradores', 'usuários', 'sindicos'),
         allowNull: false
+    },
+     condominio_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'condominios',
+            key: 'id'
+        },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
     }
+
 }, {
     sequelize,
     tableName: 'comunicados',

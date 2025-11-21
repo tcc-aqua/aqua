@@ -12,10 +12,10 @@ export default class ComunicadosService {
         }
     }
 
-    static async create({ title, subject, addressee }) {
+    static async create({ title, subject, addressee, condominio_id }) {
         try {
             const comunicado = await Comunicados.create({
-                title, subject, addressee
+                title, subject, addressee, condominio_id
             });
             return comunicado;
         } catch (error) {
@@ -24,13 +24,13 @@ export default class ComunicadosService {
         }
     }
 
-    static async update(id, {title, subject, addressee}){
+    static async update(id, {title, subject, addressee, condominio_id}){
         try {
             const comunicado = await Comunicados.findByPk(id);
             if(!comunicado) throw new Error('Comunicado não encontrado');
 
             await comunicado.update({
-                title, subject, addressee
+                title, subject, addressee, condominio_id
             })
             return comunicado;
 
