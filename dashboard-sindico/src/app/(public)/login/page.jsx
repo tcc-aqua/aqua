@@ -11,22 +11,25 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Logo } from "@/components/logo";
+import { Instruction } from "@/components/blocks/instruction"; 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { ModeToggle } from "@/components/layout/DarkMode/page";
 
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { ModeToggle } from "@/components/layout/DarkMode/page";
 
+// Define o esquema de validação do formulário
 const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
+  email: z.string().email("Email inválido"),
+  password: z
+    .string()
+    .min(8, "A senha deve ter pelo menos 8 caracteres"),
 });
 
-const Login = () => {
+const LoginFormContent = () => {
   const router = useRouter();
 
   const form = useForm({
@@ -63,120 +66,121 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/70">
-      <div className="relative max-w-sm w-full border rounded-xl px-8 py-8 shadow-lg/5 dark:shadow-xl bg-card overflow-hidden">
-        <div
-          className="absolute inset-0 z-0 -top-px -left-px"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, color-mix(in srgb, var(--card-foreground) 8%, transparent) 1px, transparent 1px),
-              linear-gradient(to bottom, color-mix(in srgb, var(--card-foreground) 8%, transparent) 1px, transparent 1px)
-            `,
-            backgroundSize: "20px 20px",
-            backgroundPosition: "0 0, 0 0",
-            maskImage: `
-              repeating-linear-gradient(
-                to right,
-                black 0px,
-                black 3px,
-                transparent 3px,
-                transparent 8px
-              ),
-              repeating-linear-gradient(
-                to bottom,
-                black 0px,
-                black 3px,
-                transparent 3px,
-                transparent 8px
-              ),
-              radial-gradient(ellipse 70% 50% at 50% 0%, #000 60%, transparent 100%)
-            `,
-            WebkitMaskImage: `
-              repeating-linear-gradient(
-                to right,
-                black 0px,
-                black 3px,
-                transparent 3px,
-                transparent 8px
-              ),
-              repeating-linear-gradient(
-                to bottom,
-                black 0px,
-                black 3px,
-                transparent 3px,
-                transparent 8px
-              ),
-              radial-gradient(ellipse 70% 50% at 50% 0%, #000 60%, transparent 100%)
-            `,
-            maskComposite: "intersect",
-            WebkitMaskComposite: "source-in",
-          }}
-        />
+    <div className="relative w-full max-w-sm sm:max-w-md group overflow-hidden rounded-xl bg-card p-8 shadow-2xl transition-all duration-300 hover:shadow-primary/50 dark:hover:shadow-primary/20 border border-border/50 mx-auto">
+      <div className="absolute inset-0 z-0 opacity-0 transition duration-300 ">
+        <div className="absolute inset-0 bg-primary/20 dark:bg-primary/5 blur-xl"></div> 
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-background/50 opacity-40 transition duration-300 group-hover:opacity-80 rounded-xl animate-spin-slow"></div>
+      </div>
 
-        <div className="relative isolate flex flex-col items-center">
-          <div className="flex justify-between gap-8">
-            <Logo className="h-9 w-9" />
-            <ModeToggle />
-          </div>
+      <div className="relative isolate flex flex-col items-center z-10">
+        
+        <h1 className="text-2xl font-bold tracking-tight text-center">
+          Acesso ao Sistema
+        </h1>
+        <ModeToggle/>
+        <p className="mt-2 text-sm text-muted-foreground text-center">
+          Bem-vindo de volta!
+        </p>
 
-          <p className="mt-4 text-lg font-semibold tracking-tight">
-            Bem-vindo ao sistema de síndicos!
-          </p>
-
-          <div className="my-7 w-full flex items-center justify-center overflow-hidden">
-            <Separator />
-            <Separator />
-          </div>
-
-          <Form {...form}>
-            <form className="w-full space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="email@gmail.com"
-                        className="w-full placeholder:text-gray-400 placeholder:text-opacity-60"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Senha</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="******"
-                        className="w-full placeholder:text-gray-400 placeholder:text-opacity-60"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <Button type="submit" className="w-full">
-                Entrar
-              </Button>
-            </form>
-          </Form>
+        <div className="my-6 w-full flex items-center justify-center">
+          <Separator />
         </div>
+
+        <Form {...form}>
+          <form
+            className="w-full space-y-6"
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="email@condominio.com"
+                      className="w-full"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Senha</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="••••••••"
+                      className="w-full"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" className="w-full font-semibold">
+              Entrar
+            </Button>
+          </form>
+        </Form>
+        
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          Esqueceu sua senha?{" "}
+          <a
+            href="#"
+            className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+          >
+            Recuperar
+          </a>
+        </p>
       </div>
     </div>
   );
 };
 
-export default Login;
+// O componente principal de layout
+export default function LoginPage() {
+  return (
+    <div className="grid min-h-svh lg:grid-cols-2 bg-background">
+      <div className="bg-[#0372c6] relative hidden lg:block">
+        <img
+          src="/logo-png.svg"
+          alt="Imagem ilustrativa"
+          className="absolute inset-0 h-full w-full object-cover opacity-60"
+        />
+        <div className="absolute inset-0 bg-black/30"></div>
+      </div>
+
+      {/* Coluna do Formulário */}
+      <div className="flex flex-col p-6 md:p-10">
+        {/* Cabeçalho */}
+        <div className="flex justify-between items-center mb-10">
+          <div className="flex items-center gap-2">
+            <img src="./logo.svg" className="w-12" alt="Logo Principal" />
+            <img src="./escrita-dark.png" className="w-18 mt-2" alt="Nome do Sistema" />
+          </div>
+
+          <Instruction className="h-16 w-16" />
+        </div>
+
+        {/* Centraliza o Formulário */}
+        <div className="flex flex-1 items-center justify-center">
+          <div className="w-full max-w-lg">
+            <LoginFormContent />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
