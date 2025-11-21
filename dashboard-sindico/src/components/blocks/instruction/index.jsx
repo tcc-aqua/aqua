@@ -19,22 +19,17 @@ import { Info } from "lucide-react";
 const tabsData = [
     {
         value: "consumo-diario",
-        title: "Consumo Diário",
+        title: "Consumo dos Moradores",
         img: "./gota-feliz.svg",
         description:
-            "Acompanhe seu consumo diário e veja como pequenos ajustes podem reduzir o desperdício de água.",
+            "Monitore o consumo total e individual dos moradores do seu condomínio e identifique padrões de uso para otimizar recursos.",
     },
     {
         value: "consumo-mensal",
-        title: "Consumo Mensal",
+        title: "Comunicados do Condomínio",
         img: "./gota-nerd.svg",
-        description: "Visualize o total consumido no mês e compare com o período anterior.",
-    },
-    {
-        value: "meta-economia",
-        title: "Meta de Economia",
-        img: "./gota-zen.svg",
-        description: "Defina uma meta de economia e acompanhe seu progresso em tempo real.",
+       description:
+      "Crie e gerencie comunicados direcionados a moradores, síndicos ou administradores do seu condomínio de forma simples e rápida.",
     },
     {
         value: "alertas",
@@ -88,7 +83,7 @@ export function Instruction() {
                     </Button>
                 </AlertDialogCancel>
 
-                <div className="flex justify-center ">
+                <div className="flex justify-center">
                     <TabsShadowDemo value={currentTab} onValueChange={setCurrentTab} />
                 </div>
 
