@@ -35,6 +35,10 @@ import {
   Lock,
   Eye,
   EyeOff,
+  Check,
+  X,
+  AlertCircle,
+  ShieldQuestion,
 } from "lucide-react";
 
 export const adminEvent = new EventTarget();
@@ -48,6 +52,8 @@ export default function EmployeeProfile() {
   const [localImagePreview, setLocalImagePreview] = useState(null);
   const [showAllTimeline, setShowAllTimeline] = useState(false);
 
+  // Modal de confirmação
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -92,14 +98,12 @@ export default function EmployeeProfile() {
     return "Forte";
   };
 
-
   const timeline = admin?.activities || [
     { id: 1, text: "Conta criada", date: admin?.criado_em },
     { id: 2, text: "Perfil atualizado", date: "2024-10-12" },
     { id: 3, text: "Senha alterada", date: "2025-02-01" },
     { id: 4, text: "Cadastrou sensores", date: "2025-03-20" },
   ];
-
 
   const loadingUI = loading ? <Loading /> : null;
 
@@ -119,35 +123,23 @@ export default function EmployeeProfile() {
   if (loadingUI) return loadingUI;
   if (errorUI) return errorUI;
 
-
   const handleChange = (key, value) =>
     setFormData((prev) => ({ ...prev, [key]: value }));
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    const data = { email: formData.email };
-    if (formData.password.trim()) data.password = formData.password;
-    const ok = await saveProfile(data);
-    if (ok) {
-      setIsOpen(false);
-      setFormData((p) => ({ ...p, password: "" }));
-    }
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => setLocalImagePreview(ev.target.result); 
+    reader.readAsDataURL(file);
+
+    await uploadPhoto(file); 
+
+    // ⚡️ dispara evento global para Header atualizar a imagem instantaneamente
+    const event = new CustomEvent("imageUpdate", { detail: URL.createObjectURL(file) });
+    adminEvent.dispatchEvent(event);
   };
-
-const handlePhotoUpload = async (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (ev) => setLocalImagePreview(ev.target.result); // preview local
-  reader.readAsDataURL(file);
-
-  await uploadPhoto(file); // envia para backend
-
-  // ⚡️ dispara evento global para Header atualizar a imagem instantaneamente
-  const event = new CustomEvent("imageUpdate", { detail: URL.createObjectURL(file) });
-  adminEvent.dispatchEvent(event);
-};
 
   const getRoleBadge = (role) => {
     if (!role) return null;
@@ -172,11 +164,8 @@ const handlePhotoUpload = async (e) => {
   return (
     <div className="max-w-8xl mx-auto px-4 py-10 space-y-8">
       <AnimationWrapper>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
           <Card className="p-6 rounded-3xl shadow-xl flex flex-col items-center text-center">
-
             <div className="relative mb-4 group">
               <img
                 src={
@@ -187,7 +176,6 @@ const handlePhotoUpload = async (e) => {
                 alt="profile"
                 className="w-44 h-44 rounded-full object-cover shadow-xl ring-1 group-hover:scale-105 transition-transform bg-accent"
               />
-
               <div className="absolute bottom-2 right-2 bg-sky-600 p-2 rounded-full cursor-pointer hover:bg-sky-700 transition-colors">
                 <Plus className="w-4 h-4 text-white" />
                 <input
@@ -199,14 +187,12 @@ const handlePhotoUpload = async (e) => {
               </div>
             </div>
 
-
             <h1 className="text-3xl font-bold">
               {admin.first_name}{" "}
               <span className="text-sky-600">{admin.last_name}</span>
             </h1>
 
             {getRoleBadge(admin.role)}
-
 
             <div className="w-full mt-6">
               <div className="flex justify-between text-sm mb-2">
@@ -237,12 +223,9 @@ const handlePhotoUpload = async (e) => {
               <h3 className="text-2xl font-semibold mb-4">
                 Informações de Contato
               </h3>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-            
                   ["E-mail", admin.email, Mail],
-      
                   ["Criado em", admin.criado_em, Clock],
                 ].map(([label, value, Icon]) => (
                   <motion.div
@@ -260,15 +243,9 @@ const handlePhotoUpload = async (e) => {
               </div>
             </Card>
 
-          
-
-            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-            
               <Card className="p-4 rounded-2xl shadow">
                 <h4 className="font-semibold mb-3">Atividades recentes</h4>
-
                 <div className="space-y-3">
                   {(showAllTimeline ? timeline : timeline.slice(0, 3)).map((t) => (
                     <motion.div
@@ -288,7 +265,6 @@ const handlePhotoUpload = async (e) => {
                     </motion.div>
                   ))}
                 </div>
-
                 {timeline.length > 3 && (
                   <div className="mt-3 flex justify-end">
                     <Button
@@ -348,65 +324,66 @@ const handlePhotoUpload = async (e) => {
                   </div>
 
                   <Button
-                    disabled={saving}
+                    disabled={saving || !formData.password.trim()}
                     className="mt-4 w-full flex gap-2 justify-center"
-                    onClick={(e) => handleSave(e)}
+                    onClick={() => setShowModal(true)}
                   >
                     {saving ? <Loader2 className="animate-spin" /> : <Save />}
                     Salvar Senha
                   </Button>
                 </div>
+
+                <Dialog open={showModal} onOpenChange={setShowModal}>
+                  <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+                    <div className="h-2 w-full rounded-t-md bg-green-600" />
+                    <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+                      <div className="p-4 rounded-full bg-green-100 dark:bg-green-900">
+                        <ShieldQuestion className="h-10 w-10 text-green-600 dark:text-green-400" />
+                      </div>
+                      <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+                        Confirmação
+                      </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
+                      <p className="text-lg">
+                        Deseja realmente alterar a senha?
+                      </p>
+                    </div>
+
+                    <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowModal(false)}
+                        className="flex items-center gap-2"
+                      >
+                        <X className="h-5 w-5" />
+                        Cancelar
+                      </Button>
+
+                      <Button
+                        className="flex items-center gap-2 px-6 py-3 text-white transition bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                        onClick={async () => {
+                          const data = { email: formData.email };
+                          if (formData.password.trim()) data.password = formData.password;
+                          const ok = await saveProfile(data);
+                          if (ok) {
+                            setShowModal(false);
+                            setFormData((p) => ({ ...p, password: "" }));
+                          }
+                        }}
+                      >
+                        <Check className="h-5 w-5" />
+                        Confirmar
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </Card>
             </div>
           </div>
         </div>
       </AnimationWrapper>
-
-      
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="rounded-2xl shadow-xl">
-          <DialogHeader className="text-center">
-            <DialogTitle>Editar Perfil</DialogTitle>
-          </DialogHeader>
-
-          <form onSubmit={handleSave} className="space-y-4 mt-4">
-            <div>
-              <Label>E-mail</Label>
-              <Input
-                required
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleChange("email", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label>Nova senha (opcional)</Label>
-              <Input
-                type="password"
-                placeholder="••••••"
-                value={formData.password}
-                onChange={(e) => handleChange("password", e.target.value)}
-              />
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsOpen(false)}
-              >
-                Cancelar
-              </Button>
-
-              <Button type="submit" disabled={saving}>
-                {saving ? <Loader2 className="animate-spin" /> : <Save />}
-                Salvar
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

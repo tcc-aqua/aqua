@@ -45,15 +45,45 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
   const pathname = usePathname();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => setMounted(true), []);
-  useEffect(() => {
-    const handleResize = () => setIsOpen(window.innerWidth >= 768);
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  useEffect(() => { navigationItems.forEach(item => router.prefetch(item.href)); }, [router]);
+
+useEffect(() => setMounted(true), []);
+
+useEffect(() => {
+  const handleResize = () => setIsOpen(window.innerWidth >= 768);
+  handleResize();
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+useEffect(() => {
+  navigationItems.forEach(item => router.prefetch(item.href));
+}, [router]);
+
+//  carregar o valor salvo E ouvir evento do toggle
+useEffect(() => {
+  //  Carrega o valor salvo ao inicializar
+  const saved = localStorage.getItem("sidebarCompact");
+  if (saved !== null) {
+    setIsCollapsed(saved === "true");
+  }
+
+  //  Listener do evento global
+  const handleCollapseEvent = (e) => {
+    setIsCollapsed(e.detail);
+
+    //  Salva sempre que mudar via evento
+    localStorage.setItem("sidebarCompact", e.detail);
+  };
+
+  window.addEventListener("toggle-sidebar-collapse", handleCollapseEvent);
+  setHydrated(true);
+  return () => {
+    window.removeEventListener("toggle-sidebar-collapse", handleCollapseEvent);
+  };
+}, [setIsCollapsed]);
+
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);

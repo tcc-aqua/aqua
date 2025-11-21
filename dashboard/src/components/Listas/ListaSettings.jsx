@@ -34,14 +34,14 @@ import AnimationWrapper from "../Layout/Animation/Animation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import Link from "next/link";
+import SettingsGeral from "../Cards/SettingsGeral";
 
 export default function SettingsDashboard() {
   const [activeTab, setActiveTab] = useState("admins");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editForm, setEditForm] = useState({})
-
+  const [editForm, setEditForm] = useState({});
 
   const [showNewAdminModal, setShowNewAdminModal] = useState(false);
   const [openEditAdmin, setOpenEditAdmin] = useState(false);
@@ -51,17 +51,18 @@ export default function SettingsDashboard() {
     role: "admin",
   });
 
-
-
   const { addAdmin, fetchAdmins, editAdmin } = useAdmins();
-
 
   const API_URL =
     activeTab === "admins"
       ? "http://localhost:3333/api/admins"
-      : "http://localhost:3333/api/users";
+      : activeTab === "users"
+        ? "http://localhost:3333/api/users"
+        : null;
 
   const fetchData = async () => {
+    if (activeTab === "geral") return; // não busca nada da API
+
     try {
       setLoading(true);
       const res = await fetch(API_URL);
@@ -144,7 +145,6 @@ export default function SettingsDashboard() {
     setOpenEditAdmin(true);
   };
 
-
   const saveEditAdmin = async () => {
     if (!editForm.email) {
       toast.error("Email obrigatório!");
@@ -157,13 +157,11 @@ export default function SettingsDashboard() {
     };
 
     await editAdmin(editForm.id, payload);
-
     await fetchData();
     setOpenEditAdmin(false);
   };
 
-
-  if (loading) return <Loading />;
+  if (loading && activeTab !== "geral") return <Loading />;
   if (error)
     return (
       <div className="p-10 text-center text-destructive font-semibold">
@@ -176,7 +174,7 @@ export default function SettingsDashboard() {
       <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground">
         <Toaster position="top-right" richColors />
 
-        {/* Sidebar (no topo em telas pequenas, lateral no desktop) */}
+        {/* Sidebar */}
         <aside className="w-full md:w-64 md:h-65 bg-sidebar border-b md:border-b-0 md:border-r border-border flex-shrink-0 flex flex-col rounded-none md:rounded-md ">
           <div className="flex items-center gap-2 p-6 text-lg font-semibold border-b border-border text-accent">
             <Settings className="text-accent" size={20} />
@@ -187,8 +185,8 @@ export default function SettingsDashboard() {
             <button
               onClick={() => setActiveTab("admins")}
               className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${activeTab === "admins"
-                ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
-                : "text-sidebar-foreground hover:text-accent"
+                  ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
+                  : "text-sidebar-foreground hover:text-accent"
                 }`}
             >
               <Shield size={18} />
@@ -198,41 +196,45 @@ export default function SettingsDashboard() {
             <button
               onClick={() => setActiveTab("users")}
               className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${activeTab === "users"
-                ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
-                : "text-sidebar-foreground hover:text-accent"
+                  ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
+                  : "text-sidebar-foreground hover:text-accent"
                 }`}
             >
               <User size={18} />
               Usuários
             </button>
 
+            {/* 🔵 ABA GERAL */}
             <button
               onClick={() => setActiveTab("geral")}
               className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${activeTab === "geral"
-                ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
-                : "text-sidebar-foreground hover:text-accent"
+                  ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
+                  : "text-sidebar-foreground hover:text-accent"
                 }`}
             >
               <BookOpen size={18} />
               Geral
             </button>
-
           </nav>
         </aside>
 
-
         <main className="flex-1 p-4 sm:p-6 md:p-10 overflow-x-auto">
-          
           <AnimationWrapper delay={0.2}>
             <Card className="mx-auto">
               <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <CardTitle>
-                  {activeTab === "admins" ? "Administradores" : "Usuários"}
+                  {activeTab === "admins" && "Administradores"}
+                  {activeTab === "users" && "Usuários"}
+                  {activeTab === "geral" && "Configurações Gerais"}
                 </CardTitle>
+
                 <div className="flex gap-4 items-center">
-                  <span className="text-sm text-muted-foreground">
-                    {data.length} registros
-                  </span>
+                  {activeTab !== "geral" && (
+                    <span className="text-sm text-muted-foreground">
+                      {data.length} registros
+                    </span>
+                  )}
+
                   {activeTab === "admins" && (
                     <Button
                       className="h-8 sm:h-7 w-full sm:w-auto rounded-md bg-accent/80"
@@ -245,229 +247,238 @@ export default function SettingsDashboard() {
                   )}
                 </div>
               </CardHeader>
-              
 
               <CardContent className="overflow-x-auto">
-                <div className="w-full overflow-x-auto">
-                  {data.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-10">
-                      Nenhum registro encontrado.
-                    </p>
-                  ) : (
-                    <table className="min-w-full divide-y-2 divide-border text-sm">
-                      <thead className="bg-muted">
-                        <tr>
-                          {activeTab === "users" && (
-                            <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
-                              Nome
-                            </th>
-                          )}
-                          {activeTab === "admins" && (
-                            <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
-                              Email
-                            </th>
-                          )}
-                          <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
-                            Função
-                          </th>
-                          <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
-                            Status
-                          </th>
-                          {activeTab === "admins" && (
-                            <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
-                              Criado em
-                            </th>
-                          )}
-                          <th className="px-2 sm:px-4 py-2 text-center text-xs font-medium uppercase">
-                            Ações
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {data.map((item) => {
-                          const role = getRole(item);
-                          const status = item.status || item.user_status;
 
-                          return (
-                            <tr
-                              key={item.id || item.user_id}
-                              className="hover:bg-muted/10 transition text-foreground"
-                            >
-                              {activeTab === "users" ? (
+                {activeTab === "geral" && (
+                  <div className="py-6">
+                    <SettingsGeral />
+                  </div>
+                )}
+
+
+                {/* 🔵 TABELA PROS OUTROS */}
+                {activeTab !== "geral" && (
+                  <div className="w-full overflow-x-auto">
+                    {data.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-10">
+                        Nenhum registro encontrado.
+                      </p>
+                    ) : (
+                      <table className="min-w-full divide-y-2 divide-border text-sm">
+                        <thead className="bg-muted">
+                          <tr>
+                            {activeTab === "users" && (
+                              <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
+                                Nome
+                              </th>
+                            )}
+                            {activeTab === "admins" && (
+                              <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
+                                Email
+                              </th>
+                            )}
+                            <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
+                              Função
+                            </th>
+                            <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
+                              Status
+                            </th>
+                            {activeTab === "admins" && (
+                              <th className="px-2 sm:px-4 py-2 text-left text-xs font-medium uppercase">
+                                Criado em
+                              </th>
+                            )}
+                            <th className="px-2 sm:px-4 py-2 text-center text-xs font-medium uppercase">
+                              Ações
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {data.map((item) => {
+                            const role = getRole(item);
+                            const status = item.status || item.user_status;
+
+                            return (
+                              <tr
+                                key={item.id || item.user_id}
+                                className="hover:bg-muted/10 transition text-foreground"
+                              >
+                                {activeTab === "users" ? (
+                                  <td className="px-2 sm:px-4 py-2">
+                                    <div className="flex flex-col">
+                                      <span className="font-semibold text-sm">
+                                        {item.user_name || "-"}
+                                      </span>
+                                      <span className="text-xs text-foreground/80">
+                                        {item.user_email || "-"}
+                                      </span>
+                                    </div>
+                                  </td>
+                                ) : (
+                                  <td className="px-2 sm:px-4 py-2 text-sm">
+                                    {item.email || "-"}
+                                  </td>
+                                )}
+                                <td className="text-sm">
+                                  <span
+                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-white font-semibold uppercase ${role === "morador"
+                                        ? "bg-sky-500"
+                                        : role === "sindico"
+                                          ? "bg-yellow-400 text-black"
+                                          : role === "admin"
+                                            ? "bg-blue-600"
+                                            : role === "superadmin"
+                                              ? "bg-purple-600"
+                                              : "bg-gray-500"
+                                      }`}
+                                  >
+                                    {role === "morador" ? (
+                                      <>
+                                        <User className="w-4 h-4" />
+                                        Morador
+                                      </>
+                                    ) : role === "sindico" ? (
+                                      <>
+                                        <Crown className="w-4 h-4" />
+                                        Síndico
+                                      </>
+                                    ) : role === "admin" ? (
+                                      <>
+                                        <Shield className="w-4 h-4" />
+                                        Admin
+                                      </>
+                                    ) : role === "superadmin" ? (
+                                      <>
+                                        <ShieldCheck className="w-4 h-4" />
+                                        SuperAdmin
+                                      </>
+                                    ) : (
+                                      <>
+                                        <UserCircle2 className="w-4 h-4" />
+                                        Desconhecido
+                                      </>
+                                    )}
+                                  </span>
+                                </td>
+
                                 <td className="px-2 sm:px-4 py-2">
-                                  <div className="flex flex-col">
-                                    <span className="font-semibold text-sm">
-                                      {item.user_name || "-"}
-                                    </span>
-                                    <span className="text-xs text-foreground/80">
-                                      {item.user_email || "-"}
-                                    </span>
-                                  </div>
+                                  <span
+                                    className={`inline-block w-3 h-3 rounded-full mt-3 ${status === "ativo"
+                                        ? "bg-green-600"
+                                        : "bg-destructive"
+                                      }`}
+                                  />
                                 </td>
-                              ) : (
-                                <td className="px-2 sm:px-4 py-2 text-sm">
-                                  {item.email || "-"}
-                                </td>
-                              )}
-                              <td className="text-sm">
-                                <span
-                                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-white font-semibold uppercase
-                                   ${role === "morador"
-                                      ? "bg-sky-500"
-                                      : role === "sindico"
-                                        ? "bg-yellow-400 text-black"
-                                        : role === "admin"
-                                          ? "bg-blue-600"
-                                          : role === "superadmin"
-                                            ? "bg-purple-600"
-                                            : "bg-gray-500"
-                                    }`}
-                                >
-                                  {role === "morador" ? (
-                                    <>
-                                      <User className="w-4 h-4" />
-                                      Morador
-                                    </>
-                                  ) : role === "sindico" ? (
-                                    <>
-                                      <Crown className="w-4 h-4" />
-                                      Síndico
-                                    </>
-                                  ) : role === "admin" ? (
-                                    <>
-                                      <Shield className="w-4 h-4" />
-                                      Admin
-                                    </>
-                                  ) : role === "superadmin" ? (
-                                    <>
-                                      <ShieldCheck className="w-4 h-4" />
-                                      SuperAdmin
-                                    </>
-                                  ) : (
-                                    <>
-                                      <UserCircle2 className="w-4 h-4" />
-                                      Desconhecido
-                                    </>
-                                  )}
-                                </span>
-                              </td>
 
-                              <td className="px-2 sm:px-4 py-2">
-                                <span
-                                  className={`inline-block w-3 h-3 rounded-full mt-3 ${status === "ativo"
-                                    ? "bg-green-600"
-                                    : "bg-destructive"
-                                    }`}
-                                />
-                              </td>
-
-                              {activeTab === "admins" && (
-                                <td className="px-2 sm:px-4 py-2 flex items-center gap-2 text-sm">
-                                  <Calendar size={14} />
-                                  {new Date(
-                                    item.criado_em ||
-                                    item.created_at ||
-                                    Date.now()
-                                  ).toLocaleDateString("pt-BR")}
-                                </td>
-                              )}
-
-                              <td className="px-2 sm:px-4 py-2 text-center">
                                 {activeTab === "admins" && (
-                                  <div className="">
+                                  <td className="px-2 sm:px-4 py-2 flex items-center gap-2 text-sm">
+                                    <Calendar size={14} />
+                                    {new Date(
+                                      item.criado_em ||
+                                      item.created_at ||
+                                      Date.now()
+                                    ).toLocaleDateString("pt-BR")}
+                                  </td>
+                                )}
 
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={() => confirmToggleStatus(item)}
-                                          disabled={role === "superadmin"}
-                                          className={
-                                            role === "superadmin"
-                                              ? "opacity-50 cursor-not-allowed"
-                                              : ""
-                                          }
-                                        >
-                                          {status === "ativo" ? (
-                                            <Check
-                                              className="text-green-500"
+                                <td className="px-2 sm:px-4 py-2 text-center">
+                                  {activeTab === "admins" && (
+                                    <div className="">
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() =>
+                                              confirmToggleStatus(item)
+                                            }
+                                            disabled={role === "superadmin"}
+                                            className={
+                                              role === "superadmin"
+                                                ? "opacity-50 cursor-not-allowed"
+                                                : ""
+                                            }
+                                          >
+                                            {status === "ativo" ? (
+                                              <Check
+                                                className="text-green-500"
+                                                size={14}
+                                              />
+                                            ) : (
+                                              <X
+                                                className="text-destructive"
+                                                size={14}
+                                              />
+                                            )}
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          {status === "ativo"
+                                            ? "Inativar admin"
+                                            : "Ativar admin"}
+                                        </TooltipContent>
+                                      </Tooltip>
+
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            disabled={
+                                              role === "superadmin"
+                                            }
+                                            onClick={() =>
+                                              handleEditAdmin(item)
+                                            }
+                                          >
+                                            <Edit
+                                              className="text-accent"
                                               size={14}
                                             />
-                                          ) : (
-                                            <X
-                                              className="text-destructive"
-                                              size={14}
-                                            />
-                                          )}
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        {status === "ativo"
-                                          ? "Inativar admin"
-                                          : "Ativar admin"}
-                                      </TooltipContent>
-                                    </Tooltip>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          disabled={role === "superadmin"}  // superadmin não pode editar outro superadmin
-                                          onClick={() => handleEditAdmin(item)}
-                                        >
-                                          <Edit className="text-accent" size={14} />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        Editar
-                                      </TooltipContent>
-                                    </Tooltip>
-
-                                  </div>
-
-                                )
-                                }
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  )}
-                  
-                </div>
-                
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          Editar
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                )}
               </CardContent>
-            </Card>  
-        
-        
+            </Card>
           </AnimationWrapper>
-          
-        </main >
+        </main>
 
-        {/* Modal de Confirmação */}
-        < Dialog open={showModal} onOpenChange={setShowModal} >
+        <Dialog open={showModal} onOpenChange={setShowModal}>
           <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
             <div
               className={`h-2 w-full rounded-t-md ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
-                ? "bg-red-600"
-                : "bg-green-600"
+                  ? "bg-red-600"
+                  : "bg-green-600"
                 }`}
             />
 
             <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
               <div
                 className={`p-4 rounded-full ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
-                  ? "bg-red-100 dark:bg-red-900"
-                  : "bg-green-100 dark:bg-green-900"
+                    ? "bg-red-100 dark:bg-red-900"
+                    : "bg-green-100 dark:bg-green-900"
                   }`}
               >
                 <AlertTriangle
                   className={`h-10 w-10 ${(selectedItem?.status || selectedItem?.user_status) ===
-                    "ativo"
-                    ? "text-red-600 dark:text-red-400"
-                    : "text-green-600 dark:text-green-400"
+                      "ativo"
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-green-600 dark:text-green-400"
                     }`}
                 />
               </div>
@@ -480,19 +491,22 @@ export default function SettingsDashboard() {
               <p>
                 Deseja realmente{" "}
                 <span
-                  className={`font-semibold ${(selectedItem?.status || selectedItem?.user_status) ===
-                    "ativo"
-                    ? "text-red-600 dark:text-red-400"
-                    : "text-green-600 dark:text-green-400"
+                  className={`font-semibold ${(selectedItem?.status ||
+                      selectedItem?.user_status) === "ativo"
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-green-600 dark:text-green-400"
                     }`}
                 >
-                  {(selectedItem?.status || selectedItem?.user_status) ===
-                    "ativo"
+                  {(selectedItem?.status ||
+                    selectedItem?.user_status) === "ativo"
                     ? "inativar"
                     : "ativar"}
                 </span>{" "}
                 o usuário{" "}
-                <strong>{selectedItem?.user_name || selectedItem?.email}</strong>?
+                <strong>
+                  {selectedItem?.user_name || selectedItem?.email}
+                </strong>
+                ?
               </p>
             </div>
 
@@ -507,9 +521,10 @@ export default function SettingsDashboard() {
               </Button>
 
               <Button
-                className={`flex items-center gap-2 px-6 py-3 text-white transition ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
-                  ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                className={`flex items-center gap-2 px-6 py-3 text-white transition ${(selectedItem?.status ||
+                    selectedItem?.user_status) === "ativo"
+                    ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                    : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
                   }`}
                 onClick={toggleStatus}
               >
@@ -520,42 +535,45 @@ export default function SettingsDashboard() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog >
+        </Dialog>
 
-        {/* Modal Criar Novo Admin */}
-        < Dialog open={showNewAdminModal} onOpenChange={setShowNewAdminModal} >
+        <Dialog
+          open={showNewAdminModal}
+          onOpenChange={setShowNewAdminModal}
+        >
           <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
-
-            {/* Barra superior */}
             <div className="h-2 w-full bg-primary rounded-t-md" />
 
             <DialogHeader className="flex items-center space-x-2 pb-3 mt-3">
               <UserPlus className="h-6 w-6 text-primary" />
-              <DialogTitle className="text-xl font-bold">Criar Novo Administrador</DialogTitle>
+              <DialogTitle className="text-xl font-bold">
+                Criar Novo Administrador
+              </DialogTitle>
             </DialogHeader>
 
             <div className="px-4 mt-4">
               <div className="grid grid-cols-1 gap-4">
-
-                {/* Email */}
                 <div>
                   <label className="text-sm font-medium mb-1">Email</label>
                   <Input
                     type="email"
                     value={newAdmin.email}
-                    onChange={(e) => handleNewAdminChange("email", e.target.value)}
+                    onChange={(e) =>
+                      handleNewAdminChange("email", e.target.value)
+                    }
                     placeholder="email@exemplo.com"
                     className="border border-border"
                   />
                 </div>
 
-                {/* Senha */}
                 <div>
                   <label className="text-sm font-medium mb-1">Senha</label>
                   <Input
                     type="password"
                     value={newAdmin.password}
-                    onChange={(e) => handleNewAdminChange("password", e.target.value)}
+                    onChange={(e) =>
+                      handleNewAdminChange("password", e.target.value)
+                    }
                     placeholder="••••••••"
                     className="border border-border"
                   />
@@ -579,37 +597,34 @@ export default function SettingsDashboard() {
                 </Button>
               </DialogFooter>
             </div>
-
           </DialogContent>
-        </Dialog >
+        </Dialog>
 
-
-
+        {/* Modal editar admin */}
         <Dialog open={openEditAdmin} onOpenChange={setOpenEditAdmin}>
           <DialogContent className="sm:max-w-[600px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
-
-            {/* Barra superior */}
             <div className="h-2 w-full bg-primary rounded-t-md" />
 
             <DialogHeader className="flex items-center space-x-2 pb-3 mt-3">
               <Edit className="h-6 w-6 text-primary" />
-              <DialogTitle className="text-xl font-bold">Editar Administrador</DialogTitle>
+              <DialogTitle className="text-xl font-bold">
+                Editar Administrador
+              </DialogTitle>
             </DialogHeader>
 
             <div className="px-4 mt-4">
               <div className="grid grid-cols-1 gap-4">
-
-                {/* Email */}
                 <div>
                   <label className="text-sm font-medium mb-1">Email</label>
                   <Input
                     value={editForm.email}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, email: e.target.value })
+                    }
                     placeholder="email@exemplo.com"
                     className="border border-border"
                   />
                 </div>
-
               </div>
 
               <DialogFooter className="pt-6 flex justify-end gap-3">
@@ -631,12 +646,7 @@ export default function SettingsDashboard() {
             </div>
           </DialogContent>
         </Dialog>
-
-
-
-      </div >
+      </div>
     </>
-
   );
-
 }
