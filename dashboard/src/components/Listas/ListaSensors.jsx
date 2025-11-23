@@ -27,20 +27,27 @@ export default function SensorsDashboard() {
   const [error, setError] = useState(null);
   const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
   const [filters, setFilters] = useState({});
-const [page, setPage] = useState(1);
-const itemsPerPage = 10;
-const [totalItems, setTotalItems] = useState(0);
+
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10); // itens por página
+  const [totalPages, setTotalPages] = useState(1);
 
   const API_URL = "http://localhost:3333/api/sensores";
-  const fetchData = async (filters = {}) => {
+  const fetchData = async (filters = {}, page = 1, limit = 10) => {
     try {
       setLoading(true);
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters,
+      });
+
 
       const [totalRes, ativosRes, inativosRes, allRes] = await Promise.all([
         fetch(`${API_URL}/count`),
         fetch(`${API_URL}/count-ativos`),
         fetch(`${API_URL}/inativos`),
-        fetch(`${API_URL}/`),
+        fetch(`${API_URL}?${params.toString()}`),
       ]);
 
       if (!totalRes.ok || !ativosRes.ok || !inativosRes.ok || !allRes.ok) {
@@ -77,6 +84,8 @@ const [totalItems, setTotalItems] = useState(0);
         { ativos: 0, inativos: 0, alertas: 0, litrosTotais: 0, casas: 0, apartamentos: 0 }
       );
 
+      const totalSensores = total.total ?? filteredSensores.length;
+      setTotalPages(Math.ceil(totalSensores / limit));
 
       setSensorStats({
         total: total ?? filteredSensores.length,
@@ -99,10 +108,10 @@ const [totalItems, setTotalItems] = useState(0);
 
   const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
 
+  useEffect(() => {
+    fetchData(filters, page, limit);
+  }, [page, filters]);
 
   if (loading) return <Loading />;
   if (error) return <p className="text-destructive">Erro: {error}</p>;
@@ -285,14 +294,14 @@ const [totalItems, setTotalItems] = useState(0);
                           <div className="text-[10px] text-foreground/60">Horário do Último Envio</div>
                         </td>
                         <td className="px-4 py-2 text-sm text-center">
-                                <Tooltip>
+                          <Tooltip>
                             <TooltipTrigger asChild>
-                          <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(sensor)}>
-                            <div className="flex items-center gap-1">
-                              {sensor.sensor_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
-                            </div>
-                          </Button>
-                                </TooltipTrigger>
+                              <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(sensor)}>
+                                <div className="flex items-center gap-1">
+                                  {sensor.sensor_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
+                                </div>
+                              </Button>
+                            </TooltipTrigger>
                             <TooltipContent>
                               {sensor.sensor_status === "ativo"
                                 ? "Inativar sensor"
@@ -300,7 +309,7 @@ const [totalItems, setTotalItems] = useState(0);
                             </TooltipContent>
                           </Tooltip>
 
-                          
+
                         </td>
                       </tr>
                     ))}
@@ -309,7 +318,12 @@ const [totalItems, setTotalItems] = useState(0);
               )}
             </CardContent>
             <Separator></Separator>
-            <PaginationDemo className='my-20' />
+            <PaginationDemo
+              currentPage={page}
+              totalPages={totalPages}
+              onChangePage={(newPage) => setPage(newPage)}
+              maxVisible={5}
+            />
           </Card>
         </AnimationWrapper>
 
@@ -358,7 +372,7 @@ const [totalItems, setTotalItems] = useState(0);
 
             <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
               <Button
-                variant="outline"
+                variant="ghost"
                 className="flex items-center gap-2"
                 onClick={() => setShowModal(false)}
               >

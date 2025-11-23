@@ -28,7 +28,18 @@ export default function ComunicadosDashboard() {
         addressee: "usuários",
     });
 
-    const { comunicados, loading, error, addComunicado, editComunicado, removeComunicado } = useComunicados();
+  const { comunicados, loading, error, addComunicado, editComunicado, removeComunicado } = useComunicados();
+
+const comunicadosOrdenados = [...comunicados].sort((a, b) => {
+    return new Date(b.criado_em) - new Date(a.criado_em);
+});
+
+const comunicadosFiltrados = comunicadosOrdenados.filter(c => {
+    if (filtro === "administradores") return c.addressee === "administradores";
+    if (filtro === "usuários") return c.addressee === "usuários";
+    return true;
+});
+
 
     if (loading) return <Loading />;
     if (error) return <p className="text-destructive">Erro: {error}</p>;
@@ -42,11 +53,6 @@ export default function ComunicadosDashboard() {
     };
 
 
-    const comunicadosFiltrados = comunicados.filter(c => {
-        if (filtro === "administradores") return c.addressee === "administradores";
-        if (filtro === "usuários") return c.addressee === "usuários";
-        return true;
-    });
 
     const cardsData = [
         { title: "Total de Comunicados", value: comunicadoStats.total, icon: Bell, iconColor: "text-blue-500", porcentagem: "Visão Geral" },

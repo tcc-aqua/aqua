@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
-import { Home, X, Check, User, Droplet, AlertTriangle,MapPin, Signal } from "lucide-react";
+import { Home, X, Check, User, Droplet, AlertTriangle, MapPin, Signal } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -29,16 +29,25 @@ export default function CasasDashboard() {
   const [casaStats, setCasaStats] = useState({ total: 0, ativas: 0, inativas: 0, alertas: 0 });
   const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
   const [filters, setFilters] = useState({});
+  // PAGINAÇÃO
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10); // itens por página
+  const [totalPages, setTotalPages] = useState(1);
 
   const API_CASAS = "http://localhost:3333/api/casas";
 
-  const fetchData = async (filters = {}) => {
+  const fetchData = async (filters = {}, page = 1, limit = 10) => {
     try {
       setLoading(true);
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters,
+      });
 
 
       const [resAll, resAtivos, resInativos, resCount, resCountAtivas] = await Promise.all([
-        fetch(`${API_CASAS}`),
+        fetch(`${API_CASAS}?${params.toString()}`),
         fetch(`${API_CASAS}/ativos`),
         fetch(`${API_CASAS}/inativos`),
         fetch(`${API_CASAS}/count`),
@@ -79,6 +88,8 @@ export default function CasasDashboard() {
 
       setCasas(filteredCasas);
 
+      setCasas(allData.docs || []);
+setTotalPages(Math.ceil((allData.total || 0) / limit));
 
       setCasaStats({
         total: countData.total ?? casasArray.length,
@@ -118,9 +129,10 @@ export default function CasasDashboard() {
   const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } =
     useToggleConfirm(API_CASAS, fetchData);
 
+
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(filters, page, limit);
+  }, [page, filters]);
 
   if (loading) return <Loading />;
   if (error) return <p className="text-red-500">Erro: {error}</p>;
@@ -320,18 +332,18 @@ export default function CasasDashboard() {
                           <span className={`inline-block w-3 h-3 rounded-full ${casa.casa_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={casa.casa_status} />
                         </td>
                         <td className="px-4 py-2 text-sm">
-                               <Tooltip>
+                          <Tooltip>
                             <TooltipTrigger asChild>
-                          <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(casa)}>
-                            <div className="flex items-center gap-1">
-                              {casa.casa_status === "ativo" ? (
-                                <Check className="text-green-500" size={14} />
-                              ) : (
-                                <X className="text-destructive" size={14} />
-                              )}
-                            </div>
-                          </Button>
-                             </TooltipTrigger>
+                              <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(casa)}>
+                                <div className="flex items-center gap-1">
+                                  {casa.casa_status === "ativo" ? (
+                                    <Check className="text-green-500" size={14} />
+                                  ) : (
+                                    <X className="text-destructive" size={14} />
+                                  )}
+                                </div>
+                              </Button>
+                            </TooltipTrigger>
                             <TooltipContent>
                               {casa.casa_status === "ativo"
                                 ? "Inativar casa"
@@ -347,7 +359,12 @@ export default function CasasDashboard() {
               )}
             </CardContent>
             <Separator></Separator>
-            <PaginationDemo className='my-20' />
+            <PaginationDemo
+              currentPage={page}
+              totalPages={totalPages}
+              onChangePage={(newPage) => setPage(newPage)}
+              maxVisible={5}
+            />
           </Card>
         </AnimationWrapper>
 

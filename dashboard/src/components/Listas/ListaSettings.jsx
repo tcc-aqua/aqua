@@ -61,7 +61,7 @@ export default function SettingsDashboard() {
         : null;
 
   const fetchData = async () => {
-    if (activeTab === "geral") return; // não busca nada da API
+    if (activeTab === "geral") return;
 
     try {
       setLoading(true);
@@ -204,7 +204,6 @@ export default function SettingsDashboard() {
               Usuários
             </button>
 
-            {/* 🔵 ABA GERAL */}
             <button
               onClick={() => setActiveTab("geral")}
               className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${activeTab === "geral"
@@ -256,8 +255,6 @@ export default function SettingsDashboard() {
                   </div>
                 )}
 
-
-                {/* 🔵 TABELA PROS OUTROS */}
                 {activeTab !== "geral" && (
                   <div className="w-full overflow-x-auto">
                     {data.length === 0 ? (
@@ -512,7 +509,7 @@ export default function SettingsDashboard() {
 
             <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
               <Button
-                variant="outline"
+                variant="ghost"
                 className="flex items-center gap-2"
                 onClick={() => setShowModal(false)}
               >
@@ -582,7 +579,7 @@ export default function SettingsDashboard() {
 
               <DialogFooter className="pt-6 flex justify-end gap-3">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => setShowNewAdminModal(false)}
                   className="w-32"
                 >
@@ -629,7 +626,7 @@ export default function SettingsDashboard() {
 
               <DialogFooter className="pt-6 flex justify-end gap-3">
                 <Button
-                  variant="outline"
+                 variant="ghost"
                   onClick={() => setOpenEditAdmin(false)}
                   className="w-32"
                 >

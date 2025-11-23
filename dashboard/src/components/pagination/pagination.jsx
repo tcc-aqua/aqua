@@ -9,19 +9,20 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { cn } from "@/lib/utils";
 
 export function PaginationDemo({
   currentPage = 1,
   totalPages = 1,
   onChangePage,
-  maxVisible = 5, // Máximo de páginas visíveis
+  maxVisible = 5,
 }) {
   const handlePageClick = (page) => {
     if (page < 1 || page > totalPages) return;
     onChangePage?.(page);
   };
 
-  // Calcula páginas visíveis
+  // Lógica de range
   let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
   let endPage = startPage + maxVisible - 1;
 
@@ -34,9 +35,9 @@ export function PaginationDemo({
   for (let i = startPage; i <= endPage; i++) visiblePages.push(i);
 
   return (
-    <Pagination className="my-5">
-      <PaginationContent>
-        {/* Botão anterior */}
+    <Pagination className="my-6">
+      <PaginationContent className="gap-2">
+
         <PaginationItem>
           <PaginationPrevious
             href="#"
@@ -44,16 +45,19 @@ export function PaginationDemo({
               e.preventDefault();
               handlePageClick(currentPage - 1);
             }}
-            className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+            className={cn(
+              "transition-all rounded-xl hover:bg-muted px-3 py-2",
+              currentPage === 1 && "pointer-events-none opacity-40"
+            )}
           />
         </PaginationItem>
 
-        {/* Primeira página + ellipsis */}
         {startPage > 1 && (
           <>
             <PaginationItem>
               <PaginationLink
                 href="#"
+                className="rounded-xl transition-all hover:bg-muted px-4 py-2"
                 onClick={(e) => {
                   e.preventDefault();
                   handlePageClick(1);
@@ -62,33 +66,43 @@ export function PaginationDemo({
                 1
               </PaginationLink>
             </PaginationItem>
-            {startPage > 2 && <PaginationEllipsis />}
+            {startPage > 2 && (
+              <PaginationEllipsis className="opacity-60" />
+            )}
           </>
         )}
 
-        {/* Páginas visíveis */}
         {visiblePages.map((page) => (
           <PaginationItem key={page}>
             <PaginationLink
               href="#"
-              isActive={page === currentPage}
               onClick={(e) => {
                 e.preventDefault();
                 handlePageClick(page);
               }}
+              isActive={page === currentPage}
+              className={cn(
+                "rounded-xl px-4 py-2 transition-all font-medium",
+                "hover:bg-muted dark:hover:bg-muted/50",
+                page === currentPage &&
+                  "bg-primary text-primary-foreground shadow-sm scale-105"
+              )}
             >
               {page}
             </PaginationLink>
           </PaginationItem>
         ))}
 
-        {/* Última página + ellipsis */}
         {endPage < totalPages && (
           <>
-            {endPage < totalPages - 1 && <PaginationEllipsis />}
+            {endPage < totalPages - 1 && (
+              <PaginationEllipsis className="opacity-60" />
+            )}
+
             <PaginationItem>
               <PaginationLink
                 href="#"
+                className="rounded-xl transition-all hover:bg-muted px-4 py-2"
                 onClick={(e) => {
                   e.preventDefault();
                   handlePageClick(totalPages);
@@ -100,7 +114,6 @@ export function PaginationDemo({
           </>
         )}
 
-        {/* Botão próximo */}
         <PaginationItem>
           <PaginationNext
             href="#"
@@ -108,9 +121,13 @@ export function PaginationDemo({
               e.preventDefault();
               handlePageClick(currentPage + 1);
             }}
-            className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+            className={cn(
+              "transition-all rounded-xl hover:bg-muted px-3 py-2",
+              currentPage === totalPages && "pointer-events-none opacity-40"
+            )}
           />
         </PaginationItem>
+
       </PaginationContent>
     </Pagination>
   );

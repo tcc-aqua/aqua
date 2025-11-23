@@ -9,7 +9,7 @@ export function useComunicados() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // 🔹 Busca todos os comunicados
+
   const fetchComunicados = async () => {
     setLoading(true);
     setError(null);
@@ -26,27 +26,24 @@ export function useComunicados() {
     }
   };
 
-  // 🔹 Criar comunicado
-  const addComunicado = async (novo) => {
-    setLoading(true);
-    try {
-      const res = await api.post("/comunicados", novo);
-      const data = res?.data || res;
 
-      if (!data || !data.id) throw new Error("Erro ao criar comunicado");
+const addComunicado = async (novo) => {
+  setLoading(true);
+  try {
+    const res = await api.post("/comunicados", novo);
 
-      toast.success("Comunicado criado com sucesso!");
-      
-      // 🔹 Atualiza a tabela puxando do backend
-      await fetchComunicados();
-    } catch (err) {
-      toast.error(err?.message || "Erro ao criar comunicado");
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (res?.error) throw new Error(res.error);
 
-  // 🔹 Editar comunicado
+    toast.success("Comunicado criado com sucesso!");
+
+    await fetchComunicados();
+  } catch (err) {
+    toast.error(err?.message || "Erro ao criar comunicado");
+  } finally {
+    setLoading(false);
+  }
+};
+
   const editComunicado = async (id, dados) => {
     setLoading(true);
     try {
@@ -57,7 +54,7 @@ export function useComunicados() {
 
       toast.success("Comunicado atualizado com sucesso!");
       
-      // 🔹 Atualiza a tabela puxando do backend
+
       await fetchComunicados();
     } catch (err) {
       toast.error(err?.message || "Erro ao atualizar comunicado");
@@ -66,7 +63,6 @@ export function useComunicados() {
     }
   };
 
-  // 🔹 Excluir comunicado
   const removeComunicado = async (id) => {
     setLoading(true);
     try {
@@ -75,7 +71,6 @@ export function useComunicados() {
 
       toast.success("Comunicado excluído com sucesso!");
       
-      // 🔹 Atualiza a tabela puxando do backend
       await fetchComunicados();
     } catch (err) {
       toast.error(err?.message || "Erro ao excluir comunicado");
@@ -84,7 +79,7 @@ export function useComunicados() {
     }
   };
 
-  // 🔹 Atualiza ao montar o hook
+
   useEffect(() => {
     fetchComunicados();
   }, []);

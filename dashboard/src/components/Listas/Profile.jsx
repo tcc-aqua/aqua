@@ -131,12 +131,12 @@ export default function EmployeeProfile() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (ev) => setLocalImagePreview(ev.target.result); 
+    reader.onload = (ev) => setLocalImagePreview(ev.target.result);
     reader.readAsDataURL(file);
 
-    await uploadPhoto(file); 
+    await uploadPhoto(file);
 
-    // ⚡️ dispara evento global para Header atualizar a imagem instantaneamente
+    //  dispara evento global para Header atualizar a imagem instantaneamente
     const event = new CustomEvent("imageUpdate", { detail: URL.createObjectURL(file) });
     adminEvent.dispatchEvent(event);
   };
@@ -210,8 +210,8 @@ export default function EmployeeProfile() {
                       completeness > 80
                         ? "#06b6d4"
                         : completeness > 50
-                        ? "#34d399"
-                        : "#fb7185",
+                          ? "#34d399"
+                          : "#fb7185",
                   }}
                 />
               </div>
@@ -317,8 +317,8 @@ export default function EmployeeProfile() {
                           passwordStrength > 70
                             ? "#34d399"
                             : passwordStrength > 40
-                            ? "#f59e0b"
-                            : "#ef4444",
+                              ? "#f59e0b"
+                              : "#ef4444",
                       }}
                     />
                   </div>
@@ -353,7 +353,7 @@ export default function EmployeeProfile() {
 
                     <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         onClick={() => setShowModal(false)}
                         className="flex items-center gap-2"
                       >

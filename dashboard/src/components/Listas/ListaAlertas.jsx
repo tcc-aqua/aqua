@@ -33,15 +33,26 @@ export default function AlertasDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [selectedAlerta, setSelectedAlerta] = useState(null);
 
+    // PAGINAÇÃO
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10); // itens por página
+    const [totalPages, setTotalPages] = useState(1); 
+
   const API_ALERTAS = "http://localhost:3333/api/alertas";
 
-  const fetchData = async () => {
+  const fetchData = async (filters = {}, page = 1, limit = 10) => {
     try {
       setLoading(true);
       setError(null);
+         const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters,
+      });
+
 
       const [resAll, resAtivos, resVaz, resConsumo, resInativos] = await Promise.all([
-        fetch(`${API_ALERTAS}`),
+          fetch(`${API_ALERTAS}?${params.toString()}`),
         fetch(`${API_ALERTAS}/count/ativos`),
         fetch(`${API_ALERTAS}/count/vazamentos`),
         fetch(`${API_ALERTAS}/count/consumo-alto`),
@@ -64,6 +75,8 @@ export default function AlertasDashboard() {
       const alertasArray = Array.isArray(allData) ? allData : allData.docs ?? [];
 
       setAlertas(alertasArray);
+const totalUsers = allData.total ?? alertasArray.length;
+setTotalPages(Math.ceil(totalUsers / limit));
 
       setStats({
         total: alertasArray.length,
@@ -84,8 +97,8 @@ export default function AlertasDashboard() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(filters, page, limit);
+  }, [page, filters]);
 
   const resolverAlerta = async () => {
     if (!selectedAlerta) return;

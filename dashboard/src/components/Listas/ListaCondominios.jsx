@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Building, X, Check, UserStar, AlertTriangle, Crown, Signal, Edit } from "lucide-react";
+import { Building, X, Check, UserStar, AlertTriangle, Crown, Signal, Edit, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -55,26 +55,39 @@ export default function CondominiosDashboard() {
 
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
-const [form, setForm] = useState({
-  condominio_nome: "",
-  cep: "",
-  numero: "",
-  logradouro: "",
-  bairro: "",
-  cidade: "",
-  estado: "",
-});
+
+
+  const [form, setForm] = useState({
+    condominio_nome: "",
+    cep: "",
+    numero: "",
+    logradouro: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
+  });
+
+  // PAGINAÇÃO
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10); // itens por página
+  const [totalPages, setTotalPages] = useState(1);
 
   const API_URL = "http://localhost:3333/api/condominios";
   const { atribuirSindico, loading: atribuindo } = useAtribuirSindico(API_URL);
 
 
-  const fetchData = async (filters = {}) => {
+  const fetchData = async (filters = {}, page = 1, limit = 10) => {
     try {
       setLoading(true);
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters,
+      });
+
 
       const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
-        fetch(`${API_URL}`),
+        fetch(`${API_URL}?${params.toString()}`),
         fetch(`${API_URL}/ativos`),
         fetch(`${API_URL}/inativos`),
         fetch(`${API_URL}/count`),
@@ -110,7 +123,7 @@ const [form, setForm] = useState({
       setCondominios(filteredCondominios);
 
       const stats = {
-   total: dataAll.total ?? usersArray.length, 
+        total: dataAll.total ?? usersArray.length,
         ativos:
           Array.isArray(dataAtivos.docs) && dataAtivos.docs.length
             ? dataAtivos.docs.length
@@ -145,6 +158,9 @@ const [form, setForm] = useState({
           totalApartamentos: 0,
         }
       );
+      const totalUsers = dataAll.total ?? allCondominios.length;
+      setTotalPages(Math.ceil(totalUsers / limit));
+
 
       setCondominioStats({
         ...stats,
@@ -162,9 +178,10 @@ const [form, setForm] = useState({
     }
   };
 
+
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(filters, page, limit);
+  }, [page, filters]);
 
   useEffect(() => {
     if (!showSindicoModal) return;
@@ -200,56 +217,56 @@ const [form, setForm] = useState({
   };
   const editItem = (condominio) => {
     setSelected(condominio);
-setForm({
-  condominio_nome: condominio.condominio_nome,
-  cep: condominio.cep,
-  numero: condominio.numero,
-  logradouro: condominio.logradouro,
-  bairro: condominio.bairro,
-  cidade: condominio.cidade,
-  estado: condominio.uf,
-});
+    setForm({
+      condominio_nome: condominio.condominio_nome,
+      cep: condominio.cep,
+      numero: condominio.numero,
+      logradouro: condominio.logradouro,
+      bairro: condominio.bairro,
+      cidade: condominio.cidade,
+      estado: condominio.uf,
+    });
 
     setOpen(true);
   };
-const handleSave = async () => {
-  if (!selected) return toast.error("Nenhum condomínio selecionado.");
+  const handleSave = async () => {
+    if (!selected) return toast.error("Nenhum condomínio selecionado.");
 
-  const id = selected.condominio_id;
+    const id = selected.condominio_id;
 
- try {
-  if (form.condominio_nome !== selected.condominio_nome) {
-    await updateCondominioName(id, form.condominio_nome);
-    toast.success("Condomínio atualizado!"); // toast certo vem daqui
-    setOpen(false);
-    fetchData();
-    return;
+    try {
+      if (form.condominio_nome !== selected.condominio_nome) {
+        await updateCondominioName(id, form.condominio_nome);
+        toast.success("Condomínio atualizado!"); // toast certo vem daqui
+        setOpen(false);
+        fetchData();
+        return;
+      }
+
+      // PUT completo
+      const body = {
+        condominio_nome: form.condominio_nome,
+        numero: form.numero,
+        logradouro: form.logradouro,
+        bairro: form.bairro,
+        cidade: form.cidade,
+        estado: form.estado,
+      };
+      if (form.cep && form.cep.trim() !== "" && form.cep !== selected.cep) {
+        body.cep = form.cep;
+      }
+
+      const res = await api.put(`/condominios/${id}`, body);
+      const data = res?.data || res;
+      if (data?.error) throw new Error(data.error || "Erro ao atualizar condomínio");
+
+      toast.success("Condomínio atualizado!");
+      setOpen(false);
+      fetchData();
+    } catch (err) {
+      toast.error(err.message || "Erro ao atualizar condomínio.");
+    }
   }
-
-  // PUT completo
-  const body = {
-    condominio_nome: form.condominio_nome,
-    numero: form.numero,
-    logradouro: form.logradouro,
-    bairro: form.bairro,
-    cidade: form.cidade,
-    estado: form.estado,
-  };
-  if (form.cep && form.cep.trim() !== "" && form.cep !== selected.cep) {
-    body.cep = form.cep;
-  }
-
-  const res = await api.put(`/condominios/${id}`, body);
-  const data = res?.data || res;
-  if (data?.error) throw new Error(data.error || "Erro ao atualizar condomínio");
-
-  toast.success("Condomínio atualizado!");
-  setOpen(false);
-  fetchData();
-} catch (err) {
-  toast.error(err.message || "Erro ao atualizar condomínio.");
-}
-}
 
 
 
@@ -280,33 +297,33 @@ const handleSave = async () => {
   };
 
   const toggleStatus = async () => {
-  if (!selectedCondominio) return;
-  try {
-    const action =
-      selectedCondominio.condominio_status.toLowerCase() === "ativo"
-        ? "inativar"
-        : "ativar";
+    if (!selectedCondominio) return;
+    try {
+      const action =
+        selectedCondominio.condominio_status.toLowerCase() === "ativo"
+          ? "inativar"
+          : "ativar";
 
-    const res = await fetch(
-      `${API_URL}/${selectedCondominio.condominio_id}/${action}`,
-      { method: "PATCH" }
-    );
+      const res = await fetch(
+        `${API_URL}/${selectedCondominio.condominio_id}/${action}`,
+        { method: "PATCH" }
+      );
 
-    if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
+      if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
 
-    toast.success(
-      `Condomínio ${selectedCondominio.condominio_status.toLowerCase() === "ativo"
-        ? "inativado"
-        : "ativado"} com sucesso!`
-    );
-    fetchData();
-  } catch (err) {
-    toast.error(err.message);
-  } finally {
-    setShowModal(false);
-    setSelectedCondominio(null);
-  }
-};
+      toast.success(
+        `Condomínio ${selectedCondominio.condominio_status.toLowerCase() === "ativo"
+          ? "inativado"
+          : "ativado"} com sucesso!`
+      );
+      fetchData();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setShowModal(false);
+      setSelectedCondominio(null);
+    }
+  };
 
 
   if (loading) return <Loading />;
@@ -507,9 +524,9 @@ const handleSave = async () => {
 
                         </td>
 
-                        <td className="px-4 py-2 text-sm">
+                        <td className="px-2 py-2 text-sm">
                           <div className="flex justify-center gap-1">
-                           
+
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -534,12 +551,12 @@ const handleSave = async () => {
                                   variant="ghost"
                                   onClick={() => editItem(condominio)}
                                 >
-                                  <Edit className="text-accent" size={14} />
+                                  <Pencil className="text-accent" size={14} />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>Editar condomínio</TooltipContent>
                             </Tooltip>
-                             <Tooltip>
+                            <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
 
@@ -572,7 +589,12 @@ const handleSave = async () => {
               )}
             </CardContent>
             <Separator></Separator>
-            <PaginationDemo className='my-20' />
+            <PaginationDemo
+              currentPage={page}
+              totalPages={totalPages}
+              onChangePage={(newPage) => setPage(newPage)}
+              maxVisible={5}
+            />
           </Card>
         </AnimationWrapper>
 
@@ -634,7 +656,7 @@ const handleSave = async () => {
 
             <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => setShowModal(false)}
                 className="flex items-center gap-2"
               >
@@ -760,7 +782,7 @@ const handleSave = async () => {
             <div className="h-2 w-full bg-primary rounded-t-md" />
 
             <DialogHeader className="flex items-center space-x-2 pb-3 mt-3">
-              <Edit className="h-6 w-6 text-primary" />
+              <Pencil className="h-6 w-6 text-primary" />
               <DialogTitle className="text-xl font-bold">Editar Condomínio</DialogTitle>
             </DialogHeader>
 
@@ -777,7 +799,6 @@ const handleSave = async () => {
                   />
                 </div>
 
-                {/* CEP */}
                 <div>
                   <label className="text-sm font-medium mb-1">CEP</label>
                   <Input
@@ -798,7 +819,7 @@ const handleSave = async () => {
                   />
                 </div>
 
-                {/* Logradouro */}
+
                 <div className="col-span-2">
                   <label className="text-sm font-medium mb-1">Logradouro</label>
                   <Input
@@ -840,7 +861,7 @@ const handleSave = async () => {
 
               <DialogFooter className="pt-6 flex justify-end gap-3">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => setOpen(false)}
                   className="w-32"
                 >
