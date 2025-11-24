@@ -15,9 +15,7 @@ import { motion } from "framer-motion";
 
 export default function Home() {
   return (
-
     <>
-
       <div className="bg-gradient-to-b from-5% from-blue-200 to-15% to-white dark:bg-[#032a43] dark:bg-none">
         <header>
           <Navbar04Page />

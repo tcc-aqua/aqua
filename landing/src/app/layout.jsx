@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "AQUA",
-  description: "Landing Page do sistema AQUA",
+  title: "AQUA | Gestão Inteligente de Condomínios e Monitoramento",
+  description: "Revolucione a administração do seu condomínio com a plataforma AQUA. Gerenciamento de usuários, alertas em tempo real e monitoramento avançado por sensores IoT.",
 };
 
 export default function RootLayout({ children }) {
