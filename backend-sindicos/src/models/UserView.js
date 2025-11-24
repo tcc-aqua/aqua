@@ -44,6 +44,10 @@ UserView.init(
     responsavel_cpf: {
       type: DataTypes.STRING,
     },
+    condominio_id: {
+      type: DataTypes.INTEGER,
+    },
+    
   },
   {
     sequelize,
