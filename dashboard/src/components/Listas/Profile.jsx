@@ -334,7 +334,7 @@ export default function EmployeeProfile() {
                 </div>
 
                 <Dialog open={showModal} onOpenChange={setShowModal}>
-                  <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+                  <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
                     <div className="h-2 w-full rounded-t-md bg-green-600" />
                     <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
                       <div className="p-4 rounded-full bg-green-100 dark:bg-green-900">

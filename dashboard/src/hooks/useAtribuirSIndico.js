@@ -19,7 +19,9 @@ export function useAtribuirSindico(API_URL) {
       toast.success("Síndico atribuído com sucesso!");
       return true;
     } catch (err) {
+    
       console.error(err);
+       
       toast.error(err.message);
       return false;
     } finally {

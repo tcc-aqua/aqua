@@ -48,7 +48,7 @@ export default function ApartamentosDashboard() {
     litrosTotais: 0,
   });
   const [filters, setFilters] = useState({});
-  // PAGINAÇÃO
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10); // itens por página
   const [totalPages, setTotalPages] = useState(1);
@@ -82,7 +82,7 @@ export default function ApartamentosDashboard() {
         resCount.json(),
       ]);
 
-      // Filtragem local
+
       let filteredAps = allData.docs || [];
       if (filters.status) {
         filteredAps = filteredAps.filter(
@@ -99,23 +99,17 @@ export default function ApartamentosDashboard() {
       }
 
       setApartamentos(filteredAps);
-  const totalItems = allData.total ?? allData.docs.length;
-setTotalPages(Math.ceil(totalItems / limit));
 
-      // Estatísticas apartamentos
-      const apStats = filteredAps.reduce(
-        (acc, a) => {
-          acc.total++;
-          if (a.apartamento_status === "ativo") acc.ativas++;
-          else acc.inativas++;
-          if (!a.responsavel_id) acc.alertas++;
-          return acc;
-        },
-        { total: 0, ativas: 0, inativas: 0, alertas: 0 }
-      );
-      setApStats(apStats);
+      const totalItems = allData.total ?? allData.docs.length;
+      setTotalPages(Math.ceil(totalItems / limit));
 
-      // Estatísticas sensores
+      setApStats({
+        total: totalItems,
+        ativas: ativosData.total ?? 0,
+        inativas: inativosData.total ?? 0,
+        alertas: countData.alertas ?? 0, 
+      });
+
       const sensorStats = filteredAps.reduce(
         (acc, ap) => {
           if (ap.sensor_id) acc.total++;
@@ -431,7 +425,7 @@ setTotalPages(Math.ceil(totalItems / limit));
 
 
         <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+          <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
             {/* Barra superior colorida */}
             <div

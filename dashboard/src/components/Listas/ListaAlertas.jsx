@@ -16,6 +16,7 @@ import {
 import AnimationWrapper from "../Layout/Animation/Animation";
 import ExportarTabela from "../Layout/ExportTable/page";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import AlertasFilter from "../Filters/Alertas";
 
 export default function AlertasDashboard() {
   const [alertas, setAlertas] = useState([]);
@@ -33,96 +34,111 @@ export default function AlertasDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [selectedAlerta, setSelectedAlerta] = useState(null);
 
-    // PAGINAÇÃO
-    const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(10); // itens por página
-    const [totalPages, setTotalPages] = useState(1); 
+
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10); 
+  const [totalPages, setTotalPages] = useState(1);
 
   const API_ALERTAS = "http://localhost:3333/api/alertas";
 
   const fetchData = async (filters = {}, page = 1, limit = 10) => {
-    try {
-      setLoading(true);
-      setError(null);
-         const params = new URLSearchParams({
-        page,
-        limit,
-        ...filters,
-      });
+  try {
+    setLoading(true);
+    setError(null);
 
+    const params = new URLSearchParams({
+      page,
+      limit,
+      ...filters,
+    });
 
-      const [resAll, resAtivos, resVaz, resConsumo, resInativos] = await Promise.all([
-          fetch(`${API_ALERTAS}?${params.toString()}`),
-        fetch(`${API_ALERTAS}/count/ativos`),
-        fetch(`${API_ALERTAS}/count/vazamentos`),
-        fetch(`${API_ALERTAS}/count/consumo-alto`),
-        fetch(`${API_ALERTAS}/inativos`),
-      ]);
+    const [resAll, resAtivos, resVaz, resConsumo, resInativos] = await Promise.all([
+      fetch(`${API_ALERTAS}?${params.toString()}`),
+      fetch(`${API_ALERTAS}/count/ativos`),
+      fetch(`${API_ALERTAS}/count/vazamentos`),
+      fetch(`${API_ALERTAS}/count/consumo-alto`),
+      fetch(`${API_ALERTAS}/inativos`),
+    ]);
 
-      if (!resAll.ok || !resAtivos.ok || !resVaz.ok || !resConsumo.ok || !resInativos.ok) {
-        throw new Error("Erro ao buscar dados dos alertas.");
-      }
-
-      const [allData, ativosData, vazData, consData, inativosData] = await Promise.all([
-        resAll.json(),
-        resAtivos.json(),
-        resVaz.json(),
-        resConsumo.json(),
-        resInativos.json(),
-      ]);
-
-
-      const alertasArray = Array.isArray(allData) ? allData : allData.docs ?? [];
-
-      setAlertas(alertasArray);
-const totalUsers = allData.total ?? alertasArray.length;
-setTotalPages(Math.ceil(totalUsers / limit));
-
-      setStats({
-        total: alertasArray.length,
-        ativos: Number(ativosData.total ?? ativosData ?? 0),
-        vazamentos: Number(vazData.total ?? vazData ?? 0),
-        consumoAlto: Number(consData.total ?? consData ?? 0),
-
-        resolvidos: Number(inativosData.total ?? inativosData ?? 0),
-      });
-
-
-    } catch (err) {
-      console.error("Erro ao buscar alertas:", err);
-      setError(err.message || String(err));
-    } finally {
-      setLoading(false);
+    if (!resAll.ok || !resAtivos.ok || !resVaz.ok || !resConsumo.ok || !resInativos.ok) {
+      throw new Error("Erro ao buscar dados dos alertas.");
     }
-  };
+
+    const [allData, ativosData, vazData, consData, inativosData] = await Promise.all([
+      resAll.json(),
+      resAtivos.json(),
+      resVaz.json(),
+      resConsumo.json(),
+      resInativos.json(),
+    ]);
+
+    const alertasArray = Array.isArray(allData) ? allData : allData.docs ?? [];
+
+
+    const filteredAlertas = alertasArray.filter((alerta) => {
+      const matchesTipo = filters.tipo ? alerta.tipo === filters.tipo : true;
+      const matchesNivel = filters.nivel ? alerta.nivel === filters.nivel : true;
+      const matchesStatus = filters.status
+        ? alerta.resolvido === (filters.status === "resolvido")
+        : true;
+      const matchesResidencia = filters.residencia
+        ? alerta.residencia_id === filters.residencia
+        : true;
+      return matchesTipo && matchesNivel && matchesStatus && matchesResidencia;
+    });
+
+    setAlertas(filteredAlertas); 
+
+    const totalUsers = allData.total ?? alertasArray.length;
+    setTotalPages(Math.ceil(totalUsers / limit));
+
+    setStats({
+      total: alertasArray.length,
+      ativos: Number(ativosData.total ?? ativosData ?? 0),
+      vazamentos: Number(vazData.total ?? vazData ?? 0),
+      consumoAlto: Number(consData.total ?? consData ?? 0),
+      resolvidos: Number(inativosData.total ?? inativosData ?? 0),
+    });
+
+  } catch (err) {
+    console.error("Erro ao buscar alertas:", err);
+    setError(err.message || String(err));
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+const resolverAlerta = async () => {
+  if (!selectedAlerta) return;
+  try {
+    const res = await fetch(`${API_ALERTAS}/${selectedAlerta.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resolvido: true }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(text || "Erro ao resolver alerta.");
+    }
+
+    toast.success("Alerta resolvido com sucesso!");
+    setShowModal(false);
+    setSelectedAlerta(null);
+
+   
+    await fetchData(filters, page, limit);
+  } catch (err) {
+    console.error(err);
+    toast.error("Erro ao resolver alerta.");
+  }
+};
 
   useEffect(() => {
     fetchData(filters, page, limit);
   }, [page, filters]);
 
-  const resolverAlerta = async () => {
-    if (!selectedAlerta) return;
-    try {
-      const res = await fetch(`${API_ALERTAS}/${selectedAlerta.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resolvido: true }),
-      });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || "Erro ao resolver alerta.");
-      }
-
-      toast.success("Alerta resolvido com sucesso!");
-      setShowModal(false);
-      setSelectedAlerta(null);
-      await fetchData();
-    } catch (err) {
-      console.error(err);
-      toast.error("Erro ao resolver alerta.");
-    }
-  };
 
   if (loading) return <Loading />;
   if (error) return <p className="text-red-500">Erro: {error}</p>;
@@ -208,6 +224,7 @@ setTotalPages(Math.ceil(totalUsers / limit));
       <div className="p-4">
         <Toaster position="top-right" richColors />
         <div className="mb-10">
+          <AlertasFilter onApply={(newFilters) => fetchData(newFilters, 1, limit)} />
 
         </div>
 
@@ -247,6 +264,7 @@ setTotalPages(Math.ceil(totalUsers / limit));
             );
           })}
         </section>
+
 
         <AnimationWrapper delay={0.3}>
           <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-950">
@@ -372,7 +390,7 @@ setTotalPages(Math.ceil(totalUsers / limit));
 
 
         <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+          <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
             <div className={`h-2 w-full rounded-t-md ${getNivelColor()}`} />
 

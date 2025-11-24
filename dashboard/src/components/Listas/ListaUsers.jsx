@@ -39,9 +39,9 @@ export default function UsersDashboard() {
   const [showSindicoModal, setShowSindicoModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // PAGINAÇÃO
+ 
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10); // itens por página
+  const [limit, setLimit] = useState(10); 
   const [totalPages, setTotalPages] = useState(1);
 
   const API_URL = "http://localhost:3333/api/users";
@@ -396,7 +396,7 @@ export default function UsersDashboard() {
         </AnimationWrapper >
 
         <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+          <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
             <div
               className={`h-2 w-full rounded-t-md ${selectedItem?.user_status === "ativo" ? "bg-red-600" : "bg-green-600"
@@ -474,7 +474,7 @@ export default function UsersDashboard() {
 
 
         <Dialog open={showSindicoModal} onOpenChange={setShowSindicoModal}>
-          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+          <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
             {/* Barra superior colorida */}
             <div className="h-2 w-full rounded-t-md bg-yellow-400" />

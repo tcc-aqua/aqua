@@ -456,7 +456,7 @@ export default function SettingsDashboard() {
         </main>
 
         <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+          <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
             <div
               className={`h-2 w-full rounded-t-md ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
                   ? "bg-red-600"
@@ -538,7 +538,7 @@ export default function SettingsDashboard() {
           open={showNewAdminModal}
           onOpenChange={setShowNewAdminModal}
         >
-          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+          <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
             <div className="h-2 w-full bg-primary rounded-t-md" />
 
             <DialogHeader className="flex items-center space-x-2 pb-3 mt-3">
