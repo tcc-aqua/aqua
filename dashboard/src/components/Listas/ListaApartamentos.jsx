@@ -6,19 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
 import {
-  Building2,
   UserCheck,
-  SignalHigh,
   X,
   Check,
-  Pencil,
   Droplet,
   Grid,
   AlertTriangle,
-  XCircle,
-  CheckCircle,
   MapPin,
-  Zap,
   Signal,
 } from "lucide-react";
 import {
@@ -34,6 +28,7 @@ import AnimationWrapper from "../Layout/Animation/Animation";
 import { PaginationDemo } from "../pagination/pagination";
 import { Separator } from "../ui/separator";
 import ExportarTabela from "../Layout/ExportTable/page";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default function ApartamentosDashboard() {
   const [apartamentos, setApartamentos] = useState([]);
@@ -53,15 +48,25 @@ export default function ApartamentosDashboard() {
     litrosTotais: 0,
   });
   const [filters, setFilters] = useState({});
+  // PAGINAÇÃO
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10); // itens por página
+  const [totalPages, setTotalPages] = useState(1);
 
   const API_AP = "http://localhost:3333/api/apartamentos";
 
-  const fetchData = async (filters = {}) => {
+  const fetchData = async (filters = {}, page = 1, limit = 10) => {
     try {
       setLoading(true);
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters,
+      });
+
 
       const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
-        fetch(`${API_AP}`),
+        fetch(`${API_AP}?${params.toString()}`),
         fetch(`${API_AP}/ativos`),
         fetch(`${API_AP}/inativos`),
         fetch(`${API_AP}/count`),
@@ -94,6 +99,8 @@ export default function ApartamentosDashboard() {
       }
 
       setApartamentos(filteredAps);
+  const totalItems = allData.total ?? allData.docs.length;
+setTotalPages(Math.ceil(totalItems / limit));
 
       // Estatísticas apartamentos
       const apStats = filteredAps.reduce(
@@ -137,9 +144,10 @@ export default function ApartamentosDashboard() {
     toggleStatus,
   } = useToggleConfirm(API_AP, fetchData);
 
+
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(filters, page, limit);
+  }, [page, filters]);
 
   if (loading) return <Loading />;
   if (error) return <p className="text-destructive">Erro: {error}</p>;
@@ -379,21 +387,30 @@ export default function ApartamentosDashboard() {
                           />
                         </td>
                         <td className="px-4 py-2 text-sm">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => confirmToggleStatus(ap)}
-                          >
-                            <div className="flex items-center gap-1">
-                              {ap.apartamento_status === "ativo" ? (
-                                <Check className="text-green-500" size={14} />
-                              ) : (
-                                <X className="text-destructive" size={14} />
-                              )}
-                            </div>
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => confirmToggleStatus(ap)}
+                              >
+                                <div className="flex items-center gap-1">
+                                  {ap.apartamento_status === "ativo" ? (
+                                    <Check className="text-green-500" size={14} />
+                                  ) : (
+                                    <X className="text-destructive" size={14} />
+                                  )}
+                                </div>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {ap.apartamento_status === "ativo"
+                                ? "Inativar apartamneto"
+                                : "Ativar apartamneto"}
+                            </TooltipContent>
+                          </Tooltip>
 
-                      
+
                         </td>
                       </tr>
                     ))}
@@ -402,7 +419,12 @@ export default function ApartamentosDashboard() {
               )}
             </CardContent>
             <Separator></Separator>
-            <PaginationDemo className='my-20' />
+            <PaginationDemo
+              currentPage={page}
+              totalPages={totalPages}
+              onChangePage={(newPage) => setPage(newPage)}
+              maxVisible={5}
+            />
           </Card>
         </AnimationWrapper>
 
@@ -467,7 +489,7 @@ export default function ApartamentosDashboard() {
 
             <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => setShowModal(false)}
                 className="flex items-center gap-2"
               >

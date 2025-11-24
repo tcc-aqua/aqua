@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Building, X, Check, UserStar, Droplet, Pencil, AlertTriangle, XCircle, CheckCircle, Crown, Signal, Edit } from "lucide-react";
+import { Building, X, Check, UserStar, AlertTriangle, Crown, Signal, Edit, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,8 +28,8 @@ import { Separator } from "../ui/separator";
 import ExportarTabela from "../Layout/ExportTable/page";
 import { useAtribuirSindico } from "@/hooks/useAtribuirSIndico";
 import { Input } from "@/components/ui/input";
-import useToggleConfirm from "@/hooks/useStatus";
-
+import { useCondominios } from "@/hooks/useCondominios";
+import { api } from "@/lib/api";
 
 export default function CondominiosDashboard() {
   const [condominios, setCondominios] = useState([]);
@@ -42,6 +42,7 @@ export default function CondominiosDashboard() {
     alertas: 0,
     sensoresAtivos: 0,
   });
+  const { fetchCondominios, editCondominio, updateCondominioName } = useCondominios();
 
   const [showModal, setShowModal] = useState(false);
   const [selectedCondominio, setSelectedCondominio] = useState(null);
@@ -54,22 +55,39 @@ export default function CondominiosDashboard() {
 
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
+
+
   const [form, setForm] = useState({
     condominio_nome: "",
     cep: "",
     numero: "",
+    logradouro: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
   });
+
+  // PAGINAÇÃO
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10); // itens por página
+  const [totalPages, setTotalPages] = useState(1);
 
   const API_URL = "http://localhost:3333/api/condominios";
   const { atribuirSindico, loading: atribuindo } = useAtribuirSindico(API_URL);
 
 
-  const fetchData = async (filters = {}) => {
+  const fetchData = async (filters = {}, page = 1, limit = 10) => {
     try {
       setLoading(true);
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters,
+      });
+
 
       const [resAll, resAtivos, resInativos, resCount] = await Promise.all([
-        fetch(`${API_URL}`),
+        fetch(`${API_URL}?${params.toString()}`),
         fetch(`${API_URL}/ativos`),
         fetch(`${API_URL}/inativos`),
         fetch(`${API_URL}/count`),
@@ -105,7 +123,7 @@ export default function CondominiosDashboard() {
       setCondominios(filteredCondominios);
 
       const stats = {
-        total: dataCount.total ?? filteredCondominios.length,
+        total: dataAll.total ?? usersArray.length,
         ativos:
           Array.isArray(dataAtivos.docs) && dataAtivos.docs.length
             ? dataAtivos.docs.length
@@ -140,6 +158,9 @@ export default function CondominiosDashboard() {
           totalApartamentos: 0,
         }
       );
+      const totalUsers = dataAll.total ?? allCondominios.length;
+      setTotalPages(Math.ceil(totalUsers / limit));
+
 
       setCondominioStats({
         ...stats,
@@ -157,9 +178,10 @@ export default function CondominiosDashboard() {
     }
   };
 
+
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(filters, page, limit);
+  }, [page, filters]);
 
   useEffect(() => {
     if (!showSindicoModal) return;
@@ -199,29 +221,54 @@ export default function CondominiosDashboard() {
       condominio_nome: condominio.condominio_nome,
       cep: condominio.cep,
       numero: condominio.numero,
+      logradouro: condominio.logradouro,
+      bairro: condominio.bairro,
+      cidade: condominio.cidade,
+      estado: condominio.uf,
     });
+
     setOpen(true);
   };
-
   const handleSave = async () => {
+    if (!selected) return toast.error("Nenhum condomínio selecionado.");
+
+    const id = selected.condominio_id;
+
     try {
-      const id = selected?.condominio_id;
+      if (form.condominio_nome !== selected.condominio_nome) {
+        await updateCondominioName(id, form.condominio_nome);
+        toast.success("Condomínio atualizado!"); // toast certo vem daqui
+        setOpen(false);
+        fetchData();
+        return;
+      }
 
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+      // PUT completo
+      const body = {
+        condominio_nome: form.condominio_nome,
+        numero: form.numero,
+        logradouro: form.logradouro,
+        bairro: form.bairro,
+        cidade: form.cidade,
+        estado: form.estado,
+      };
+      if (form.cep && form.cep.trim() !== "" && form.cep !== selected.cep) {
+        body.cep = form.cep;
+      }
 
-      if (!res.ok) throw new Error("Erro ao salvar");
+      const res = await api.put(`/condominios/${id}`, body);
+      const data = res?.data || res;
+      if (data?.error) throw new Error(data.error || "Erro ao atualizar condomínio");
 
       toast.success("Condomínio atualizado!");
       setOpen(false);
       fetchData();
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || "Erro ao atualizar condomínio.");
     }
-  };
+  }
+
+
 
   const handleBuscarCep = async () => {
     if (!form.cep || form.cep.length < 8) return;
@@ -253,19 +300,21 @@ export default function CondominiosDashboard() {
     if (!selectedCondominio) return;
     try {
       const action =
-        selectedCondominio.condominio_status === "ativo"
+        selectedCondominio.condominio_status.toLowerCase() === "ativo"
           ? "inativar"
           : "ativar";
+
       const res = await fetch(
-        `${API_URL}/${selectedCondominio.id}/${action}`,
+        `${API_URL}/${selectedCondominio.condominio_id}/${action}`,
         { method: "PATCH" }
       );
+
       if (!res.ok) throw new Error(`Erro ao atualizar: ${res.status}`);
+
       toast.success(
-        `Condomínio ${selectedCondominio.condominio_status === "ativo"
+        `Condomínio ${selectedCondominio.condominio_status.toLowerCase() === "ativo"
           ? "inativado"
-          : "ativado"
-        } com sucesso!`
+          : "ativado"} com sucesso!`
       );
       fetchData();
     } catch (err) {
@@ -275,6 +324,7 @@ export default function CondominiosDashboard() {
       setSelectedCondominio(null);
     }
   };
+
 
   if (loading) return <Loading />;
   if (error) return <p className="text-destructive">Erro: {error}</p>;
@@ -474,31 +524,9 @@ export default function CondominiosDashboard() {
 
                         </td>
 
-                        <td className="px-4 py-2 text-sm">
+                        <td className="px-2 py-2 text-sm">
                           <div className="flex justify-center gap-1">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
 
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => confirmToggleStatus(condominio)}
-                                >
-                                  <div className="flex items-center gap-1">
-                                    {condominio.condominio_status === "ativo" ? (
-                                      <Check className="text-green-500" size={14} />
-                                    ) : (
-                                      <X className="text-destructive" size={14} />
-                                    )}
-                                  </div>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {condominio.condominio_status === "ativo"
-                                  ? "Inativar condomínio"
-                                  : "Ativar condomínio"}
-                              </TooltipContent>
-                            </Tooltip>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -523,10 +551,33 @@ export default function CondominiosDashboard() {
                                   variant="ghost"
                                   onClick={() => editItem(condominio)}
                                 >
-                                  <Edit className="text-accent" size={14} />
+                                  <Pencil className="text-accent" size={14} />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>Editar condomínio</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => confirmToggleStatus(condominio)}
+                                >
+                                  <div className="flex items-center gap-1">
+                                    {condominio.condominio_status === "ativo" ? (
+                                      <Check className="text-green-500" size={14} />
+                                    ) : (
+                                      <X className="text-destructive" size={14} />
+                                    )}
+                                  </div>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {condominio.condominio_status === "ativo"
+                                  ? "Inativar condomínio"
+                                  : "Ativar condomínio"}
+                              </TooltipContent>
                             </Tooltip>
 
                           </div>
@@ -538,7 +589,12 @@ export default function CondominiosDashboard() {
               )}
             </CardContent>
             <Separator></Separator>
-            <PaginationDemo className='my-20' />
+            <PaginationDemo
+              currentPage={page}
+              totalPages={totalPages}
+              onChangePage={(newPage) => setPage(newPage)}
+              maxVisible={5}
+            />
           </Card>
         </AnimationWrapper>
 
@@ -600,7 +656,7 @@ export default function CondominiosDashboard() {
 
             <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => setShowModal(false)}
                 className="flex items-center gap-2"
               >
@@ -726,7 +782,7 @@ export default function CondominiosDashboard() {
             <div className="h-2 w-full bg-primary rounded-t-md" />
 
             <DialogHeader className="flex items-center space-x-2 pb-3 mt-3">
-              <Edit className="h-6 w-6 text-primary" />
+              <Pencil className="h-6 w-6 text-primary" />
               <DialogTitle className="text-xl font-bold">Editar Condomínio</DialogTitle>
             </DialogHeader>
 
@@ -743,7 +799,6 @@ export default function CondominiosDashboard() {
                   />
                 </div>
 
-                {/* CEP */}
                 <div>
                   <label className="text-sm font-medium mb-1">CEP</label>
                   <Input
@@ -764,7 +819,7 @@ export default function CondominiosDashboard() {
                   />
                 </div>
 
-                {/* Logradouro */}
+
                 <div className="col-span-2">
                   <label className="text-sm font-medium mb-1">Logradouro</label>
                   <Input
@@ -806,7 +861,7 @@ export default function CondominiosDashboard() {
 
               <DialogFooter className="pt-6 flex justify-end gap-3">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => setOpen(false)}
                   className="w-32"
                 >

@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster, toast } from "sonner";
-import { AlertTriangle, Droplet, Flame, Check, Siren, XCircle, X, Home, CalendarDays, MessageSquare, Info, Eye, ShieldCheck, ThumbsUp } from "lucide-react";
+import { AlertTriangle, Droplet, Check, Siren, X, Home, CalendarDays, MessageSquare, Info, Eye } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,8 +14,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import AnimationWrapper from "../Layout/Animation/Animation";
-import AlertasFilter from "../Filters/Alertas";
 import ExportarTabela from "../Layout/ExportTable/page";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default function AlertasDashboard() {
   const [alertas, setAlertas] = useState([]);
@@ -33,26 +33,36 @@ export default function AlertasDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [selectedAlerta, setSelectedAlerta] = useState(null);
 
+    // PAGINAÇÃO
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10); // itens por página
+    const [totalPages, setTotalPages] = useState(1); 
+
   const API_ALERTAS = "http://localhost:3333/api/alertas";
 
-  const fetchData = async () => {
+  const fetchData = async (filters = {}, page = 1, limit = 10) => {
     try {
       setLoading(true);
       setError(null);
+         const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters,
+      });
+
 
       const [resAll, resAtivos, resVaz, resConsumo, resInativos] = await Promise.all([
-        fetch(`${API_ALERTAS}`),
+          fetch(`${API_ALERTAS}?${params.toString()}`),
         fetch(`${API_ALERTAS}/count/ativos`),
         fetch(`${API_ALERTAS}/count/vazamentos`),
         fetch(`${API_ALERTAS}/count/consumo-alto`),
-        fetch(`${API_ALERTAS}/inativos`), // para contar resolvidos/inativos
+        fetch(`${API_ALERTAS}/inativos`),
       ]);
 
       if (!resAll.ok || !resAtivos.ok || !resVaz.ok || !resConsumo.ok || !resInativos.ok) {
         throw new Error("Erro ao buscar dados dos alertas.");
       }
 
-      // CORRETO: aguardar cada res.json() a partir das responses
       const [allData, ativosData, vazData, consData, inativosData] = await Promise.all([
         resAll.json(),
         resAtivos.json(),
@@ -61,10 +71,12 @@ export default function AlertasDashboard() {
         resInativos.json(),
       ]);
 
-      // allData pode vir como { docs: [...] } ou como array direto
+
       const alertasArray = Array.isArray(allData) ? allData : allData.docs ?? [];
 
       setAlertas(alertasArray);
+const totalUsers = allData.total ?? alertasArray.length;
+setTotalPages(Math.ceil(totalUsers / limit));
 
       setStats({
         total: alertasArray.length,
@@ -85,8 +97,8 @@ export default function AlertasDashboard() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(filters, page, limit);
+  }, [page, filters]);
 
   const resolverAlerta = async () => {
     if (!selectedAlerta) return;
@@ -177,7 +189,7 @@ export default function AlertasDashboard() {
         return <X className="h-10 w-10 text-destructive" />;
     }
   };
-  // Faixa colorida no topo de acordo com o nível
+
   const getNivelColor = () => {
     switch (selectedAlerta?.nivel?.toLowerCase()) {
       case "alto":
@@ -320,22 +332,31 @@ export default function AlertasDashboard() {
                           </td>
 
                           <td className="px-4 py-3 text-sm flex gap-1 justify-center items-center">
-                            <button
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  title={!isResolved ? "Marcar como resolvido" : "Ver detalhes"}
+                                  onClick={() => {
+                                    setSelectedAlerta(alerta);
+                                    setShowModal(true);
 
-                              title={!isResolved ? "Marcar como resolvido" : "Ver detalhes"}
+                                    if (!isResolved) {
+                                      console.log("Alerta marcado para ser resolvido");
+                                    }
+                                  }}
+                                  className="text-sky-600 hover:text-blue-950"
+                                >
+                                  <Eye className="w-5 h-5" />
+                                </Button>
+                              </TooltipTrigger>
 
-                              onClick={() => {
-                                setSelectedAlerta(alerta);
-                                setShowModal(true);
+                              <TooltipContent>
+                                Visualizar
+                              </TooltipContent>
+                            </Tooltip>
 
-                                if (!isResolved) {
-                                  console.log('Alerta marcado para ser resolvido');
-                                }
-                              }}
-                              className={`p-2 rounded text-sky-600 hover:text-blue-950`}
-                            >
-                              <Eye className="w-5 h-5 cursor-pointer" />
-                            </button>
                           </td>
 
 

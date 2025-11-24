@@ -73,12 +73,16 @@ export function ChartAreaInteractive() {
   }, []);
 
   // Filtrar últimos meses
-  const filteredData = React.useMemo(() => {
-    if (!chartData.length) return [];
-    const limit =
-      timeRange === "3m" ? 3 : timeRange === "6m" ? 6 : chartData.length;
-    return chartData.slice(-limit);
-  }, [chartData, timeRange]);
+const filteredData = React.useMemo(() => {
+  if (!chartData.length) return [];
+
+  let limit = 12; // padrão: sempre 12 meses
+
+  if (timeRange === "6m") limit = 6;
+  if (timeRange === "3m") limit = 3;
+
+  return chartData.slice(-limit);
+}, [chartData, timeRange]);
 
   return (
     <Card className="pt-0 hover:border-sky-400 dark:hover:border-sky-950 transition-colors duration-300">

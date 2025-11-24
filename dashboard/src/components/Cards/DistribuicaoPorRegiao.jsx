@@ -118,7 +118,7 @@ export default function DistribuicaoPorRegiao() {
                 </div>
 
                 <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                  <span>{item.porcentagem.toFixed(1)}%</span>
+                  <span>{item.porcentagem.toFixed(0)}%</span>
                 </div>
               </div>
             ))}

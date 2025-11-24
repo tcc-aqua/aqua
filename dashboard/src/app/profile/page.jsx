@@ -1,7 +1,8 @@
 
-import ProfileCards from "@/components/Cards/ProfileCards";
+import ProfileCards from "@/components/Cards/SettingsGeral";
 import Header from "@/components/Layout/Header/page";
 import LayoutDashboard from "@/components/Layout/LayoutDashboard/page";
+import EmployeeProfile from "@/components/Listas/Profile";
 
 export default function Profile() {
     return (<>
@@ -10,9 +11,9 @@ export default function Profile() {
                 <header className="fixed top-0  right-0 z-40">
                     <Header />
                 </header>
-                <main className="container mx-auto pt-20 ">
+                <main className="container mx-auto pt-30 ">
                     <div className="">
-                        <ProfileCards></ProfileCards>
+                      <EmployeeProfile></EmployeeProfile>
                     </div>
                 </main>
             </div>

@@ -137,13 +137,11 @@ export default function Inicio() {
     loadDashboardData(false);
   }, [loadDashboardData]);
 
-  // Efeito para a atualização automática a cada 2 segundos
+
   useEffect(() => {
     const intervalId = setInterval(() => {
-      loadDashboardData(true); // 'true' para indicar que é uma atualização em segundo plano
-    }, 2000); // 2000 ms = 2 segundos
-
-    // Função de limpeza: para o intervalo quando o componente é desmontado
+      loadDashboardData(true);
+    }, 2000); 
     return () => clearInterval(intervalId);
   }, [loadDashboardData]);
 

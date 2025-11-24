@@ -94,10 +94,7 @@ export default function Header() {
 
         <div className="flex items-center space-x-3 ml-auto order-2">
           <ModeToggle />
-          <div className="relative">
-            <Bell className="h-5 w-5 text-foreground/80 hover:text-primary transition-colors cursor-pointer" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-destructive animate-pulse" />
-          </div>
+    
 
           <Link
             href="/configuracoes"

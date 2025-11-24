@@ -12,6 +12,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { useComunicados } from "@/hooks/useComunicados";
 import Loading from "../Layout/Loading/page";
+import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 
 export default function ComunicadosDashboard() {
 
@@ -27,7 +28,18 @@ export default function ComunicadosDashboard() {
         addressee: "usuários",
     });
 
-    const { comunicados, loading, error, addComunicado, editComunicado, removeComunicado } = useComunicados();
+  const { comunicados, loading, error, addComunicado, editComunicado, removeComunicado } = useComunicados();
+
+const comunicadosOrdenados = [...comunicados].sort((a, b) => {
+    return new Date(b.criado_em) - new Date(a.criado_em);
+});
+
+const comunicadosFiltrados = comunicadosOrdenados.filter(c => {
+    if (filtro === "administradores") return c.addressee === "administradores";
+    if (filtro === "usuários") return c.addressee === "usuários";
+    return true;
+});
+
 
     if (loading) return <Loading />;
     if (error) return <p className="text-destructive">Erro: {error}</p>;
@@ -41,11 +53,6 @@ export default function ComunicadosDashboard() {
     };
 
 
-    const comunicadosFiltrados = comunicados.filter(c => {
-        if (filtro === "administradores") return c.addressee === "administradores";
-        if (filtro === "usuários") return c.addressee === "usuários";
-        return true;
-    });
 
     const cardsData = [
         { title: "Total de Comunicados", value: comunicadoStats.total, icon: Bell, iconColor: "text-blue-500", porcentagem: "Visão Geral" },
@@ -115,34 +122,43 @@ export default function ComunicadosDashboard() {
                                 <div className="w-36 text-sm text-center">{c.addressee === "administradores" ? "Administradores" : "Usuários"}</div>
                                 <div className="w-40 text-sm text-center">{c.criado_em ? new Date(c.criado_em).toLocaleString("pt-BR") : "-"}</div>
                                 <div className="flex gap-2 ml-auto">
-                                    <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        onClick={() => {
-                                            setSelectedComunicado(c);
-                                            setShowEditModal(true);
-                                        }}
-                                    >
-                                        <Pencil size={16} />
-                                    </Button>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                onClick={() => {
+                                                    setSelectedComunicado(c);
+                                                    setShowEditModal(true);
+                                                }}
+                                            >
+                                                <Pencil size={16} />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Editar</TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="text-red-600"
+                                                onClick={() => {
+                                                    setSelectedComunicado(c);
+                                                    setShowDeleteModal(true);
+                                                }}
+                                            >
+                                                <Trash size={16} />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Excluir</TooltipContent>
+                                    </Tooltip>
 
-                                    <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className="text-red-600"
-                                        onClick={() => {
-                                            setSelectedComunicado(c);
-                                            setShowDeleteModal(true);
-                                        }}
-                                    >
-                                        <Trash2 size={16} />
-                                    </Button>
                                 </div>
                             </div>
                         ))}
                     </CardContent>
                 </Card>
-
 
 
 

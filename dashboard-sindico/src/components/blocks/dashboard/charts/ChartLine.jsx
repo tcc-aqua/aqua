@@ -1,7 +1,8 @@
-"use client"
+'use client'
 
-import { TrendingUp } from "lucide-react"
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
+import { useRef } from "react";
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import jsPDF from "jspdf";
 
 import {
   Card,
@@ -10,52 +11,88 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
-
-export const description = "A multiple line chart"
+} from "@/components/ui/chart";
 
 const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-]
+  { month: "Janeiro", vazamentos: 4, consumo_alto: 12 },
+  { month: "Fevereiro", vazamentos: 2, consumo_alto: 9 },
+  { month: "Março", vazamentos: 6, consumo_alto: 14 },
+  { month: "Abril", vazamentos: 3, consumo_alto: 10 },
+  { month: "Maio", vazamentos: 5, consumo_alto: 13 },
+  { month: "Junho", vazamentos: 7, consumo_alto: 15 },
+];
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "var(--chart-1)",
+  vazamentos: {
+    label: "Vazamentos",
+    color: "#f43f5e", // vermelho
   },
-  mobile: {
-    label: "Mobile",
-    color: "var(--chart-2)",
+  consumo_alto: {
+    label: "Consumo Alto",
+    color: "#3b82f6", // azul
   },
-} 
+};
 
 export function ChartLineMultiple() {
+  const chartRef = useRef(null);
+
+  const exportPDF = () => {
+    if (!chartRef.current) return;
+
+    const svg = chartRef.current.querySelector("svg");
+    if (!svg) return;
+    svg.querySelectorAll("[stroke='var(--color-vazamentos)']").forEach(el => {
+      el.setAttribute("stroke", chartConfig.vazamentos.color);
+    });
+    svg.querySelectorAll("[stroke='var(--color-consumo_alto)']").forEach(el => {
+      el.setAttribute("stroke", chartConfig.consumo_alto.color);
+    });
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+
+    img.onload = () => {
+      const scale = 3; // aumenta resolução
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      ctx.scale(scale, scale);
+      ctx.drawImage(img, 0, 0);
+
+      const imgData = canvas.toDataURL("image/png");
+
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "px",
+        format: [canvas.width / scale + 40, canvas.height / scale + 40],
+      });
+
+      pdf.addImage(imgData, "PNG", 20, 20, canvas.width / scale, canvas.height / scale);
+      pdf.save("grafico_linhas.pdf");
+    };
+
+    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Line Chart - Multiple</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>Vazamentos × Consumo Alto</CardTitle>
+        <CardDescription>Comparativo dos últimos 6 meses</CardDescription>
       </CardHeader>
-      <CardContent>
+
+      <CardContent ref={chartRef}>
         <ChartContainer config={chartConfig}>
           <LineChart
             accessibilityLayer
             data={chartData}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
+            margin={{ left: 12, right: 12 }}
           >
             <CartesianGrid vertical={false} />
             <XAxis
@@ -66,35 +103,37 @@ export function ChartLineMultiple() {
               tickFormatter={(value) => value.slice(0, 3)}
             />
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+
             <Line
-              dataKey="desktop"
+              dataKey="vazamentos"
               type="monotone"
-              stroke="var(--color-desktop)"
+              stroke={chartConfig.vazamentos.color}
               strokeWidth={2}
               dot={false}
             />
+
             <Line
-              dataKey="mobile"
+              dataKey="consumo_alto"
               type="monotone"
-              stroke="var(--color-mobile)"
+              stroke={chartConfig.consumo_alto.color}
               strokeWidth={2}
               dot={false}
             />
           </LineChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter>
-        <div className="flex w-full items-start gap-2 text-sm">
-          <div className="grid gap-2">
-            <div className="flex items-center gap-2 leading-none font-medium">
-              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-            </div>
-            <div className="text-muted-foreground flex items-center gap-2 leading-none">
-              Showing total visitors for the last 6 months
-            </div>
-          </div>
+
+      <CardFooter className="flex flex-col gap-2 text-sm">
+        <div className="text-muted-foreground leading-none">
+          Dados dos últimos 6 meses.
         </div>
+        <button
+          onClick={exportPDF}
+          className="mt-2 px-3 py-1.5 bg-accent text-white rounded-md hover:bg-accent/80 transition-all"
+        >
+          Exportar PDF
+        </button>
       </CardFooter>
     </Card>
-  )
+  );
 }

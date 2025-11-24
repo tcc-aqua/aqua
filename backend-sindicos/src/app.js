@@ -10,11 +10,16 @@ import { fileURLToPath } from 'url';
 
 import userRoutes from './routes/user.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
+import authRoutes from './routes/auth.routes.js';
+import moradoresRoutes from './routes/moradores.routes.js';
+import comunicadosRoutes from './routes/comunicados.routes.js';
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// conectar ao Redis
 
 
 // cria log diário
@@ -37,6 +42,8 @@ const multiStream = pino.multistream([
 ])
 
 
+
+
 const fastify = Fastify({
     logger: {
         level: 'info',
@@ -44,8 +51,9 @@ const fastify = Fastify({
     }
 })
 
+
 await fastify.register(cors, {
-    origin: 'http://localhost:3000',
+    origin: 'http://localhost:3001',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
 })
@@ -88,7 +96,10 @@ fastify.get('/api', {
 })
 
 // routes
-await fastify.register(userRoutes, {prefix: '/api/users'})
-await fastify.register(dashboardRoutes, {prefix: '/api/dashboard'})
+await fastify.register(userRoutes, { prefix: '/api/users' })
+await fastify.register(dashboardRoutes, { prefix: '/api/dashboard' })
+await fastify.register(authRoutes, { prefix: '/api/auth' })
+await fastify.register(moradoresRoutes, { prefix: '/api/moradores' })
+await fastify.register(comunicadosRoutes, { prefix: '/api/comunicados' })
 
 export default fastify;

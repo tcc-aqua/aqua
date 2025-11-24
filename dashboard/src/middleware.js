@@ -11,6 +11,7 @@ const protectedPrefixes = [
   "/settings",
   "/users",
   "/suporte",
+  "/comunicados"
 ];
 
 export function middleware(request) {
@@ -76,5 +77,6 @@ export const config = {
     "/settings/:path*",
     "/users/:path*",
     "/suporte/:path*",
+    "/comunicados/:path*"
   ],
 };

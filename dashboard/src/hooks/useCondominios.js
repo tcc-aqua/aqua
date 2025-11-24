@@ -48,22 +48,21 @@ export function useCondominios() {
   };
 
   // Editar condomínio
-
 const editCondominio = async (id, dados) => {
   setLoading(true);
   try {
-    const res = await api.put(`/condominios/${selected.condominio_id}`, form);
+    // Chama a rota correta passando os dados certos
+    const res = await api.put(`/condominios/${id}`, dados);
 
+    const updated = res?.data || res;
 
-    const updated = res?.data?.data || res?.data || res;
-
-    if (!updated || updated.error)
+    if (!updated || updated.error) {
       throw new Error(updated?.error || "Erro ao atualizar");
+    }
 
+    // Atualiza no estado pela chave 'id'
     setCondominios((prev) =>
-      Array.isArray(prev)
-        ? prev.map((c) => (c.condominio_id === id ? updated : c))
-        : [updated]
+      prev.map((c) => (c.id === id ? { ...c, ...updated } : c))
     );
 
     toast.success("Condomínio atualizado com sucesso!");
@@ -73,7 +72,6 @@ const editCondominio = async (id, dados) => {
     setLoading(false);
   }
 };
-
 
   // Excluir condomínio
   const removeCondominio = async (id) => {
@@ -92,31 +90,23 @@ const editCondominio = async (id, dados) => {
       setLoading(false);
     }
   };
-
 const updateCondominioName = async (id, novoNome) => {
-  setLoading(true);
   try {
     const res = await api.put(`/condominios/${id}/name`, { name: novoNome });
+    const data = res?.data || res;
 
-    const updated = res?.data || res;
+    if (data?.error) throw new Error(data.error || "Erro ao atualizar nome");
 
-    if (!updated || updated.error)
-      throw new Error(updated?.error || "Erro ao atualizar nome");
-
-    // Atualiza o estado local corretamente
-    setCondominios((prev) =>
-      Array.isArray(prev)
-        ? prev.map((c) =>
-            c.id === id ? { ...c, nome: novoNome } : c
-          )
-        : [updated]
+    setCondominios(prev =>
+      prev.map(c =>
+        c.condominio_id === id ? { ...c, condominio_nome: novoNome } : c
+      )
     );
 
-    toast.success("Nome do condomínio atualizado com sucesso!");
   } catch (err) {
-    toast.error(err?.message || "Erro ao atualizar nome do condomínio!");
-  } finally {
-    setLoading(false);
+ 
+    toast.error(err.message || "Erro ao atualizar nome do condomínio!");
+    throw err; 
   }
 };
 

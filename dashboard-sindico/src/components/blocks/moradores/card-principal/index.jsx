@@ -22,7 +22,7 @@ const cardsData = [
     },
     {
         title: "Com Alerta",
-        value: "12.480 L",
+        value: "12",
         icon: Droplet,
         iconColor: "text-sky-500",
     }

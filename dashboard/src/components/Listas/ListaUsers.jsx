@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Toaster } from "sonner";
+import { toast, Toaster } from "sonner";
 import { Users, UserCheck, UserCog, User, X, Check, Pencil, AlertTriangle, Home, Building, MapPin, Crown, UserCircle2 } from "lucide-react";
 import {
   Dialog,
@@ -36,63 +36,84 @@ export default function UsersDashboard() {
   });
   const [filters, setFilters] = useState({});
 
+  const [showSindicoModal, setShowSindicoModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  // PAGINAÇÃO
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10); // itens por página
+  const [totalPages, setTotalPages] = useState(1);
+
   const API_URL = "http://localhost:3333/api/users";
 
-  const fetchData = async (filters = {}) => {
+  const fetchData = async (filters = {}, page = 1, limit = 10) => {
     try {
       setLoading(true);
 
-      const [resAll, resAtivos, resInativos, resCount, resCountAtivas, resSindicos, resMoradores] = await Promise.all([
-        fetch(`${API_URL}`),
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters,
+      });
+
+      const [resAll, resAtivos, resInativos, resCount, resCountAtivas, resSindicos, resMoradores, resCasas, resApartamentos] = await Promise.all([
+        fetch(`${API_URL}?${params.toString()}`),
         fetch(`${API_URL}/ativos`),
         fetch(`${API_URL}/inativos`),
         fetch(`${API_URL}/count`),
         fetch(`${API_URL}/count-ativos`),
         fetch(`${API_URL}/sindicos`),
-        fetch(`${API_URL}/moradores`)
+        fetch(`${API_URL}/moradores`),
+        fetch(`${API_URL}/moradores/casas`),
+        fetch(`${API_URL}/moradores/apartamentos`)
       ]);
 
       if (!resAll.ok || !resAtivos.ok || !resInativos.ok || !resCount.ok || !resCountAtivas.ok || !resSindicos.ok || !resMoradores.ok) {
         throw new Error("Erro ao buscar dados dos usuários.");
       }
 
-      const [allData, ativosData, inativosData, countData, countAtivasData, sindicosData, moradoresData] = await Promise.all([
+      const [allData, ativosData, inativosData, countData, countAtivasData, sindicosData, moradoresData, casasData, aptosData] = await Promise.all([
         resAll.json(),
         resAtivos.json(),
         resInativos.json(),
         resCount.json(),
         resCountAtivas.json(),
         resSindicos.json(),
-        resMoradores.json()
+        resMoradores.json(),
+        resCasas.json(),
+        resApartamentos.json()
       ]);
 
       const usersArray = Array.isArray(allData) ? allData : allData.docs || allData.users || [];
 
-   const filteredUsers = usersArray.filter(user => {
-  const matchesSearch = filters.search
-    ? user.user_name.toLowerCase().includes(filters.search.toLowerCase()) ||
-      (user.user_email?.toLowerCase().includes(filters.search.toLowerCase()))
-    : true;
+      const filteredUsers = usersArray.filter(user => {
+        const matchesSearch = filters.search
+          ? user.user_name.toLowerCase().includes(filters.search.toLowerCase()) ||
+            (user.user_email?.toLowerCase().includes(filters.search.toLowerCase()))
+          : true;
 
-  const matchesStatus = filters.status ? user.user_status === filters.status : true;
-  const matchesRole = filters.role ? user.user_role === filters.role : true;
-  const matchesType = filters.type ? user.user_type === filters.type : true;
+        const matchesStatus = filters.status ? user.user_status === filters.status : true;
+        const matchesRole = filters.role ? user.user_role === filters.role : true;
+        const matchesType = filters.type ? user.user_type === filters.type : true;
 
-  return matchesSearch && matchesStatus && matchesRole && matchesType;
-});
+        return matchesSearch && matchesStatus && matchesRole && matchesType;
+      });
 
       setUsers(filteredUsers);
 
-setUserStats({
-  total: allData.total ?? usersArray.length, // total real do backend
-  ativos: allData.docs.filter(u => u.user_status === "ativo").length,
-  inativos: allData.docs.filter(u => u.user_status === "inativo").length,
-  sindicos: allData.docs.filter(u => u.user_role === "sindico").length,
-  moradores: allData.docs.filter(u => u.user_role === "morador").length,
-  casas: allData.docs.filter(u => u.user_type === "casa").length,
-  condominios: allData.docs.filter(u => u.user_type === "condominio").length,
-});
+    
+      const totalUsers = allData.total ?? usersArray.length;
+      setTotalPages(Math.ceil(totalUsers / limit));
 
+      setUserStats({
+        total: totalUsers,
+        ativos: ativosData.total ?? 0,
+        inativos: inativosData.total ?? 0,
+        sindicos: sindicosData.total ?? 0,
+        moradores: Number(moradoresData) || 0,
+        casas: Number(casasData) || 0,
+        condominios: Number(aptosData) || 0
+      });
 
     } catch (err) {
       console.error("Erro ao buscar dados:", err);
@@ -103,16 +124,34 @@ setUserStats({
   };
 
   const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, async () => {
-    await fetchData();
+    await fetchData(filters, page, limit);
   });
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(filters, page, limit);
+  }, [page, filters]);
+
+  const makeSindico = async (userId) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_URL}/${userId}/sindico`, {
+        method: "PATCH",
+      });
+
+      if (!res.ok) throw new Error("Erro ao tornar usuário síndico.");
+      await fetchData(filters, page, limit);
+      setShowSindicoModal(false);
+      toast.success("Usuário agora é síndico!");
+    } catch (err) {
+      console.error("Erro ao tornar usuário síndico:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) return <Loading />;
   if (error) return <p className="text-destructive">Erro: {error}</p>;
-
   const cards = [
     {
       title: "Total de Usuários",
@@ -127,8 +166,8 @@ setUserStats({
       icon: UserCheck,
       iconColor: "text-green-700",
       porcentagem: userStats.total > 0
-        ? ((userStats.ativos / userStats.total) * 100).toFixed(0) + "% operacionais"
-        : "0% operacionais"
+        ? ((userStats.ativos / userStats.total) * 100).toFixed(0) + "% ativos"
+        : "0% ativos"
     },
     {
       title: "Síndicos",
@@ -155,12 +194,12 @@ setUserStats({
           <UserFilter onApply={(filters) => fetchData(filters)} />
         </div>
 
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {cards.map((card, i) => {
             const Icon = card.icon;
             return (
               <AnimationWrapper key={card.title} delay={i * 0.2}>
-                <Card className=" hover:border-sky-400 dark:hover:border-sky-950">
+                <Card className=" hover:border-sky-400 dark:hover:border-sky-950 ">
                   <CardHeader>
                     <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                   </CardHeader>
@@ -168,7 +207,7 @@ setUserStats({
                     <div className="flex flex-col">
                       <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
                       {card.detalhe && <p className="text-sm text-accent mt-1">{card.detalhe}</p>}
-                      {card.porcentagem && <p className="text-sm mt-1 text-green-600">{card.porcentagem}</p>}
+                      {card.porcentagem && <p className="text-sm mt-1 text-green-600"> {card.porcentagem}</p>}
                       {card.subTitle && <p className="text-sm mt-1 text-yellow-400">{card.subTitle}</p>}
                       {card.subTitle2 && <p className="text-sm mt-1 text-sky-500">{card.subTitle2}</p>}
                     </div>
@@ -181,6 +220,7 @@ setUserStats({
         </section>
 
         <AnimationWrapper delay={0.3}>
+
 
 
           <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-950 ">
@@ -307,114 +347,186 @@ setUserStats({
 
                         <td className="px-4 py-2 text-sm text-center -">
                           <Tooltip>
-                            <TooltipTrigger  asChild> 
-                          <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
-                            <div className="flex items-center gap-1">
-                              {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
-                            </div>
-                          </Button>
-                             </TooltipTrigger>
-                          <TooltipContent>
-                            {user.user_status === "ativo"
-                              ? "Inativar usuário"
-                              : "Ativar usuário"}
-                          </TooltipContent>
-                        </Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant='ghost' onClick={() => confirmToggleStatus(user)}>
+                                <div className="flex items-center gap-1">
+                                  {user.user_status === "ativo" ? <Check className="text-green-500" size={14} /> : <X className="text-destructive" size={14} />}
+                                </div>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {user.user_status === "ativo"
+                                ? "Inativar usuário"
+                                : "Ativar usuário"}
+                            </TooltipContent>
+                          </Tooltip>
+                          {user.user_type === "condominio" && user.user_role !== "sindico" && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button size="sm" variant="ghost" onClick={() => {
+                                  setSelectedUser(user);
+                                  setShowSindicoModal(true);
+                                }}>
+                                  <Crown className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                Tornar síndico
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
 
-                      </td>
+
+                        </td>
                       </tr>
                     ))}
-                </tbody>
+                  </tbody>
 
-
-                  
                 </table>
               )}
-          </CardContent>
-          <Separator />
-          <PaginationDemo className='my-20' />
-        </Card>
-      </AnimationWrapper >
-
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
-
-          {/* Barra superior colorida */}
-          <div
-            className={`h-2 w-full rounded-t-md ${selectedItem?.user_status === "ativo" ? "bg-red-600" : "bg-green-600"
-              }`}
+            </CardContent>
+            <Separator />
+             <PaginationDemo
+            currentPage={page}
+            totalPages={totalPages}
+            onChangePage={(newPage) => setPage(newPage)}
+            maxVisible={5}
           />
+          </Card>
+        </AnimationWrapper >
 
-          <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+        <Dialog open={showModal} onOpenChange={setShowModal}>
+          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+
             <div
-              className={`p-4 rounded-full ${selectedItem?.user_status === "ativo"
-                ? "bg-red-100 dark:bg-red-900"
-                : "bg-green-100 dark:bg-green-900"
+              className={`h-2 w-full rounded-t-md ${selectedItem?.user_status === "ativo" ? "bg-red-600" : "bg-green-600"
                 }`}
-            >
-              <AlertTriangle
-                className={`h-10 w-10 ${selectedItem?.user_status === "ativo"
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-green-600 dark:text-green-400"
-                  }`}
-              />
-            </div>
-            <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
-              Confirmação
-            </DialogTitle>
-          </DialogHeader>
+            />
 
-          <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
-            <p className="text-lg">
-              Deseja realmente{" "}
-              <span
-                className={`font-semibold ${selectedItem?.user_status === "ativo"
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-green-600 dark:text-green-400"
+            <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+              <div
+                className={`p-4 rounded-full ${selectedItem?.user_status === "ativo"
+                  ? "bg-red-100 dark:bg-red-900"
+                  : "bg-green-100 dark:bg-green-900"
                   }`}
               >
-                {selectedItem?.user_status === "ativo" ? "inativar" : "ativar"}
-              </span>{" "}
-              o usuário <strong>{selectedItem?.user_name}</strong>?
-            </p>
+                <AlertTriangle
+                  className={`h-10 w-10 ${selectedItem?.user_status === "ativo"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
+                    }`}
+                />
+              </div>
+              <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+                Confirmação
+              </DialogTitle>
+            </DialogHeader>
 
-            {/* Exemplo de card com informações extras do usuário */}
-            <div className="bg-muted/40 rounded-xl p-4 border border-border mt-3">
-              <p className="text-xs uppercase text-muted-foreground mb-1">Email</p>
-              <p className="font-semibold">{selectedItem?.user_email ?? "-"}</p>
+            <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
+              <p className="text-lg">
+                Deseja realmente{" "}
+                <span
+                  className={`font-semibold ${selectedItem?.user_status === "ativo"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
+                    }`}
+                >
+                  {selectedItem?.user_status === "ativo" ? "inativar" : "ativar"}
+                </span>{" "}
+                o usuário <strong>{selectedItem?.user_name}</strong>?
+              </p>
+
+              {/* Exemplo de card com informações extras do usuário */}
+              <div className="bg-muted/40 rounded-xl p-4 border border-border mt-3">
+                <p className="text-xs uppercase text-muted-foreground mb-1">Email</p>
+                <p className="font-semibold">{selectedItem?.user_email ?? "-"}</p>
+              </div>
+              <div className="bg-muted/40 rounded-xl p-4 border border-border">
+                <p className="text-xs uppercase text-muted-foreground mb-1">Perfil</p>
+                <p className="font-semibold">{selectedItem?.user_role ?? "-"}</p>
+              </div>
             </div>
-            <div className="bg-muted/40 rounded-xl p-4 border border-border">
-              <p className="text-xs uppercase text-muted-foreground mb-1">Perfil</p>
-              <p className="font-semibold">{selectedItem?.user_role ?? "-"}</p>
+
+            <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
+              <Button
+                variant="ghost"
+                onClick={() => setShowModal(false)}
+                className="flex items-center gap-2"
+              >
+                <X className="h-5 w-5" />
+                Cancelar
+              </Button>
+
+              <Button
+                className={`flex items-center gap-2 px-6 py-3 text-white transition ${selectedItem?.user_status === "ativo"
+                  ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                  }`}
+                onClick={toggleStatus}
+              >
+                <Check className="h-5 w-5" />
+                {selectedItem?.user_status === "ativo" ? "Inativar" : "Ativar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+
+
+        <Dialog open={showSindicoModal} onOpenChange={setShowSindicoModal}>
+          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+
+            {/* Barra superior colorida */}
+            <div className="h-2 w-full rounded-t-md bg-yellow-400" />
+
+            <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
+              <div className="p-4 rounded-full bg-yellow-100 dark:bg-yellow-900">
+                <Crown className="h-10 w-10 text-yellow-500 dark:text-yellow-400" />
+              </div>
+              <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
+                Confirmação
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
+              <p className="text-lg">
+                Deseja realmente tornar <strong>{selectedUser?.user_name}</strong> um <span className="font-semibold text-yellow-500">síndico</span>?
+              </p>
+
+              {/* Card com informações extras do usuário */}
+              <div className="bg-muted/40 rounded-xl p-4 border border-border mt-3">
+                <p className="text-xs uppercase text-muted-foreground mb-1">Email</p>
+                <p className="font-semibold">{selectedUser?.user_email ?? "-"}</p>
+              </div>
+              <div className="bg-muted/40 rounded-xl p-4 border border-border">
+                <p className="text-xs uppercase text-muted-foreground mb-1">Residência</p>
+                <p className="font-semibold">{selectedUser?.user_type === "condominio" ? "Condomínio" : "Casa"}</p>
+              </div>
             </div>
-          </div>
 
-          <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowModal(false)}
-              className="flex items-center gap-2"
-            >
-              <X className="h-5 w-5" />
-              Cancelar
-            </Button>
+            <DialogFooter className="flex justify-end mt-6 border-t border-border pt-4 space-x-2">
+              <Button
+                variant="ghost"
+                onClick={() => setShowSindicoModal(false)}
+                className="flex items-center gap-2"
+              >
+                <X className="h-5 w-5" />
+                Cancelar
+              </Button>
 
-            <Button
-              className={`flex items-center gap-2 px-6 py-3 text-white transition ${selectedItem?.user_status === "ativo"
-                ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
-                }`}
-              onClick={toggleStatus}
-            >
-              <Check className="h-5 w-5" />
-              {selectedItem?.user_status === "ativo" ? "Inativar" : "Ativar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              <Button
+                className="flex items-center gap-2 px-6 py-3 text-white bg-yellow-400 hover:bg-yellow-500 dark:bg-yellow-400 dark:hover:bg-yellow-500 transition"
+                onClick={() => makeSindico(selectedUser.user_id)}
+              >
+                <Crown className="h-5 w-5" />
+                Tornar Síndico
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
 
-    </div >
+      </div >
     </>
   );
 }

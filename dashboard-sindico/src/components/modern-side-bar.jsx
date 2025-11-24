@@ -1,24 +1,19 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Home,
-  User,
-  Settings,
+  Users,
+  Building,
+  Grid,
+  HousePlus,
   LogOut,
   Menu,
   X,
   ChevronLeft,
-  ChevronRight,
-  Users,
-  Droplets,
-  Building,
-  HousePlus,
-  Siren,
-  Headset,
-  Grid
+  ChevronRight
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -27,13 +22,11 @@ import Cookies from "js-cookie";
 const navigationItems = [
   { id: "dashboard", name: "Dashboard", icon: Home, href: "/" },
   { id: "moradores", name: "Moradores", icon: Users, href: "/moradores" },
-  { id: "relatorios", name: "Relatorios", icon: Building, href: "/relatorios" },
-  { id: "chat", name: "Chat", icon: Grid, href: "/chat" },
+  { id: "relatorios", name: "Relatórios", icon: Building, href: "/relatorios" },
   { id: "comunicados", name: "Comunicados", icon: HousePlus, href: "/comunicados" },
 ];
 
 export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
-
   const [isOpen, setIsOpen] = useState(false);
   const { theme } = useTheme();
   const pathname = usePathname();
@@ -52,32 +45,27 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
   const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
-async function handleLogout(router) {
-  const token = Cookies.get("token");
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
-    });
-
-    if (res.ok) {
-      Cookies.remove("token");
-      router.push("/");
-    } else {
-      console.error("Erro ao fazer logout");
+  async function handleLogout() {
+    const token = Cookies.get("token");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        Cookies.remove("token");
+        router.push("/");
+      } else console.error("Erro ao fazer logout");
+    } catch (err) {
+      console.error("Erro de conexão no logout:", err);
     }
-  } catch (err) {
-    console.error("Erro de conexão no logout:", err);
   }
-}
 
   return (
     <>
       <button
         onClick={toggleSidebar}
-        className="fixed top-3 left-3 z-50 p-2 rounded-lgshadow-md border border-border md:hidden hover:bg-muted transition-all duration-200"
+        className="fixed top-3 left-3 z-50 p-2 rounded-lg shadow-md border border-border md:hidden hover:bg-muted transition-all duration-200"
         aria-label="Alternar menu lateral"
       >
         {isOpen ? <X className="h-5 w-5 text-foreground" /> : <Menu className="h-5 w-5 text-foreground" />}
@@ -91,11 +79,9 @@ async function handleLogout(router) {
       )}
 
       <div
-        className={`fixed top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border z-50 transition-all duration-300 ease-in-out flex flex-col
+        className={`fixed top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border z-50 transition-all duration-300 flex flex-col
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          ${isCollapsed ? "w-20" : "w-55"}
-          md:translate-x-0 overflow-hidden
-          ${className}`}
+          ${isCollapsed ? "w-20" : "w-55"} md:translate-x-0 overflow-hidden ${className}`}
       >
         <div className="flex items-center justify-between p-2.5 border-b border-sidebar-border bg-sidebar/60">
           {!isCollapsed ? (
@@ -113,15 +99,15 @@ async function handleLogout(router) {
 
           <button
             onClick={toggleCollapse}
-            className="hidden md:flex p-1 rounded-md hover:bg-muted transition-all duration-200 cursor-pointer"
+            className="hidden md:flex p-1 rounded-md hover:bg-muted transition-all duration-200"
             aria-label={isCollapsed ? "Expandir menu" : "Colapsar menu"}
           >
-            {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </button>
         </div>
 
         <nav className="flex-1 px-3 py-2 overflow-y-auto mt-4">
-          <ul className="space-y-0.5">
+          <ul className="space-y-1">
             <TooltipProvider>
               {navigationItems.map(item => {
                 const Icon = item.icon;
@@ -138,7 +124,7 @@ async function handleLogout(router) {
                     `}
                     onClick={() => { if (window.innerWidth < 768) setIsOpen(false); }}
                   >
-                    <Icon className="h-5 w-5 transition-colors duration-200" />
+                    <Icon className={`transition-colors duration-200 ${isCollapsed ? "h-6 w-6" : "h-5 w-5"}`} />
                     {!isCollapsed && <span className="text-sm">{item.name}</span>}
                   </Link>
                 );
@@ -164,18 +150,16 @@ async function handleLogout(router) {
           </ul>
         </nav>
 
-      
-
         <div className="p-3 border-t border-sidebar-border mt-auto">
           {isCollapsed ? (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    onClick={() => handleLogout(router)}
+                    onClick={handleLogout}
                     className="flex items-center justify-center p-2.5 text-sidebar-foreground hover:bg-muted hover:text-accent rounded-md transition-all duration-200"
                   >
-                    <LogOut className="h-5 w-5 transition-colors duration-200" />
+                    <LogOut className="h-6 w-6" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent
@@ -189,7 +173,7 @@ async function handleLogout(router) {
             </TooltipProvider>
           ) : (
             <button
-              onClick={() => handleLogout(router)}
+              onClick={handleLogout}
               className="flex items-center rounded-md px-3 py-2.5 space-x-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive transition-all duration-200 w-full"
             >
               <LogOut className="h-5 w-5 transition-colors duration-200" />
@@ -197,7 +181,6 @@ async function handleLogout(router) {
             </button>
           )}
         </div>
-
       </div>
     </>
   );

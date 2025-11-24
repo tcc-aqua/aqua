@@ -1,5 +1,6 @@
 import Metas from "../models/Metas.js";
 import User from "../models/User.js";
+import GamificationService from "./GamificationService.js"; // Importado
 
 export default class MetasService {
 
@@ -25,12 +26,20 @@ export default class MetasService {
 
             const { residencia_id, residencia_type, periodo, limite_consumo, inicio_periodo } = data;
 
-            await user.create({ residencia_id, residencia_type, periodo, limite_consumo, inicio_periodo });
-            return user;
+            const meta = await Metas.create({ 
+                user_id: userId,
+                residencia_id, 
+                residencia_type, 
+                periodo, 
+                limite_consumo, 
+                inicio_periodo 
+            });
+
+
+            return meta;
         } catch (error) {
             console.error("Erro ao criar meta", error);
             throw error;
         }
     }
-
 }

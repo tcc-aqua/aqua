@@ -313,7 +313,7 @@ const handleCreateCondominio = async (e) => {
       <DialogFooter className="pt-4 flex justify-end gap-3">
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           className="w-32 border-border text-foreground hover:bg-muted"
           onClick={() => setIsOpen(false)}
         >

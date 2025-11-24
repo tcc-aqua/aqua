@@ -1,3 +1,6 @@
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\Apartamento.js
+// CÓDIGO COMPLETO E CORRIGIDO
+
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import Condominio from "./Condominio.js";
@@ -58,5 +61,5 @@ Apartamento.init({
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em'
 })
-Apartamento.belongsTo(Sensor, { foreignKey: "sensor_id", as: "sensor" });
+
 sequelizePaginate.paginate(Apartamento);
