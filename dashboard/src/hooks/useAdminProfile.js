@@ -13,9 +13,7 @@ export function useAdminProfile() {
 
   const token = Cookies.get("token");
 
-  // -----------------------------
-  // 1. Carregar admin ao iniciar
-  // -----------------------------
+
   useEffect(() => {
     if (!token) {
       setLoading(false);
@@ -41,9 +39,7 @@ export function useAdminProfile() {
     setLoading(false);
   }, [token]);
 
-  // -----------------------------
-  // 2. Upload da foto
-  // -----------------------------
+  
   const uploadPhoto = async (file) => {
     if (!file || !token) return toast.error("Arquivo ou token não encontrados.");
 
@@ -53,7 +49,7 @@ export function useAdminProfile() {
     setSaving(true);
 
     try {
-      // ⚠️ importante: enviar sem "Content-Type"
+     
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admins/upload-img`, {
         method: "POST",
         headers: {
@@ -70,10 +66,9 @@ export function useAdminProfile() {
         ? data.img_url
         : `http://localhost:3333${data.img_url}`;
 
-      // Atualiza o estado do admin
+      
       setAdmin((prev) => ({ ...prev, image: fullUrl }));
 
-      // PERSISTE no localStorage
       localStorage.setItem("admin_image", fullUrl);
 
       toast.success("Foto atualizada!");
@@ -85,9 +80,7 @@ export function useAdminProfile() {
     }
   };
 
-  // -----------------------------
-  // 3. Atualizar senha (normal)
-  // -----------------------------
+
   const saveProfile = async (data) => {
     if (!token) return false;
 

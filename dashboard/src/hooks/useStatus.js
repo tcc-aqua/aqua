@@ -8,13 +8,14 @@ export default function useToggleConfirm(baseURL, refreshFn) {
   const confirmToggleStatus = (item) => {
     setSelectedItem(item);
     setShowModal(true);
+    
   };
 
   const toggleStatus = async () => {
     if (!selectedItem) return;
 
     try {
-      // Detecta automaticamente o campo de ID
+      
       const idField =
         selectedItem.id ||
         selectedItem.user_id ||
@@ -29,7 +30,6 @@ export default function useToggleConfirm(baseURL, refreshFn) {
         return;
       }
 
-      // Detecta automaticamente o campo de status
       const statusField =
         selectedItem.status ||
         selectedItem.user_status ||

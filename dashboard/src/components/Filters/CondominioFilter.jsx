@@ -214,7 +214,7 @@ const handleCreateCondominio = async (e) => {
       </motion.div>
 
   <Dialog open={isOpen} onOpenChange={setIsOpen}>
-  <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+  <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
     {/* Barra superior colorida */}
     <div className="h-2 w-full rounded-t-md bg-primary" />

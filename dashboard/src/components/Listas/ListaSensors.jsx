@@ -29,82 +29,63 @@ export default function SensorsDashboard() {
   const [filters, setFilters] = useState({});
 
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10); // itens por página
+  const [limit, setLimit] = useState(10); 
   const [totalPages, setTotalPages] = useState(1);
 
   const API_URL = "http://localhost:3333/api/sensores";
-  const fetchData = async (filters = {}, page = 1, limit = 10) => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page,
-        limit,
-        ...filters,
-      });
+const fetchData = async (filters = {}, page = 1, limit = 10) => {
+  try {
+    setLoading(true);
+
+    const params = new URLSearchParams({
+      page,
+      limit,
+      status: filters.status || "",
+      location: filters.location || "",
+      type: filters.type || "",
+    });
+
+    const allRes = await fetch(`${API_URL}/?${params.toString()}`);
+    if (!allRes.ok) throw new Error("Erro ao buscar sensores");
+
+    const allJson = await allRes.json();
+    const sensoresArray = allJson.docs || [];
+    setSensores(sensoresArray);
+
+    setTotalPages(Math.ceil(allJson.total / limit));
+
+    // Calcula estatísticas da página
+    const statsPagina = sensoresArray.reduce(
+      (acc, s) => {
+        acc.litrosTotais += parseFloat(s.consumo_total) || 0;
+        if (s.residencia_type === "casa") acc.casas += 1;
+        if (s.residencia_type === "apartamento") acc.apartamentos += 1;
+        if (s.sensor_status === "ativo") acc.ativos += 1;
+        if (s.sensor_status === "inativo") acc.inativos += 1;
+        return acc;
+      },
+      { litrosTotais: 0, casas: 0, apartamentos: 0, ativos: 0, inativos: 0 }
+    );
+
+    setSensorStats({
+      total: allJson.total,
+      ativos: statsPagina.ativos,
+      inativos: statsPagina.inativos,
+      alertas: allJson.total - statsPagina.ativos - statsPagina.inativos,
+      litrosTotais: statsPagina.litrosTotais,
+      casas: statsPagina.casas,
+      apartamentos: statsPagina.apartamentos,
+    });
+
+  } catch (err) {
+    console.error(err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
 
-      const [totalRes, ativosRes, inativosRes, allRes] = await Promise.all([
-        fetch(`${API_URL}/count`),
-        fetch(`${API_URL}/count-ativos`),
-        fetch(`${API_URL}/inativos`),
-        fetch(`${API_URL}?${params.toString()}`),
-      ]);
-
-      if (!totalRes.ok || !ativosRes.ok || !inativosRes.ok || !allRes.ok) {
-        throw new Error("Erro ao buscar dados dos sensores.");
-      }
-
-      const total = await totalRes.json();
-      const allSensores = await allRes.json();
-      const sensoresArray = allSensores.docs || [];
-
-      // Filtragem local
-      const filteredSensores = sensoresArray.filter(sensor => {
-        const matchesStatus = filters.status ? sensor.sensor_status === filters.status : true;
-        const matchesLocation = filters.location ? sensor.localizacao?.toLowerCase().includes(filters.location.toLowerCase()) : true;
-        const matchesType = filters.type ? sensor.residencia_type === filters.type : true;
-        return matchesStatus && matchesLocation && matchesType;
-      });
-      const sensorStatsData = filteredSensores.reduce(
-        (acc, s) => {
-          // Soma o consumo total garantindo número
-          acc.litrosTotais += parseFloat(s.consumo_total) || 0;
-
-          // Conta tipo de residência
-          if (s.residencia_type === "casa") acc.casas += 1;
-          if (s.residencia_type === "apartamento") acc.apartamentos += 1;
-
-          // Conta status do sensor
-          if (s.sensor_status === "ativo") acc.ativos += 1;
-          else if (s.sensor_status === "inativo") acc.inativos += 1;
-          else acc.alertas += 1;
-
-          return acc;
-        },
-        { ativos: 0, inativos: 0, alertas: 0, litrosTotais: 0, casas: 0, apartamentos: 0 }
-      );
-
-      const totalSensores = total.total ?? filteredSensores.length;
-      setTotalPages(Math.ceil(totalSensores / limit));
-
-      setSensorStats({
-        total: total ?? filteredSensores.length,
-        ativos: sensorStatsData.ativos,
-        inativos: sensorStatsData.inativos,
-        alertas: sensorStatsData.alertas,
-        litrosTotais: sensorStatsData.litrosTotais,
-        casas: sensorStatsData.casas,
-        apartamentos: sensorStatsData.apartamentos
-      });
-
-      setSensores(filteredSensores);
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } = useToggleConfirm(API_URL, fetchData);
 
@@ -328,7 +309,7 @@ export default function SensorsDashboard() {
         </AnimationWrapper>
 
         <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+          <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
             {/* Barra superior colorida de acordo com status */}
             <div

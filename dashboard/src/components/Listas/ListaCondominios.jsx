@@ -67,9 +67,9 @@ export default function CondominiosDashboard() {
     estado: "",
   });
 
-  // PAGINAÇÃO
+
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10); // itens por página
+  const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
   const API_URL = "http://localhost:3333/api/condominios";
@@ -139,13 +139,13 @@ export default function CondominiosDashboard() {
         alertas: filteredCondominios.filter((c) => !c.responsavel_id).length,
       };
 
-
       const sensores = filteredCondominios.reduce(
         (acc, c) => {
-          acc.totalSensores += Number(c.numero_sensores) || 0;
-          if (c.sensor_status === "ativo") acc.sensoresAtivos += 1;
-          else if (c.sensor_status === "inativo") acc.sensoresInativos += 1;
-          else if (c.sensor_status === "alerta") acc.sensoresAlertas += 1;
+          const numSensores = Number(c.numero_sensores) || 0;
+          acc.totalSensores += numSensores;
+          if (c.sensor_status === "ativo") acc.sensoresAtivos += numSensores;
+          else if (c.sensor_status === "inativo") acc.sensoresInativos += numSensores;
+          else if (c.sensor_status === "alerta") acc.sensoresAlertas += numSensores;
 
           acc.totalApartamentos += Number(c.numero_apartamentos) || 0;
           return acc;
@@ -158,6 +158,7 @@ export default function CondominiosDashboard() {
           totalApartamentos: 0,
         }
       );
+
       const totalUsers = dataAll.total ?? allCondominios.length;
       setTotalPages(Math.ceil(totalUsers / limit));
 
@@ -193,7 +194,7 @@ export default function CondominiosDashboard() {
 
         const data = await res.json();
 
-        // mapear corretamente docs para id e nome
+
         const lista = Array.isArray(data.docs)
           ? data.docs.map((s) => ({
             id: s.user_id,
@@ -203,6 +204,7 @@ export default function CondominiosDashboard() {
 
         setSindicos(lista);
       } catch (err) {
+        
         toast.error(err.message);
       }
     };
@@ -237,13 +239,13 @@ export default function CondominiosDashboard() {
     try {
       if (form.condominio_nome !== selected.condominio_nome) {
         await updateCondominioName(id, form.condominio_nome);
-        toast.success("Condomínio atualizado!"); // toast certo vem daqui
+        toast.success("Condomínio atualizado!");
         setOpen(false);
-        fetchData();
+        fetchData(filters, page, limit);
         return;
       }
 
-      // PUT completo
+
       const body = {
         condominio_nome: form.condominio_nome,
         numero: form.numero,
@@ -262,7 +264,7 @@ export default function CondominiosDashboard() {
 
       toast.success("Condomínio atualizado!");
       setOpen(false);
-      fetchData();
+      fetchData(filters, page, limit);
     } catch (err) {
       toast.error(err.message || "Erro ao atualizar condomínio.");
     }
@@ -316,7 +318,7 @@ export default function CondominiosDashboard() {
           ? "inativado"
           : "ativado"} com sucesso!`
       );
-      fetchData();
+      fetchData(filters, page, limit);
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -601,7 +603,7 @@ export default function CondominiosDashboard() {
 
 
         <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+          <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
             <div
               className={`h-2 w-full rounded-t-md ${selectedCondominio?.condominio_status === "ativo"
@@ -681,7 +683,7 @@ export default function CondominiosDashboard() {
 
 
         <Dialog open={showSindicoModal} onOpenChange={setShowSindicoModal}>
-          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+          <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
 
             <div className="h-2 w-full rounded-t-md text-yellow-500" />
@@ -760,7 +762,7 @@ export default function CondominiosDashboard() {
                     toast.success("Síndico atribuído com sucesso!");
                     setShowSindicoModal(false);
                     setSindicoId("");
-                    fetchData();
+                    fetchData(filters, page, limit);
                   } catch (err) {
                     toast.error(err.message);
                   }
@@ -776,7 +778,7 @@ export default function CondominiosDashboard() {
         </Dialog>
 
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+          <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
             {/* Barra superior */}
             <div className="h-2 w-full bg-primary rounded-t-md" />

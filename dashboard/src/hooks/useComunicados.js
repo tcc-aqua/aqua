@@ -27,22 +27,22 @@ export function useComunicados() {
   };
 
 
-const addComunicado = async (novo) => {
-  setLoading(true);
-  try {
-    const res = await api.post("/comunicados", novo);
+  const addComunicado = async (novo) => {
+    setLoading(true);
+    try {
+      const res = await api.post("/comunicados", novo);
 
-    if (res?.error) throw new Error(res.error);
+      if (res?.error) throw new Error(res.error);
 
-    toast.success("Comunicado criado com sucesso!");
+      toast.success("Comunicado criado com sucesso!");
 
-    await fetchComunicados();
-  } catch (err) {
-    toast.error(err?.message || "Erro ao criar comunicado");
-  } finally {
-    setLoading(false);
-  }
-};
+      await fetchComunicados();
+    } catch (err) {
+      toast.error(err?.message || "Erro ao criar comunicado");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const editComunicado = async (id, dados) => {
     setLoading(true);
@@ -53,7 +53,7 @@ const addComunicado = async (novo) => {
       if (!updated || updated.error) throw new Error(updated?.error || "Erro ao atualizar comunicado");
 
       toast.success("Comunicado atualizado com sucesso!");
-      
+
 
       await fetchComunicados();
     } catch (err) {
@@ -70,7 +70,7 @@ const addComunicado = async (novo) => {
       if (res?.error) throw new Error(res?.message || "Erro ao excluir comunicado");
 
       toast.success("Comunicado excluído com sucesso!");
-      
+
       await fetchComunicados();
     } catch (err) {
       toast.error(err?.message || "Erro ao excluir comunicado");
@@ -79,6 +79,28 @@ const addComunicado = async (novo) => {
     }
   };
 
+  const fetchNaoLidos = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/comunicados/nao-lidos");
+      setComunicados(res?.data || []);
+    } catch (err) {
+      toast.error(err?.message || "Erro ao buscar comunicados não lidos");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const marcarComoLido = async (id) => {
+    try {
+      await api.post("/comunicados/ler", { id });
+
+      await fetchComunicados();
+      toast.success("Comunicado marcado como lido!");
+    } catch (err) {
+      toast.error(err?.message || "Erro ao marcar como lido");
+    }
+  };
 
   useEffect(() => {
     fetchComunicados();
@@ -90,7 +112,9 @@ const addComunicado = async (novo) => {
     error,
     fetchComunicados,
     addComunicado,
+    marcarComoLido,
     editComunicado,
+    fetchNaoLidos,
     removeComunicado,
   };
 }

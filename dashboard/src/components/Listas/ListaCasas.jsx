@@ -29,7 +29,7 @@ export default function CasasDashboard() {
   const [casaStats, setCasaStats] = useState({ total: 0, ativas: 0, inativas: 0, alertas: 0 });
   const [sensorStats, setSensorStats] = useState({ total: 0, ativos: 0, inativos: 0, alertas: 0 });
   const [filters, setFilters] = useState({});
-  // PAGINAÇÃO
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10); // itens por página
   const [totalPages, setTotalPages] = useState(1);
@@ -88,14 +88,15 @@ export default function CasasDashboard() {
 
       setCasas(filteredCasas);
 
-      setCasas(allData.docs || []);
-setTotalPages(Math.ceil((allData.total || 0) / limit));
+   const totalCasas = allData.total ?? casasArray.length;
+
+      setTotalPages(Math.ceil((allData.total || 0) / limit));
 
       setCasaStats({
-        total: countData.total ?? casasArray.length,
-        ativas: countAtivasData.total ?? ativosData.docs?.length ?? 0,
+        total: totalCasas,
+        ativas: ativosData.total ?? 0,
         inativas: inativosData.docs?.length ?? 0,
-        alertas: filteredCasas.reduce((acc, c) => acc + (c.alertas || 0), 0),
+        alertas: casasArray.reduce((acc, c) => acc + (c.alertas || 0), 0),
       });
       const sensorStats = filteredCasas.reduce(
         (acc, casa) => {
@@ -370,7 +371,7 @@ setTotalPages(Math.ceil((allData.total || 0) / limit));
 
 
         <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="sm:max-w-[640px] rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
+          <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
             {/* Barra superior colorida */}
             <div

@@ -9,11 +9,10 @@ import SuporteFilter from "../Filters/Suporte";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import { MessageCircle, MailWarning, Clock, AlertTriangle, User, Mail, Calendar } from "lucide-react";
-import { PaginationDemo } from "../pagination/pagination";
 
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode"
-import { Separator } from "../ui/separator";
+
 
 export default function SuporteDashboard() {
   const [tickets, setTickets] = useState([]);
@@ -338,7 +337,7 @@ export default function SuporteDashboard() {
                         </div>
                       </CardFooter>
                     )}
-                    <Separator></Separator>
+                  
                    
                   </Card>
                 </AnimationWrapper>
@@ -349,7 +348,7 @@ export default function SuporteDashboard() {
         </div>
 
         <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="sm:max-w-[640px]">
+          <DialogContent className="sm:">
             <DialogHeader>
               <DialogTitle>Detalhes do Ticket</DialogTitle>
             </DialogHeader>
@@ -376,7 +375,7 @@ export default function SuporteDashboard() {
           </DialogContent>
 
         </Dialog>
-        <PaginationDemo className='my-20' />
+    
       </div>
     </>
   );
