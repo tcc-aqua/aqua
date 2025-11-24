@@ -1,16 +1,36 @@
+"use client";
+import { useEffect, useState } from "react";
 import { Building, MapPin, Users, UserSquare2, Hash } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/card";
 import { Separator } from "../../../ui/separator";
+import { api } from "@/lib/api";
 
 export default function CardCondominioInfo() {
-  const condominio = {
-    nome: "Residencial Sol Nascente",
-    endereco: "Rua das Flores, 120 - Centro - São Paulo/SP",
-    apartamentos: 48,
-    sindico: "Carlos Henrique",
-    codigo: "11102025",
-    cep: "09181-720",
-  };
+  const [condominio, setCondominio] = useState(null);
+
+  useEffect(() => {
+    async function loadData() {
+      const res = await api.get("/dashboard");
+
+      if (!res || res.error) {
+        console.error("Erro ao buscar condomínio:", res);
+        return;
+      }
+
+      setCondominio(res.condominio);
+    }
+
+    loadData();
+  }, []);
+
+  if (!condominio)
+    return (
+      <Card className="p-4">
+        <p>Carregando informações do condomínio...</p>
+      </Card>
+    );
+
+  const endereco = `${condominio.logradouro}, ${condominio.numero} - ${condominio.bairro} - ${condominio.cidade}/${condominio.uf}`;
 
   return (
     <Card className="mb-6 border-2 border-border dark:border-border/50 shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl">
@@ -23,46 +43,32 @@ export default function CardCondominioInfo() {
       </CardHeader>
 
       <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
-        {/* Nome do Condomínio */}
         <InfoItem
           icon={<UserSquare2 className="w-5 h-5 text-primary mt-1" />}
           label="Nome do Condomínio"
-          value={condominio.nome}
+          value={condominio.name}
           bold
         />
 
-        {/* Endereço */}
         <InfoItem
           icon={<MapPin className="w-5 h-5 text-primary mt-1" />}
           label="Endereço Completo"
-          value={condominio.endereco}
+          value={endereco}
         />
 
-        {/* Total de Apartamentos */}
-        <InfoItem
-          icon={<Users className="w-5 h-5 text-primary mt-1" />}
-          label="Total de Unidades"
-          value={condominio.apartamentos}
-          bold
-          color="text-primary/80"
-        />
-
-        {/* Síndico */}
         <InfoItem
           icon={<UserSquare2 className="w-5 h-5 text-primary mt-1" />}
           label="Síndico Responsável"
-          value={condominio.sindico}
+          value={condominio.sindico_id}
         />
 
-        {/* Código */}
         <InfoItem
           icon={<Hash className="w-5 h-5 text-primary mt-1" />}
           label="Código de Acesso"
-          value={condominio.codigo}
+          value={condominio.codigo_acesso}
           chip
         />
 
-        {/* CEP */}
         <InfoItem
           icon={<MapPin className="w-5 h-5 text-primary mt-1" />}
           label="CEP"
@@ -89,9 +95,9 @@ function InfoItem({ icon, label, value, bold = false, chip = false, color }) {
             </span>
           ) : (
             <p
-              className={`text-base leading-snug ${bold ? "font-bold" : "font-medium"} ${
-                color ? color : ""
-              }`}
+              className={`text-base leading-snug ${
+                bold ? "font-bold" : "font-medium"
+              } ${color ? color : ""}`}
             >
               {value}
             </p>

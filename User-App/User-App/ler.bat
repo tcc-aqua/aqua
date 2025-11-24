@@ -2,9 +2,9 @@
 REM Script para listar todos os conteudos em UMA UNICA JANELA, sem pausas.
 
 REM --- CONFIGURACAO DAS PASTAS ---
-set "FOLDER_MAIN=C:\Users\24250553\Documents\3mdR\aqua"
-set "FOLDER_1=C:\Users\24250553\Documents\3mdR\aqua\backend-mobile"
-set "FOLDER_2=C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App"
+set "FOLDER_MAIN=C:\Users\24250553\Documents\tcc\aqua"
+set "FOLDER_1=C:\Users\24250553\Documents\tcc\aqua\backend-mobile"
+set "FOLDER_2=C:\Users\24250553\Documents\tcc\aqua\User-App\User-App"
 
 REM --- PASTAS ALVO (para o recursivo /S) ---
 set "BACKEND_TARGET_FOLDER=%FOLDER_1%\src"

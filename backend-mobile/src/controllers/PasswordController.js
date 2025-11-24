@@ -1,4 +1,3 @@
-// C:\Users\...\backend-mobile\src\controllers\PasswordController.js
 
 import PasswordService from "../services/PasswordService.js";
 
@@ -31,7 +30,6 @@ export default class PasswordController {
             const result = await PasswordService.resetPassword(token, newPassword);
             return reply.status(200).send(result);
         } catch (error) {
-            // Captura erros específicos do serviço para dar feedback claro ao usuário
             if (error.message.includes('Token inválido ou expirado')) {
                 return reply.status(400).send({ error: error.message });
             }

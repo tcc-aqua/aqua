@@ -1,5 +1,3 @@
-// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Perfil.jsx
-// CÓDIGO COMPLETO E CORRIGIDO
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
@@ -19,7 +17,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProfileHeader from '../components/Perfil/ProfileHeader';
 import StatCard from '../components/Perfil/StatCard';
 
-// ATENÇÃO: Se estiver usando o Expo Go no celular, troque 'localhost' pelo IP da sua máquina.
 const API_URL = 'http://localhost:3334/api';
 
 const ProfileScreen = ({ navigation, onLogout }) => {
@@ -39,7 +36,7 @@ const ProfileScreen = ({ navigation, onLogout }) => {
   });
 
   const fetchProfileData = useCallback(async () => {
-    // Para recargas, não mostramos o spinner de tela cheia
+
     if (isLoading) setIsLoading(true);
     
     try {
