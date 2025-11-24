@@ -34,7 +34,6 @@ export default class GetNovosMoradoresService {
           residencia_type: "apartamento",
           residencia_id: apartamentoIds,
           role: "morador",
-          criado_em: { [Op.gte]: dataInicial }
         },
         attributes: [
           [fn("MONTH", col("criado_em")), "mes"],
