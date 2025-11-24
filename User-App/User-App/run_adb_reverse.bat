@@ -6,7 +6,7 @@ echo Iniciando loop do ADB Reverse
 echo ==============================
 echo.
 
-cd /d "C:\Users\24250553\AppData\Local\Android\Sdk\platform-tools" || (
+cd /d "C:\Users\24250399\AppData\Local\Android\Sdk\platform-tools" || (
   echo ERRO: Nao foi possivel acessar o diretorio do adb.
   pause
   exit /b
