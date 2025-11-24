@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from "recharts";
 import jsPDF from "jspdf";
 
@@ -18,35 +18,50 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-// Dados do gráfico
-const chartData = [
-  { month: "Janeiro", novos: 12 },
-  { month: "Fevereiro", novos: 18 },
-  { month: "Março", novos: 9 },
-  { month: "Abril", novos: 15 },
-  { month: "Maio", novos: 11 },
-  { month: "Junho", novos: 16 },
-];
-
-// Configuração do gráfico
-const chartConfig = {
-  novos: {
-    label: "Novos Moradores",
-    color: "#4f46e5", // cor direta em hexadecimal
-  },
-};
+import { api } from "@/lib/api";
 
 export function ChartBarLabel() {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const chartRef = useRef(null);
+
+  const chartConfig = {
+    novos: {
+      label: "Novos Moradores",
+      color: "#4f46e5",
+    },
+  };
+
+  // Busca dados reais do backend usando api.js
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await api.get("/dashboard");
+
+        if (!res || res.error) {
+          console.error("Erro ao carregar novos moradores:", res?.message);
+          setData([]);
+          return;
+        }
+
+        // Pega apenas os novos moradores
+        setData(res.novosMoradores ?? []);
+      } catch (err) {
+        console.error("Erro inesperado ao carregar novos moradores:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
 
   const exportPDF = () => {
     if (!chartRef.current) return;
 
-    // Captura o SVG do gráfico
     const svg = chartRef.current.querySelector("svg");
     if (!svg) return;
 
-    // Garante que cores CSS variáveis sejam aplicadas como hex
     svg.querySelectorAll("[fill='var(--color-novos)']").forEach(el => {
       el.setAttribute("fill", chartConfig.novos.color);
     });
@@ -57,7 +72,7 @@ export function ChartBarLabel() {
 
     const img = new Image();
     img.onload = () => {
-      const scale = 3; // aumenta resolução para alta qualidade
+      const scale = 3;
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
       ctx.scale(scale, scale);
@@ -72,7 +87,7 @@ export function ChartBarLabel() {
       });
 
       pdf.addImage(imgData, "PNG", 20, 20, canvas.width / scale, canvas.height / scale);
-      pdf.save("grafico.pdf");
+      pdf.save("novos-moradores.pdf");
     };
 
     img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
@@ -86,34 +101,44 @@ export function ChartBarLabel() {
       </CardHeader>
 
       <CardContent ref={chartRef}>
-        <ChartContainer config={chartConfig}>
-          <BarChart
-            accessibilityLayer
-            data={chartData}
-            margin={{ top: 20 }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="month"
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-              tickFormatter={(value) => value.slice(0, 3)}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <Bar dataKey="novos" fill={chartConfig.novos.color} radius={8}>
-              <LabelList
-                position="top"
-                offset={12}
-                className="fill-foreground"
-                fontSize={12}
+        {loading ? (
+          <div className="h-[240px] flex items-center justify-center text-muted-foreground">
+            Carregando gráfico...
+          </div>
+        ) : (
+          <ChartContainer config={chartConfig}>
+            <BarChart
+              accessibilityLayer
+              data={data}
+              margin={{ top: 20 }}
+            >
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                tickMargin={10}
+                axisLine={false}
+                tickFormatter={(value) => value.slice(0, 3)}
               />
-            </Bar>
-          </BarChart>
-        </ChartContainer>
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Bar
+                dataKey="novos"
+                fill={chartConfig.novos.color}
+                radius={8}
+              >
+                <LabelList
+                  position="top"
+                  offset={12}
+                  className="fill-foreground"
+                  fontSize={12}
+                />
+              </Bar>
+            </BarChart>
+          </ChartContainer>
+        )}
       </CardContent>
 
       <CardFooter className="flex-col items-start gap-2 text-sm">

@@ -1,11 +1,23 @@
-import User from "../../models/User.js";
+import UserView from "../../models/UserView.js";
 
 export default class GetUsuariosRegistradosAtivos {
   static async getUsersAtivosRegistrados(sindico_id) {
     try {
-      const users = await User.count({
+      // Pega o condominio do síndico
+      const sindico = await UserView.findByPk(sindico_id, {
+        attributes: ['condominio_id']
+      });
+
+      if (!sindico || !sindico.condominio_id) {
+        return 0;
+      }
+
+      const condominioId = sindico.condominio_id;
+
+      // Conta usuários ativos do condomínio
+      const users = await UserView.count({
         where: {
-          sindico_id,
+          condominio_id: condominioId,
           status: 'ativo'
         }
       });

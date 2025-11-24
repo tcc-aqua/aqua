@@ -1,5 +1,6 @@
 import UserView from "../../models/UserView.js";
-import User from "../../models/User.js"; 
+import User from "../../models/User.js";
+import Apartamento from "../../models/Apartamento.js";
 
 export default class getUsersRegistrados {
     static async getAllUsersRegistrados(page = 1, limit = 10, sindico_id) {
@@ -18,16 +19,21 @@ export default class getUsersRegistrados {
             const options = {
                 page,
                 paginate: limit,
-                where: {
-                    condominio_id: condominioId 
-                },
+                include: [
+                    {
+                        model: Apartamento,
+                        as: 'apartamento',
+                        where: { condominio_id: condominioId },
+                        required: true
+                    }
+                ],
                 order: [['user_id', 'DESC']]
-            }
+            };
 
             const usuarios = await UserView.paginate(options);
             return usuarios;
         } catch (error) {
-            console.error("Erro ao listar todas as usuarios", error);
+            console.error("Erro ao listar todos os usuários", error);
             throw error;
         }
     }

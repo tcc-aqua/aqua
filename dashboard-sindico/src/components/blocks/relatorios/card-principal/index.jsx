@@ -4,15 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/card";
 const cardsData = [
     {
         title: "Consumo Alto",
-        value: 48, 
+        value: 48,
         icon: Home,
         iconColor: "text-blue-500",
     },
     {
-        title: "Consumo Médio",
-        value: 42,
+        title: "Média Mensal",
+        value: "42 m³",
         icon: Cpu,
-        iconColor: "text-green-500",
+        iconColor: "text-emerald-500",
     },
     {
         title: "Apartamentos",

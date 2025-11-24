@@ -1,44 +1,47 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { User, MapPin, AlertTriangle } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { api } from "@/lib/api"; 
 
 export default function AlertasRecentes() {
-  const [alertas] = useState([
-    {
-      id: "1",
-      usuario: "Fulano de Tal",
-      residencia_type: "casa",
-      residencia_logradouro: "Rua A",
-      residencia_numero: "100",
-      bairro: "Centro",
-      cidade: "São Paulo",
-      uf: "SP",
-      tipo: "vazamento",
-      nivel: "alto",
-      status: "ativo",
-      data: "2025-11-16 14:32",
-    },
-    {
-      id: "2",
-      usuario: "Beltrano Silva",
-      residencia_type: "apartamento",
-      residencia_logradouro: "Bloco B",
-      residencia_numero: "203",
-      bairro: "Jardim das Flores",
-      cidade: "São Paulo",
-      uf: "SP",
-      tipo: "consumo_alto",
-      nivel: "alto",
-      status: "ativo",
-      data: "2025-11-16 13:10",
-    },
-  ]);
+  const [alertas, setAlertas] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Exportar CSV
+  useEffect(() => {
+    async function fetchAlertas() {
+      setLoading(true);
+      try {
+        const data = await api.get("/dashboard");
+        if (data?.alertasRecentes) {
+          setAlertas(data.alertasRecentes.map(a => ({
+            id: a.id,
+            usuario: a.usuario?.name || "Desconhecido",
+            residencia_type: a.residencia_type,
+            residencia_logradouro: a.apartamento?.bloco || a.residencia_logradouro,
+            residencia_numero: a.apartamento?.numero || a.residencia_numero,
+            bairro: a.bairro,
+            cidade: a.cidade,
+            uf: a.uf,
+            tipo: a.tipo,
+            nivel: a.nivel,
+            status: a.status,
+            data: a.criado_em,
+          })));
+        }
+      } catch (err) {
+        console.error("Erro ao carregar alertas recentes:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAlertas();
+  }, []);
+
   const exportCSV = () => {
     const headers = ["Usuário", "Residência", "Tipo", "Status", "Data"];
     const rows = alertas.map(a => [
@@ -51,10 +54,7 @@ export default function AlertasRecentes() {
       a.data
     ]);
 
-    let csvContent = "data:text/csv;charset=utf-8,"
-      + headers.join(",") + "\n"
-      + rows.map(r => r.join(",")).join("\n");
-
+    let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(r => r.join(",")).join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -64,7 +64,6 @@ export default function AlertasRecentes() {
     document.body.removeChild(link);
   };
 
-  // Exportar PDF
   const exportPDF = () => {
     const doc = new jsPDF({ orientation: "landscape" });
     const tableColumn = ["Usuário", "Residência", "Tipo", "Status", "Data"];
@@ -83,7 +82,7 @@ export default function AlertasRecentes() {
       body: tableRows,
       startY: 20,
       theme: "grid",
-      headStyles: { fillColor: [79, 70, 229] }, // azul
+      headStyles: { fillColor: [79, 70, 229] },
       styles: { fontSize: 10 },
     });
 
@@ -113,7 +112,9 @@ export default function AlertasRecentes() {
       </CardHeader>
 
       <CardContent className="overflow-x-auto">
-        {alertas.length === 0 ? (
+        {loading ? (
+          <p>Carregando alertas...</p>
+        ) : alertas.length === 0 ? (
           <p>Nenhum alerta encontrado.</p>
         ) : (
           <table className="min-w-full divide-y divide-border">
@@ -173,8 +174,6 @@ export default function AlertasRecentes() {
           </table>
         )}
       </CardContent>
-
-
     </Card>
   );
 }
