@@ -69,10 +69,7 @@ const Stats01Page = () => {
         <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter">
         Por que somos a melhor escolha?
         </h2>
-        <p className="mt-4 text-xl text-muted-foreground">
-          Because after switching to us...
-        </p>
-
+        
         <div className="mt-16 sm:mt-24 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16 justify-center ">
           <StatItem target={96} trigger={inView} description="Precisão na detecção" />
           <StatItem target={40} trigger={inView} description="Economia média" />
