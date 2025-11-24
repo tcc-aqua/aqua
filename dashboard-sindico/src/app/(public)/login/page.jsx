@@ -138,7 +138,7 @@ const LoginFormContent = () => {
         <p className="mt-4 text-center text-sm text-muted-foreground">
           Esqueceu sua senha?{" "}
           <a
-            href="#"
+            href="/forgot-password"
             className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
           >
             Recuperar
