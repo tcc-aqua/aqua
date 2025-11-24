@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Instruction } from "@/components/blocks/instruction"; 
+import { Instruction } from "@/components/blocks/instruction";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -68,16 +68,16 @@ const LoginFormContent = () => {
   return (
     <div className="relative w-full max-w-sm sm:max-w-md group overflow-hidden rounded-xl bg-card p-8 shadow-2xl transition-all duration-300 hover:shadow-primary/50 dark:hover:shadow-primary/20 border border-border/50 mx-auto">
       <div className="absolute inset-0 z-0 opacity-0 transition duration-300 ">
-        <div className="absolute inset-0 bg-primary/20 dark:bg-primary/5 blur-xl"></div> 
+        <div className="absolute inset-0 bg-primary/20 dark:bg-primary/5 blur-xl"></div>
         <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-background/50 opacity-40 transition duration-300 group-hover:opacity-80 rounded-xl animate-spin-slow"></div>
       </div>
 
       <div className="relative isolate flex flex-col items-center z-10">
-        
+
         <h1 className="text-2xl font-bold tracking-tight text-center">
           Acesso ao Sistema de Síndicos
         </h1>
-        <ModeToggle/>
+        <ModeToggle />
         <p className="mt-2 text-sm text-muted-foreground text-center">
           Bem-vindo de volta!
         </p>
@@ -134,7 +134,7 @@ const LoginFormContent = () => {
             </Button>
           </form>
         </Form>
-        
+
         <p className="mt-4 text-center text-sm text-muted-foreground">
           Esqueceu sua senha?{" "}
           <a
@@ -166,12 +166,21 @@ export default function LoginPage() {
         <div className="flex justify-between items-center mb-10">
           <div className="flex items-center gap-2">
             <img src="./logo.svg" className="w-12" alt="Logo Principal" />
-            <img src="./escrita-dark.png" className="w-18 mt-2" alt="Nome do Sistema" />
+            <div>
+              <img
+                src="./escrita.png"
+                className="w-18 mt-2 block dark:hidden"
+                alt="Nome do Sistema (Claro)"
+              />
+              <img
+                src="./escrita-dark.png"
+                className="w-18 mt-2 hidden dark:block"
+                alt="Nome do Sistema (Escuro)"
+              />
+            </div>
           </div>
-
           <Instruction className="h-16 w-16" />
         </div>
-
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-lg">
             <LoginFormContent />

@@ -28,8 +28,8 @@ const tabsData = [
         value: "consumo-mensal",
         title: "Comunicados do Condomínio",
         img: "./gota-nerd.svg",
-       description:
-      "Crie e gerencie comunicados direcionados a moradores, síndicos ou administradores do seu condomínio de forma simples e rápida.",
+        description:
+            "Crie e gerencie comunicados direcionados a moradores, síndicos ou administradores do seu condomínio de forma simples e rápida.",
     },
     {
         value: "alertas",
@@ -67,9 +67,9 @@ export function Instruction() {
             <AlertDialogTrigger asChild>
                 <Button
                     variant="ghost"
-                    className="p-2 h-auto bg-transparent hover:bg-transparent cursor-pointer"
+                    className="p-2 h-auto **bg-blue-500** hover:bg-transparent cursor-pointer" 
                 >
-                    <Info className="h-16 w-16 text-white hover:text-gray-300 transition-colors" />
+                    <Info className="h-16 w-16 text-blue-500  transition-colors" />
                 </Button>
             </AlertDialogTrigger>
 
