@@ -49,17 +49,11 @@ export default function Header() {
   }, []);
 
   const getTituloByPath = () => {
-    if (pathname.startsWith("/dashboard")) return "Painel Administrativo";
-    if (pathname.startsWith("/users")) return "Gerenciamento de Usuários";
-    if (pathname.startsWith("/condominios")) return "Gerenciamento de Condomínios";
+    if (pathname.startsWith("/")) return "Painel Administrativo";
+    if (pathname.startsWith("/moradores")) return "Gerenciamento de Moradores";
+    if (pathname.startsWith("/relatorios")) return "Gerenciamento de Relatorios";
     if (pathname.startsWith("/suporte")) return "Central de Suporte";
     if (pathname.startsWith("/comunicados")) return "Central de Comunicados";
-    if (pathname.startsWith("/settings")) return "Configurações do Sistema";
-    if (pathname.startsWith("/apartamentos")) return "Gerenciamento de Apartamentos";
-    if (pathname.startsWith("/alerts")) return "Gerenciamento de Alertas";
-    if (pathname.startsWith("/casas")) return "Gerenciamento de Casas";
-    if (pathname.startsWith("/sensors")) return "Gerenciamento de Sensores";
-    if (pathname.startsWith("/configuracoes")) return "Perfil";
     return "Bem-vindo(a)";
   };
 
