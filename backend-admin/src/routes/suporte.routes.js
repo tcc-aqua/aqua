@@ -19,4 +19,28 @@ export default async function suporteRoutes(fastify) {
                 description: 'Enviando mensagem para o cliente'
             }
         }, SuporteController.enviarMensagem);
+
+    fastify.delete(
+        '/:id',
+        {
+            schema: {
+                summary: 'Deletar mensagem',
+                tags: ['suporte'],
+                description: 'Deleta mensagem do usuário ou admin'
+            }
+        },
+        SuporteController.deletarMensagem
+    );
+
+    fastify.patch(
+        '/:id/visualizado',
+        {
+            schema: {
+                summary: 'Marcar mensagem como visualizada',
+                tags: ['suporte'],
+                description: 'Marca a mensagem como visualizada pelo usuário'
+            }
+        },
+        SuporteController.marcarComoVisualizada
+    );
 }

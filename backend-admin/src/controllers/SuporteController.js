@@ -14,5 +14,18 @@ export default class SuporteController {
         return reply.status(200).send(mensagem);
     }
 
+    static async deletarMensagem(req, reply) {
+        const { id } = req.params;
+        const user_id = req.user.id; // supondo que você tenha middleware de auth
+        const isAdmin = req.user.role === "admin";
+        const resultado = await SuporteService.deletarMensagem(id, user_id, isAdmin);
+        return reply.status(200).send(resultado);
+    }
 
+    static async marcarComoVisualizada(req, reply) {
+        const { id } = req.params; 
+        const user_id = req.user.id;
+        const registro = await SuporteService.marcarComoVisualizada(id, user_id);
+        return reply.status(200).send(registro);
+    }
 }
