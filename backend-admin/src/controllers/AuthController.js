@@ -32,7 +32,8 @@ export const Login = async (req, reply) => {
         const token = gerarToken({
             id: admin.id,
             email: admin.email,
-            type: admin.type
+            type: admin.type,
+            criado_em: admin.criado_em
         });
 
         return reply.status(200).send({
