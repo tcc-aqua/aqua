@@ -380,7 +380,6 @@ export default class MetasController {
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\PasswordController.js
 =================================================================================
 
-// C:\Users\...\backend-mobile\src\controllers\PasswordController.js
 
 import PasswordService from "../services/PasswordService.js";
 
@@ -413,7 +412,6 @@ export default class PasswordController {
             const result = await PasswordService.resetPassword(token, newPassword);
             return reply.status(200).send(result);
         } catch (error) {
-            // Captura erros específicos do serviço para dar feedback claro ao usuário
             if (error.message.includes('Token inválido ou expirado')) {
                 return reply.status(400).send({ error: error.message });
             }
@@ -2058,18 +2056,21 @@ Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\Email
 
 import nodemailer from 'nodemailer';
 
-// Converte a porta para número a partir do .env
-const EMAIL_PORT = parseInt(process.env.EMAIL_PORT, 10);
+const EMAIL_PORT = parseInt(process.env.EMAIL_PORT, 10) || 465;
 
-// Cria o transporter. A opção 'secure' será 'true' se a porta for 465.
 const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: EMAIL_PORT,
-    secure: EMAIL_PORT === 465,
+    host: 'smtp.gmail.com',
+    port: 465, 
+    secure: true, 
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
+    tls: {
+        rejectUnauthorized: false
+    },
+    keepAlive: true, 
+    timeout: 10000 
 });
 
 const sendPasswordResetEmail = async (to, token) => {
@@ -2084,75 +2085,28 @@ const sendPasswordResetEmail = async (to, token) => {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Redefinição de Senha</title>
-            <style>
-                body { margin: 0; padding: 0; background-color: #f4f7f6; }
-                table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-                table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-                img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
-                table { border-collapse: collapse !important; }
-            </style>
         </head>
-        <body style="margin: 0 !important; padding: 0 !important; background-color: #f4f7f6;">
-            <!-- Texto de Preheader (visível na prévia do e-mail) -->
-            <div style="display: none; font-size: 1px; color: #fefefe; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">
-                Seu código de verificação da Aqua Services está aqui.
-            </div>
-
+        <body style="margin: 0; padding: 0; background-color: #f4f7f6; font-family: Arial, sans-serif;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                     <td align="center" style="padding: 40px 15px;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
-                            
-                            <!-- HEADER -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
                             <tr>
-                                <td align="center" style="padding: 30px 20px; background-color: #007bff; border-radius: 12px 12px 0 0;">
-                                    <h1 style="font-family: 'Arial Black', Gadget, sans-serif; font-size: 32px; color: #ffffff; margin: 0; letter-spacing: 1px;">Aqua Services</h1>
+                                <td align="center" style="padding: 30px 20px; background-color: #007bff;">
+                                    <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Aqua Services</h1>
                                 </td>
                             </tr>
-                            
-                            <!-- CORPO DO CONTEÚDO -->
                             <tr>
-                                <td align="left" style="padding: 40px 30px; background-color: #ffffff; border-radius: 0 0 12px 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                                    <h2 style="font-family: Arial, sans-serif; font-size: 24px; color: #333333; margin: 0 0 20px;">Redefinição de Senha</h2>
-                                    <p style="font-family: Arial, sans-serif; font-size: 16px; color: #555555; line-height: 1.6; margin: 0 0 25px;">
-                                        Olá,
-                                    </p>
-                                    <p style="font-family: Arial, sans-serif; font-size: 16px; color: #555555; line-height: 1.6; margin: 0 0 25px;">
-                                        Recebemos uma solicitação para redefinir a senha da sua conta. Para continuar, use o código de verificação abaixo no seu aplicativo.
-                                    </p>
+                                <td align="left" style="padding: 40px 30px;">
+                                    <h2 style="color: #333333; margin-top: 0;">Redefinição de Senha</h2>
+                                    <p style="color: #555555; font-size: 16px;">Recebemos uma solicitação para redefinir sua senha.</p>
+                                    <p style="color: #555555; font-size: 16px;">Seu código de verificação é:</p>
                                     
-                                    <!-- CAIXA DO CÓDIGO -->
-                                    <table border="0" cellspacing="0" cellpadding="0" width="100%">
-                                        <tr>
-                                            <td align="center" style="background-color: #f0f5ff; border-radius: 8px; border: 2px dashed #a0c4ff; padding: 25px 20px;">
-                                                <p style="font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: bold; letter-spacing: 6px; margin: 0; color: #004aad;">
-                                                    ${token}
-                                                </p>
-                                            </td>
-                                        </tr>
-                                    </table>
+                                    <div style="background-color: #f0f5ff; border: 2px dashed #004aad; border-radius: 8px; padding: 20px; text-align: center; margin: 30px 0;">
+                                        <span style="font-size: 32px; font-weight: bold; color: #004aad; letter-spacing: 5px;">${token}</span>
+                                    </div>
 
-                                    <p style="font-family: Arial, sans-serif; font-size: 14px; color: #777777; line-height: 1.6; margin: 25px 0 0; text-align: center;">
-                                        Este código expira em <strong>10 minutos</strong>.
-                                    </p>
-                                    <p style="font-family: Arial, sans-serif; font-size: 16px; color: #555555; line-height: 1.6; margin: 30px 0 0;">
-                                        Se você não solicitou esta alteração, pode ignorar este e-mail com segurança.
-                                    </p>
-                                    <p style="font-family: Arial, sans-serif; font-size: 16px; color: #555555; line-height: 1.6; margin: 30px 0 0;">
-                                        Atenciosamente,<br>Equipe Aqua Services
-                                    </p>
-                                </td>
-                            </tr>
-                            
-                            <!-- RODAPÉ -->
-                            <tr>
-                                <td align="center" style="padding: 30px 10px 0;">
-                                    <p style="font-family: Arial, sans-serif; font-size: 12px; color: #999999; margin: 0;">
-                                        © 2025 Aqua Services. Todos os direitos reservados.
-                                    </p>
-                                    <p style="font-family: Arial, sans-serif; font-size: 12px; color: #999999; margin: 5px 0 0;">
-                                        Esta é uma mensagem automática, por favor, não responda.
-                                    </p>
+                                    <p style="color: #999999; font-size: 14px; text-align: center;">Válido por 10 minutos.</p>
                                 </td>
                             </tr>
                         </table>
@@ -2165,11 +2119,13 @@ const sendPasswordResetEmail = async (to, token) => {
     };
 
     try {
-        await transporter.sendMail(mailOptions);
-        console.log(`E-mail de redefinição enviado com sucesso para: ${to}`);
+        console.log(`[EmailService] Conectando via porta 465 (SSL) para ${to}...`);
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`[EmailService] Sucesso! ID: ${info.messageId}`);
+        return info;
     } catch (error) {
-        console.error('ERRO DETALHADO AO ENVIAR E-MAIL:', error);
-        throw new Error('Falha na comunicação com o servidor de e-mail. Verifique as credenciais e a configuração de porta/segurança.');
+        console.error('[EmailService] Erro no envio:', error);
+        throw error;
     }
 };
 
@@ -2668,13 +2624,11 @@ export default function Inicio() {
     loadDashboardData(false);
   }, [loadDashboardData]);
 
-  // Efeito para a atualização automática a cada 2 segundos
+
   useEffect(() => {
     const intervalId = setInterval(() => {
-      loadDashboardData(true); // 'true' para indicar que é uma atualização em segundo plano
-    }, 2000); // 2000 ms = 2 segundos
-
-    // Função de limpeza: para o intervalo quando o componente é desmontado
+      loadDashboardData(true);
+    }, 2000); 
     return () => clearInterval(intervalId);
   }, [loadDashboardData]);
 
@@ -2994,6 +2948,111 @@ const styles = StyleSheet.create({
 
 
 =================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Loading.jsx
+=================================================================================
+
+import React from 'react';
+import { StyleSheet, View, Dimensions } from 'react-native';
+import { ActivityIndicator, Text } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MotiView, MotiImage } from 'moti';
+
+const { width } = Dimensions.get('window');
+
+export default function LoadingScreen() {
+  return (
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#0A84FF', '#005ecb', '#002a5c']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.background}
+      >
+        <MotiView
+          from={{ opacity: 0, scale: 0.5, translateY: 20 }}
+          animate={{ opacity: 1, scale: 1, translateY: 0 }}
+          transition={{
+            type: 'spring',
+            damping: 15,
+            duration: 1000,
+          }}
+          style={styles.logoContainer}
+        >
+          <MotiImage
+            source={require('../assets/logo.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+            from={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'timing', duration: 1000 }}
+          />
+          
+          <MotiView
+             from={{ opacity: 0, translateY: 10 }}
+             animate={{ opacity: 1, translateY: 0 }}
+             transition={{ delay: 500, duration: 800 }}
+          >
+             <Text style={styles.appName}>Aqua Services</Text>
+          </MotiView>
+        </MotiView>
+
+        <MotiView
+          from={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1200, duration: 500 }}
+          style={styles.loaderContainer}
+        >
+          <ActivityIndicator size="large" color="#FFFFFF" />
+          <Text style={styles.loadingText}>Iniciando o sistema...</Text>
+        </MotiView>
+      </LinearGradient>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  background: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 80,
+  },
+  logo: {
+    width: width * 0.45,
+    height: width * 0.45,
+    marginBottom: 16,
+  },
+  appName: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    letterSpacing: 1.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  loaderContainer: {
+    position: 'absolute',
+    bottom: 60,
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#E0E0E0',
+    marginTop: 12,
+    fontSize: 14,
+    fontWeight: '500',
+    letterSpacing: 0.5,
+  },
+});
+
+
+=================================================================================
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Login.jsx
 =================================================================================
 
@@ -3005,30 +3064,28 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
-    LayoutAnimation,
-    UIManager
+    UIManager,
+    Dimensions,
+    Image,
+    LayoutAnimation
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import {
     TextInput,
     Button,
-    Card,
     Title,
     Paragraph,
     Provider as PaperProvider,
     DefaultTheme,
     Portal,
     Dialog,
-    HelperText,
-    Avatar,
     Checkbox,
     Snackbar,
     Text,
     Modal,
     Divider,
     Subheading,
-    IconButton,
     Icon
 } from 'react-native-paper';
 import { mask } from 'react-native-mask-text';
@@ -3038,25 +3095,52 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-// ATENÇÃO: Se estiver usando o Expo Go no seu celular, substitua 'localhost'
-// pelo endereço IP da sua máquina na rede. Ex: 'http://192.168.1.10:3334'
+const { width, height } = Dimensions.get('window');
+
+// Lembrete: Se estiver no emulador Android use 'http://10.0.2.2:3334', 
+// se for dispositivo físico use o IP da máquina (ex: 192.168.x.x:3334)
 const API_BASE_URL = 'http://localhost:3334';
 
 const theme = {
     ...DefaultTheme,
-    roundness: 10,
+    roundness: 12,
     colors: {
         ...DefaultTheme.colors,
         primary: '#0A84FF',
         accent: '#005ecb',
-        background: '#F2F2F7',
+        background: '#FFFFFF',
         surface: '#FFFFFF',
         text: '#1C1C1E',
-        placeholder: '#8A8A8E',
+        placeholder: '#A0A0A0',
         error: '#FF3B30',
         success: '#34C759'
     },
 };
+
+// Componente de Input Personalizado (Visual do Código 1)
+const CustomInput = ({ style, ...props }) => (
+    <View style={{ marginBottom: 16 }}> 
+        <TextInput
+            mode="outlined"
+            outlineColor="transparent"
+            activeOutlineColor="#0A84FF"
+            textColor="#1C1C1E"
+            placeholderTextColor="#9CA3AF"
+            style={[styles.input, style]}
+            theme={{ roundness: 12, colors: { background: '#F3F4F6', onSurfaceVariant: '#6B7280' }}}
+            {...props}
+        />
+    </View>
+);
+
+// Componente de Botão Gradiente (Visual do Código 1)
+const GradientButton = ({ onPress, loading, disabled, children }) => (
+    <TouchableOpacity onPress={onPress} disabled={disabled || loading} activeOpacity={0.9} style={styles.btnContainer}>
+        <LinearGradient colors={disabled ? ['#E0E0E0', '#E0E0E0'] : ['#0A84FF', '#005ecb']} start={{x:0, y:0}} end={{x:1, y:0}} style={styles.btnGradient}>
+            {loading ? <Icon source="loading" size={24} color="#FFF" /> : <Text style={styles.btnText}>{children}</Text>}
+        </LinearGradient>
+    </TouchableOpacity>
+);
 
 export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
     const [formType, setFormType] = useState('login');
@@ -3065,37 +3149,41 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [snackbar, setSnackbar] = useState({ visible: false, message: '', type: 'default' });
 
+    // --- MODAIS E DIALOGS ---
     const [codigoDialogVisible, setCodigoDialogVisible] = useState(false);
     const [planoIndividualDialog, setPlanoIndividualDialog] = useState(false);
     const [planoCondoDialog, setPlanoCondoDialog] = useState(false);
-
+    
+    // --- TERMOS DE USO ---
     const [termsVisible, setTermsVisible] = useState(false);
     const [agreeToTerms, setAgreeToTerms] = useState(false);
     const [scrolledToBottom, setScrolledToBottom] = useState(false);
 
+    // --- DADOS DO FORMULÁRIO ---
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [cpf, setCpf] = useState('');
+    
+    // Endereço
     const [cep, setCep] = useState('');
     const [logradouro, setLogradouro] = useState('');
     const [numero, setNumero] = useState('');
     const [bairro, setBairro] = useState('');
     const [cidade, setCidade] = useState('');
     const [uf, setUf] = useState('');
-    const [estado, setEstado] = useState('');
+    
     const [codigoAcesso, setCodigoAcesso] = useState('');
     const [bloco, setBloco] = useState('');
     const [numeroMoradores, setNumeroMoradores] = useState('1');
 
-    // Estados para o fluxo de "Esqueci minha senha"
+    // --- RECUPERAÇÃO DE SENHA ---
     const [forgotPasswordModalVisible, setForgotPasswordModalVisible] = useState(false);
     const [resetPasswordModalVisible, setResetPasswordModalVisible] = useState(false);
     const [resetEmail, setResetEmail] = useState('');
     const [resetToken, setResetToken] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
-
 
     const showSnackbar = (message, type = 'default') => {
         setSnackbar({ visible: true, message, type });
@@ -3104,39 +3192,44 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
     const clearFormFields = () => {
         setName(''); setEmail(''); setSenha(''); setCpf(''); setCep('');
         setLogradouro(''); setNumero(''); setBairro(''); setCidade('');
-        setUf(''); setEstado(''); setCodigoAcesso(''); setBloco('');
-        setNumeroMoradores('1'); setAgreeToTerms(false);
+        setUf(''); setCodigoAcesso(''); setBloco('');
+        setNumeroMoradores('1'); setAgreeToTerms(false); setScrolledToBottom(false);
     };
 
     const handleFormTypeChange = (newType) => {
+        // Funcionalidade do Código 2: Animação suave
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         clearFormFields();
         setFormType(newType);
     };
 
+    // Funcionalidade do Código 2: Busca de CEP mais robusta
     const fetchAddressFromCep = async (cepValue) => {
         const unmaskedCep = cepValue.replace(/\D/g, '');
-        if (unmaskedCep.length !== 8) return null;
-
+        if (unmaskedCep.length !== 8) return;
+        
         setIsLoading(true);
         try {
             const response = await axios.get(`${API_BASE_URL}/api/cep/${unmaskedCep}`);
-            const addressData = response.data;
-            setLogradouro(addressData.logradouro || ''); setBairro(addressData.bairro || '');
-            setCidade(addressData.cidade || ''); setUf(addressData.uf || '');
-            return addressData;
-        } catch (error) {
+            const data = response.data;
+            
+            if (data) {
+                setLogradouro(data.logradouro || '');
+                setBairro(data.bairro || '');
+                setCidade(data.cidade || '');
+                setUf(data.uf || '');
+            }
+        } catch (error) { 
             console.error("Erro ao buscar CEP:", error);
             showSnackbar('CEP não encontrado ou inválido.', 'error');
             setLogradouro(''); setBairro(''); setCidade(''); setUf('');
-            return null;
-        } finally {
-            setIsLoading(false);
-        }
+        } 
+        finally { setIsLoading(false); }
     };
 
+    // Funcionalidade do Código 2: Login com tratamento de erros detalhado
     const handleLogin = async () => {
-        if (!email || !senha) { showSnackbar('Por favor, preencha e-mail e senha.', 'error'); return; }
+        if (!email || !senha) { showSnackbar('Preencha e-mail e senha.', 'error'); return; }
         setIsLoading(true);
         try {
             const response = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password: senha });
@@ -3145,386 +3238,357 @@ export default function LoginRegisterScreen({ onLogin: onSuccessfulLogin }) {
             await AsyncStorage.setItem('user', JSON.stringify(user));
             showSnackbar('Login realizado com sucesso!', 'success');
             if(onSuccessfulLogin) onSuccessfulLogin(user);
-        } catch (error) {
+        } catch (error) { 
             console.error("Erro no login:", error.response?.data || error.message);
-            const errorMessage = error.response?.data?.error || 'Credenciais inválidas ou erro no servidor.';
-            showSnackbar(`Erro: ${errorMessage}`, 'error');
-        } finally {
-            setIsLoading(false);
-        }
+            const msg = error.response?.data?.message || error.response?.data?.error || 'Credenciais inválidas ou erro no servidor.';
+            showSnackbar(msg, 'error'); 
+        } 
+        finally { setIsLoading(false); }
     };
 
+    // Funcionalidade do Código 2: Cadastro com Validações Rigorosas
     const handleRegister = async () => {
-        if (!name.trim() || !email.trim() || !senha.trim() || !cpf.trim()) { showSnackbar('Preencha todos os campos obrigatórios.', 'error'); return; }
+        // Validações do Código 2
+        if (!name.trim() || !email.trim() || !senha.trim() || !cpf.trim()) { showSnackbar('Preencha todos os campos.', 'error'); return; }
         if (!email.includes('@') || !email.includes('.')) { showSnackbar('Formato de e-mail inválido.', 'error'); return; }
         if (senha.length < 6) { showSnackbar('A senha deve ter no mínimo 6 caracteres.', 'error'); return; }
         if (cpf.replace(/\D/g, '').length !== 11) { showSnackbar('CPF inválido.', 'error'); return; }
-        if (registrationType === 'casa' && (!cep.trim() || !numero.trim())) { showSnackbar('Para residência própria, CEP e Número são obrigatórios.', 'error'); return; }
-        if (registrationType === 'condominio' && (!codigoAcesso.trim() || !numero.trim())) { showSnackbar('Para plano condomínio, Código de Acesso e Número são obrigatórios.', 'error'); return; }
-        if (!agreeToTerms) { showSnackbar('Você precisa aceitar os Termos e Condições para continuar.', 'error'); return; }
+
+        // Validações Específicas
+        if (registrationType === 'casa' && (!cep || !numero || !logradouro)) { showSnackbar('Endereço completo é obrigatório.', 'error'); return; }
+        if (registrationType === 'condominio' && (!codigoAcesso || !numero)) { showSnackbar('Código e Número são obrigatórios.', 'error'); return; }
+        
+        if (!agreeToTerms) { showSnackbar('Você precisa aceitar os Termos de Uso.', 'error'); return; }
 
         setIsLoading(true);
-
-        const residencia_type = registrationType === 'condominio' ? 'apartamento' : 'casa';
-        let userData = {
-            name,
-            email,
-            password: senha,
-            cpf,
-            residencia_type,
+        
+        const userData = {
+            name, email, password: senha, cpf, 
+            residencia_type: registrationType === 'condominio' ? 'apartamento' : 'casa',
             numero_moradores: parseInt(numeroMoradores, 10) || 1,
-            // Campos específicos de cada tipo
-            cep,
-            numero,
-            bloco,
-            codigo_acesso: codigoAcesso,
+            cep, logradouro, bairro, cidade, uf, numero, bloco, 
+            codigo_acesso: codigoAcesso
         };
 
         try {
             await axios.post(`${API_BASE_URL}/api/auth/register`, userData);
-            showSnackbar('Cadastro realizado com sucesso! Faça o login.', 'success');
+            showSnackbar('Cadastro realizado! Faça login.', 'success');
             handleFormTypeChange('login');
-        } catch (error) {
-            console.error("Detalhes do erro de cadastro:", error.response?.data || error);
+        } catch (error) { 
+            console.error("Detalhes do erro:", error.response?.data || error);
+            
+            // Tratamento de erro detalhado do Código 2
             if (error.response?.data?.errors) {
                 const errorMessages = error.response.data.errors.map(e => e.message).join('\n');
-                showSnackbar(`Erros de validação:\n${errorMessages}`, 'error');
-            } else if (error.response?.data?.error) {
-                showSnackbar(`Erro: ${error.response.data.error}`, 'error');
+                showSnackbar(`Erros:\n${errorMessages}`, 'error');
             } else {
-                showSnackbar('Não foi possível conectar ao servidor.', 'error');
+                const msg = error.response?.data?.message || error.response?.data?.error || 'Erro ao cadastrar';
+                showSnackbar(msg, 'error'); 
             }
-        } finally {
-            setIsLoading(false);
-        }
+        } 
+        finally { setIsLoading(false); }
     };
 
+    // Funcionalidade do Código 2: Recuperação de Senha
     const handleForgotPasswordRequest = async () => {
-        if (!resetEmail.includes('@') || !resetEmail.includes('.')) {
-            showSnackbar('Por favor, insira um e-mail válido.', 'error');
-            return;
-        }
+        if (!resetEmail.includes('@') || !resetEmail.includes('.')) { showSnackbar('Digite um e-mail válido.', 'error'); return; }
         setIsLoading(true);
         try {
             await axios.post(`${API_BASE_URL}/api/password/forgot`, { email: resetEmail });
-            showSnackbar('Código enviado! Verifique sua caixa de entrada e spam.', 'success');
-            setForgotPasswordModalVisible(false);
-            setResetPasswordModalVisible(true);
-        } catch (error) {
-            console.error("Erro ao solicitar redefinição:", error.response?.data || error.message);
-            showSnackbar('Se o e-mail estiver correto, você receberá um código.', 'success');
-            setForgotPasswordModalVisible(false);
-            setResetPasswordModalVisible(true);
-        } finally {
-            setIsLoading(false);
-        }
+            showSnackbar('Código enviado! Verifique seu e-mail e spam.', 'success');
+            setForgotPasswordModalVisible(false); setResetPasswordModalVisible(true);
+        } catch (e) { 
+            // Mesmo com erro, por segurança, muitas vezes avisamos que se o email existir foi enviado
+            showSnackbar('Se o e-mail estiver correto, você receberá um código.', 'success'); 
+            setForgotPasswordModalVisible(false); setResetPasswordModalVisible(true);
+        } finally { setIsLoading(false); }
     };
 
     const handleResetPasswordSubmit = async () => {
-        if (!resetToken.trim() || !newPassword.trim()) {
-            showSnackbar('Preencha o código e a nova senha.', 'error'); return;
-        }
-        if (newPassword !== confirmNewPassword) {
-            showSnackbar('As senhas não coincidem.', 'error'); return;
-        }
-        if (newPassword.length < 6) {
-            showSnackbar('A nova senha deve ter no mínimo 6 caracteres.', 'error'); return;
-        }
+        if (!resetToken || !newPassword) { showSnackbar('Preencha todos os campos.', 'error'); return; }
+        if (newPassword !== confirmNewPassword) { showSnackbar('As senhas não coincidem.', 'error'); return; }
+        if (newPassword.length < 6) { showSnackbar('A senha deve ter mín. 6 caracteres.', 'error'); return; }
+        
         setIsLoading(true);
         try {
             await axios.post(`${API_BASE_URL}/api/password/reset`, { token: resetToken, newPassword });
-            showSnackbar('Senha alterada com sucesso! Faça o login.', 'success');
+            showSnackbar('Senha alterada com sucesso! Faça login.', 'success');
             setResetPasswordModalVisible(false);
-            setResetEmail(''); setResetToken(''); setNewPassword(''); setConfirmNewPassword('');
             handleFormTypeChange('login');
-        } catch (error) {
-            const errorMessage = error.response?.data?.error || 'Não foi possível redefinir a senha.';
-            showSnackbar(`Erro: ${errorMessage}`, 'error');
-        } finally {
-            setIsLoading(false);
-        }
+        } catch (e) { 
+            const msg = e.response?.data?.error || 'Erro ao alterar senha.';
+            showSnackbar(msg, 'error'); 
+        } finally { setIsLoading(false); }
     };
 
-    const handleOpenTerms = () => setTermsVisible(true);
-    const handleCloseTerms = () => setTermsVisible(false);
-    const handleAcceptTerms = () => { setAgreeToTerms(true); handleCloseTerms(); };
-    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+    const handleAcceptTerms = () => { 
+        setAgreeToTerms(true); 
+        setTermsVisible(false); 
+    };
+
+    // Funcionalidade do Código 2: Detecção de Scroll
+    const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}) => {
         const paddingToBottom = 20;
         return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
     };
 
-    const GradientButton = ({ onPress, loading, disabled, children, style }) => (
-        <TouchableOpacity onPress={onPress} disabled={disabled || loading} style={[styles.gradientButtonContainer, style]}>
-            <LinearGradient colors={disabled ? ['#B0B0B0', '#C0C0C0'] : ['#0A84FF', '#005ecb']} style={styles.gradientButton} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                <Text style={styles.gradientButtonText}>{loading ? 'Aguarde...' : children}</Text>
-            </LinearGradient>
-        </TouchableOpacity>
-    );
-
-    const renderLoginForm = () => (
-        <View>
-            <Paragraph style={styles.paragraph}>Bem-vindo! Faça login para continuar.</Paragraph>
-            <TextInput label="Email" value={email} onChangeText={setEmail} style={styles.input} mode="outlined" keyboardType="email-address" autoCapitalize="none" left={<TextInput.Icon icon="account-circle-outline" />} />
-            <TextInput label="Senha" value={senha} onChangeText={setSenha} secureTextEntry={!passwordVisible} style={styles.input} mode="outlined" left={<TextInput.Icon icon="lock-outline" />} right={<TextInput.Icon icon={passwordVisible ? "eye-off" : "eye"} onPress={() => setPasswordVisible(!passwordVisible)} />} />
-            <Button mode="text" onPress={() => setForgotPasswordModalVisible(true)} style={{ alignSelf: 'flex-end', marginBottom: 16 }}>
-                Esqueci minha senha
-            </Button>
-            <GradientButton onPress={handleLogin} loading={isLoading} disabled={isLoading}>
-                Login
-            </GradientButton>
-            <Button mode="text" onPress={() => handleFormTypeChange('register')} style={styles.switchButton}>
-                Novo por aqui? Crie uma conta
-            </Button>
-        </View>
-    );
-
-    const renderRegisterForm = () => (
-        <View>
-            <Paragraph style={styles.paragraph}>Selecione o tipo de plano para começar.</Paragraph>
-            <View style={styles.customSegmentedContainer}>
-                <TouchableOpacity
-                    style={[styles.customSegmentButton, registrationType === 'casa' && styles.customSegmentButtonActive]}
-                    onPress={() => setRegistrationType('casa')}
-                >
-                    <Icon source="home-variant-outline" size={20} color={registrationType === 'casa' ? '#FFFFFF' : theme.colors.primary} />
-                    <Text style={[styles.customSegmentLabel, registrationType === 'casa' && styles.customSegmentLabelActive]}>
-                        Residência Própria
-                    </Text>
-                    <IconButton
-                        icon="help-circle-outline"
-                        size={20}
-                        iconColor={registrationType === 'casa' ? '#FFFFFF' : theme.colors.primary}
-                        onPress={() => setPlanoIndividualDialog(true)}
-                        style={styles.infoIcon}
-                    />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.customSegmentButton, registrationType === 'condominio' && styles.customSegmentButtonActive]}
-                    onPress={() => setRegistrationType('condominio')}
-                >
-                    <Icon source="office-building-outline" size={20} color={registrationType === 'condominio' ? '#FFFFFF' : theme.colors.primary} />
-                    <Text style={[styles.customSegmentLabel, registrationType === 'condominio' && styles.customSegmentLabelActive]}>
-                        Plano Condomínio
-                    </Text>
-                    <IconButton
-                        icon="help-circle-outline"
-                        size={20}
-                        iconColor={registrationType === 'condominio' ? '#FFFFFF' : theme.colors.primary}
-                        onPress={() => setPlanoCondoDialog(true)}
-                        style={styles.infoIcon}
-                    />
-                </TouchableOpacity>
-            </View>
-
-            <TextInput label="Nome Completo" style={styles.input} value={name} onChangeText={setName} mode="outlined" />
-            <TextInput label="Email" style={styles.input} value={email} onChangeText={setEmail} mode="outlined" keyboardType="email-address" autoCapitalize="none"/>
-            <TextInput label="Senha (mín. 6 caracteres)" style={styles.input} value={senha} onChangeText={setSenha} secureTextEntry mode="outlined" />
-            <TextInput label="CPF" style={styles.input} value={cpf} onChangeText={(text) => setCpf(mask(text, '999.999.999-99'))} mode="outlined" keyboardType="numeric" />
-
-            {registrationType === 'casa' && (
-                <>
-                    <TextInput label="CEP" style={styles.input} value={cep} onChangeText={(text) => setCep(mask(text, '99999-999'))} onBlur={() => fetchAddressFromCep(cep)} mode="outlined" keyboardType="numeric" />
-                    <TextInput label="Logradouro" style={styles.input} value={logradouro} onChangeText={setLogradouro} mode="outlined" disabled={true} />
-                    <TextInput label="Bairro" style={styles.input} value={bairro} onChangeText={setBairro} mode="outlined" disabled={true} />
-                    <TextInput label="Cidade" style={styles.input} value={cidade} onChangeText={setCidade} mode="outlined" disabled={true} />
-                    <TextInput label="UF" style={styles.input} value={uf} onChangeText={setUf} mode="outlined" disabled={true} />
-                    <TextInput label="Número da Casa" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" keyboardType="numeric" />
-                    <TextInput label="Número de Moradores" style={styles.input} value={numeroMoradores} onChangeText={setNumeroMoradores} mode="outlined" keyboardType="numeric" />
-                </>
-            )}
-
-            {registrationType === 'condominio' && (
-                <>
-                    <TextInput label="Código de Acesso do Condomínio" style={styles.input} value={codigoAcesso} onChangeText={setCodigoAcesso} mode="outlined" />
-                    <TextInput label="Bloco (Opcional)" style={styles.input} value={bloco} onChangeText={setBloco} mode="outlined" />
-                    {/* CORREÇÃO APLICADA AQUI: O label foi ajustado para maior clareza. */}
-                    <TextInput label="Número do Apartamento" style={styles.input} value={numero} onChangeText={setNumero} mode="outlined" keyboardType="numeric" />
-                    <TextInput label="Número de Moradores" style={styles.input} value={numeroMoradores} onChangeText={setNumeroMoradores} mode="outlined" keyboardType="numeric" />
-                    <HelperText type="info" visible={true} style={{ textAlign: 'center' }}>
-                        Não sabe o código? <Button mode="text" compact onPress={() => setCodigoDialogVisible(true)} labelStyle={{ fontSize: 12 }}>Clique aqui</Button>
-                    </HelperText>
-                </>
-            )}
-
-            <TouchableOpacity onPress={handleOpenTerms} style={styles.checkboxContainer}>
-                <Checkbox.Android status={agreeToTerms ? 'checked' : 'unchecked'} color={theme.colors.primary} />
-                <Text style={styles.checkboxLabel}>Eu li e aceito os <Text style={styles.checkboxLink}>Termos e Condições</Text></Text>
-            </TouchableOpacity>
-
-            <GradientButton onPress={handleRegister} loading={isLoading} disabled={isLoading || !agreeToTerms}>
-                Cadastrar
-            </GradientButton>
-            <Button mode="text" onPress={() => handleFormTypeChange('login')} style={styles.switchButton}>
-                Já tem uma conta? Faça login
-            </Button>
-        </View>
-    );
-
     return (
         <PaperProvider theme={theme}>
-            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardAvoidingView}>
-                <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-                    <View style={styles.container}>
-                        <Card style={styles.card}>
-                            <Card.Content style={styles.cardContent}>
-                                <View style={styles.logoContainer}>
-                                    {/* Certifique-se de que o caminho para o logo está correto em 'assets/logo.png' */}
-                                    <Avatar.Image size={80} source={require('../assets/logo.png')} style={{ backgroundColor: 'transparent' }} />
-                                    <Title style={styles.title}>Aqua Services</Title>
-                                </View>
-                                {formType === 'login' ? renderLoginForm() : renderRegisterForm()}
-                            </Card.Content>
-                        </Card>
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
+            <View style={styles.mainContainer}>
+                {/* HEADER CURVO (Visual do Código 1) */}
+                <View style={styles.headerWrapper}>
+                    <LinearGradient colors={['#004aad', '#0A84FF']} style={styles.headerGradient}>
+                        <View style={styles.headerContent}>
+                            <Image source={require('../assets/logo.png')} style={styles.logo} resizeMode="contain" />
+                            <View>
+                                <Text style={styles.headerTitle}>Aqua Services</Text>
+                                <Text style={styles.headerSubtitle}>Gestão inteligente de água</Text>
+                            </View>
+                        </View>
+                    </LinearGradient>
+                    <View style={styles.curveMask} />
+                </View>
 
-            <Portal>
-                <Modal visible={termsVisible} onDismiss={handleCloseTerms} contentContainerStyle={styles.modalContainer}>
-                    <View style={styles.modalHeader}>
-                        <Title style={styles.modalTitle}>Termos e Condições de Uso</Title>
-                        <Paragraph style={styles.modalSubtitle}>Aqua Services</Paragraph>
-                    </View>
-                    <Divider />
-                    <ScrollView style={styles.modalScrollView} onScroll={({ nativeEvent }) => { if (isCloseToBottom(nativeEvent)) { if (!scrolledToBottom) setScrolledToBottom(true); }}} scrollEventThrottle={400}>
-                        <Paragraph style={styles.termsText}>Bem-vindo ao Aqua! Agradecemos por escolher nossa solução para o monitoramento inteligente do consumo de água. Antes de prosseguir, por favor, leia atentamente nossos Termos e Condições.</Paragraph>
-                        <Subheading style={styles.termsSubheading}>1. O Serviço Aqua</Subheading>
-                        <Paragraph style={styles.termsText}>O projeto Aqua consiste em um sistema de assinaturas para monitoramento de água em condomínios e residências individuais. Nossa plataforma é composta por um Aplicativo Android, voltado para moradores e síndicos, e um Dashboard Administrativo para nossa equipe interna. O objetivo é fornecer uma ferramenta centralizada para acompanhar o consumo estimado de água, criar metas de economia e facilitar a comunicação com nossos clientes.</Paragraph>
-                        <Subheading style={styles.termsSubheading}>2. Cadastro e Conta do Usuário</Subheading>
-                        <Paragraph style={styles.termsText}>Ao se cadastrar, você concorda em fornecer informações verdadeiras, precisas e completas, como nome, e-mail e CPF. Você é o único responsável pela segurança de sua senha e por todas as atividades que ocorrem em sua conta.</Paragraph>
-                        <Subheading style={styles.termsSubheading}>3. Coleta e Uso de Dados</Subheading>
-                        <Paragraph style={styles.termsText}>Para fornecer nossos serviços, coletamos dois tipos principais de dados:{"\n\n"}a) **Dados Pessoais:** Informações fornecidas durante o cadastro (nome, e-mail, CPF, endereço) são utilizadas para identificação, faturamento e comunicação.{"\n\n"}b) **Dados de Consumo:** Nossos sensores IOT coletam dados sobre o fluxo de água em sua residência. Esses dados são processados para gerar relatórios de consumo estimado, identificar possíveis vazamentos e auxiliar na criação de metas.{"\n\n"}Todos os dados são armazenados de forma segura em nossa infraestrutura na nuvem (AWS) e tratados com a máxima confidencialidade. Não compartilharemos seus dados pessoais com terceiros sem seu consentimento explícito, exceto quando exigido por lei.</Paragraph>
-                        <Subheading style={styles.termsSubheading}>4. Propriedade Intelectual</Subheading>
-                        <Paragraph style={styles.termsText}>Todo o conteúdo, design, código-fonte, e elementos visuais do aplicativo Aqua, incluindo nosso mascote "Pingo", são de propriedade exclusiva da equipe de desenvolvimento do projeto Aqua. É proibida a reprodução, cópia ou redistribuição de qualquer parte do serviço sem nossa permissão prévia por escrito.</Paragraph>
-                        <Subheading style={styles.termsSubheading}>5. Limitação de Responsabilidade</Subheading>
-                        <Paragraph style={styles.termsText}>O sistema Aqua fornece dados de consumo de forma **estimada** e para fins de monitoramento. Embora nos esforcemos para a máxima precisão, não nos responsabilizamos por discrepâncias entre os dados apresentados e sua fatura oficial de água. O serviço é uma ferramenta de apoio à gestão do consumo, e não substitui a verificação de profissionais qualificados para problemas hidráulicos.</Paragraph>
-                        <Subheading style={styles.termsSubheading}>6. Agradecimentos</Subheading>
-                        <Paragraph style={styles.termsText}>Este projeto foi desenvolvido como Trabalho de Conclusão de Curso por: Davi Rodrigues, Felipe Lopes, Davi Chagas, Ana Carollini e Thiago Henrique. Agradecemos por fazer parte desta jornada conosco.</Paragraph>
+                {/* CONTEÚDO (FORMULÁRIO) */}
+                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardView}>
+                    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+                        
+                        {/* Alternador Login/Cadastro (Visual do Código 1) */}
+                        <View style={styles.toggleContainer}>
+                            <TouchableOpacity onPress={() => handleFormTypeChange('login')} style={[styles.toggleBtn, formType === 'login' && styles.toggleBtnActive]}>
+                                <Text style={[styles.toggleText, formType === 'login' && styles.toggleTextActive]}>Login</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => handleFormTypeChange('register')} style={[styles.toggleBtn, formType === 'register' && styles.toggleBtnActive]}>
+                                <Text style={[styles.toggleText, formType === 'register' && styles.toggleTextActive]}>Cadastro</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {formType === 'login' ? (
+                            <View style={styles.formBody}>
+                                <Text style={styles.sectionTitle}>Bem-vindo de volta</Text>
+                                <CustomInput label="E-mail" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" left={<TextInput.Icon icon="email-outline" color="#0A84FF"/>} />
+                                <CustomInput label="Senha" value={senha} onChangeText={setSenha} secureTextEntry={!passwordVisible} left={<TextInput.Icon icon="lock-outline" color="#0A84FF"/>} right={<TextInput.Icon icon={passwordVisible ? "eye-off" : "eye"} onPress={() => setPasswordVisible(!passwordVisible)}/>} />
+                                
+                                <TouchableOpacity onPress={() => setForgotPasswordModalVisible(true)} style={{alignSelf: 'flex-end', marginBottom: 24}}>
+                                    <Text style={{color: '#0A84FF', fontWeight: '600'}}>Esqueceu a senha?</Text>
+                                </TouchableOpacity>
+
+                                <GradientButton onPress={handleLogin} loading={isLoading}>ACESSAR CONTA</GradientButton>
+                            </View>
+                        ) : (
+                            <View style={styles.formBody}>
+                                <Text style={styles.sectionTitle}>Crie sua conta</Text>
+                                <Text style={{color:'#666', marginBottom:15}}>Escolha o tipo de residência:</Text>
+                                
+                                {/* Tipos de Residência (Visual do Código 1) */}
+                                <View style={styles.radioGroup}>
+                                    <TouchableOpacity onPress={() => setRegistrationType('casa')} style={[styles.radioOption, registrationType === 'casa' && styles.radioActive]}>
+                                        <Icon source="home-variant" size={24} color={registrationType === 'casa' ? '#FFF' : '#0A84FF'} />
+                                        <Text style={[styles.radioText, registrationType === 'casa' && styles.radioTextActive]}>Casa Própria</Text>
+                                        <TouchableOpacity style={{position:'absolute', top:5, right:5}} onPress={() => setPlanoIndividualDialog(true)}>
+                                            <Icon source="help-circle-outline" size={18} color={registrationType === 'casa' ? '#FFF' : '#0A84FF'}/>
+                                        </TouchableOpacity>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => setRegistrationType('condominio')} style={[styles.radioOption, registrationType === 'condominio' && styles.radioActive]}>
+                                        <Icon source="office-building" size={24} color={registrationType === 'condominio' ? '#FFF' : '#0A84FF'} />
+                                        <Text style={[styles.radioText, registrationType === 'condominio' && styles.radioTextActive]}>Condomínio</Text>
+                                        <TouchableOpacity style={{position:'absolute', top:5, right:5}} onPress={() => setPlanoCondoDialog(true)}>
+                                            <Icon source="help-circle-outline" size={18} color={registrationType === 'condominio' ? '#FFF' : '#0A84FF'}/>
+                                        </TouchableOpacity>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <CustomInput label="Nome Completo" value={name} onChangeText={setName} left={<TextInput.Icon icon="account" color="#0A84FF"/>} />
+                                <CustomInput label="E-mail" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" left={<TextInput.Icon icon="email" color="#0A84FF"/>} />
+                                <CustomInput label="CPF" value={cpf} onChangeText={t => setCpf(mask(t, '999.999.999-99'))} keyboardType="numeric" left={<TextInput.Icon icon="card-account-details" color="#0A84FF"/>} />
+                                <CustomInput label="Senha (mín 6 caract.)" value={senha} onChangeText={setSenha} secureTextEntry left={<TextInput.Icon icon="lock" color="#0A84FF"/>} />
+
+                                {registrationType === 'casa' ? (
+                                    <>
+                                        <View style={{flexDirection: 'row', gap: 10}}>
+                                            <View style={{flex: 1}}>
+                                                <CustomInput 
+                                                    label="CEP" 
+                                                    value={cep} 
+                                                    onChangeText={t => setCep(mask(t, '99999-999'))} 
+                                                    onBlur={() => fetchAddressFromCep(cep)} 
+                                                    keyboardType="numeric" 
+                                                />
+                                            </View>
+                                            <View style={{width: 100}}>
+                                                <CustomInput 
+                                                    label="Nº" 
+                                                    value={numero} 
+                                                    onChangeText={setNumero} 
+                                                    keyboardType="numeric" 
+                                                />
+                                            </View>
+                                        </View>
+
+                                        <CustomInput label="Rua / Logradouro" value={logradouro} onChangeText={setLogradouro} />
+                                        <CustomInput label="Bairro" value={bairro} onChangeText={setBairro} />
+                                        
+                                        <View style={{flexDirection: 'row', gap: 10}}>
+                                            <View style={{flex: 1}}>
+                                                <CustomInput label="Cidade" value={cidade} onChangeText={setCidade} />
+                                            </View>
+                                            <View style={{width: 80}}>
+                                                <CustomInput label="UF" value={uf} onChangeText={setUf} maxLength={2} autoCapitalize="characters"/>
+                                            </View>
+                                        </View>
+                                    </>
+                                ) : (
+                                    <>
+                                        <CustomInput label="Código do Condomínio" value={codigoAcesso} onChangeText={setCodigoAcesso} left={<TextInput.Icon icon="key" color="#0A84FF"/>} />
+                                        <View style={{flexDirection: 'row', gap: 10}}>
+                                            <View style={{flex: 1}}><CustomInput label="Bloco (Opc)" value={bloco} onChangeText={setBloco} /></View>
+                                            <View style={{flex: 1}}><CustomInput label="Nº Apto" value={numero} onChangeText={setNumero} keyboardType="numeric" /></View>
+                                        </View>
+                                        <TouchableOpacity onPress={() => setCodigoDialogVisible(true)}><Text style={{color: '#0A84FF', textAlign:'center', marginBottom:15, fontSize:12, textDecorationLine:'underline'}}>Não tenho o código</Text></TouchableOpacity>
+                                    </>
+                                )}
+
+                                <CustomInput label="Total de Moradores" value={numeroMoradores} onChangeText={setNumeroMoradores} keyboardType="numeric" left={<TextInput.Icon icon="account-group" color="#0A84FF"/>} />
+
+                                <View style={styles.termsBox}>
+                                    <Checkbox.Android status={agreeToTerms ? 'checked' : 'unchecked'} onPress={() => setAgreeToTerms(!agreeToTerms)} color="#0A84FF" />
+                                    <TouchableOpacity onPress={() => setTermsVisible(true)}><Text style={{color: '#555', flexShrink: 1}}>Li e aceito os <Text style={{fontWeight:'bold', color:'#0A84FF'}}>Termos e Condições de Uso</Text></Text></TouchableOpacity>
+                                </View>
+
+                                <GradientButton onPress={handleRegister} loading={isLoading} disabled={!agreeToTerms}>FINALIZAR CADASTRO</GradientButton>
+                            </View>
+                        )}
+                        <View style={{height: 50}}/>
                     </ScrollView>
-                    <Divider />
-                    <View style={styles.modalFooter}>
-                        <Button mode="contained" onPress={handleAcceptTerms} disabled={!scrolledToBottom} style={scrolledToBottom ? {} : { backgroundColor: theme.colors.placeholder }}>
+                </KeyboardAvoidingView>
+
+                {/* MODAIS E POPUPS (Interface 1 com Textos do 2) */}
+                <Portal>
+                    {/* DIALOG: CODIGO */}
+                    <Dialog visible={codigoDialogVisible} onDismiss={() => setCodigoDialogVisible(false)} style={{backgroundColor:'#FFF', borderRadius:16}}>
+                        <Dialog.Icon icon="information-outline" size={40} color="#0A84FF"/>
+                        <Dialog.Title style={{textAlign:'center', color:'#333'}}>Código de Acesso</Dialog.Title>
+                        <Dialog.Content>
+                            <Paragraph style={{textAlign:'center', color:'#666'}}>
+                                O código de acesso é um identificador único do seu condomínio. Você pode encontrá-lo na sua fatura de condomínio ou solicitá-lo ao síndico.
+                            </Paragraph>
+                        </Dialog.Content>
+                        <Dialog.Actions><Button onPress={() => setCodigoDialogVisible(false)}>Entendi</Button></Dialog.Actions>
+                    </Dialog>
+
+                    {/* DIALOG: PLANO CASA */}
+                    <Dialog visible={planoIndividualDialog} onDismiss={() => setPlanoIndividualDialog(false)} style={{backgroundColor:'#FFF', borderRadius:16}}>
+                        <Dialog.Icon icon="home-variant-outline" size={40} color="#0A84FF"/>
+                        <Dialog.Title style={{textAlign:'center'}}>Residência Própria</Dialog.Title>
+                        <Dialog.Content><Paragraph style={{textAlign:'center'}}>Escolha esta opção se você mora em uma casa ou residência que não faz parte de um condomínio parceiro. O cadastro será feito diretamente com seu endereço.</Paragraph></Dialog.Content>
+                        <Dialog.Actions><Button onPress={() => setPlanoIndividualDialog(false)}>Ok</Button></Dialog.Actions>
+                    </Dialog>
+
+                    {/* DIALOG: PLANO CONDO */}
+                    <Dialog visible={planoCondoDialog} onDismiss={() => setPlanoCondoDialog(false)} style={{backgroundColor:'#FFF', borderRadius:16}}>
+                        <Dialog.Icon icon="office-building-outline" size={40} color="#0A84FF"/>
+                        <Dialog.Title style={{textAlign:'center'}}>Plano Condomínio</Dialog.Title>
+                        <Dialog.Content><Paragraph style={{textAlign:'center'}}>Escolha esta opção se você mora em um apartamento ou casa dentro de um condomínio que já utiliza o sistema Aqua.</Paragraph></Dialog.Content>
+                        <Dialog.Actions><Button onPress={() => setPlanoCondoDialog(false)}>Ok</Button></Dialog.Actions>
+                    </Dialog>
+
+                    {/* MODAL: TERMOS (Conteúdo rico do Código 2) */}
+                    <Modal visible={termsVisible} onDismiss={() => setTermsVisible(false)} contentContainerStyle={styles.modalCard}>
+                        <Title style={{textAlign:'center', marginBottom:10}}>Termos e Condições</Title>
+                        <Divider style={{marginBottom:10}}/>
+                        <ScrollView 
+                            style={{maxHeight: 400}} 
+                            onScroll={({ nativeEvent }) => { if (isCloseToBottom(nativeEvent)) { if (!scrolledToBottom) setScrolledToBottom(true); }}} 
+                            scrollEventThrottle={400}
+                        >
+                            <Paragraph style={styles.termsText}>Bem-vindo ao Aqua! Agradecemos por escolher nossa solução para o monitoramento inteligente do consumo de água.</Paragraph>
+                            
+                            <Subheading style={styles.termsSubheading}>1. O Serviço Aqua</Subheading>
+                            <Paragraph style={styles.termsText}>O projeto Aqua consiste em um sistema de assinaturas para monitoramento de água em condomínios e residências individuais. Nossa plataforma é composta por um Aplicativo Android, voltado para moradores e síndicos, e um Dashboard Administrativo para nossa equipe interna.</Paragraph>
+                            
+                            <Subheading style={styles.termsSubheading}>2. Cadastro e Conta</Subheading>
+                            <Paragraph style={styles.termsText}>Ao se cadastrar, você concorda em fornecer informações verdadeiras, precisas e completas. Você é responsável pela segurança de sua senha.</Paragraph>
+                            
+                            <Subheading style={styles.termsSubheading}>3. Coleta de Dados</Subheading>
+                            <Paragraph style={styles.termsText}>Coletamos dados pessoais para faturamento e dados de consumo via sensores IOT para gerar relatórios e metas.</Paragraph>
+
+                            <Subheading style={styles.termsSubheading}>4. Responsabilidade</Subheading>
+                            <Paragraph style={styles.termsText}>O sistema fornece dados estimados e não substitui a fatura oficial da concessionária.</Paragraph>
+                        </ScrollView>
+                        <Divider style={{marginTop:10}}/>
+                        <Button mode="contained" onPress={handleAcceptTerms} disabled={!scrolledToBottom} style={{marginTop:15, backgroundColor: scrolledToBottom ? theme.colors.primary : '#999'}}>
                             {scrolledToBottom ? "Eu Li e Aceito os Termos" : "Role até o final para aceitar"}
                         </Button>
-                    </View>
-                </Modal>
+                    </Modal>
 
-                <Dialog visible={planoIndividualDialog} onDismiss={() => setPlanoIndividualDialog(false)} style={styles.dialog}>
-                    <Dialog.Icon icon="home-variant-outline" size={48} color={theme.colors.primary} />
-                    <Dialog.Title style={styles.dialogTitle}>Plano de Residência Própria</Dialog.Title>
-                    <Dialog.Content>
-                        <Paragraph style={styles.dialogParagraph}>Escolha esta opção se você mora em uma casa ou residência que não faz parte de um condomínio parceiro. O cadastro será feito diretamente com seu endereço.</Paragraph>
-                    </Dialog.Content>
-                    <Dialog.Actions>
-                        <Button onPress={() => setPlanoIndividualDialog(false)} mode="contained">Entendi</Button>
-                    </Dialog.Actions>
-                </Dialog>
+                    {/* MODAL: ESQUECI SENHA */}
+                    <Modal visible={forgotPasswordModalVisible} onDismiss={() => setForgotPasswordModalVisible(false)} contentContainerStyle={styles.modalCardSmall}>
+                        <Title style={{textAlign:'center', marginBottom:5}}>Recuperar Acesso</Title>
+                        <Paragraph style={{textAlign:'center', marginBottom:20, color:'#666'}}>Digite seu e-mail para receber um código.</Paragraph>
+                        <CustomInput label="Seu e-mail" value={resetEmail} onChangeText={setResetEmail} />
+                        <View style={{flexDirection:'row', justifyContent:'flex-end', marginTop:10}}>
+                            <Button onPress={() => setForgotPasswordModalVisible(false)} style={{marginRight:10}}>Cancelar</Button>
+                            <Button mode="contained" onPress={handleForgotPasswordRequest} loading={isLoading}>Enviar</Button>
+                        </View>
+                    </Modal>
 
-                <Dialog visible={planoCondoDialog} onDismiss={() => setPlanoCondoDialog(false)} style={styles.dialog}>
-                    <Dialog.Icon icon="office-building-outline" size={48} color={theme.colors.primary} />
-                    <Dialog.Title style={styles.dialogTitle}>Plano Condomínio</Dialog.Title>
-                    <Dialog.Content>
-                        <Paragraph style={styles.dialogParagraph}>Escolha esta opção se você mora em um apartamento ou casa dentro de um condomínio que já possui o sistema Aqua. Você precisará do código de acesso fornecido pelo síndico.</Paragraph>
-                    </Dialog.Content>
-                    <Dialog.Actions>
-                        <Button onPress={() => setPlanoCondoDialog(false)} mode="contained">Entendi</Button>
-                    </Dialog.Actions>
-                </Dialog>
+                    {/* MODAL: RESETAR SENHA */}
+                    <Modal visible={resetPasswordModalVisible} onDismiss={() => setResetPasswordModalVisible(false)} contentContainerStyle={styles.modalCardSmall}>
+                        <Title style={{textAlign:'center', marginBottom:5}}>Nova Senha</Title>
+                        <Paragraph style={{textAlign:'center', marginBottom:20, color:'#666'}}>Insira o código recebido e a nova senha.</Paragraph>
+                        <CustomInput label="Código (6 dígitos)" value={resetToken} onChangeText={setResetToken} keyboardType="numeric" maxLength={6}/>
+                        <CustomInput label="Nova Senha" value={newPassword} onChangeText={setNewPassword} secureTextEntry />
+                        <CustomInput label="Confirmar" value={confirmNewPassword} onChangeText={setConfirmNewPassword} secureTextEntry />
+                        <View style={{flexDirection:'row', justifyContent:'flex-end', marginTop:10}}>
+                            <Button onPress={() => setResetPasswordModalVisible(false)} style={{marginRight:10}}>Cancelar</Button>
+                            <Button mode="contained" onPress={handleResetPasswordSubmit} loading={isLoading}>Salvar Senha</Button>
+                        </View>
+                    </Modal>
+                </Portal>
 
-                <Dialog visible={codigoDialogVisible} onDismiss={() => setCodigoDialogVisible(false)} style={styles.dialog}>
-                    <Dialog.Icon icon="information-outline" size={48} color={theme.colors.primary} />
-                    <Dialog.Title style={styles.dialogTitle}>Código de Acesso</Dialog.Title>
-                    <Dialog.Content>
-                        <Paragraph style={styles.dialogParagraph}>O código de acesso do condomínio é um identificador único. Você pode encontrá-lo na sua fatura ou consultar a administração.</Paragraph>
-                    </Dialog.Content>
-                    <Dialog.Actions>
-                        <Button onPress={() => setCodigoDialogVisible(false)} mode="contained">Entendi</Button>
-                    </Dialog.Actions>
-                </Dialog>
-
-                <Modal visible={forgotPasswordModalVisible} onDismiss={() => setForgotPasswordModalVisible(false)} contentContainerStyle={styles.modalContainerShort}>
-                    <View style={styles.modalHeader}>
-                        <Title style={styles.modalTitle}>Redefinir Senha</Title>
-                        <Paragraph style={styles.modalSubtitle}>Digite seu e-mail para receber um código de verificação.</Paragraph>
-                    </View>
-                    <Divider />
-                    <View style={styles.modalContent}>
-                        <TextInput label="Seu e-mail de cadastro" value={resetEmail} onChangeText={setResetEmail} style={styles.input} mode="outlined" keyboardType="email-address" autoCapitalize="none" left={<TextInput.Icon icon="email-outline" />} />
-                    </View>
-                    <View style={styles.modalFooterRow}>
-                        <Button onPress={() => setForgotPasswordModalVisible(false)} style={{ marginRight: 8 }}>Cancelar</Button>
-                        <GradientButton onPress={handleForgotPasswordRequest} loading={isLoading} disabled={isLoading}>Enviar</GradientButton>
-                    </View>
-                </Modal>
-
-                <Modal visible={resetPasswordModalVisible} onDismiss={() => setResetPasswordModalVisible(false)} contentContainerStyle={styles.modalContainerShort}>
-                    <View style={styles.modalHeader}>
-                        <Title style={styles.modalTitle}>Criar Nova Senha</Title>
-                        <Paragraph style={styles.modalSubtitle}>Insira o código recebido e defina sua nova senha.</Paragraph>
-                    </View>
-                    <Divider />
-                    <View style={styles.modalContent}>
-                        <TextInput label="Código de 6 dígitos" value={resetToken} onChangeText={setResetToken} style={styles.input} mode="outlined" keyboardType="number-pad" maxLength={6} />
-                        <TextInput label="Nova Senha" value={newPassword} onChangeText={setNewPassword} secureTextEntry style={styles.input} mode="outlined" />
-                        <TextInput label="Confirmar Nova Senha" value={confirmNewPassword} onChangeText={setConfirmNewPassword} secureTextEntry style={styles.input} mode="outlined" />
-                    </View>
-                    <View style={styles.modalFooterRow}>
-                        <Button onPress={() => setResetPasswordModalVisible(false)} style={{ marginRight: 8 }}>Cancelar</Button>
-                        <GradientButton onPress={handleResetPasswordSubmit} loading={isLoading} disabled={isLoading}>Salvar Senha</GradientButton>
-                    </View>
-                </Modal>
-
-            </Portal>
-
-            <Snackbar
-                visible={snackbar.visible}
-                onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
-                duration={Snackbar.DURATION_MEDIUM}
-                style={{ backgroundColor: snackbar.type === 'error' ? theme.colors.error : snackbar.type === 'success' ? theme.colors.success : '#323232' }}
-            >
-                {snackbar.message}
-            </Snackbar>
+                <Snackbar visible={snackbar.visible} onDismiss={() => setSnackbar({...snackbar, visible:false})} duration={3000} style={{backgroundColor: snackbar.type === 'error' ? '#FF3B30' : '#34C759'}}>
+                    {snackbar.message}
+                </Snackbar>
+            </View>
         </PaperProvider>
     );
 }
 
 const styles = StyleSheet.create({
-    keyboardAvoidingView: { flex: 1, backgroundColor: theme.colors.background },
-    scrollContainer: { flexGrow: 1, justifyContent: 'center', paddingVertical: 20 },
-    container: { paddingHorizontal: 20 },
-    card: { width: '100%', maxWidth: 420, alignSelf: 'center', borderRadius: theme.roundness * 1.5, elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12 },
-    cardContent: { paddingHorizontal: 24, paddingVertical: 32 },
-    logoContainer: { alignItems: 'center', marginBottom: 24 },
-    title: { fontSize: 28, fontWeight: 'bold', color: theme.colors.primary, marginTop: 12, letterSpacing: 0.5 },
-    paragraph: { fontSize: 16, color: theme.colors.placeholder, textAlign: 'center', marginBottom: 24, lineHeight: 22 },
-    input: { marginBottom: 16, backgroundColor: theme.colors.background },
-    gradientButtonContainer: { borderRadius: theme.roundness * 5, elevation: 4, shadowColor: '#0A84FF', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 5 },
-    gradientButton: { paddingVertical: 14, paddingHorizontal: 20, alignItems: 'center', borderRadius: theme.roundness * 5, overflow: 'hidden' },
-    gradientButtonText: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF', letterSpacing: 0.5 },
-    switchButton: { marginTop: 16 },
-    customSegmentedContainer: { flexDirection: 'row', marginBottom: 24, borderWidth: 1, borderColor: theme.colors.placeholder, borderRadius: theme.roundness, overflow: 'hidden' },
-    customSegmentButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, backgroundColor: theme.colors.surface, paddingHorizontal: 5, },
-    customSegmentButtonActive: { backgroundColor: theme.colors.primary },
-    customSegmentLabel: { fontSize: 13, fontWeight: '600', color: theme.colors.primary, marginLeft: 6, flexShrink: 1, },
-    customSegmentLabelActive: { color: '#FFFFFF' },
-    infoIcon: { margin: -5 },
-    checkboxContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 16, backgroundColor: 'transparent', paddingVertical: 8 },
-    checkboxLabel: { marginLeft: 6, color: theme.colors.placeholder, flex: 1 },
-    checkboxLink: { fontWeight: 'bold', color: theme.colors.primary, textDecorationLine: 'underline' },
-    dialog: { borderRadius: theme.roundness * 1.5 },
-    dialogTitle: { textAlign: 'center', color: theme.colors.text },
-    dialogParagraph: { textAlign: 'center', color: theme.colors.placeholder, lineHeight: 20 },
-    modalContainer: { backgroundColor: 'white', margin: 20, borderRadius: theme.roundness * 1.5, height: '85%', elevation: 10 },
-    modalContainerShort: { backgroundColor: 'white', margin: 20, borderRadius: theme.roundness * 1.5, elevation: 10, alignSelf: 'center', width: '90%', maxWidth: 400 },
-    modalHeader: { paddingVertical: 20, paddingHorizontal: 20, alignItems: 'center' },
-    modalTitle: { fontSize: 22, fontWeight: 'bold', color: theme.colors.text },
-    modalSubtitle: { fontSize: 14, color: theme.colors.placeholder, textAlign: 'center' },
-    modalContent: { paddingHorizontal: 24, paddingTop: 16 },
-    modalScrollView: { paddingHorizontal: 24 },
-    termsText: { fontSize: 14, lineHeight: 22, marginBottom: 16, textAlign: 'justify', color: theme.colors.text },
-    termsSubheading: { fontSize: 16, fontWeight: 'bold', marginTop: 8, marginBottom: 8, color: theme.colors.text },
-    modalFooter: { padding: 20, borderTopWidth: 1, borderTopColor: '#EEEEEE' },
-    modalFooterRow: { padding: 20, borderTopWidth: 1, borderTopColor: '#EEEEEE', flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' },
+    mainContainer: { flex: 1, backgroundColor: '#F9FAFB' },
+    headerWrapper: { height: height * 0.32, backgroundColor: 'transparent', position: 'relative', zIndex: 1 },
+    headerGradient: { flex: 1, justifyContent: 'center', paddingHorizontal: 24, paddingBottom: 30 },
+    headerContent: { flexDirection: 'row', alignItems: 'center' },
+    logo: { width: 60, height: 60, tintColor: '#FFF', marginRight: 15 },
+    headerTitle: { fontSize: 28, fontWeight: 'bold', color: '#FFF' },
+    headerSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.9)', marginTop: 2 },
+    curveMask: {
+        position: 'absolute', bottom: -1, left: 0, right: 0, height: 30,
+        backgroundColor: '#F9FAFB', borderTopLeftRadius: 30, borderTopRightRadius: 30
+    },
+    keyboardView: { flex: 1 },
+    scrollContent: { paddingHorizontal: 24, paddingBottom: 40, paddingTop: 10 },
+    toggleContainer: { flexDirection: 'row', backgroundColor: '#E5E7EB', borderRadius: 12, padding: 4, marginBottom: 24 },
+    toggleBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
+    toggleBtnActive: { backgroundColor: '#FFFFFF', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 2 },
+    toggleText: { fontWeight: '600', color: '#6B7280' },
+    toggleTextActive: { color: '#0A84FF' },
+    formBody: { backgroundColor: '#F9FAFB' },
+    sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#111827', marginBottom: 20 },
+    input: { backgroundColor: '#F3F4F6', height: 56, fontSize: 16 },
+    radioGroup: { flexDirection: 'row', gap: 12, marginBottom: 24 },
+    radioOption: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, backgroundColor: '#FFF', position: 'relative' },
+    radioActive: { backgroundColor: '#0A84FF', borderColor: '#0A84FF' },
+    radioText: { marginLeft: 8, fontWeight: '600', color: '#374151' },
+    radioTextActive: { color: '#FFF' },
+    btnContainer: { borderRadius: 12, overflow: 'hidden', marginTop: 10, elevation: 4, shadowColor: '#0A84FF', shadowOpacity: 0.3, shadowOffset: {width:0, height:4} },
+    btnGradient: { paddingVertical: 16, alignItems: 'center' },
+    btnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold', letterSpacing: 0.5 },
+    termsBox: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+    termsText: { fontSize: 14, lineHeight: 22, marginBottom: 15, textAlign: 'justify', color: '#333' },
+    termsSubheading: { fontSize: 16, fontWeight: 'bold', marginTop: 10, marginBottom: 5, color: '#0A84FF' },
+    modalCard: { backgroundColor: '#FFF', margin: 20, padding: 20, borderRadius: 16, maxHeight: '85%' },
+    modalCardSmall: { backgroundColor: '#FFF', margin: 30, padding: 24, borderRadius: 16 }
 });
 
 
@@ -3829,8 +3893,6 @@ export default MetasScreen;
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Perfil.jsx
 =================================================================================
 
-// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\User-App\User-App\screens\Perfil.jsx
-// CÓDIGO COMPLETO E CORRIGIDO
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
@@ -3850,7 +3912,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProfileHeader from '../components/Perfil/ProfileHeader';
 import StatCard from '../components/Perfil/StatCard';
 
-// ATENÇÃO: Se estiver usando o Expo Go no celular, troque 'localhost' pelo IP da sua máquina.
 const API_URL = 'http://localhost:3334/api';
 
 const ProfileScreen = ({ navigation, onLogout }) => {
@@ -3870,7 +3931,7 @@ const ProfileScreen = ({ navigation, onLogout }) => {
   });
 
   const fetchProfileData = useCallback(async () => {
-    // Para recargas, não mostramos o spinner de tela cheia
+
     if (isLoading) setIsLoading(true);
     
     try {
@@ -4279,7 +4340,7 @@ import { fastifySwagger } from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
 import pino from 'pino'
 import fs from 'fs'
-import multipart from '@fastify/multipart'
+import fastifyMultipart from '@fastify/multipart'
 import fastifyStatic from '@fastify/static';
 import fastifyFormbody from '@fastify/formbody'
 import path from 'path';
@@ -4341,7 +4402,11 @@ await fastify.register(cors, {
 })
 
 fastify.register(fastifyFormbody);
-await fastify.register(multipart);
+fastify.register(fastifyMultipart , {
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB
+  }
+});
 
 fastify.register(fastifyStatic, {
     root: path.join(process.cwd(), 'uploads'),
@@ -4510,11 +4575,16 @@ export default class AdminController {
     }
 
     static async uploadProfile(req, reply) {
+        if (!req.isMultipart()) {
+            return reply.status(400).send({ message: 'O request não é multipart' });
+        }
+
         try {
-            const file = await req.file(); // fastify-multipart
-            if (!file) {
-                return reply.status(400).send({ message: 'Arquivo não enviado ou tipo inválido' });
-            }
+            const file = await req.file({ fieldname: 'profileImage' }).catch(() => null);
+            console.log("Arquivo recebido:", file);
+            if (!file) return reply.status(400).send({ message: 'Arquivo não enviado ou tipo inválido.' });
+
+            if (!req.admin?.id) return reply.status(401).send({ message: 'Não autorizado' });
 
             const imgUrl = await AdminService.uploadProfilePicture(req.admin.id, file);
 
@@ -4523,12 +4593,13 @@ export default class AdminController {
                 img_url: imgUrl
             });
         } catch (err) {
-            console.error('Erro no upload', err);
-            return reply.status(500).send({ message: 'Erro ao enviar arquivo' });
+            console.error('Erro no upload de perfil:', err);
+            return reply.status(500).send({ message: err.message || 'Erro interno ao enviar arquivo.' });
         }
     }
 
 }
+
 
 
 =================================================================================
@@ -4872,7 +4943,7 @@ import { updateComunicado } from "../dto/comunicados/updateComunicadoDTO.js";
 import ComunicadosService from "../services/ComunicadosService.js";
 
 export default class ComunicadosController {
-    static async getAll(req, reply){
+    static async getAll(req, reply) {
         const comunicados = await ComunicadosService.getAll();
         return reply.status(200).send(comunicados);
     }
@@ -4883,17 +4954,35 @@ export default class ComunicadosController {
         return reply.status(201).send(comunicado);
     }
 
-    static async update(req, reply){
+    static async update(req, reply) {
         const { id } = req.params;
         const validateComunicado = updateComunicado.parse(req.body);
         const comunicado = await ComunicadosService.update(id, validateComunicado);
         return reply.status(200).send(comunicado);
     }
 
-    static async delete(req, reply){
-        const {id} = req.params;
+    static async delete(req, reply) {
+        const { id } = req.params;
         const comunicado = await ComunicadosService.deleteComunicado(id);
         return reply.status(200).send(comunicado);
+    }
+
+    static async marcarComoLido(req, reply) {
+        const user_id = req.user.id;
+        const { comunicado_id } = req.body;
+
+        if (!comunicado_id) {
+            return reply.status(400).send({ error: "comunicado_id é obrigatório" });
+        }
+
+        const registro = await ComunicadosService.marcarComoLido(user_id, comunicado_id);
+        return reply.status(200).send(registro);
+    }
+
+    static async getNaoLidos(req, reply) {
+        const user_id = req.user.id;
+        const comunicados = await ComunicadosService.getNaoLidos(user_id);
+        return reply.status(200).send(comunicados);
     }
 }
 
@@ -5250,6 +5339,11 @@ export default class UserController {
         return reply.status(200).send(user);
     }
 
+    static async novosMoradores(req, reply) {
+        const users = await UserService.novosUsuariosUltimos6Meses();
+        return reply.status(200).send(users);
+    }
+
 }
 
 
@@ -5293,13 +5387,17 @@ export const updatePasswordDTO = z.object({
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\dto\comunicados\createComunicadoDTO.js
 =================================================================================
 
-import {z} from 'zod';
+import { z } from 'zod';
 
 export const createComunicado = z.object({
-   title: z.string(),
-   subject: z.string(),
-   addressee: z.enum(["administradores", "usuários"]),
-})
+  title: z.string().min(1, "Título é obrigatório"),
+  subject: z.string().min(1, "Assunto é obrigatório"),
+  addressee: z.enum(["administradores", "usuários", "sindicos"]),
+  condominio_id: z.number().int().optional(),
+  casa_id: z.number().int().optional(),
+  sindico_id: z.string().uuid().optional(), 
+});
+
 
 
 =================================================================================
@@ -6027,11 +6125,58 @@ sequelizePaginate.paginate(CasaView);
 
 
 =================================================================================
+Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\models\ComunicadoLido.js
+=================================================================================
+
+import { Model, DataTypes } from "sequelize";
+import sequelize from "../config/sequelize.js";
+import User from "./User.js";
+import Comunicados from "./Comunicados.js";
+
+export default class ComunicadosLidos extends Model {}
+
+ComunicadosLidos.init({
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    user_id: {
+        type: DataTypes.CHAR(36),
+        allowNull: false,
+        references: { model: User, key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    },
+    comunicado_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: Comunicados, key: "id" },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    },
+    lido: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    }
+}, {
+    sequelize,
+    tableName: "comunicados_lidos",
+    timestamps: true,
+    createdAt: "criado_em",
+    updatedAt: "atualizado_em"
+});
+
+
+
+=================================================================================
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\models\Comunicados.js
 =================================================================================
 
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
+import sequelizePaginate from 'sequelize-paginate'
+import Casa from "./Casa.js";
 
 export default class Comunicados extends Model {}
 
@@ -6050,8 +6195,38 @@ Comunicados.init({
         allowNull: false
     },
     addressee: {
-        type: DataTypes.ENUM('adminstradores', 'usuários'),
+        type: DataTypes.ENUM('administradores', 'usuários', 'sindicos'),
         allowNull: false
+    },
+    condominio_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'condominios',
+            key: 'id'
+        },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    },
+    casa_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: Casa, 
+            key: 'id'
+        },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    },
+    sindico_id: {
+        type: DataTypes.CHAR(36),
+        allowNull: true,
+        references: {
+            model: 'users', // tabela de usuários
+            key: 'id'
+        },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
     }
 }, {
     sequelize,
@@ -6059,7 +6234,10 @@ Comunicados.init({
     timestamps: true,
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em'
-})
+});
+
+sequelizePaginate.paginate(Comunicados);
+
 
 
 =================================================================================
@@ -7114,6 +7292,8 @@ export default async function comunicadoRoutes(fastify) {
     fastify.post('/', ComunicadosController.create);
     fastify.put('/:id', ComunicadosController.update);
     fastify.delete('/:id', ComunicadosController.delete);
+    fastify.post("/ler", ComunicadosController.marcarComoLido);
+    fastify.get("/nao-lidos", ComunicadosController.getNaoLidos);
 }
 
 
@@ -7592,6 +7772,15 @@ export default async function userRoutes(fastify) {
                 description: "Atribuindo como sindico",
             }
         }, UserController.sindico);
+
+    fastify.get('/novos-moradores',
+        {
+            schema: {
+                summary: "Contagem de novos usuários nos ultimos 6 meses",
+                tags: ['usuários'],
+                description: "Listando quantidade de novos usuários",
+            }
+        }, UserController.novosMoradores);
 }
 
 
@@ -7842,39 +8031,42 @@ export default class AdminService {
         }
     }
 
-    static async uploadProfilePicture(adminId, file) {
-        try {
+       static async uploadProfilePicture(adminId, file) {
+    try {
+      const baseUploadDir = path.join(process.cwd(), 'uploads');
+      const profileDir = path.join(baseUploadDir, 'profile_images');
 
-            const uploadDir = path.join(process.cwd(), 'uploads');
+      if (!fs.existsSync(baseUploadDir)) fs.mkdirSync(baseUploadDir);
+      if (!fs.existsSync(profileDir)) fs.mkdirSync(profileDir);
 
-            // cria a pasta uploads se não existir
-            if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+      const extension = path.extname(file.filename);
+      const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}${extension}`;
+      const filePath = path.join(profileDir, uniqueFilename);
 
-            // gera nome único
-            const fileName = `${Date.now()}-${file.filename}`;
-            const filePath = path.join(uploadDir, fileName);
+      const buffer = await file.toBuffer();
+      await fs.promises.writeFile(filePath, buffer);
 
-            // salva o arquivo
-            const buffer = await file.toBuffer();
-            await fs.promises.writeFile(filePath, buffer);
+      const admin = await Admin.findByPk(adminId);
+      if (!admin) {
+        await fs.promises.unlink(filePath);
+        throw new Error('Administrador não encontrado');
+      }
 
-            // atualiza campo img_url do admin
-            const admin = await Admin.findByPk(adminId);
-            if (!admin) throw new Error('Administrador não encontrado');
+      // Remove imagem antiga se existir
+      if (admin.img_url) {
+        const oldPath = path.join(baseUploadDir, admin.img_url.replace('/api/uploads/', ''));
+        if (fs.existsSync(oldPath)) await fs.promises.unlink(oldPath).catch(console.error);
+      }
 
-            admin.img_url = `/api/uploads/${fileName}`;
+      admin.img_url = `/api/uploads/profile_images/${uniqueFilename}`;
+      await admin.save();
 
-            console.log('path importado:', path);
-            console.log('file recebido:', file);
-            await admin.save();
-
-            return admin.img_url;
-        } catch (error) {
-            console.error('Erro ao atualizar foto de usuário', error);
-            throw error;
-        }
+      return admin.img_url;
+    } catch (err) {
+      console.error('Erro ao atualizar foto de usuário', err);
+      throw err;
     }
-
+  }
 }
 
 
@@ -8415,6 +8607,7 @@ export default class CepService {
 Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\services\ComunicadosService.js
 =================================================================================
 
+import ComunicadosLidos from "../models/ComunicadoLido.js";
 import Comunicados from "../models/Comunicados.js";
 
 export default class ComunicadosService {
@@ -8429,25 +8622,73 @@ export default class ComunicadosService {
         }
     }
 
-    static async create({ title, subject, addressee }) {
+    static async create({ title, subject, addressee, condominio_id = null, casa_ids = [], sindico_ids = [] }) {
         try {
-            const comunicado = await Comunicados.create({
-                title, subject, addressee
-            });
-            return comunicado;
+            const comunicados = [];
+
+            // Comuniado geral para todos de um tipo
+            if (!condominio_id && casa_ids.length === 0 && sindico_ids.length === 0) {
+                const comunicado = await Comunicados.create({
+                    title,
+                    subject,
+                    addressee,
+                    condominio_id: null
+                });
+                comunicados.push(comunicado);
+            }
+
+            // Comuniado para um condomínio específico
+            if (condominio_id) {
+                const comunicado = await Comunicados.create({
+                    title,
+                    subject,
+                    addressee,
+                    condominio_id
+                });
+                comunicados.push(comunicado);
+            }
+
+            // Comuniados para casas específicas
+            if (casa_ids.length > 0) {
+                for (const casaId of casa_ids) {
+                    const comunicado = await Comunicados.create({
+                        title,
+                        subject,
+                        addressee: 'usuários',
+                        condominio_id: casaId
+                    });
+                    comunicados.push(comunicado);
+                }
+            }
+
+            // Comuniados para síndicos específicos
+            if (sindico_ids.length > 0) {
+                for (const sindicoId of sindico_ids) {
+                    const comunicado = await Comunicados.create({
+                        title,
+                        subject,
+                        addressee: 'sindicos',
+                        condominio_id: sindicoId
+                    });
+                    comunicados.push(comunicado);
+                }
+            }
+
+            return comunicados;
+
         } catch (error) {
             console.error('Erro ao criar comunicado.', error);
             throw error;
         }
     }
 
-    static async update(id, {title, subject, addressee}){
+    static async update(id, { title, subject, addressee, condominio_id }) {
         try {
             const comunicado = await Comunicados.findByPk(id);
-            if(!comunicado) throw new Error('Comunicado não encontrado');
+            if (!comunicado) throw new Error('Comunicado não encontrado');
 
             await comunicado.update({
-                title, subject, addressee
+                title, subject, addressee, condominio_id
             })
             return comunicado;
 
@@ -8460,7 +8701,7 @@ export default class ComunicadosService {
     static async deleteComunicado(id) {
         try {
             const comunicado = await Comunicados.findByPk(id);
-            if(!comunicado) throw new Error('Comunicado não encontrado');
+            if (!comunicado) throw new Error('Comunicado não encontrado');
 
             await comunicado.destroy();
             return {
@@ -8472,7 +8713,46 @@ export default class ComunicadosService {
             throw error;
         }
     }
+
+
+    // Marca um comunicado como lido
+    static async marcarComoLido(user_id, comunicado_id) {
+        try {
+            let registro = await ComunicadosLidos.findOne({
+                where: { user_id, comunicado_id }
+            });
+
+            if (!registro) {
+                registro = await ComunicadosLidos.create({
+                    user_id,
+                    comunicado_id,
+                    lido: true
+                });
+            } else {
+                await registro.update({ lido: true });
+            }
+
+            return registro;
+        } catch (error) {
+            console.error("Erro ao marcar comunicado como lido", error);
+            throw error;
+        }
+    }
+
+    // Busca todos os comunicados não lidos de um usuário
+    static async getNaoLidos(user_id) {
+        try {
+            return await ComunicadosLidos.findAll({
+                where: { user_id, lido: false },
+                include: ["comunicado"] // se quiser incluir dados do comunicado
+            });
+        } catch (error) {
+            console.error("Erro ao buscar comunicados não lidos", error);
+            throw error;
+        }
+    }
 }
+
 
 
 =================================================================================
@@ -8602,9 +8882,9 @@ export default class CondominioService {
 
     static async updateNameCondominio(id, { name }) {
         try {
-            
+
             const condominio = await Condominio.findByPk(id);
-            
+
             if (!condominio) {
                 throw new Error('Condominio não encontrado.')
             }
@@ -8656,20 +8936,34 @@ export default class CondominioService {
     static async atribuirSindico(id, { sindico_id }) {
         try {
             const condominio = await Condominio.findByPk(id);
-            if (!condominio) throw new Error('Condomínio não encontrado');
+            if (!condominio) {
+                throw new Error('Condomínio não encontrado.');
+            }
 
             if (condominio.sindico_id) {
                 throw new Error('Esse condomínio já possui um síndico.');
             }
 
+            const condominioDoSindico = await Condominio.findOne({
+                where: { sindico_id }
+            });
+
+            if (condominioDoSindico) {
+                throw new Error(
+                    `Este síndico já administra um condomínio.`
+                );
+            }
+
             await condominio.update({ sindico_id });
 
             return condominio;
+
         } catch (error) {
-            console.error('Erro ao atribuir síndico', error);
+            console.error('Erro ao atribuir síndico:', error);
             throw error;
         }
     }
+
 
     static async inativarCondominio(id) {
         try {
@@ -9125,66 +9419,68 @@ Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-admin\src\services\UserSe
 
 import User from "../models/User.js";
 import UserView from "../models/UserView.js";
+import { Sequelize } from "sequelize";
+
 
 export default class UserService {
 
     static async getAllUsers(page = 1, limit = 10) {
-            try {
-                const options = {
-                    page,
-                    paginate: limit,
-                    order: [['user_id', 'DESC']]
-                }
-                const usuarios = await UserView.paginate(options);
-                return usuarios;
-            } catch (error) {
-                console.error("Erro ao listar todas as usuarios", error);
-                throw error;
+        try {
+            const options = {
+                page,
+                paginate: limit,
+                order: [['user_id', 'DESC']]
             }
+            const usuarios = await UserView.paginate(options);
+            return usuarios;
+        } catch (error) {
+            console.error("Erro ao listar todas as usuarios", error);
+            throw error;
         }
+    }
 
-         static async getAllUsersSindicos(page = 1, limit = 10) {
-            try {
-                const options = {
-                    page,
-                    paginate: limit,
-                    where: {user_role: 'sindico'},
-                    order: [['user_id', 'DESC']]
-                }
-                const sindicos = await UserView.paginate(options);
-                return sindicos;
-            } catch (error) {
-                console.error("Erro ao listar todas as sindicos", error);
-                throw error;
+    static async getAllUsersSindicos(page = 1, limit = 10) {
+        try {
+            const options = {
+                page,
+                paginate: limit,
+                where: { user_role: 'sindico' },
+                order: [['user_id', 'DESC']]
             }
+            const sindicos = await UserView.paginate(options);
+            return sindicos;
+        } catch (error) {
+            console.error("Erro ao listar todas as sindicos", error);
+            throw error;
         }
+    }
 
 
     static async getAllUserActives(page = 1, limit = 10) {
         try {
-            
-                const options = {
-                    page,
-                    paginate: limit,
-                    where: {user_status: 'ativo'},
-                    order: [['user_id', 'DESC']]
-                }
-                const usuarios = await UserView.paginate(options);
-                return usuarios;
-            } catch (error) {
-                console.error("Erro ao listar todas as usuarios", error);
-                throw error;
+
+            const options = {
+                page,
+                paginate: limit,
+                where: { user_status: 'ativo' },
+                order: [['user_id', 'DESC']]
             }
+            const usuarios = await UserView.paginate(options);
+            return usuarios;
+        } catch (error) {
+            console.error("Erro ao listar todas as usuarios", error);
+            throw error;
         }
-    
-    
+    }
+
+
 
     static async getAllUsersDeactivated(page = 1, limit = 10) {
         try {
             const options = {
                 page,
                 paginate: limit,
-                where: {user_status: 'inativo'},
+                where: { user_status: 'inativo' },
                 order: [['user_id', 'DESC']]
             }
             const usuarios = await UserView.paginate(options);
@@ -9334,21 +9630,41 @@ export default class UserService {
         }
     }
 
-    static async setarSindico(id){
+    static async setarSindico(id) {
         try {
             const user = await User.findByPk(id);
-            if(!user) throw new Error('Usuario nao encontrado');
+            if (!user) throw new Error('Usuario nao encontrado');
 
-            if(user.type === 'casa') throw new Error('Esse usuário não faz parte de um condominio')
-            if(user.role === 'sindico') throw new Error('Esse usuário ja é sindico')
+            if (user.type === 'casa') throw new Error('Esse usuário não faz parte de um condominio')
+            if (user.role === 'sindico') throw new Error('Esse usuário ja é sindico')
 
-                await user.update({
-                    role: "sindico"
-                })
+            await user.update({
+                role: "sindico"
+            })
 
-                return user;
+            return user;
         } catch (error) {
             console.error('Erro ao atualizar para sindico', error);
+            throw error;
+        }
+    }
+
+    static async novosUsuariosUltimos6Meses() {
+        const hoje = new Date();
+        const seisMesesAtras = new Date(hoje.getFullYear(), hoje.getMonth() - 5, 1);
+
+        try {
+            const total = await User.count({
+                where: {
+                    criado_em: {
+                        [Sequelize.Op.gte]: seisMesesAtras
+                    }
+                }
+            });
+
+            return total;
+        } catch (error) {
+            console.error("Erro ao contar novos usuários dos últimos 6 meses:", error);
             throw error;
         }
     }

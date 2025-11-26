@@ -1,460 +1,275 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { ScrollView, StyleSheet, View, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ScrollView, StyleSheet, View, Dimensions, RefreshControl, StatusBar } from 'react-native';
 import { 
   Provider as PaperProvider, 
   DefaultTheme, 
   Card, 
   Text, 
-  SegmentedButtons, 
   Title, 
-  Paragraph, 
-  List,
   Surface,
   ProgressBar,
-  Button
+  Avatar,
+  IconButton
 } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
 import { LineChart } from 'react-native-gifted-charts';
-import 'react-native-svg';
-import { MotiView, MotiText } from 'moti';
-import { MotiPressable } from 'moti/interactions';
-import * as Haptics from 'expo-haptics';
+import { MotiView } from 'moti';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Haptics from 'expo-haptics';
 
-const API_URL = 'http://localhost:3334/api';
-
+const API_URL = 'http://localhost:3334/api'; 
 const { width: screenWidth } = Dimensions.get('window');
-const chartWidth = screenWidth - 80;
 
 const theme = {
   ...DefaultTheme,
-  roundness: 12,
+  roundness: 20,
   colors: { 
     ...DefaultTheme.colors, 
     primary: '#0A84FF', 
-    accent: '#005ecb', 
-    background: '#F2F2F7', 
+    background: '#F5F7FA', 
     surface: '#FFFFFF', 
     text: '#1C1C1E', 
-    placeholder: '#8A8A8E', 
     success: '#34C759', 
-    danger: '#FF3B30', 
     warning: '#FF9500', 
-    cardBlue: '#E3F2FD', 
-    cardGreen: '#E8F5E9' 
+    error: '#FF3B30',
   },
 };
 
-const mockChartData = {
-    hoje: [ { value: 10, label: '0h' }, { value: 12, label: '3h' }, { value: 20, label: '6h' }, { value: 18, label: '9h' }, { value: 25, label: '12h' }, { value: 15.7, label: 'Agora', dataPointText: '15.7' } ],
-    semana: [ { value: 110, label: 'Seg' }, { value: 105, label: 'Ter' }, { value: 120, label: 'Qua' }, { value: 115, label: 'Qui' }, { value: 95, label: 'Sex' }, { value: 90, label: 'Sáb' }, { value: 89, label: 'Dom', dataPointText: '89' } ],
-    mes: [ { value: 800, label: 'S1' }, { value: 750, label: 'S2' }, { value: 820, label: 'S3' }, { value: 790, label: 'S4', dataPointText: '790' } ]
-};
-const mockRecentHistory = [
-    { id: '1', icon: 'shower-head', description: 'Banho (Ducha Principal)', time: '14:32', value: '-25 L', type: 'expense' },
-    { id: '2', icon: 'alert-decagram', description: 'Pequeno vazamento detectado', time: '12:15', value: 'Verificar', type: 'alert' },
-    { id: '3', icon: 'leaf-circle', description: 'Meta de economia diária', time: '08:00', value: '+5 L', type: 'saving' },
-];
-
-export default function Inicio() {
-  const [isLoading, setIsLoading] = useState(true);
+export default function Inicio({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
+  const [userName, setUserName] = useState('Usuário');
+  
+  // Dados
+  const [consumoHoje, setConsumoHoje] = useState(0);
+  const [metaDiaria, setMetaDiaria] = useState(0); 
+  const [metaTotal, setMetaTotal] = useState(0); 
+  const [dicaDoDia, setDicaDoDia] = useState("Carregando dica...");
+  const [loading, setLoading] = useState(true);
 
-  const [consumptionData, setConsumptionData] = useState({ todayConsumption: 0, todaySavings: 0, comparison: 0 });
-  const [dailyGoal, setDailyGoal] = useState(200);
-  const [chartData, setChartData] = useState(mockChartData);
-  const [recentHistory, setRecentHistory] = useState(mockRecentHistory);
-  const [dicaDoPingo, setDicaDoPingo] = useState("Carregando dica...");
-  const [filter, setFilter] = useState('hoje');
+  // Dados para o gráfico (pode ser substituído por dados reais futuramente)
+  const chartData = [
+    { value: 10, label: '0h' }, 
+    { value: 12, label: '4h' }, 
+    { value: 25, label: '8h' }, 
+    { value: 30, label: '12h' }, 
+    { value: consumoHoje > 30 ? consumoHoje : 35, label: 'Agora' }
+  ];
 
-  const loadDashboardData = useCallback(async (isRefresh = false) => {
-    if (!isRefresh) {
-      setIsLoading(true);
-    }
-    // Não definimos o erro como nulo aqui para que a mensagem de erro permaneça visível até que uma atualização bem-sucedida ocorra.
-
+  const loadDashboardData = useCallback(async () => {
     try {
       const authToken = await AsyncStorage.getItem('token');
       const userDataString = await AsyncStorage.getItem('user');
+      if (!authToken || !userDataString) return;
 
-      if (!authToken || !userDataString) {
-        throw new Error("Usuário não autenticado. Por favor, faça login novamente.");
-      }
-      
       const user = JSON.parse(userDataString);
-      if (!user || !user.residencia_id || !user.residencia_type) {
-        throw new Error("Dados da residência do usuário estão incompletos. Tente fazer login de novo.");
-      }
+      setUserName(user.name.split(' ')[0]);
 
       const headers = { 'Authorization': `Bearer ${authToken}` };
-      const residenciaEndpoint = user.residencia_type === 'apartamento' ? 'apartamentos' : 'casas';
-      const consumoUrl = `${API_URL}/${residenciaEndpoint}/${user.residencia_id}/consumo-total`;
-
-      const [consumoResponse, metasResponse, dicaResponse] = await Promise.all([
-        axios.get(consumoUrl, { headers }),
-        axios.get(`${API_URL}/metas`, { headers }),
-        axios.get(`${API_URL}/dica`, { headers }),
-      ]);
+      const endpointResidencia = user.residencia_type === 'apartamento' ? 'apartamentos' : 'casas';
       
-      // Se as chamadas foram bem-sucedidas, limpamos qualquer erro anterior.
-      setError(null);
+      // 1. Busca Dica (Prioridade Visual)
+      axios.get(`${API_URL}/dica`, { headers }).then(res => {
+         if (res.data?.dica) setDicaDoDia(res.data.dica);
+      }).catch(err => console.log("Erro dica", err));
 
-      const consumoResult = consumoResponse.data;
-      if (consumoResult && typeof consumoResult.consumoTotal !== 'undefined') {
-        setConsumptionData(prev => ({
-          ...prev,
-          todayConsumption: parseFloat(consumoResult.consumoTotal) || 0,
-        }));
+      // 2. Busca Consumo
+      const resConsumo = await axios.get(`${API_URL}/${endpointResidencia}/${user.residencia_id}/consumo-total`, { headers });
+      const atual = parseFloat(resConsumo.data.consumoHoje || 0);
+      setConsumoHoje(atual);
+
+      // 3. Busca Meta Ativa para calcular a média diária
+      const resMetas = await axios.get(`${API_URL}/metas`, { headers });
+      if (resMetas.data?.docs?.length > 0) {
+          // Pega a meta mais recente
+          const metaAtiva = resMetas.data.docs[0];
+          
+          if (metaAtiva.status === 'em_andamento') {
+             const limiteTotal = parseFloat(metaAtiva.limite_consumo);
+             let divisor = 1;
+             
+             if (metaAtiva.periodo === '30_dias' || metaAtiva.periodo === '30 dias') divisor = 30;
+             else if (metaAtiva.periodo === '14 dias') divisor = 14;
+             else if (metaAtiva.periodo === '7 dias') divisor = 7;
+
+             setMetaTotal(limiteTotal);
+             setMetaDiaria(limiteTotal / divisor);
+          } else {
+             // Se a última meta já acabou, define 0 ou um padrão
+             setMetaDiaria(0); 
+          }
+      } else {
+          setMetaDiaria(0); // Sem metas
       }
 
-      const metasResult = metasResponse.data;
-      if (metasResult?.docs?.length > 0) {
-        setDailyGoal(parseFloat(metasResult.docs[0].limite_consumo));
-      }
-      
-      const dicaResult = dicaResponse.data;
-      if (dicaResult?.dica) {
-        setDicaDoPingo(dicaResult.dica);
-      }
-
-    } catch (err) {
-      const errorMessage = err.response?.data?.error || err.message || "Erro desconhecido ao carregar dados.";
-      setError(errorMessage);
-      console.error("Erro em loadDashboardData:", errorMessage);
+    } catch (error) {
+      console.error("Erro dashboard:", error);
     } finally {
-      // Garante que o spinner de carregamento inicial seja desativado.
-      if (!isRefresh) {
-        setIsLoading(false);
-      }
-      // Garante que o indicador de "puxar para atualizar" seja desativado.
-      setRefreshing(false);
+        setLoading(false);
     }
   }, []);
 
-  // Efeito para a carga inicial dos dados
-  useEffect(() => {
-    loadDashboardData(false);
-  }, [loadDashboardData]);
+  useEffect(() => { loadDashboardData(); }, [loadDashboardData]);
 
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      loadDashboardData(true);
-    }, 2000); 
-    return () => clearInterval(intervalId);
-  }, [loadDashboardData]);
-
-
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    loadDashboardData(true);
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await loadDashboardData();
+    setRefreshing(false);
   };
-  
-  const comparisonColor = useMemo(() => (consumptionData.comparison <= 0 ? theme.colors.success : theme.colors.danger), [consumptionData.comparison]);
-  const comparisonText = useMemo(() => { if (consumptionData.comparison == null) return ''; return consumptionData.comparison <= 0 ? `${consumptionData.comparison}% em relação a ontem` : `+${consumptionData.comparison}% em relação a ontem`; }, [consumptionData.comparison]);
-  const consumptionProgress = useMemo(() => (dailyGoal > 0 ? Math.min(consumptionData.todayConsumption / dailyGoal, 1) : 0), [consumptionData.todayConsumption, dailyGoal]);
 
-  const handleFilterChange = (newFilter) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setFilter(newFilter);
-  };
+  // Lógica de visualização
+  const temMeta = metaDiaria > 0;
+  const progresso = temMeta ? Math.min(consumoHoje / metaDiaria, 1) : 0;
+  const restante = temMeta ? Math.max(metaDiaria - consumoHoje, 0) : 0;
   
-  if (isLoading && !refreshing) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
-  }
-  
-  if (error && !isLoading) {
-     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <Title style={{ textAlign: 'center' }}>Ocorreu um erro</Title>
-        <Paragraph style={{textAlign: 'center'}}>{error}</Paragraph>
-        <Button onPress={onRefresh} style={{marginTop: 10}}>Tentar Novamente</Button>
-      </View>
-    );
-  }
+  // Cor dinâmica
+  let statusColor = '#4CAF50'; // Verde
+  if (progresso > 0.7) statusColor = '#FFC107'; // Amarelo
+  if (progresso >= 1) statusColor = '#FF5252'; // Vermelho
 
   return (
     <PaperProvider theme={theme}>
-      <ScrollView 
-        style={styles.container} 
-        contentContainerStyle={styles.contentContainer} 
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-          <>
-            <MotiView from={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'timing', duration: 500 }}>
-              <Card style={styles.card} elevation={4}>
-                  <Card.Content>
-                    <View style={styles.dailyCardHeader}>
-                      <Title style={styles.dailyCardTitle}>Resumo de Hoje</Title>
-                      <MotiText from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 300 }} style={[styles.comparisonText, { color: comparisonColor }]}>
-                        {comparisonText}
-                      </MotiText>
-                    </View>
+      <StatusBar barStyle="dark-content" backgroundColor="#F5F7FA" />
+      <View style={styles.container}>
+        
 
-                    <View style={styles.innerCardsContainer}>
-                      <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardBlue }]}>
-                        <List.Icon icon="water-outline" color={theme.colors.primary} style={styles.innerCardIcon} />
-                        <View>
-                          <MotiText style={styles.innerCardValue}>{consumptionData.todayConsumption.toFixed(1)} L</MotiText>
-                          <Text style={styles.innerCardLabel}>Consumido</Text>
-                        </View>
-                      </Surface>
-                      <Surface style={[styles.innerCard, { backgroundColor: theme.colors.cardGreen }]}>
-                        <List.Icon icon="leaf-circle-outline" color={theme.colors.success} style={styles.innerCardIcon}/>
-                        <View>
-                          <MotiText style={styles.innerCardValue}>{consumptionData.todaySavings.toFixed(1)} L</MotiText>
-                          <Text style={styles.innerCardLabel}>Economizado</Text>
-                        </View>
-                      </Surface>
-                    </View>
-                    
-                    <View style={styles.goalContainer}>
-                      <Text style={styles.goalText}>Meta Diária: {consumptionData.todayConsumption.toFixed(0)}L / {dailyGoal.toFixed(0)}L</Text>
-                      <ProgressBar progress={consumptionProgress} color={theme.colors.primary} style={styles.progressBar} />
-                    </View>
 
-                    <View style={styles.insightContainer}>
-                        <List.Icon icon="lightbulb-on-outline" color={theme.colors.warning} style={styles.innerCardIcon} />
-                        <Paragraph style={styles.insightText}>
-                            <Text style={{fontWeight: 'bold'}}>Dica do Pingo:</Text> {dicaDoPingo}
-                        </Paragraph>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+          
+          {/* 1. DICA DO PINGO (NO TOPO) */}
+          <MotiView from={{ opacity: 0, translateY: -10 }} animate={{ opacity: 1, translateY: 0 }} transition={{ duration: 600 }}>
+             <Surface style={styles.tipCard} elevation={2}>
+                <View style={styles.tipIconContainer}>
+                    <Avatar.Icon size={40} icon="water-outline" color="#FFF" style={{backgroundColor: theme.colors.primary}} />
+                </View>
+                <View style={{flex: 1}}>
+                    <Text style={styles.tipTitle}>Dica do Dia</Text>
+                    <Text style={styles.tipText} numberOfLines={3}>{dicaDoDia}</Text>
+                </View>
+             </Surface>
+          </MotiView>
+
+          {/* 2. CARD PRINCIPAL (CONSUMO HOJE) */}
+          <MotiView from={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 100, duration: 500 }}>
+            <LinearGradient
+                colors={['#7c8df0ff', '#1e1bf1ff']}
+                start={{x: 0, y: 0}} end={{x: 1, y: 1}}
+                style={styles.mainCard}
+            >
+                <View style={styles.mainCardTop}>
+                    <View>
+                        <Text style={styles.mainLabel}>Consumo Hoje</Text>
+                        <View style={{flexDirection: 'row', alignItems: 'flex-end'}}>
+                             <Text style={styles.mainValue}>{consumoHoje.toFixed(0)}</Text>
+                             <Text style={styles.mainUnit}> Litros</Text>
+                        </View>
                     </View>
-                  </Card.Content>
-              </Card>
-            </MotiView>
-            
-            <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 150 }}>
-              <Card style={styles.card} elevation={2}>
+                    <View style={styles.percentBadge}>
+                         <Text style={styles.percentText}>
+                            {temMeta ? `${Math.round(progresso * 100)}%` : '--%'}
+                         </Text>
+                    </View>
+                </View>
+
+                {temMeta ? (
+                    <View>
+                        <View style={styles.progressLabelRow}>
+                            <Text style={styles.progressLabel}>Meta diária: {metaDiaria.toFixed(0)} L</Text>
+                            <Text style={styles.progressLabel}>{restante.toFixed(0)} L restantes</Text>
+                        </View>
+                        <ProgressBar progress={progresso} color={progresso >= 1 ? '#FF5252' : '#FFF'} style={styles.progressBar} />
+                    </View>
+                ) : (
+                    <Text style={styles.noMetaText}>Sem meta ativa. Crie uma na aba Metas!</Text>
+                )}
+            </LinearGradient>
+          </MotiView>
+
+          {/* 3. GRÁFICO (CLEAN) */}
+          <MotiView delay={200} from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }}>
+             <Text style={styles.sectionTitle}>Tendência de Consumo</Text>
+             <Card style={styles.chartCard}>
                 <Card.Content>
-                  <SegmentedButtons value={filter} onValueChange={handleFilterChange} style={styles.filterButtons} buttons={[ { value: 'hoje', label: 'Hoje' }, { value: 'semana', label: '7d' }, { value: 'mes', label: '30d' }, ]} />
-                  <MotiView key={filter} from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ type: 'timing', duration: 300 }}>
                     <LineChart 
-                      data={chartData[filter]}
-                      width={chartWidth}
-                      height={180}
-                      color1={theme.colors.primary} 
-                      dataPointsColor1={theme.colors.primary} 
-                      thickness1={3} 
-                      curved
-                      yAxisTextStyle={{ color: theme.colors.placeholder, fontSize: 10 }} 
-                      xAxisLabelTextStyle={{ color: theme.colors.placeholder, fontSize: 10, paddingTop: 5 }} 
-                      startFillColor1={theme.colors.primary} 
-                      endFillColor1={theme.colors.background}
-                      areaChart
-                      initialSpacing={15}
-                      endSpacing={15}
-                      noOfSections={4}
-                      yAxisThickness={0}
-                      rulesType="dashed"
-                      rulesColor="#EAEAEA"
-                      pointerConfig={{
-                        pointerStripHeight: 160,
-                        pointerStripColor: theme.colors.primary,
-                        pointerStripWidth: 2,
-                        pointerColor: theme.colors.primary,
-                        radius: 6,
-                        pointerLabelWidth: 100,
-                        pointerLabelHeight: 90,
-                        activatePointersOnLongPress: true,
-                        autoAdjustPointerLabelPosition: true,
-                        pointerLabelComponent: items => (
-                          <View style={styles.pointerLabel}>
-                            <Text style={styles.pointerLabelValue}>{items[0].value} L</Text>
-                            <Text style={styles.pointerLabelDate}>{items[0].label}</Text>
-                          </View>
-                        ),
-                      }}
+                        data={chartData}
+                        height={160}
+                        width={screenWidth - 70}
+                        color={theme.colors.primary}
+                        thickness={3}
+                        curved
+                        hideDataPoints={false}
+                        dataPointsColor={theme.colors.primary}
+                        startFillColor={theme.colors.primary}
+                        endFillColor="#FFFFFF"
+                        startOpacity={0.2}
+                        endOpacity={0.0}
+                        areaChart
+                        yAxisThickness={0}
+                        xAxisThickness={0}
+                        hideRules
+                        hideYAxisText
+                        xAxisLabelTextStyle={{color: '#999', fontSize: 10}}
                     />
-                  </MotiView>
                 </Card.Content>
-              </Card>
-            </MotiView>
-            
-            <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 300 }} style={styles.actionsContainer}>
-                <MotiPressable animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })} style={styles.actionButton} onPress={() => console.log('Relatórios')}>
-                    <List.Icon icon="file-chart-outline" color={theme.colors.primary} />
-                    <Text style={styles.actionText}>Ver Relatórios</Text>
-                </MotiPressable>
-                <MotiPressable animate={({ pressed }) => ({ scale: pressed ? 0.95 : 1 })} style={styles.actionButton} onPress={() => console.log('Metas')}>
-                    <List.Icon icon="bullseye-arrow" color={theme.colors.success} />
-                    <Text style={styles.actionText}>Ajustar Metas</Text>
-                </MotiPressable>
-            </MotiView>
-            
-            <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 500, delay: 450 }}>
-              <Card style={styles.card} elevation={2}>
-                <Card.Content>
-                  <Title>Histórico Recente</Title>
-                  {recentHistory.map((item, index) => {
-                    const itemColor = item.type === 'expense' ? theme.colors.danger : 
-                                      item.type === 'saving' ? theme.colors.success : 
-                                      theme.colors.warning;
-                    return (
-                      <MotiView key={item.id} from={{ opacity: 0, translateX: -20 }} animate={{ opacity: 1, translateX: 0 }} transition={{ type: 'timing', delay: 100 + index * 100 }}>
-                        <List.Item 
-                          title={item.description} 
-                          description={item.time} 
-                          titleNumberOfLines={1} 
-                          left={props => <List.Icon {...props} icon={item.icon} color={itemColor} />} 
-                          right={() => <Text style={[styles.historyValue, { color: itemColor }]}>{item.value}</Text>} 
-                          style={[styles.listItem, index === 0 && styles.firstListItem]} 
-                        />
-                      </MotiView>
-                    )
-                  })}
-                </Card.Content>
-              </Card>
-            </MotiView>
-          </>
-      </ScrollView>
+             </Card>
+          </MotiView>
+
+          {/* 4. ATALHOS / RESUMO */}
+          <View style={styles.row}>
+             <Surface style={[styles.statBox, {borderLeftColor: theme.colors.success}]}>
+                 <Text style={styles.statLabel}>Economia (Mês)</Text>
+                 <Text style={styles.statValue}>1.2k L</Text> 
+                 {/* Valor mockado ou vindo de endpoint futuro */}
+             </Surface>
+             <View style={{width: 10}} />
+             <Surface style={[styles.statBox, {borderLeftColor: theme.colors.warning}]}>
+                 <Text style={styles.statLabel}>Meta Total</Text>
+                 <Text style={styles.statValue}>{temMeta ? `${metaTotal.toFixed(0)} L` : 'N/A'}</Text>
+             </Surface>
+          </View>
+
+        </ScrollView>
+      </View>
     </PaperProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: theme.colors.background,
-  },
-  contentContainer: { 
-    padding: 16, 
-    paddingBottom: 48,
-  },
-  card: { 
-    marginBottom: 20, 
-    borderRadius: theme.roundness * 1.5,
-    backgroundColor: theme.colors.surface,
-  },
-  dailyCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  dailyCardTitle: {
-    fontWeight: 'bold',
-  },
-  comparisonText: { 
-    fontSize: 14, 
-    fontWeight: '600',
-  },
-  innerCardsContainer: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  innerCard: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    padding: 12, 
-    borderRadius: theme.roundness, 
-    flex: 1,
-  },
-  innerCardIcon: {
-    marginRight: 8,
-    marginLeft: 0,
-    marginTop: 0,
-    marginBottom: 0,
-  },
-  innerCardValue: { 
-    fontSize: 20, 
-    fontWeight: 'bold',
-    color: theme.colors.text,
-  },
-  innerCardLabel: { 
-    fontSize: 13, 
-    color: theme.colors.placeholder,
-  },
-  goalContainer: {
-    marginTop: 20,
-  },
-  goalText: {
-    marginBottom: 8,
-    fontSize: 14,
-    color: theme.colors.placeholder,
-  },
-  progressBar: {
-    height: 8,
-    borderRadius: 4,
-  },
-  insightContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: '#FFFBE6',
-      borderRadius: theme.roundness,
-      padding: 12,
-      marginTop: 20,
-  },
-  insightText: {
-      flex: 1,
-      fontSize: 14,
-      color: '#B26E00',
-      lineHeight: 20,
-  },
-  filterButtons: { 
-    marginBottom: 16,
-  },
-  pointerLabel: {
-    height: 60,
-    width: 100,
-    backgroundColor: 'white',
-    borderRadius: 8,
-    justifyContent: 'center',
-    padding: 12,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-  },
-  pointerLabelValue: {
-    fontWeight: 'bold',
-    textAlign: 'center',
-    fontSize: 14,
-  },
-  pointerLabelDate: {
-    textAlign: 'center',
-    fontSize: 12,
-    color: theme.colors.placeholder,
-  },
-  actionsContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      gap: 16,
-      marginBottom: 20,
-  },
-  actionButton: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.roundness,
-      paddingVertical: 12,
-      elevation: 2,
-  },
-  actionText: {
-      fontSize: 15,
-      fontWeight: '600',
-      color: theme.colors.text,
-  },
-  listItem: {
-      paddingLeft: 0,
-  },
-  firstListItem: {
-      borderTopWidth: 1, 
-      borderTopColor: '#F0F0F0', 
-      paddingTop: 16, 
-      marginTop: 10,
-  },
-  historyValue: {
-      fontWeight: 'bold', 
-      alignSelf: 'center',
-      fontSize: 15,
-  },
+  container: { flex: 1, backgroundColor: '#F5F7FA' },
+  header: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F5F7FA' },
+  dateText: { fontSize: 12, textTransform: 'uppercase', color: '#8A8A8E', fontWeight: '600' },
+  greeting: { fontSize: 22, fontWeight: 'bold', color: '#1C1C1E' },
+  scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
+  
+  // Dica do Pingo
+  tipCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', borderRadius: 16, padding: 15, marginBottom: 20 },
+  tipIconContainer: { marginRight: 15 },
+  tipTitle: { fontSize: 14, fontWeight: 'bold', color: '#1C1C1E', marginBottom: 2 },
+  tipText: { fontSize: 13, color: '#555', lineHeight: 18 },
+
+  // Card Principal
+  mainCard: { borderRadius: 24, padding: 25, marginBottom: 25, elevation: 5 },
+  mainCardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
+  mainLabel: { color: 'rgba(255,255,255,0.9)', fontSize: 14, marginBottom: 5 },
+  mainValue: { color: '#FFF', fontSize: 42, fontWeight: 'bold' },
+  mainUnit: { color: 'rgba(255,255,255,0.9)', fontSize: 18, paddingBottom: 6 },
+  percentBadge: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 5 },
+  percentText: { color: '#FFF', fontWeight: 'bold' },
+  progressLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  progressLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 12 },
+  progressBar: { height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.3)' },
+  noMetaText: { color: 'rgba(255,255,255,0.8)', fontStyle: 'italic', fontSize: 13 },
+
+  // Gráfico e Stats
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 10, marginLeft: 5 },
+  chartCard: { borderRadius: 16, backgroundColor: '#FFF', elevation: 2, marginBottom: 20 },
+  row: { flexDirection: 'row' },
+  statBox: { flex: 1, backgroundColor: '#FFF', borderRadius: 12, padding: 15, elevation: 2, borderLeftWidth: 4 },
+  statLabel: { fontSize: 12, color: '#888', marginBottom: 5 },
+  statValue: { fontSize: 18, fontWeight: 'bold', color: '#333' },
 });

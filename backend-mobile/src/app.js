@@ -1,5 +1,4 @@
-// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\app.js
-// CÓDIGO COMPLETO E CORRIGIDO
+
 
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
@@ -8,10 +7,12 @@ import { fastifySwagger } from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
 import pino from 'pino';
 import fs from 'fs';
-import multipart from '@fastify/multipart';      // 1. IMPORTADO
-import fastifyStatic from '@fastify/static';  // 2. IMPORTADO
-import path from 'path';                         // 3. IMPORTADO
-import { fileURLToPath } from 'url';             // 4. IMPORTADO
+import multipart from '@fastify/multipart';      
+import fastifyStatic from '@fastify/static';  
+import path from 'path';                         
+import { fileURLToPath } from 'url';             
+import gamificationRoutes from './routes/gamification.routes.js'; 
+
 
 import authRoutes from './routes/auth.routes.js';
 import apartamentoRoutes from './routes/apartamento.routes.js';
@@ -115,5 +116,6 @@ fastify.register(cepRoutes, { prefix: '/api/cep' });
 fastify.register(profileRoutes, { prefix: '/api/profile' });
 fastify.register(passwordRoutes, { prefix: '/api/password' });
 fastify.register(comunicadosRoutes, { prefix: '/api/comunicados' });
+fastify.register(gamificationRoutes, { prefix: '/api/gamification' });
 
 export default fastify;
