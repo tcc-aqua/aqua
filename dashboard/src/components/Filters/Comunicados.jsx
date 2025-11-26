@@ -29,7 +29,7 @@ export default function ComunicadosFilter({ onApply, role = "usuario" }) {
     };
 
     return (
-        <Card className="container mx-auto p-4 rounded-md shadow-sm mb-6 hover:border-sky-400 dark:hover:border-sky-950">
+        <Card className="container mx-auto p-4 rounded-md shadow-sm mb-6 border-l-5 border-l-accent0">
             <div className="flex flex-wrap gap-4 items-end">
 
                 {/* Campo de busca */}

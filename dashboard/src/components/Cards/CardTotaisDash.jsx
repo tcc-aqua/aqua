@@ -43,7 +43,7 @@ export default function CardTopDash() {
           alertasRes.json(),
         ]);
 
-      
+
 
         const totalResidencias = dataResidencias.totalResidencias ?? 0;
         const totalCasas = dataResidencias.totalCasas ?? 0;
@@ -77,6 +77,7 @@ export default function CardTopDash() {
       icon: Users,
       iconColor: "text-accent",
       detalhe: `${userStats.totalCasas} casas + ${userStats.totalApartamentos} aptos`,
+      borderColor: " border-b-accent "
     },
     {
       title: "Sensores ativos",
@@ -84,6 +85,8 @@ export default function CardTopDash() {
       icon: Signal,
       iconColor: "text-purple-700",
       detalhe1: `${userStats.sensoresAtivos} de ${userStats.sensoresTotal} operacionais`,
+      borderColor: " border-b-purple-700"
+
     },
     {
       title: "Usuários ativos",
@@ -91,13 +94,15 @@ export default function CardTopDash() {
       icon: Check,
       iconColor: "text-green-500",
       detalhe2: `${userStats.totalCasas} moradores + ${userStats.totalApartamentos} síndicos`,
+      borderColor: " border-b-green-500 "
     },
     {
       title: "Alertas ativos",
       value: userStats.alertasAtivos,
       icon: Siren,
-      iconColor: "text-red-700",
+      iconColor: "text-red-500",
       detalhe3: "Precisa de atenção",
+      borderColor: " border-b-red-500 "
     },
   ];
 
@@ -113,7 +118,7 @@ export default function CardTopDash() {
             animate="visible"
             custom={i * 0.2}
           >
-            <Card className=" hover:border-sky-400 dark:hover:border-sky-950">
+            <Card className={`border-b-4 ${card.borderColor}`}>
               <CardHeader>
                 <CardTitle className="font-bold text-xl text-foreground">
                   {card.title}
@@ -121,7 +126,7 @@ export default function CardTopDash() {
               </CardHeader>
               <CardContent className="flex flex-col justify-between -mt-6">
                 <div className="flex items-center justify-between">
-              
+
                   <p className="font-bold text-4xl text-black dark:text-white">
                     {String(card.value)}
                   </p>
@@ -130,18 +135,18 @@ export default function CardTopDash() {
                 {card.detalhe && (
                   <p className="text-sm text-accent mt-2">{card.detalhe}</p>
                 )}
-                  {card.detalhe1 && (
-                      <p className="text-purple-600 text-sm mt-1">
-                        {card.detalhe1} 
-                      </p>
-                    )}
-                    {card.detalhe2 && !card.valueAtivos && (
-                      <p className="text-sm mt-1 text-green-600"> {card.detalhe2} </p>
-                    )}
-                    {card.detalhe3 && (
-                      <p className="text-sm mt-1 text-destructive"> {card.detalhe3} </p>
-                    )}
-               
+                {card.detalhe1 && (
+                  <p className="text-purple-600 text-sm mt-1">
+                    {card.detalhe1}
+                  </p>
+                )}
+                {card.detalhe2 && !card.valueAtivos && (
+                  <p className="text-sm mt-1 text-green-600"> {card.detalhe2} </p>
+                )}
+                {card.detalhe3 && (
+                  <p className="text-sm mt-1 text-destructive"> {card.detalhe3} </p>
+                )}
+
               </CardContent>
             </Card>
           </motion.div>

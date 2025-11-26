@@ -338,7 +338,7 @@ export default function EmployeeProfile() {
                     <div className="h-2 w-full rounded-t-md bg-green-600" />
                     <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
                       <div className="p-4 rounded-full bg-green-100 dark:bg-green-900">
-                        <ShieldQuestion className="h-10 w-10 text-green-600 dark:text-green-400" />
+                        <AlertTriangle className="h-10 w-10 text-green-600 dark:text-green-400" />
                       </div>
                       <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
                         Confirmação

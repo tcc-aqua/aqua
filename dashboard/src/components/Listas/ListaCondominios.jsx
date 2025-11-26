@@ -123,19 +123,9 @@ export default function CondominiosDashboard() {
       setCondominios(filteredCondominios);
 
       const stats = {
-        total: dataAll.total ?? usersArray.length,
-        ativos:
-          Array.isArray(dataAtivos.docs) && dataAtivos.docs.length
-            ? dataAtivos.docs.length
-            : Array.isArray(dataAtivos)
-              ? dataAtivos.length
-              : 0,
-        inativos:
-          Array.isArray(dataInativos.docs) && dataInativos.docs.length
-            ? dataInativos.docs.length
-            : Array.isArray(dataInativos)
-              ? dataInativos.length
-              : 0,
+        total: dataAll.total ?? 0,
+        ativos: dataAtivos.total ?? 0,
+        inativos: dataInativos.total ?? 0,
         alertas: filteredCondominios.filter((c) => !c.responsavel_id).length,
       };
 
@@ -204,7 +194,7 @@ export default function CondominiosDashboard() {
 
         setSindicos(lista);
       } catch (err) {
-        
+
         toast.error(err.message);
       }
     };
@@ -335,9 +325,10 @@ export default function CondominiosDashboard() {
     {
       title: "Total de Condomínios",
       value: condominioStats.total,
-      valueAtivos: { casas: condominioStats.ativos },
+      valueAtivos: { total: condominioStats.ativos },
       icon: Building,
       iconColor: "text-accent",
+        borderColor: "border-b-accent",
     },
     {
       title: "Apartamentos Totais",
@@ -353,6 +344,7 @@ export default function CondominiosDashboard() {
       },
       icon: Check,
       iconColor: "text-orange-300",
+        borderColor: "border-b-orange-300",
     },
     {
       title: "Sensores Ativos",
@@ -367,7 +359,9 @@ export default function CondominiosDashboard() {
             100
           ).toFixed(0) + "% operacionais"
           : "0% operacionais",
+            borderColor: "border-b-green-700",
     },
+    
     {
       title: "Total de Síndicos",
       value:
@@ -386,6 +380,7 @@ export default function CondominiosDashboard() {
             ) / condominios.length
           ).toFixed(0)} por condomínio`
           : "0",
+            borderColor: "border-b-yellow-500",
     },
   ];
 
@@ -402,7 +397,7 @@ export default function CondominiosDashboard() {
             const Icon = card.icon;
             return (
               <AnimationWrapper key={card.title} delay={i * 0.2}>
-                <Card className=" hover:border-sky-400 dark:hover:border-sky-950">
+              <Card className={`border-b-4 ${card.borderColor}`}>
                   <CardHeader>
                     <CardTitle className="font-bold text-xl text-foreground">
                       {card.title}
@@ -415,8 +410,8 @@ export default function CondominiosDashboard() {
                       </p>
 
                       {card.valueAtivos && (
-                        <p className="text-sm mt-1 text-accent">
-                          {card.valueAtivos.casas} ativos
+                        <p className="text-sm mt-1 text-accent ">
+                          {card.valueAtivos.total} ativos
                         </p>
                       )}
                       {card.valueAtivos2 && (

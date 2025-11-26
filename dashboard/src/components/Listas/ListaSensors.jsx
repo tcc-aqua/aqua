@@ -105,6 +105,7 @@ const fetchData = async (filters = {}, page = 1, limit = 10) => {
       icon: Signal,
       bg: "bg-card",
       iconColor: "text-purple-700",
+         borderColor:" border-b-purple-700 "
     },
     {
       title: "Sensores Ativos",
@@ -113,14 +114,16 @@ const fetchData = async (filters = {}, page = 1, limit = 10) => {
       bg: "bg-card",
       iconColor: "text-green-700",
       porcentagem: ((sensorStats.ativos / sensorStats.total) * 100).toFixed(0) + "%" + " operacionais",
+         borderColor:" border-b-green-700 "
     },
     {
       title: "Sensores Inativos",
       value: sensorStats.inativos,
       icon: X,
       bg: "bg-card",
-      iconColor: "text-red-600",
-      subTitle: "Precisa de atenção"
+      iconColor: "text-red-500",
+      subTitle: "Precisa de atenção",
+         borderColor:" border-b-red-500 "
     },
     {
       title: "Litros Totais",
@@ -132,8 +135,9 @@ const fetchData = async (filters = {}, page = 1, limit = 10) => {
       })(),
       icon: Droplet,
       bg: "bg-card",
-      iconColor: "text-blue-500",
-      subTitle2: "Total acumulado"
+      iconColor: "text-sky-500",
+      subTitle2: "Total acumulado",
+         borderColor:" border-b-sky-500 "
     }
   ];
 
@@ -150,7 +154,7 @@ const fetchData = async (filters = {}, page = 1, limit = 10) => {
             const Icon = card.icon;
             return (
               <AnimationWrapper key={card.title} delay={i * 0.2}>
-                <Card className=" hover:border-sky-400 dark:hover:border-sky-950" >
+                <Card className={`border-b-4 ${card.borderColor}`}>
                   <CardHeader>
                     <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                   </CardHeader>
@@ -171,7 +175,7 @@ const fetchData = async (filters = {}, page = 1, limit = 10) => {
                       )}
 
                       {card.subTitle2 && (
-                        <p className="text-sm mt-1 text-blue-500">{card.subTitle2}</p>
+                        <p className="text-sm mt-1 text-sky-500">{card.subTitle2}</p>
                       )}
                     </div>
                     <Icon className={`w-8 h-8 bg-${card.iconColor} ${card.iconColor}`} />
