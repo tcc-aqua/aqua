@@ -1,4 +1,5 @@
 import SuporteController from "../controllers/SuporteController.js";
+import { autenticarAdmin } from "../middlewares/AuthMiddleware.js";
 
 export default async function suporteRoutes(fastify) {
 
@@ -20,17 +21,8 @@ export default async function suporteRoutes(fastify) {
             }
         }, SuporteController.enviarMensagem);
 
-    fastify.delete(
-        '/:id',
-        {
-            schema: {
-                summary: 'Deletar mensagem',
-                tags: ['suporte'],
-                description: 'Deleta mensagem do usuário ou admin'
-            }
-        },
-        SuporteController.deletarMensagem
-    );
+    fastify.delete('/:id', { preHandler: autenticarAdmin }, SuporteController.deletarMensagem);
+
 
     fastify.patch(
         '/:id/visualizado',
