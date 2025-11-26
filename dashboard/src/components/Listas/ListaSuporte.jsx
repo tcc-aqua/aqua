@@ -39,8 +39,9 @@ export default function SuporteDashboard() {
         title: "Total de Mensagens",
         value: total,
         icon: MessageCircle,
-        iconColor: "text-blue-500",
+        iconColor: "text-sky-500",
         porcentagem: "Visão Geral",
+           borderColor:" border-b-sky-500 "
       },
       {
         title: "Mensagens Não Lidas",
@@ -48,6 +49,7 @@ export default function SuporteDashboard() {
         icon: MailWarning,
         iconColor: "text-yellow-500",
         subTitle1: naoLidas > 0 ? `${naoLidas} para ação` : "Tudo Certo!",
+           borderColor:" border-b-yellow-500 "
       },
       {
         title: "Mensagens Recentes",
@@ -55,6 +57,7 @@ export default function SuporteDashboard() {
         icon: Clock,
         iconColor: "text-green-500",
         subTitle2: `Últimos 60 min`,
+           borderColor:" border-b-green-500 "
       },
       {
         title: "Prioridade Alta",
@@ -62,6 +65,7 @@ export default function SuporteDashboard() {
         icon: AlertTriangle,
         iconColor: "text-red-500",
         subTitle: altaPrioridade > 0 ? "Ação Imediata" : "Sem Urgência",
+           borderColor:" border-b-red-500 "
       },
     ];
 
@@ -178,7 +182,7 @@ export default function SuporteDashboard() {
             const Icon = card.icon;
             return (
               <AnimationWrapper key={card.title} delay={i * 0.2}>
-                <Card className=" hover:border-sky-400 dark:hover:border-sky-950">
+                <Card className={`border-b-4 ${card.borderColor}`}>
                   <CardHeader>
                     <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                   </CardHeader>
@@ -191,7 +195,7 @@ export default function SuporteDashboard() {
                         </p>
                       )}
                       {card.porcentagem && !card.valueAtivos && (
-                        <p className="text-sm mt-1 text-blue-500">{card.porcentagem}</p>
+                        <p className="text-sm mt-1 text-sky-500">{card.porcentagem}</p>
                       )}
                       {card.subTitle && (
                         <p className="text-sm mt-1 text-destructive">{card.subTitle}</p>

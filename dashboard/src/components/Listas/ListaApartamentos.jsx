@@ -153,6 +153,7 @@ export default function ApartamentosDashboard() {
       valueAtivas: apStats.ativas,
       icon: Grid,
       iconColor: "text-orange-300",
+        borderColor:" border-b-orange-300"
     },
     {
       title: "Total de Moradores",
@@ -171,6 +172,7 @@ export default function ApartamentosDashboard() {
             ) / apartamentos.length
           ).toFixed(0)} por unidade`
           : "0",
+            borderColor:" border-b-purple-700 "
     },
     {
       title: "Sensores Ativos",
@@ -182,6 +184,7 @@ export default function ApartamentosDashboard() {
           ? ((sensorStats.ativos / sensorStats.total) * 100).toFixed(0) +
           "% operacionais"
           : "0% operacionais",
+            borderColor:" border-b-green-700 "
     },
     {
       title: "Consumo Total",
@@ -194,6 +197,7 @@ export default function ApartamentosDashboard() {
       icon: Droplet,
       iconColor: "text-accent",
       subTitle2: "Litros acumulados",
+        borderColor:" border-b-accent "
     },
   ];
 
@@ -211,7 +215,7 @@ export default function ApartamentosDashboard() {
             const Icon = card.icon;
             return (
               <AnimationWrapper key={card.title} delay={i * 0.2}>
-                <Card className=" hover:border-sky-400 dark:hover:border-sky-950">
+             <Card className={`border-b-4 ${card.borderColor}`}>
                   <CardHeader>
                     <CardTitle className="font-bold text-xl text-foreground">
                       {card.title}

@@ -146,6 +146,7 @@ export default function CasasDashboard() {
       icon: Home,
       bg: "bg-card",
       iconColor: "text-orange-300",
+        borderColor:" border-b-orange-300 "
     },
     {
       title: "Total de Moradores",
@@ -155,7 +156,8 @@ export default function CasasDashboard() {
       iconColor: "text-purple-700",
       subTitle: casas.length > 0
         ? `Média de ${(casas.reduce((acc, c) => acc + (Number(c.numero_moradores) || 0), 0) / casas.length).toFixed(0)} por casa`
-        : "0"
+        : "0", 
+          borderColor:" border-b-purple-700 "
     },
     {
       title: "Sensores Ativos",
@@ -165,7 +167,8 @@ export default function CasasDashboard() {
       iconColor: "text-green-700",
       porcentagem: sensorStats.total > 0
         ? ((sensorStats.ativos / sensorStats.total) * 100).toFixed(0) + "% operacionais"
-        : "0% operacionais"
+        : "0% operacionais",
+          borderColor:" border-b-green-700 "
     },
     {
       title: "Consumo Total",
@@ -178,7 +181,8 @@ export default function CasasDashboard() {
       icon: Droplet,
       bg: "bg-card",
       iconColor: "text-accent",
-      subTitle2: "Litros acumulados"
+      subTitle2: "Litros acumulados",
+  borderColor:" border-b-accent "
     }
   ];
 
@@ -197,7 +201,7 @@ export default function CasasDashboard() {
             return (
 
               <AnimationWrapper key={card.title} delay={i * 0.2}>
-                <Card className=" hover:border-sky-400 dark:hover:border-sky-950">
+               <Card className={`border-b-4 ${card.borderColor}`}>
                   <CardHeader>
                     <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                   </CardHeader>

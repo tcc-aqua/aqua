@@ -59,8 +59,9 @@ export default function ComunicadosDashboard() {
             title: "Total de Comunicados",
             value: comunicadoStats.total,
             icon: Bell,
-            iconColor: "text-blue-500",
+            iconColor: "text-sky-500",
             porcentagem: "Visão Geral",
+              borderColor:" border-b-sky-500 "
         },
         {
             title: "Não Lidos",
@@ -71,6 +72,7 @@ export default function ComunicadosDashboard() {
                 comunicadoStats.naoLidos > 0
                     ? `${comunicadoStats.naoLidos} pendentes`
                     : "Nenhum pendente",
+                      borderColor:" border-b-red-500 "
         },
         {
             title: "Para Usuários",
@@ -78,13 +80,15 @@ export default function ComunicadosDashboard() {
             icon: Users,
             iconColor: "text-green-500",
             subTitle2: "Comunicados gerais",
+              borderColor:" border-b-green-500 "
         },
         {
             title: "Para Administradores",
             value: comunicadoStats.administradores,
             icon: Shield,
-            iconColor: "text-purple-500",
+            iconColor: "text-purple-700",
             subTitle: "Gestão interna",
+              borderColor:" border-b-purple-700 "
         },
     ];
 
@@ -96,7 +100,7 @@ export default function ComunicadosDashboard() {
                     const Icon = card.icon;
                     return (
                         <AnimationWrapper key={card.title} delay={i * 0.2}>
-                            <Card className="hover:border-sky-400 dark:hover:border-sky-950">
+                            <Card className={`border-b-4 ${card.borderColor}`}>
                                 <CardHeader>
                                     <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                                 </CardHeader>

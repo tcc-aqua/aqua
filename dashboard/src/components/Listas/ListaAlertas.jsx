@@ -36,104 +36,104 @@ export default function AlertasDashboard() {
 
 
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10); 
+  const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
   const API_ALERTAS = "http://localhost:3333/api/alertas";
 
   const fetchData = async (filters = {}, page = 1, limit = 10) => {
-  try {
-    setLoading(true);
-    setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-    const params = new URLSearchParams({
-      page,
-      limit,
-      ...filters,
-    });
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters,
+      });
 
-    const [resAll, resAtivos, resVaz, resConsumo, resInativos] = await Promise.all([
-      fetch(`${API_ALERTAS}?${params.toString()}`),
-      fetch(`${API_ALERTAS}/count/ativos`),
-      fetch(`${API_ALERTAS}/count/vazamentos`),
-      fetch(`${API_ALERTAS}/count/consumo-alto`),
-      fetch(`${API_ALERTAS}/inativos`),
-    ]);
+      const [resAll, resAtivos, resVaz, resConsumo, resInativos] = await Promise.all([
+        fetch(`${API_ALERTAS}?${params.toString()}`),
+        fetch(`${API_ALERTAS}/count/ativos`),
+        fetch(`${API_ALERTAS}/count/vazamentos`),
+        fetch(`${API_ALERTAS}/count/consumo-alto`),
+        fetch(`${API_ALERTAS}/inativos`),
+      ]);
 
-    if (!resAll.ok || !resAtivos.ok || !resVaz.ok || !resConsumo.ok || !resInativos.ok) {
-      throw new Error("Erro ao buscar dados dos alertas.");
+      if (!resAll.ok || !resAtivos.ok || !resVaz.ok || !resConsumo.ok || !resInativos.ok) {
+        throw new Error("Erro ao buscar dados dos alertas.");
+      }
+
+      const [allData, ativosData, vazData, consData, inativosData] = await Promise.all([
+        resAll.json(),
+        resAtivos.json(),
+        resVaz.json(),
+        resConsumo.json(),
+        resInativos.json(),
+      ]);
+
+      const alertasArray = Array.isArray(allData) ? allData : allData.docs ?? [];
+
+
+      const filteredAlertas = alertasArray.filter((alerta) => {
+        const matchesTipo = filters.tipo ? alerta.tipo === filters.tipo : true;
+        const matchesNivel = filters.nivel ? alerta.nivel === filters.nivel : true;
+        const matchesStatus = filters.status
+          ? alerta.resolvido === (filters.status === "resolvido")
+          : true;
+        const matchesResidencia = filters.residencia
+          ? alerta.residencia_id === filters.residencia
+          : true;
+        return matchesTipo && matchesNivel && matchesStatus && matchesResidencia;
+      });
+
+      setAlertas(filteredAlertas);
+
+      const totalUsers = allData.total ?? alertasArray.length;
+      setTotalPages(Math.ceil(totalUsers / limit));
+
+      setStats({
+        total: alertasArray.length,
+        ativos: Number(ativosData.total ?? ativosData ?? 0),
+        vazamentos: Number(vazData.total ?? vazData ?? 0),
+        consumoAlto: Number(consData.total ?? consData ?? 0),
+        resolvidos: Number(inativosData.total ?? inativosData ?? 0),
+      });
+
+    } catch (err) {
+      console.error("Erro ao buscar alertas:", err);
+      setError(err.message || String(err));
+    } finally {
+      setLoading(false);
     }
-
-    const [allData, ativosData, vazData, consData, inativosData] = await Promise.all([
-      resAll.json(),
-      resAtivos.json(),
-      resVaz.json(),
-      resConsumo.json(),
-      resInativos.json(),
-    ]);
-
-    const alertasArray = Array.isArray(allData) ? allData : allData.docs ?? [];
+  };
 
 
-    const filteredAlertas = alertasArray.filter((alerta) => {
-      const matchesTipo = filters.tipo ? alerta.tipo === filters.tipo : true;
-      const matchesNivel = filters.nivel ? alerta.nivel === filters.nivel : true;
-      const matchesStatus = filters.status
-        ? alerta.resolvido === (filters.status === "resolvido")
-        : true;
-      const matchesResidencia = filters.residencia
-        ? alerta.residencia_id === filters.residencia
-        : true;
-      return matchesTipo && matchesNivel && matchesStatus && matchesResidencia;
-    });
+  const resolverAlerta = async () => {
+    if (!selectedAlerta) return;
+    try {
+      const res = await fetch(`${API_ALERTAS}/${selectedAlerta.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resolvido: true }),
+      });
 
-    setAlertas(filteredAlertas); 
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || "Erro ao resolver alerta.");
+      }
 
-    const totalUsers = allData.total ?? alertasArray.length;
-    setTotalPages(Math.ceil(totalUsers / limit));
-
-    setStats({
-      total: alertasArray.length,
-      ativos: Number(ativosData.total ?? ativosData ?? 0),
-      vazamentos: Number(vazData.total ?? vazData ?? 0),
-      consumoAlto: Number(consData.total ?? consData ?? 0),
-      resolvidos: Number(inativosData.total ?? inativosData ?? 0),
-    });
-
-  } catch (err) {
-    console.error("Erro ao buscar alertas:", err);
-    setError(err.message || String(err));
-  } finally {
-    setLoading(false);
-  }
-};
+      toast.success("Alerta resolvido com sucesso!");
+      setShowModal(false);
+      setSelectedAlerta(null);
 
 
-const resolverAlerta = async () => {
-  if (!selectedAlerta) return;
-  try {
-    const res = await fetch(`${API_ALERTAS}/${selectedAlerta.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ resolvido: true }),
-    });
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(text || "Erro ao resolver alerta.");
+      await fetchData(filters, page, limit);
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao resolver alerta.");
     }
-
-    toast.success("Alerta resolvido com sucesso!");
-    setShowModal(false);
-    setSelectedAlerta(null);
-
-   
-    await fetchData(filters, page, limit);
-  } catch (err) {
-    console.error(err);
-    toast.error("Erro ao resolver alerta.");
-  }
-};
+  };
 
   useEffect(() => {
     fetchData(filters, page, limit);
@@ -149,22 +149,25 @@ const resolverAlerta = async () => {
       value: stats.total,
       icon: AlertTriangle,
       iconColor: "text-accent",
-      detalhe: "Últimas 24 horas"
+      detalhe: "Últimas 24 horas",
+      borderColor: "border-b-accent"
 
     },
     {
       title: "Vazamentos",
       value: stats.vazamentos,
       icon: Info,
-      iconColor: "text-yellow-400",
-      subTitle1: "Requer atenção"
+      iconColor: "text-yellow-500",
+      subTitle1: "Requer atenção",
+      borderColor: "border-b-yellow-500"
     },
     {
       title: "Consumo Alto",
       value: stats.consumoAlto,
       icon: AlertTriangle,
       iconColor: "text-red-500",
-      subTitle: "Críticos"
+      subTitle: "Críticos",
+      borderColor: "border-b-red-500"
     },
 
     {
@@ -172,7 +175,8 @@ const resolverAlerta = async () => {
       value: stats.resolvidos,
       icon: Check,
       iconColor: "text-green-500",
-      subTitle2: "Monitoramento"
+      subTitle2: "Monitoramento",
+      borderColor: "border-b-green-500"
     },
   ]
 
@@ -233,7 +237,7 @@ const resolverAlerta = async () => {
             const Icon = card.icon;
             return (
               <AnimationWrapper key={card.title} delay={i * 0.2}>
-                <Card className=" hover:border-sky-400 dark:hover:border-sky-950">
+                <Card className={`border-b-4 ${card.borderColor}`}>
                   <CardHeader>
                     <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                   </CardHeader>

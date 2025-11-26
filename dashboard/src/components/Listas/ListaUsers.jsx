@@ -159,29 +159,33 @@ export default function UsersDashboard() {
       icon: Users,
       iconColor: "text-accent",
       detalhe: `${userStats.casas ?? 0} casas + ${userStats.condominios ?? 0} condomínios`,
+         borderColor:" border-b-accent "
     },
     {
       title: "Usuários Ativos",
       value: userStats.ativos,
       icon: UserCheck,
-      iconColor: "text-green-700",
+      iconColor: "text-green-500",
       porcentagem: userStats.total > 0
         ? ((userStats.ativos / userStats.total) * 100).toFixed(0) + "% ativos"
-        : "0% ativos"
+        : "0% ativos",
+           borderColor:" border-b-green-500 "
     },
     {
       title: "Síndicos",
       value: userStats.sindicos,
       icon: Crown,
       iconColor: "text-yellow-500",
-      subTitle: "Síndicos Totais"
+      subTitle: "Síndicos Totais",
+         borderColor:" border-b-yellow-500 "
     },
     {
       title: "Moradores",
       value: userStats.moradores,
       icon: User,
       iconColor: "text-sky-500",
-      subTitle2: "Usuários finais"
+      subTitle2: "Usuários finais",
+         borderColor:" border-b-sky-500 "
     },
   ];
 
@@ -199,7 +203,7 @@ export default function UsersDashboard() {
             const Icon = card.icon;
             return (
               <AnimationWrapper key={card.title} delay={i * 0.2}>
-                <Card className=" hover:border-sky-400 dark:hover:border-sky-950 ">
+               <Card className={`border-b-4 ${card.borderColor}`}>
                   <CardHeader>
                     <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                   </CardHeader>
