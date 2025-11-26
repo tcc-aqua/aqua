@@ -1,4 +1,5 @@
 import SuporteController from "../controllers/SuporteController.js";
+import { autenticarAdmin } from "../middlewares/AuthMiddleware.js";
 
 export default async function suporteRoutes(fastify) {
 
@@ -19,4 +20,19 @@ export default async function suporteRoutes(fastify) {
                 description: 'Enviando mensagem para o cliente'
             }
         }, SuporteController.enviarMensagem);
+
+    fastify.delete('/:id', { preHandler: autenticarAdmin }, SuporteController.deletarMensagem);
+
+
+    fastify.patch(
+        '/:id/visualizado',
+        {
+            schema: {
+                summary: 'Marcar mensagem como visualizada',
+                tags: ['suporte'],
+                description: 'Marca a mensagem como visualizada pelo usuário'
+            }
+        },
+        SuporteController.marcarComoVisualizada
+    );
 }
