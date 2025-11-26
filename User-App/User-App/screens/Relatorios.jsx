@@ -8,8 +8,8 @@ import {
   Paragraph,
   Icon,
 } from 'react-native-paper';
-// Importações do Skia
-import { Canvas, Rect, Text } from "@shopify/react-native-skia";
+// 1. Importação da nova biblioteca (Gifted Charts)
+import { BarChart } from 'react-native-gifted-charts';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -26,50 +26,61 @@ const reportData = [
 const LOW_CONSUMPTION_THRESHOLD = 130;
 const HIGH_CONSUMPTION_THRESHOLD = 160;
 
-// Função de cor, agora fora do componente para ser acessada pelo SkiaChart
+// Função de cor mantida
 const getBarColor = (consumption) => {
   if (consumption >= HIGH_CONSUMPTION_THRESHOLD) return '#f31212ff';
   if (consumption < LOW_CONSUMPTION_THRESHOLD) return '#2ecc71';
   return '#3498db';
 };
 
-// --- NOSSO NOVO COMPONENTE DE GRÁFICO COM SKIA ---
-const SkiaBarChart = ({ data, width, height }) => {
-  const PADDING = { top: 30, bottom: 30, left: 10, right: 10 };
-  const BAR_WIDTH = 35;
-  const VISUAL_BASE_HEIGHT = 20;
+// --- NOVO COMPONENTE DE GRÁFICO COM GIFTED CHARTS ---
+// --- SUBSTITUA O COMPONENTE ANTIGO POR ESTE ---
+const GiftedChartComponent = ({ data }) => {
+  const barWidth = 35;
+  
+  // 1. Cálculo da largura exata disponível para o gráfico
+  // (Largura da Tela - Margem do Card - Padding Interno)
+  const availableWidth = screenWidth - 60; 
 
-  const chartHeight = height - PADDING.top - PADDING.bottom;
-  const chartWidth = width - PADDING.left - PADDING.right;
+  // 2. Espaçamento dinâmico para centralizar as barras
+  const spacing = (availableWidth - (data.length * barWidth)) / (data.length - 1);
 
-  const values = data.map(d => d.consumption);
-  const minConsumption = Math.min(...values);
-  const maxConsumption = Math.max(...values);
-  const dataRange = maxConsumption - minConsumption;
-
-  const totalBarWidth = data.length * BAR_WIDTH;
-  const totalSpacing = chartWidth - totalBarWidth;
-  const gapWidth = data.length > 1 ? totalSpacing / (data.length - 1) : 0;
+  const chartData = data.map(item => ({
+    value: item.consumption,
+    label: item.date,
+    frontColor: getBarColor(item.consumption),
+    topLabelComponent: () => (
+      <RNText style={{ color: 'black', fontSize: 12, marginBottom: 5, fontWeight: 'bold' }}>
+        {item.consumption}
+      </RNText>
+    ),
+  }));
 
   return (
-    <Canvas style={{ width, height }}>
-      {data.map((item, index) => {
-        const barHeight = dataRange === 0 
-          ? chartHeight
-          : ((item.consumption - minConsumption) / dataRange) * (chartHeight - VISUAL_BASE_HEIGHT) + VISUAL_BASE_HEIGHT;
+    <View style={{ 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      width: availableWidth // Força o container a ter o tamanho exato
+    }}>
+      <BarChart
+        data={chartData}
+        width={availableWidth} // O gráfico precisa saber sua largura total
+        barWidth={barWidth}
+        spacing={spacing}
+        initialSpacing={0} // Começa exatamente na ponta esquerda
         
-        const x = PADDING.left + index * (BAR_WIDTH + gapWidth);
-        const y = PADDING.top + chartHeight - barHeight;
-
-        return (
-          <React.Fragment key={index}>
-            <Rect x={x} y={y} width={BAR_WIDTH} height={barHeight} color={getBarColor(item.consumption)} rx={4} />
-            <Text x={x + BAR_WIDTH / 2 - 15} y={y - 8} text={`${item.consumption}`} color="black" />
-            <Text x={x + BAR_WIDTH / 2 - 15} y={height - 10} text={item.date} color="gray" />
-          </React.Fragment>
-        );
-      })}
-    </Canvas>
+        xAxisThickness={0}
+        yAxisThickness={0}
+        hideYAxisText
+        yAxisLabel=""
+        hideRules
+        roundedTop
+        roundedBottom={false}
+        height={220}
+        labelTextStyle={{ color: 'gray', fontSize: 12 }}
+        isAnimated
+      />
+    </View>
   );
 };
 
@@ -92,11 +103,8 @@ const ReportsScreen = () => {
         <Card style={styles.card}>
           <Card.Content style={styles.chartCardContent}>
             <Title style={styles.chartTitle}>Consumo Diário (Litros)</Title>
-            <SkiaBarChart
-              data={reportData}
-              width={screenWidth - 40}
-              height={250}
-            />
+            {/* Componente Novo aqui */}
+            <GiftedChartComponent data={reportData} />
           </Card.Content>
         </Card>
       );
@@ -142,12 +150,12 @@ const ReportsScreen = () => {
           style={styles.segmentedButton}
         />
       </View>
-      
+
       {/* Área de Conteúdo Principal */}
       <View style={styles.contentContainer}>
         {renderContent()}
       </View>
-      
+
       {/* Grade de Resumo */}
       <View style={styles.summaryGridContainer}>
         <View style={styles.summaryRow}>
@@ -170,6 +178,7 @@ const ReportsScreen = () => {
             </Card.Content>
           </Card>
         </View>
+
         <View style={styles.summaryRow}>
           <Card style={styles.summaryCard}>
             <Card.Content style={styles.summaryCardContent}>
@@ -196,26 +205,37 @@ const ReportsScreen = () => {
   );
 };
 
+// --- SUBSTITUA OS ESTILOS ANTIGOS POR ESTES ---
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f5f5f5' },
-    controlsContainer: { padding: 10, backgroundColor: '#fff' },
-    segmentedButton: { marginBottom: 10 },
-    contentContainer: { paddingHorizontal: 10, alignItems: 'center' },
-    chartTitle: { textAlign: 'center', marginBottom: 10 },
-    card: { marginBottom: 10, width: screenWidth - 20 },
-    reportDate: { alignSelf: 'center', marginRight: 10, color: '#666' },
-    summaryGridContainer: { paddingHorizontal: 10, marginTop: 10, marginBottom: 20 },
-    summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-    summaryCard: { width: '48%' },
-    summaryCardContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 5, paddingVertical: 15 },
-    summaryLabel: { fontSize: 12, color: '#666' },
-    summaryValue: { fontSize: 18, lineHeight: 20 },
-    bestDayDate: { fontSize: 11, lineHeight: 12, color: '#666' },
-    chartCardContent: {
-      alignItems: 'center',
-      paddingHorizontal: 0,
-      paddingVertical: 10,
-    },
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  controlsContainer: { padding: 10, backgroundColor: '#fff' },
+  segmentedButton: { marginBottom: 10 },
+  contentContainer: { paddingHorizontal: 10, alignItems: 'center' },
+  chartTitle: { textAlign: 'center', marginBottom: 10 },
+  
+  // Card centralizado
+  card: { 
+    marginBottom: 10, 
+    width: screenWidth - 20, 
+    alignSelf: 'center' 
+  },
+  
+  reportDate: { alignSelf: 'center', marginRight: 10, color: '#666' },
+  summaryGridContainer: { paddingHorizontal: 10, marginTop: 10, marginBottom: 20 },
+  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+  summaryCard: { width: '48%' },
+  summaryCardContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 5, paddingVertical: 15 },
+  summaryLabel: { fontSize: 12, color: '#666' },
+  summaryValue: { fontSize: 18, lineHeight: 20 },
+  bestDayDate: { fontSize: 11, lineHeight: 12, color: '#666' },
+  
+  // Conteúdo do Card ajustado para centralizar o gráfico
+  chartCardContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 10, 
+  },
 });
 
 export default ReportsScreen;
