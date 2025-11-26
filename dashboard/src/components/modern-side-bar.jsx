@@ -21,7 +21,8 @@ import {
   Grid,
   Megaphone,
   Layers,
-  Columns
+  Columns,
+  LayoutDashboard
 } from "lucide-react";
 
 import { useTheme } from "next-themes";
@@ -34,7 +35,7 @@ import {
 import Cookies from "js-cookie";
 
 const navigationItems = [
-  { id: "dashboard", name: "Dashboard", icon: Columns, href: "/dashboard" },
+  { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { id: "users", name: "Usuários", icon: Users, href: "/users" },
   { id: "condominios", name: "Condomínios", href: "/condominios", icon: Building },
   {
@@ -99,23 +100,26 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
   const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
-  async function handleLogout(router) {
-    const token = Cookies.get("token");
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-      if (res.ok) {
-        Cookies.remove("token");
-        router.push("/");
-      }
-    } catch (err) {
-      console.error("Erro de logout:", err);
+ async function handleLogout(router) {
+  const token = Cookies.get("token");
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (res.ok) {
+      Cookies.remove("token");
+      router.push("/");
+    } else {
+      console.error("Erro ao fazer logout");
     }
+  } catch (err) {
+    console.error("Erro de conexão no logout:", err);
   }
+}
 
   return (
     <>
@@ -301,7 +305,7 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => handleLogout(router)}
-                    className="flex items-center justify-center p-2.5 rounded-md text-destructive"
+                    className="flex items-center justify-center p-2.5 rounded-md text-destructive cursor-pointer"
                   >
                     <LogOut className="h-5 w-5 ml-5" />
                   </button>
@@ -318,7 +322,7 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
           ) : (
             <button
               onClick={() => handleLogout(router)}
-              className="flex items-center px-3 py-2.5 space-x-2.5 w-full rounded-md hover:bg-muted text-destructive"
+              className="flex items-center px-3 py-2.5 space-x-2.5 w-full rounded-md hover:bg-muted text-destructive cursor-pointer"
             >
               <LogOut className="h-5 w-5" />
               <span>Sair</span>
