@@ -2,7 +2,6 @@ import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
 import Sensor from "./Sensor.js";
 import sequelizePaginate from 'sequelize-paginate'
-import Casa from "./Casa.js";
 import Apartamento from "./Apartamento.js";
 
 export default class Alertas extends Model {}
