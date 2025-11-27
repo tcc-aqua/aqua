@@ -1,6 +1,7 @@
 import sequelize from "../config/sequelize.js";
 import { DataTypes, Model } from "sequelize";
 import sequelizePaginate from 'sequelize-paginate'
+import User from "./User.js";
 export default class UsersLog extends Model { }
 
 UsersLog.init(

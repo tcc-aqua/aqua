@@ -1,7 +1,5 @@
 import { fn, col, Op } from "sequelize";
 import UsersLog from "../models/UserLog.js";
-import User from "../models/User.js";
-import Admin from "../models/Admin.js";
 
 export default class AuditLogService {
 
@@ -9,11 +7,7 @@ export default class AuditLogService {
         try {
             const logs = await UsersLog.findAll({
                 limit,
-                order: [['alterado_em', 'DESC']],
-                include: [
-                    { model: User, as: 'usuario', attributes: ['id', 'name', 'email'] },
-                    { model: Admin, as: 'alterador', attributes: ['id', 'email'] }
-                ]
+                order: [['alterado_em', 'DESC']]
             });
             return logs;
         } catch (error) {
@@ -27,11 +21,7 @@ export default class AuditLogService {
             const options = {
                 page,
                 paginate: limit,
-                order: [['alterado_em', 'DESC']],
-                include: [
-                    { model: User, as: 'usuario', attributes: ['id', 'name', 'email'] },
-                    { model: Admin, as: 'alterador', attributes: ['id', 'email'] }
-                ]
+                order: [['alterado_em', 'DESC']]
             };
 
             const logs = await UsersLog.paginate(options);
@@ -48,11 +38,7 @@ export default class AuditLogService {
                 page,
                 paginate: limit,
                 order: [['alterado_em', 'DESC']],
-                where: { user_id: userId },
-                include: [
-                    { model: User, as: 'usuario', attributes: ['id', 'name', 'email'] },
-                    { model: Admin, as: 'alterador', attributes: ['id', 'email'] }
-                ]
+                where: { user_id: userId }
             };
 
             const logs = await UsersLog.paginate(options);
@@ -106,11 +92,7 @@ export default class AuditLogService {
                 page,
                 paginate: limit,
                 order: [['alterado_em', 'DESC']],
-                where,
-                include: [
-                    { model: User, as: 'usuario', attributes: ['id', 'name', 'email'] },
-                    { model: Admin, as: 'alterador', attributes: ['id', 'email'] }
-                ]
+                where
             };
 
             const logs = await UsersLog.paginate(options);
