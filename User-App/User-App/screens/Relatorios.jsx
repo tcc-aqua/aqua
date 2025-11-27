@@ -36,21 +36,20 @@ const getBarColor = (consumption) => {
 // --- NOVO COMPONENTE DE GRÁFICO COM GIFTED CHARTS ---
 // --- SUBSTITUA O COMPONENTE ANTIGO POR ESTE ---
 const GiftedChartComponent = ({ data }) => {
-  const barWidth = 35;
-  
-  // 1. Cálculo da largura exata disponível para o gráfico
-  // (Largura da Tela - Margem do Card - Padding Interno)
-  const availableWidth = screenWidth - 60; 
+  // --- CONFIGURAÇÃO PARA SCROLL ---
+  const barWidth = 22; 
+  const spacing = 50; // Espaço FIXO e GRANDE entre as barras (ativa o scroll)
+  const initialSpacing = 20; // Espaço antes da primeira barra
 
-  // 2. Espaçamento dinâmico para centralizar as barras
-  const spacing = (availableWidth - (data.length * barWidth)) / (data.length - 1);
+  // Largura da "janela" de visualização (o tamanho do card na tela)
+  const viewportWidth = screenWidth - 60; 
 
   const chartData = data.map(item => ({
     value: item.consumption,
     label: item.date,
     frontColor: getBarColor(item.consumption),
     topLabelComponent: () => (
-      <RNText style={{ color: 'black', fontSize: 12, marginBottom: 5, fontWeight: 'bold' }}>
+      <RNText style={{ color: 'black', fontSize: 10, marginBottom: 5, fontWeight: 'bold' }}>
         {item.consumption}
       </RNText>
     ),
@@ -60,16 +59,20 @@ const GiftedChartComponent = ({ data }) => {
     <View style={{ 
       alignItems: 'center', 
       justifyContent: 'center',
-      width: availableWidth // Força o container a ter o tamanho exato
+      // Removemos a largura fixa do container pai para deixar o scroll fluir
     }}>
       <BarChart
         data={chartData}
-        width={availableWidth} // O gráfico precisa saber sua largura total
+        // Define o tamanho da área visível. O conteúdo excedente será 'scrollável'
+        width={viewportWidth} 
+        
         barWidth={barWidth}
         spacing={spacing}
-        initialSpacing={0} // Começa exatamente na ponta esquerda
+        initialSpacing={initialSpacing}
         
-        xAxisThickness={0}
+        // Estilos mantidos
+        xAxisThickness={1}
+        xAxisColor={"#e0e0e0"}
         yAxisThickness={0}
         hideYAxisText
         yAxisLabel=""
@@ -77,8 +80,16 @@ const GiftedChartComponent = ({ data }) => {
         roundedTop
         roundedBottom={false}
         height={220}
-        labelTextStyle={{ color: 'gray', fontSize: 12 }}
+        
+        labelTextStyle={{ 
+          color: 'gray', 
+          fontSize: 11, 
+          textAlign: 'center',
+          width: 60 // Aumentei a largura da label para a data não quebrar linha
+        }}
         isAnimated
+        // Opcional: Rola para o final automaticamente (útil para ver o dia mais recente)
+        // scrollToEnd={true} 
       />
     </View>
   );
