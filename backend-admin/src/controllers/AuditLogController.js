@@ -11,7 +11,7 @@ export default class AuditLogController {
 
     static async getAllLogs(req, reply) {
         const { page = 1, limit = 10 } = req.query;
-        const logs = await AuditLogService.getAllLogs(Number(page), Number(limit));
+        const logs = await AuditLogService.getAllLogs(page, limit);
         return reply.send(logs);
     }
 

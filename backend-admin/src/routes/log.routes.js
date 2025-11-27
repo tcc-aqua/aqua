@@ -27,15 +27,7 @@ export default async function auditLogRoutes(fastify) {
                 summary: 'Listar todos os logs paginados',
                 tags: ['logs'],
                 description: 'Retorna todos os logs do sistema com paginação',
-                querystring: {
-                    type: 'object',
-                    properties: {
-                        page: { type: 'integer', default: 1 },
-                        limit: { type: 'integer', default: 10 }
-                    }
-                }
             },
-            preHandler: autenticarAdmin,
         },
         AuditLogController.getAllLogs
     );
