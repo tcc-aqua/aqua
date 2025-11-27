@@ -23,7 +23,6 @@ export default async function auditLogRoutes(fastify) {
 
     fastify.get('/',
         {
-            preHandler: autenticarAdmin,
             schema: {
                 summary: 'Listar todos os logs paginados',
                 tags: ['logs'],
@@ -35,7 +34,8 @@ export default async function auditLogRoutes(fastify) {
                         limit: { type: 'integer', default: 10 }
                     }
                 }
-            }
+            },
+            preHandler: autenticarAdmin,
         },
         AuditLogController.getAllLogs
     );
