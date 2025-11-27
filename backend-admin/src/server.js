@@ -5,6 +5,8 @@ dotenv.config({ path: resolve("..", ".env") });
 import app from "./app.js";
 import { connectDB } from "./config/sequelize.js";
 import Admin from "./models/Admin.js"; 
+import UsersLog from './models/UserLog.js';
+import User from './models/User.js';
 
 const PORT = 3333;
 
@@ -23,6 +25,10 @@ const criarSuperadminPadrao = async () => {
         console.log(' Superadmin já existe.');
     }
 };
+
+// associações de UserLog
+User.hasMany(UsersLog, { foreignKey: "user_id", as: "logs" });
+UsersLog.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
 const start = async () => {
     try {

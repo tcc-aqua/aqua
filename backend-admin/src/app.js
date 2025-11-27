@@ -26,6 +26,7 @@ import suporteRoutes from './routes/suporte.routes.js';
 import crescimentoRoutes from './routes/crescimento.routes.js';
 import vazamentoRoutes from './routes/vazamento.routes.js';
 import comunicadoRoutes from './routes/comunicado.routes.js';
+import auditLogRoutes from './routes/log.routes.js';
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
@@ -129,6 +130,7 @@ await fastify.register(crescimentoRoutes, { prefix: '/api/crescimento' });
 await fastify.register(vazamentoRoutes, { prefix: '/api/vazamentos' });
 await fastify.register(comunicadoRoutes, { prefix: '/api/comunicados' });
 await fastify.register(cepRoutes, { prefix: '/api/cep' });
+await fastify.register(auditLogRoutes, { prefix: '/api/logs' });
 await fastify.register(errorHandler);
 
 export default fastify;
