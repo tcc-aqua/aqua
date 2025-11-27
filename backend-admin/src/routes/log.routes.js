@@ -5,7 +5,6 @@ export default async function auditLogRoutes(fastify) {
 
     fastify.get('/recentes',
         {
-            preHandler: autenticarAdmin,
             schema: {
                 summary: 'Listar últimos logs do sistema',
                 tags: ['logs'],
@@ -23,26 +22,17 @@ export default async function auditLogRoutes(fastify) {
 
     fastify.get('/',
         {
-            preHandler: autenticarAdmin,
             schema: {
                 summary: 'Listar todos os logs paginados',
                 tags: ['logs'],
                 description: 'Retorna todos os logs do sistema com paginação',
-                querystring: {
-                    type: 'object',
-                    properties: {
-                        page: { type: 'integer', default: 1 },
-                        limit: { type: 'integer', default: 10 }
-                    }
-                }
-            }
+            },
         },
         AuditLogController.getAllLogs
     );
 
     fastify.get('/usuario/:id',
         {
-            preHandler: autenticarAdmin,
             schema: {
                 summary: 'Listar logs de um usuário específico',
                 tags: ['logs'],
@@ -68,7 +58,6 @@ export default async function auditLogRoutes(fastify) {
 
     fastify.get('/count',
         {
-            preHandler: autenticarAdmin,
             schema: {
                 summary: 'Contagem total de logs',
                 tags: ['logs'],
@@ -86,7 +75,6 @@ export default async function auditLogRoutes(fastify) {
 
     fastify.get('/count/acao',
         {
-            preHandler: autenticarAdmin,
             schema: {
                 summary: 'Contagem de logs agrupados por ação',
                 tags: ['logs'],
@@ -98,7 +86,6 @@ export default async function auditLogRoutes(fastify) {
 
     fastify.get('/search',
         {
-            preHandler: autenticarAdmin,
             schema: {
                 summary: 'Buscar logs por campo',
                 tags: ['logs'],
@@ -120,7 +107,6 @@ export default async function auditLogRoutes(fastify) {
 
     fastify.post('/',
         {
-            preHandler: autenticarAdmin,
             schema: {
                 summary: 'Criar log manualmente',
                 tags: ['logs'],
