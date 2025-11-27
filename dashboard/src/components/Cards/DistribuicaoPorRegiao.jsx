@@ -2,51 +2,30 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import Loading from "../Layout/Loading/page";
 
 // Paleta de cores
 const palette = [
-  "#3b82f6", // azul
-  "#10b981", // verde
-  "#facc15", // amarelo
-  "#8b5cf6", // roxo
-  "#ec4899", // rosa
-  "#ef4444", // vermelho
-  "#14b8a6", // teal
-  "#6366f1", // indigo
-  "#f97316", // laranja
-  "#06b6d4", // cyan
-  "#f43f5e", // rosa escuro
-  "#7c3aed", // roxo escuro
-  "#22c55e", // verde claro
-  "#0ea5e9", // azul claro
-  "#fbbf24", // amarelo queimado
-  "#e11d48", // vermelho escuro
-  "#0f766e", // teal escuro
-  "#1e3a8a", // azul marinho
-  "#ea580c", // laranja queimado
-  "#8b0000", // bordô
-  "#ffd700", // dourado
-  "#32cd32", // verde limão
-  "#ff69b4", // rosa vibrante
-  "#4b0082", // índigo escuro
+  "#3b82f6", "#10b981", "#facc15", "#8b5cf6", "#ec4899",
+  "#ef4444", "#14b8a6", "#6366f1", "#f97316", "#06b6d4",
+  "#f43f5e", "#7c3aed", "#22c55e", "#0ea5e9", "#fbbf24",
+  "#e11d48", "#0f766e", "#1e3a8a", "#ea580c", "#8b0000",
+  "#ffd700", "#32cd32", "#ff69b4", "#4b0082",
 ];
 
 
-// Função para sortear cores sem repetir até acabar a paleta
 function getUniqueColors(count) {
-  const colors = [];
-  const used = new Set();
-  for (let i = 0; i < count; i++) {
-    const available = palette.filter((c) => !used.has(c));
-    if (available.length === 0) used.clear(); // reinicia se acabar
-    const color = available[Math.floor(Math.random() * available.length)];
-    colors.push(color);
-    used.add(color);
+  const shuffled = [...palette];
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  return colors;
+
+  return shuffled.slice(0, count); 
 }
 
 export default function DistribuicaoPorRegiao() {
@@ -95,33 +74,44 @@ export default function DistribuicaoPorRegiao() {
   return (
     <AnimationWrapper delay={0.2}>
       <section className="container mx-auto mt-10">
-        <Card className="w-full  hover:border-sky-400 dark:hover:border-sky-950">
+        <Card className="w-full hover:border-sky-400 dark:hover:border-sky-950 ">
           <CardHeader>
             <CardTitle>Distribuição por Estado</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {dados.map((item, i) => (
-              <div key={i}>
-                <div className="flex justify-between mb-1">
-                  <span className="font-medium text-sm text-foreground">{item.estado}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {item.total} residências
-                  </span>
-                </div>
 
-           
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full"
-                    style={{ width: `${item.porcentagem}%`, backgroundColor: colors[i] }}
-                  ></div>
-                </div>
+          <CardContent className="space-y-4 p-0">
 
-                <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                  <span>{item.porcentagem.toFixed(0)}%</span>
+            <ScrollArea className="h-148  px-6 py-4">
+              {dados.map((item, i) => (
+                <div key={i} className="mb-4">
+                  
+                  <div className="flex justify-between mb-1">
+                    <span className="font-medium text-sm text-foreground">
+                      {item.estado}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {item.total} residências
+                    </span>
+                  </div>
+
+                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${item.porcentagem}%`,
+                        backgroundColor: colors[i], 
+                      }}
+                    ></div>
+                  </div>
+
+                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                    <span>{item.porcentagem.toFixed(0)}%</span>
+                  </div>
+
                 </div>
-              </div>
-            ))}
+              ))}
+            </ScrollArea>
+
           </CardContent>
         </Card>
       </section>

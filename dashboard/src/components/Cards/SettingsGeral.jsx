@@ -1,6 +1,7 @@
 "use client";
 
 import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import InputNotifications from "@/components/Inputs/editProfile/inputConfigNotifications";
 import InputAppearance from "@/components/Inputs/editProfile/inputsAppearance";
@@ -12,30 +13,44 @@ import { Bell, Brush } from "lucide-react";
 export default function SettingsGeral() {
   return (
     <main className="container mx-auto p-4">
-      <section className="flex flex-col gap-6">
+      <section className="flex flex-col gap-8">
 
+ 
         <AnimationWrapper delay={0.1}>
-          <div>
-            <h2 className="text-sm font-semibold flex items-center gap-2">
-              <Bell size={18} /> Notifications
-            </h2>
-            <Separator className="my-5" />
-            <div className="space-y-4">
+          <Card className="rounded-2xl shadow-sm border-border/40 bg-background">
+            <CardHeader>
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+           
+                <Bell size={18} />
+                Notifications
+              </CardTitle>
+            </CardHeader>
+
+            <Separator />
+
+            <CardContent className="pt-6 space-y-4">
               <InputNotifications />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </AnimationWrapper>
 
+
         <AnimationWrapper delay={0.2}>
-          <div>
-            <h2 className="text-sm font-semibold flex items-center gap-2">
-              <Brush size={18} /> Appearance
-            </h2>
-            <Separator className="my-5" />
-            <div>
+          <Card className="rounded-2xl shadow-sm border-border/40 bg-background">
+            <CardHeader>
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+            
+                <Brush size={18} />
+                Appearance
+              </CardTitle>
+            </CardHeader>
+
+            <Separator />
+
+            <CardContent className="pt-6">
               <InputAppearance />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </AnimationWrapper>
 
       </section>
