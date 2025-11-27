@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,144 +11,200 @@ import {
   SafeAreaView,
   TouchableWithoutFeedback,
   ActivityIndicator,
+  Animated
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-// ATENÇÃO: Substitua 'localhost' pelo IP da sua máquina se estiver testando no celular.
-const API_BASE_URL = 'http://localhost:3334';
-
-const mockNotifications = [
-  { id: '1', title: 'Alerta de Vazamento detectado.', time: 'Agora mesmo' },
-  { id: '2', title: 'Consumo de água acima da média.', time: 'Há 2h' },
-  { id: '3', title: 'Novo relatório mensal disponível.', time: 'Ontem' },
-];
+// ATENÇÃO: Se estiver no emulador Android use 'http://10.0.2.2:3334'
+// Se for dispositivo físico, use o IP da máquina.
+const API_BASE_URL = 'http://localhost:3334/api';
 
 const Header = () => {
   const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [userInfo, setUserInfo] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [scaleAnim] = useState(new Animated.Value(1));
 
-  useEffect(() => {
-    const loadHeaderData = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) {
-          setIsLoading(false);
-          return;
-        }
+  const loadData = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return;
 
-        const response = await axios.get(`${API_BASE_URL}/api/profile`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        setUserInfo(response.data);
+      const headers = { Authorization: `Bearer ${token}` };
 
-      } catch (error) {
-        console.error("Erro ao carregar dados do header:", error);
-        // Tenta carregar do cache como um fallback em caso de falha de rede
-        const storedUser = await AsyncStorage.getItem('user');
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          // O objeto do login não tem todos os dados, mas é melhor que nada.
-          setUserInfo({ user_name: parsedUser.name, ...parsedUser });
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      // Carregar Perfil
+      const profileReq = axios.get(`${API_BASE_URL}/profile`, { headers });
+      // Carregar Comunicados (Notificações)
+      const notifReq = axios.get(`${API_BASE_URL}/comunicados`, { headers });
 
-    loadHeaderData();
+      const [profileRes, notifRes] = await Promise.all([profileReq, notifReq]);
+
+      setUserInfo(profileRes.data);
+      
+      const allNotifs = notifRes.data;
+      setNotifications(allNotifs);
+      setUnreadCount(allNotifs.filter(n => !n.lido).length);
+
+    } catch (error) {
+      console.error("Erro header:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  // CORREÇÃO: Usamos useEffect padrão em vez de useFocusEffect
+  useEffect(() => {
+    loadData();
+    
+    // Opcional: Atualizar a cada 30 segundos para checar novas notificações
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
+  }, [loadData]);
 
   const getFormattedLocation = () => {
     if (!userInfo) return "";
-    
-    // A view 'vw_users' usada pelo /api/profile retorna esses campos
-    if (userInfo.residencia_type === 'casa') {
-      return `Casa • ${userInfo.cidade || 'Sua Cidade'}`;
-    }
-    if (userInfo.residencia_type === 'apartamento') {
-      return `Apto • ${userInfo.bairro || 'Seu Bairro'}`;
-    }
-    return "Localização não encontrada";
+    if (userInfo.residencia_type === 'casa') return `${userInfo.cidade || ''} • Casa`;
+    if (userInfo.residencia_type === 'apartamento') return `${userInfo.bairro || ''} • Apto ${userInfo.numero || ''}`;
+    return "Aqua User";
   };
 
-  const toggleNotifications = () => setNotificationsVisible(prev => !prev);
+  const markAsRead = async (item) => {
+    if (item.lido) return;
+
+    try {
+      const token = await AsyncStorage.getItem('token');
+      await axios.post(`${API_BASE_URL}/comunicados/${item.id}/lido`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Atualiza localmente
+      const updatedList = notifications.map(n => 
+        n.id === item.id ? { ...n, lido: true } : n
+      );
+      setNotifications(updatedList);
+      setUnreadCount(prev => Math.max(0, prev - 1));
+
+    } catch (error) {
+      console.error("Erro ao marcar como lido", error);
+    }
+  };
+
+  const toggleNotifications = () => {
+    setNotificationsVisible(prev => !prev);
+    if (!notificationsVisible) {
+        // Recarregar dados ao abrir o modal para garantir frescor
+        loadData();
+        Animated.spring(scaleAnim, {
+            toValue: 0.95,
+            useNativeDriver: true,
+        }).start(() => {
+            Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
+        });
+    }
+  };
 
   const renderNotificationItem = ({ item }) => (
-    <View style={styles.notificationCard}>
-      <Ionicons name="information-circle-outline" size={22} color="#0A84FF" />
-      <View style={styles.notificationContent}>
-        <Text style={styles.notificationText}>{item.title}</Text>
-        <Text style={styles.notificationTime}>{item.time}</Text>
+    <TouchableOpacity 
+        style={[styles.notificationCard, !item.lido && styles.unreadCard]} 
+        onPress={() => markAsRead(item)}
+        activeOpacity={0.7}
+    >
+      <View style={[styles.iconContainer, !item.lido ? styles.unreadIconBg : styles.readIconBg]}>
+        <Ionicons 
+            name={item.lido ? "mail-open-outline" : "mail-unread"} 
+            size={20} 
+            color={!item.lido ? "#0A84FF" : "#8A8A8E"} 
+        />
       </View>
-    </View>
+      <View style={styles.notificationContent}>
+        <Text style={[styles.notificationTitle, !item.lido && styles.unreadText]}>{item.title}</Text>
+        <Text style={styles.notificationSubject} numberOfLines={2}>{item.subject}</Text>
+        <Text style={styles.notificationTime}>
+            {new Date(item.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+        </Text>
+      </View>
+      {!item.lido && <View style={styles.blueDot} />}
+    </TouchableOpacity>
   );
-  
+
+  const userImage = userInfo?.img_url 
+    ? { uri: userInfo.img_url.startsWith('http') ? userInfo.img_url : `${API_BASE_URL.replace('/api', '')}${userInfo.img_url}` } 
+    : require('../assets/logo.png');
+
   if (isLoading) {
-    return (
-        <View style={[styles.container, styles.loadingContainer]}>
-            <ActivityIndicator color="#0A84FF" />
-        </View>
-    );
+    return <View style={styles.loadingContainer}><ActivityIndicator color="#0A84FF" /></View>;
   }
 
   return (
     <>
-      <View style={styles.container}>
-        <View style={styles.leftContent}>
-          <View style={styles.textInfoWrapper}>
-            <Text style={styles.userName} numberOfLines={1}>Olá, {userInfo?.user_name || userInfo?.name || 'Bem-vindo'}</Text>
-            <Text style={styles.userLocation} numberOfLines={1}>{getFormattedLocation()}</Text>
-          </View>
-        </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+            
+            <View style={styles.profileSection}>
+                <View style={styles.imageBorder}>
+                    <Image source={userImage} style={styles.profileImage} />
+                </View>
+                <View style={styles.textContainer}>
+                    <Text style={styles.greeting}>Olá, {userInfo?.user_name?.split(' ')[0] || 'Usuário'}</Text>
+                    <View style={styles.locationContainer}>
+                        <Ionicons name="location-sharp" size={12} color="#0A84FF" style={{marginRight: 2}} />
+                        <Text style={styles.location}>{getFormattedLocation()}</Text>
+                    </View>
+                </View>
+            </View>
 
-        <View style={styles.rightContent}>
-          <TouchableOpacity style={styles.iconButton} onPress={toggleNotifications} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="notifications-outline" size={26} color="#555" />
-            {mockNotifications.length > 0 && (
-              <View style={styles.notificationBadge}>
-                <Text style={styles.badgeText}>{mockNotifications.length}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          
-          <Image
-            source={userInfo?.img_url ? { uri: `${API_BASE_URL}${userInfo.img_url}` } : require('../assets/logo.png')}
-            style={styles.profileImage}
-          />
-        </View>
-      </View>
+            <TouchableOpacity 
+                style={styles.bellButton} 
+                onPress={toggleNotifications}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+                <Ionicons name="notifications-outline" size={24} color="#1C1C1E" />
+                {unreadCount > 0 && (
+                    <View style={styles.badge}>
+                        <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                    </View>
+                )}
+            </TouchableOpacity>
 
-      <Modal visible={notificationsVisible} animationType="fade" transparent onRequestClose={toggleNotifications}>
+        </View>
+      </SafeAreaView>
+
+      <Modal 
+        visible={notificationsVisible} 
+        animationType="fade" 
+        transparent 
+        onRequestClose={toggleNotifications}
+      >
         <TouchableWithoutFeedback onPress={toggleNotifications}>
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback>
-              <SafeAreaView style={styles.modalContainer}>
+              <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>Notificações</Text>
-                  <TouchableOpacity onPress={toggleNotifications} style={styles.closeButton}>
-                    <Ionicons name="close" size={26} color="#555" />
+                  <TouchableOpacity onPress={toggleNotifications} style={styles.closeBtn}>
+                    <Ionicons name="close" size={20} color="#8E8E93" />
                   </TouchableOpacity>
                 </View>
 
-                {mockNotifications.length > 0 ? (
+                {notifications.length > 0 ? (
                   <FlatList
-                    data={mockNotifications}
-                    keyExtractor={(item) => item.id}
+                    data={notifications}
+                    keyExtractor={(item) => item.id.toString()}
                     renderItem={renderNotificationItem}
-                    ItemSeparatorComponent={() => <View style={styles.separator} />}
-                    contentContainerStyle={styles.notificationListContent}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
                   />
                 ) : (
-                  <View style={styles.emptyNotifications}>
-                    <Ionicons name="checkmark-circle-outline" size={50} color="#bbb" />
-                    <Text style={styles.emptyNotificationsText}>Nenhuma notificação nova!</Text>
+                  <View style={styles.emptyState}>
+                    <Ionicons name="notifications-off-outline" size={48} color="#D1D1D6" />
+                    <Text style={styles.emptyText}>Tudo limpo por aqui!</Text>
                   </View>
                 )}
-              </SafeAreaView>
+              </View>
             </TouchableWithoutFeedback>
           </View>
         </TouchableWithoutFeedback>
@@ -158,141 +214,190 @@ const Header = () => {
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'android' ? 10 : 0,
+  },
   container: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 50 : 20,
-    paddingBottom: 12,
+    paddingVertical: 15,
     backgroundColor: '#fff',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ddd',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F2F2F7',
   },
   loadingContainer: {
-    justifyContent: 'center',
-    height: Platform.OS === 'ios' ? 90 : 60,
+    height: 80, 
+    justifyContent: 'center', 
+    backgroundColor:'#fff'
   },
-  leftContent: {
-    flex: 1,
-    marginRight: 16,
-  },
-  textInfoWrapper: {},
-  userName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1C1C1E',
-  },
-  userLocation: {
-    fontSize: 14,
-    color: '#8A8A8E',
-    marginTop: 2,
-  },
-  rightContent: {
+  profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  iconButton: {
-    marginRight: 16,
-    position: 'relative',
-    padding: 4,
+  imageBorder: {
+    padding: 2,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: '#E3F2FD', // Azul bem claro
   },
   profileImage: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
   },
-  notificationBadge: {
+  textContainer: {
+    marginLeft: 12,
+  },
+  greeting: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1C1C1E',
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  location: {
+    fontSize: 12,
+    color: '#8A8A8E',
+    fontWeight: '500',
+  },
+  bellButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F9FAFB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
+  badge: {
     position: 'absolute',
-    top: -4,
-    right: -4,
+    top: -2,
+    right: -2,
     backgroundColor: '#FF3B30',
-    borderRadius: 9,
+    borderRadius: 10,
     minWidth: 18,
     height: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
     borderColor: '#fff',
   },
   badgeText: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: 'bold',
   },
+  // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'flex-start',
     alignItems: 'flex-end',
-    paddingTop: Platform.OS === 'ios' ? 100 : 80,
+    paddingTop: Platform.OS === 'ios' ? 105 : 75,
     paddingRight: 16,
   },
-  modalContainer: {
+  modalContent: {
+    width: '85%',
+    maxWidth: 350,
     backgroundColor: '#fff',
-    borderRadius: 16,
-    width: '95%',
-    maxWidth: 400,
-    maxHeight: '70%',
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 10, shadowOffset: { width: 0, height: 5 } },
-      android: { elevation: 10 },
-    }),
+    borderRadius: 20,
+    maxHeight: '60%',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 10,
+    overflow: 'hidden',
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F2F2F7',
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#222',
+    color: '#1C1C1E',
   },
-  closeButton: {
-    padding: 6,
+  closeBtn: {
+    padding: 4,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 12,
   },
-  notificationListContent: {
-    paddingBottom: 10,
+  listContent: {
+    paddingBottom: 20,
   },
   notificationCard: {
     flexDirection: 'row',
-    alignItems: 'center',
     padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F2F2F7',
+    alignItems: 'flex-start',
   },
-  notificationContent: {
-    marginLeft: 12,
-    flex: 1,
+  unreadCard: {
+    backgroundColor: '#F0F9FF', // Azul muito leve para não lidos
   },
-  notificationText: {
-    fontSize: 15,
-    color: '#333',
-    lineHeight: 21,
-  },
-  notificationTime: {
-    fontSize: 13,
-    color: '#888',
-    marginTop: 4,
-  },
-  separator: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: '#E0E0E0',
-    marginHorizontal: 16,
-  },
-  emptyNotifications: {
-    flexGrow: 1,
+  iconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    marginRight: 12,
   },
-  emptyNotificationsText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#aaa',
+  readIconBg: { backgroundColor: '#F2F2F7' },
+  unreadIconBg: { backgroundColor: '#E3F2FD' },
+  notificationContent: {
+    flex: 1,
+  },
+  notificationTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#3A3A3C',
+    marginBottom: 2,
+  },
+  unreadText: {
+    color: '#1C1C1E',
+    fontWeight: '700',
+  },
+  notificationSubject: {
+    fontSize: 13,
+    color: '#8A8A8E',
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  notificationTime: {
+    fontSize: 11,
+    color: '#AEAEB2',
+  },
+  blueDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#0A84FF',
+    marginTop: 6,
+    marginLeft: 8,
+  },
+  emptyState: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#8A8A8E',
   },
 });
 

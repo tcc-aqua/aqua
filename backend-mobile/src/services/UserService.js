@@ -1,3 +1,5 @@
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\UserService.js
+
 import { Op } from 'sequelize';
 import User from "../models/User.js";
 import Metas from "../models/Metas.js";
@@ -9,6 +11,11 @@ import sequelize from '../config/sequelize.js';
 import GamificationLog from '../models/GamificationLog.js';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+// Configuração de caminhos
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PRECO_POR_LITRO = 0.015;
 
@@ -32,7 +39,6 @@ export default class UserService {
             }
 
             await user.update(updateData);
-
             return user;
         } catch (error) {
             console.error('Erro ao atualizar usuário', error);
@@ -45,13 +51,21 @@ export default class UserService {
             const user = await User.findByPk(userId);
             if (!user) throw new Error('Usuário não encontrado');
 
-            const uploadDir = path.join(process.cwd(), 'uploads');
+            // --- CORREÇÃO DO CAMINHO ---
+            // __dirname aqui é .../src/services
+            // Precisamos subir 2 niveis (services -> src -> raiz)
+            const uploadDir = path.resolve(__dirname, '..', '..', 'uploads');
+
+            console.log('------------------------------------------------');
+            console.log('💾 SALVANDO IMAGEM EM:', uploadDir);
+            console.log('------------------------------------------------');
 
             if (!fs.existsSync(uploadDir)) {
                 fs.mkdirSync(uploadDir, { recursive: true });
             }
 
-            const fileName = `user-${userId}-${Date.now()}-${file.filename}`;
+            // Gera nome único
+            const fileName = `user-${userId}-${Date.now()}-${file.filename.replace(/\s/g, '')}`;
             const filePath = path.join(uploadDir, fileName);
 
             const buffer = await file.toBuffer();
