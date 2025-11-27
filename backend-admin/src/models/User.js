@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs'
 import sequelizePaginate from 'sequelize-paginate'
 import Apartamento from './Apartamento.js';
 import Casa from "./Casa.js";
+import UsersLog from "./UserLog.js";
 
 export default class User extends Model {
     // compare hash password
@@ -104,4 +105,6 @@ User.belongsTo(Apartamento, {
     constraints: false,
     as: 'apartamento'
 });
+
+
 sequelizePaginate.paginate(User);
