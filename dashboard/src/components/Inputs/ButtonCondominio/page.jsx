@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useCondominios } from "@/hooks/useCondominios";
-import { Building, Plus } from "lucide-react";
+import { Building, Plus, X } from "lucide-react";
 import { api } from "@/lib/api";
 
 export default function CriarCondominioButton({ onCreated, onApply }) {
@@ -211,16 +211,16 @@ export default function CriarCondominioButton({ onCreated, onApply }) {
                             <Button
                                 type="button"
                                 variant="ghost"
-                                className="w-32 border-border text-foreground hover:bg-muted"
+                                className="w-32 border-border text-foreground"
                                 onClick={() => setIsOpen(false)}
                             >
-                                Cancelar
+                                <X/> Cancelar
                             </Button>
                             <Button
                                 type="submit"
                                 className="w-32 bg-primary text-primary-foreground hover:bg-primary/90"
                             >
-                                Criar Condomínio
+                             Criar Condomínio
                             </Button>
                         </DialogFooter>
                     </form>
