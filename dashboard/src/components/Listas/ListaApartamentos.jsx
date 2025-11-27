@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   MapPin,
   Signal,
+  User,
 } from "lucide-react";
 import {
   Dialog,
@@ -161,8 +162,8 @@ export default function ApartamentosDashboard() {
         (acc, ap) => acc + (Number(ap.numero_moradores) || 0),
         0
       ),
-      icon: UserCheck,
-      iconColor: "text-purple-700",
+      icon: User,
+      iconColor: "text-sky-500",
       subTitle:
         apartamentos.length > 0
           ? `Média de ${(
@@ -172,7 +173,7 @@ export default function ApartamentosDashboard() {
             ) / apartamentos.length
           ).toFixed(0)} por unidade`
           : "0",
-            borderColor:" border-b-purple-700 "
+            borderColor:" border-b-sky-500 "
     },
     {
       title: "Sensores Ativos",
@@ -195,9 +196,9 @@ export default function ApartamentosDashboard() {
         return litros.toFixed(1);
       })(),
       icon: Droplet,
-      iconColor: "text-accent",
+      iconColor: "text-blue-500",
       subTitle2: "Litros acumulados",
-        borderColor:" border-b-accent "
+        borderColor:" border-b-blue-500 "
     },
   ];
 
@@ -237,12 +238,12 @@ export default function ApartamentosDashboard() {
                         </p>
                       )}
                       {card.subTitle && (
-                        <p className="text-sm mt-1 text-purple-600">
+                        <p className="text-sm mt-1 text-sky-500">
                           {card.subTitle}
                         </p>
                       )}
                       {card.subTitle2 && (
-                        <p className="text-sm mt-1 text-accent">
+                        <p className="text-sm mt-1 text-blue-500">
                           {card.subTitle2}
                         </p>
                       )}

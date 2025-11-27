@@ -41,12 +41,12 @@ const calculateCardsData = (currentTickets, totalFromServer) => {
       title: "Total de Mensagens",
       value: total,
       icon: MessageCircle,
-      iconColor: "text-sky-500",
+      iconColor: "text-accent",
       porcentagem: "Visão Geral",
-      borderColor:" border-b-sky-500 "
+      borderColor:" border-b-accent "
     },
       { title: "Mensagens Não Lidas", value: naoLidas, icon: MailWarning, iconColor: "text-yellow-500", subTitle1: naoLidas > 0 ? `${naoLidas} para ação` : "Tudo Certo!", borderColor:" border-b-yellow-500 " },
-      { title: "Mensagens Recentes", value: recentes, icon: Clock, iconColor: "text-green-500", subTitle2: `Últimos 60 min`, borderColor:" border-b-green-500 " },
+      { title: "Mensagens Recentes", value: recentes, icon: Clock, iconColor: "text-green-600", subTitle2: `Últimos 60 min`, borderColor:" border-b-green-500 " },
       { title: "Prioridade Alta", value: altaPrioridade, icon: AlertTriangle, iconColor: "text-red-500", subTitle: altaPrioridade > 0 ? "Ação Imediata" : "Sem Urgência", borderColor:" border-b-red-500 " },
     ];
 
@@ -143,7 +143,7 @@ const loadTickets = async () => {
                     <div className="flex flex-col">
                       <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
                       {card.subTitle1 && <p className="text-yellow-500 text-sm mt-1">{card.subTitle1}</p>}
-                      {card.porcentagem && !card.valueAtivos && <p className="text-sm mt-1 text-sky-500">{card.porcentagem}</p>}
+                      {card.porcentagem && !card.valueAtivos && <p className="text-sm mt-1 text-accent">{card.porcentagem}</p>}
                       {card.subTitle && <p className="text-sm mt-1 text-destructive">{card.subTitle}</p>}
                       {card.subTitle2 && <p className="text-sm mt-1 text-green-600">{card.subTitle2}</p>}
                     </div>
@@ -181,7 +181,7 @@ const loadTickets = async () => {
                             <Trash className="w-4 h-4" />
                           </button>
 
-                          <button onClick={(e) => { e.stopPropagation(); abrirLidoModal(ticket); }} className="p-1.5 text-white bg-indigo-600 rounded-full shadow-md hover:bg-indigo-700 transition" title="Marcar como Visualizado">
+                          <button onClick={(e) => { e.stopPropagation(); abrirLidoModal(ticket); }} className="p-1.5 text-white bg-green-500 rounded-full shadow-md hover:bg-green-600 transition" title="Marcar como Visualizado">
                             <Check className="w-4 h-4" />
                           </button>
                         </div>

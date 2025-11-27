@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Users, UserPlus, AlertTriangle, Cpu, Siren, Check, Signal } from "lucide-react";
+import { Users, UserPlus, AlertTriangle, Cpu, Siren, Check, Signal, Sigma, SigmaIcon, ListTodo, CircleGauge, ListOrdered, Layers } from "lucide-react";
 
 const cardVariants = {
   hidden: { y: -120, opacity: 0, zIndex: -1 },
@@ -74,7 +74,7 @@ export default function CardTopDash() {
     {
       title: "Total de residências",
       value: userStats.totalResidencias,
-      icon: Users,
+      icon: Layers,
       iconColor: "text-accent",
       detalhe: `${userStats.totalCasas} casas + ${userStats.totalApartamentos} aptos`,
       borderColor: " border-b-accent "
@@ -82,19 +82,20 @@ export default function CardTopDash() {
     {
       title: "Sensores ativos",
       value: userStats.sensoresAtivos,
-      icon: Signal,
-      iconColor: "text-purple-700",
+      icon: Check,
+      iconColor: "text-green-600",
       detalhe1: `${userStats.sensoresAtivos} de ${userStats.sensoresTotal} operacionais`,
-      borderColor: " border-b-purple-700"
+      borderColor: " border-b-green-600"
 
     },
     {
       title: "Usuários ativos",
       value: userStats.usuariosAtivos,
       icon: Check,
-      iconColor: "text-green-500",
-      detalhe2: `${userStats.totalCasas} moradores + ${userStats.totalApartamentos} síndicos`,
-      borderColor: " border-b-green-500 "
+      iconColor: "text-green-600",
+      detalhe2: "Total de Usuários",
+      // `${userStats.totalCasas} moradores + ${userStats.totalApartamentos} síndicos`
+      borderColor: " border-b-green-600 "
     },
     {
       title: "Alertas ativos",
@@ -136,7 +137,7 @@ export default function CardTopDash() {
                   <p className="text-sm text-accent mt-2">{card.detalhe}</p>
                 )}
                 {card.detalhe1 && (
-                  <p className="text-purple-600 text-sm mt-1">
+                  <p className="text-green-600 text-sm mt-1">
                     {card.detalhe1}
                   </p>
                 )}

@@ -21,11 +21,8 @@ import Loading from "../Layout/Loading/page";
 import AnimationWrapper from "../Layout/Animation/Animation";
 
 import {
-  Edit3,
   Save,
   Loader2,
-  Phone,
-  MapPin,
   Mail,
   AlertTriangle,
   ShieldCheck,
@@ -37,8 +34,6 @@ import {
   EyeOff,
   Check,
   X,
-  AlertCircle,
-  ShieldQuestion,
 } from "lucide-react";
 
 export const adminEvent = new EventTarget();
@@ -52,7 +47,7 @@ export default function EmployeeProfile() {
   const [localImagePreview, setLocalImagePreview] = useState(null);
   const [showAllTimeline, setShowAllTimeline] = useState(false);
 
-  // Modal de confirmação
+  
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -150,6 +145,7 @@ const timeline = admin?.activities || [
     const event = new CustomEvent("imageUpdate", { detail: URL.createObjectURL(file) });
     adminEvent.dispatchEvent(event);
   };
+  
 
   const getRoleBadge = (role) => {
     if (!role) return null;

@@ -174,9 +174,9 @@ export default function AlertasDashboard() {
       title: "Resolvidos",
       value: stats.resolvidos,
       icon: Check,
-      iconColor: "text-green-500",
+      iconColor: "text-green-600",
       subTitle2: "Monitoramento",
-      borderColor: "border-b-green-500"
+      borderColor: "border-b-green-600"
     },
   ]
 
@@ -258,7 +258,7 @@ export default function AlertasDashboard() {
                       )}
 
                       {card.subTitle2 && (
-                        <p className="text-sm mt-1 text-green-500">{card.subTitle2}</p>
+                        <p className="text-sm mt-1 text-green-600">{card.subTitle2}</p>
                       )}
                     </div>
                     <Icon className={`w-8 h-8 ${card.iconColor}`} />

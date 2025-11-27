@@ -145,8 +145,8 @@ export default function CasasDashboard() {
       valueAtivos: { casas: casaStats.ativas },
       icon: Home,
       bg: "bg-card",
-      iconColor: "text-orange-300",
-        borderColor:" border-b-orange-300 "
+      iconColor: "text-sky-700",
+        borderColor:" border-b-sky-700 "
     },
     {
       title: "Total de Moradores",
@@ -180,9 +180,9 @@ export default function CasasDashboard() {
       })(),
       icon: Droplet,
       bg: "bg-card",
-      iconColor: "text-accent",
+      iconColor: "text-blue-500",
       subTitle2: "Litros acumulados",
-  borderColor:" border-b-accent "
+  borderColor:" border-b-blue-500 "
     }
   ];
 
@@ -210,7 +210,7 @@ export default function CasasDashboard() {
 
                       <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
                       {card.valueAtivos && (
-                        <p className="text-orange-300 text-sm mt-1">
+                        <p className="text-sky-700 text-sm mt-1">
                           {card.valueAtivos.casas} ativas
                         </p>
                       )}
@@ -222,7 +222,7 @@ export default function CasasDashboard() {
                       )}
 
                       {card.subTitle2 && (
-                        <p className="text-sm mt-1 text-accent">{card.subTitle2}</p>
+                        <p className="text-sm mt-1 text-blue-500">{card.subTitle2}</p>
                       )}
                     </div>
                     <Icon className={`w-8 h-8 bg-${card.iconColor} ${card.iconColor}`} />

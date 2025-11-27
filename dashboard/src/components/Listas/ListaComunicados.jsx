@@ -64,15 +64,15 @@ export default function ComunicadosDashboard() {
       title: "Total de Comunicados",
       value: comunicadoStats.total,
       icon: Bell,
-      iconColor: "text-sky-500",
+      iconColor: "text-accent",
       porcentagem: "Visão Geral",
-      borderColor: "border-b-sky-500",
+      borderColor: "border-b-accent",
     },
     {
       title: "Não Lidos",
       value: comunicadoStats.naoLidos,
       icon: comunicadoStats.naoLidos > 0 ? BellOff : Check,
-      iconColor: comunicadoStats.naoLidos > 0 ? "text-red-500" : "text-green-500",
+      iconColor: comunicadoStats.naoLidos > 0 ? "text-red-500" : "text-green-600",
       subTitle1:
         comunicadoStats.naoLidos > 0 ? `${comunicadoStats.naoLidos} pendentes` : "Nenhum pendente",
       borderColor: "border-b-red-500",
@@ -81,9 +81,9 @@ export default function ComunicadosDashboard() {
       title: "Para Usuários",
       value: comunicadoStats.usuários,
       icon: Users,
-      iconColor: "text-green-500",
+      iconColor: "text-green-600",
       subTitle2: "Comunicados gerais",
-      borderColor: "border-b-green-500",
+      borderColor: "border-b-green-600",
     },
     {
       title: "Para Administradores",
@@ -111,7 +111,7 @@ export default function ComunicadosDashboard() {
                   <div className="flex flex-col">
                     <p className="font-bold text-4xl text-foreground">{card.value}</p>
                     {card.subTitle1 && <p className="text-red-500 text-sm mt-1">{card.subTitle1}</p>}
-                    {card.porcentagem && <p className="text-blue-500 text-sm mt-1">{card.porcentagem}</p>}
+                    {card.porcentagem && <p className="text-accent text-sm mt-1">{card.porcentagem}</p>}
                     {card.subTitle && <p className="text-purple-500 text-sm mt-1">{card.subTitle}</p>}
                     {card.subTitle2 && <p className="text-green-600 text-sm mt-1">{card.subTitle2}</p>}
                   </div>
