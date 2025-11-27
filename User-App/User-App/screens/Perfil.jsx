@@ -1,44 +1,76 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator, Alert, Linking, TouchableOpacity, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import {
-  Card,
-  Divider,
-  List,
-  Switch,
   Button,
   useTheme,
   Snackbar,
   Title,
   Paragraph,
+  Card,
+  Avatar,
+  Provider as PaperProvider,
+  DefaultTheme,
+  TextInput,
+  IconButton,
+  HelperText
 } from 'react-native-paper';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProfileHeader from '../components/Perfil/ProfileHeader';
-import StatCard from '../components/Perfil/StatCard';
+import { MaskedTextInput, mask } from 'react-native-mask-text';
 
 const API_URL = 'http://localhost:3334/api';
 
-const ProfileScreen = ({ navigation, onLogout }) => {
-  const { colors } = useTheme();
+const blueTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#0A84FF',
+    accent: '#0A84FF',
+    background: '#F2F2F7',
+    surface: '#FFFFFF',
+    text: '#1C1C1E',
+    placeholder: '#8A8A8E',
+    onSurface: '#1C1C1E',
+    error: '#FF3B30',
+    elevation: {
+      level2: '#FFFFFF'
+    }
+  },
+};
 
+const ProfileScreen = ({ onLogout }) => {
   const [user, setUser] = useState(null);
-  const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
-
-  const [notificationPrefs, setNotificationPrefs] = useState({
-    notif_vazamento: true,
-    notif_consumo_alto: true,
-    notif_metas: true,
-    notif_comunidade: false,
-    notif_relatorios: true,
+  
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingCep, setIsLoadingCep] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    cpf: '',
+    // Endereço
+    cep: '',
+    logradouro: '',
+    numero: '',
+    bairro: '',
+    cidade: '',
+    uf: '',
+    // Senhas
+    currentPassword: '',
+    password: '',
+    confirmPassword: ''
   });
 
-  const fetchProfileData = useCallback(async () => {
+  const [errors, setErrors] = useState({});
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    if (isLoading) setIsLoading(true);
-    
+  const fetchProfileData = useCallback(async () => {
     try {
       const authToken = await AsyncStorage.getItem('token');
       if (!authToken) {
@@ -46,26 +78,34 @@ const ProfileScreen = ({ navigation, onLogout }) => {
         return;
       }
       const headers = { Authorization: `Bearer ${authToken}` };
-      const [profileResponse, statsResponse] = await Promise.all([
-        axios.get(`${API_URL}/profile`, { headers }),
-        axios.get(`${API_URL}/user/me/stats`, { headers })
-      ]);
+      
+      const fullProfile = await axios.get(`${API_URL}/profile`, { headers });
+      
+      if (fullProfile.data) {
+        const data = fullProfile.data;
+        setUser(data);
+        
+        setFormData({
+            name: data.user_name || data.name || '',
+            email: data.user_email || data.email || '',
+            cpf: data.cpf || '',
+            
+            // Mapeando dados de endereço (ajuste conforme seu retorno do backend)
+            cep: data.cep || '',
+            logradouro: data.logradouro || '',
+            numero: data.numero || '',
+            bairro: data.bairro || '',
+            cidade: data.cidade || '',
+            uf: data.uf || '',
 
-      if (profileResponse.data) {
-        setUser(profileResponse.data);
-        setNotificationPrefs({
-          notif_vazamento: profileResponse.data.notif_vazamento,
-          notif_consumo_alto: profileResponse.data.notif_consumo_alto,
-          notif_metas: profileResponse.data.notif_metas,
-          notif_comunidade: profileResponse.data.notif_comunidade,
-          notif_relatorios: profileResponse.data.notif_relatorios,
+            currentPassword: '',
+            password: '',
+            confirmPassword: ''
         });
       }
-      if (statsResponse.data) {
-        setStats(statsResponse.data);
-      }
+
     } catch (error) {
-      console.error("ERRO AO BUSCAR DADOS:", error.response?.data || error.message);
+      console.error("ERRO AO BUSCAR PERFIL:", error);
       if (error.response?.status === 401) onLogout();
       else Alert.alert("Erro", "Não foi possível carregar seus dados.");
     } finally {
@@ -77,87 +117,470 @@ const ProfileScreen = ({ navigation, onLogout }) => {
     fetchProfileData();
   }, [fetchProfileData]);
 
-  const handleProfileUpdate = () => {
-    setSnackbar({ visible: true, message: 'Foto atualizada! Recarregando perfil...' });
-    fetchProfileData(); // Recarrega todos os dados
+  const fetchAddressFromCep = async (cepValue) => {
+    const unmaskedCep = cepValue.replace(/\D/g, '');
+    if (unmaskedCep.length !== 8) return;
+    
+    setIsLoadingCep(true);
+    try {
+        const response = await axios.get(`${API_URL}/cep/${unmaskedCep}`);
+        const data = response.data;
+        
+        if (data) {
+            setFormData(prev => ({
+                ...prev,
+                logradouro: data.logradouro || prev.logradouro,
+                bairro: data.bairro || prev.bairro,
+                cidade: data.cidade || prev.cidade,
+                uf: data.uf || prev.uf
+            }));
+        }
+    } catch (error) { 
+        console.error("Erro ao buscar CEP:", error);
+        setErrors(prev => ({...prev, cep: 'CEP não encontrado.'}));
+    } 
+    finally { setIsLoadingCep(false); }
   };
 
-  const handleNotificationChange = async (key, value) => {
-    const originalPrefs = { ...notificationPrefs };
-    setNotificationPrefs(prev => ({ ...prev, [key]: value }));
+  const validateForm = () => {
+    let newErrors = {};
+    let isValid = true;
 
-    try {
-      const authToken = await AsyncStorage.getItem('token');
-      await axios.put(`${API_URL}/user/me`, { [key]: value }, { headers: { Authorization: `Bearer ${authToken}` } });
-      setSnackbar({ visible: true, message: 'Preferência salva!' });
-    } catch (error) {
-      setNotificationPrefs(originalPrefs);
-      Alert.alert("Erro", "Não foi possível salvar sua preferência.");
+    if (!formData.name.trim()) {
+        newErrors.name = 'Nome é obrigatório.';
+        isValid = false;
     }
+
+    if (!formData.email.includes('@') || !formData.email.includes('.')) {
+        newErrors.email = 'E-mail inválido.';
+        isValid = false;
+    }
+
+    const cpfClean = formData.cpf.replace(/\D/g, '');
+    if (cpfClean.length !== 11) {
+        newErrors.cpf = 'CPF incompleto.';
+        isValid = false;
+    }
+
+    // Validação de Senha
+    if (formData.password) {
+        if (!formData.currentPassword) {
+            newErrors.currentPassword = 'Para alterar a senha, informe a senha atual.';
+            isValid = false;
+        }
+        if (formData.password.length < 6) {
+            newErrors.password = 'A nova senha deve ter no mínimo 6 caracteres.';
+            isValid = false;
+        }
+        if (formData.password !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'As senhas não coincidem.';
+            isValid = false;
+        }
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleProfileUpdate = () => {
+    setSnackbar({ visible: true, message: 'Foto de perfil atualizada!' });
+    setTimeout(() => {
+        fetchProfileData();
+    }, 500);
   };
 
   const handleLogoutPress = async () => {
-    await AsyncStorage.multiRemove(['token', 'user']);
-    onLogout();
+    try {
+        await AsyncStorage.multiRemove(['token', 'user']);
+    } catch (e) {
+        console.error(e);
+    } finally {
+        onLogout();
+    }
+  };
+
+  const handleContactSupport = async () => {
+    const email = 'servicesaquateam@gmail.com';
+    const subject = `Suporte Aqua - Usuário: ${user?.user_name || 'Desconhecido'}`;
+    const body = 'Olá equipe Aqua, preciso de ajuda com...';
+    
+    const url = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    const canOpen = await Linking.canOpenURL(url);
+    if (canOpen) {
+        await Linking.openURL(url);
+    } else {
+        setSnackbar({ visible: true, message: 'Não foi possível abrir o app de e-mail.' });
+    }
+  };
+
+  const handleSaveData = async () => {
+    if (!validateForm()) return;
+
+    setIsSaving(true);
+    try {
+        const authToken = await AsyncStorage.getItem('token');
+        const payload = {
+            name: formData.name,
+            email: formData.email,
+            cpf: formData.cpf,
+            // Enviando endereço
+            cep: formData.cep,
+            logradouro: formData.logradouro,
+            numero: formData.numero,
+            bairro: formData.bairro,
+            cidade: formData.cidade,
+            uf: formData.uf,
+        };
+        
+        if (formData.password) {
+            payload.password = formData.password;
+            // Opcional: Enviar currentPassword se o backend exigir verificação
+            // payload.currentPassword = formData.currentPassword; 
+        }
+
+        await axios.put(`${API_URL}/user/me`, payload, {
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+
+        setEditModalVisible(false);
+        setSnackbar({ visible: true, message: 'Dados atualizados com sucesso!' });
+        fetchProfileData();
+        setFormData(prev => ({...prev, currentPassword: '', password: '', confirmPassword: ''}));
+    } catch (error) {
+        console.error("Erro ao atualizar:", error);
+        const msg = error.response?.data?.message || "Falha ao atualizar dados.";
+        Alert.alert("Erro", msg);
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   if (isLoading) {
     return (
-      <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
+      <PaperProvider theme={blueTheme}>
+        <View style={styles.centeredContainer}>
+            <ActivityIndicator size="large" color="#0A84FF" />
+        </View>
+      </PaperProvider>
     );
   }
 
-  if (!user || !stats) {
+  if (!user) {
     return (
-      <View style={styles.centeredContainer}>
-        <Title>Erro ao carregar perfil.</Title>
-        <Paragraph>Por favor, tente novamente.</Paragraph>
-        <Button onPress={onLogout} style={{ marginTop: 20 }}>Voltar ao Login</Button>
-      </View>
+      <PaperProvider theme={blueTheme}>
+        <View style={styles.centeredContainer}>
+            <Title>Erro ao carregar perfil.</Title>
+            <Button onPress={onLogout} style={{ marginTop: 20 }}>Voltar ao Login</Button>
+        </View>
+      </PaperProvider>
     );
   }
 
   return (
-    <>
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <ProfileHeader user={user} onProfileUpdate={handleProfileUpdate} />
+    <PaperProvider theme={blueTheme}>
+        <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.contentContainer}>
+            
+            <ProfileHeader user={{
+                name: user.user_name || user.name,
+                email: user.user_email || user.email,
+                img_url: user.user_img_url || user.img_url,
+                role: user.role
+            }} onProfileUpdate={handleProfileUpdate} />
 
-        <Title style={styles.sectionTitle}>Minhas Estatísticas</Title>
-        <View style={styles.statsGrid}>
-          <StatCard icon="trophy-award" color="#FFD700" label="Pontos" value={stats.pontos} delay={0} />
-          <StatCard icon="podium" color="#C0C0C0" label="Ranking" value={stats.ranking} unit="º" delay={100} />
-          <StatCard icon="water-sync" color="#5dade2" label="Água Poupada" value={stats.agua_poupada} unit=" L" delay={200} />
-          <StatCard icon="cash-multiple" color="#2ecc71" label="Economia Total" value={stats.economia_total} unit=" R$" delay={300} />
-          <StatCard icon="flag-checkered" color="#f1c40f" label="Metas Cumpridas" value={stats.metas_cumpridas} delay={400} />
-          <StatCard icon="clock-time-eight-outline" color="#3498db" label="Dias no App" value={stats.tempo_no_app} delay={500} />
+            <TouchableOpacity onPress={() => setEditModalVisible(true)} activeOpacity={0.9}>
+                <Card style={styles.actionCard}>
+                    <View style={styles.cardContent}>
+                        <View style={[styles.iconBox, { backgroundColor: '#E3F2FD' }]}>
+                            <Avatar.Icon size={32} icon="account-edit-outline" color="#0A84FF" style={{ backgroundColor: 'transparent' }} />
+                        </View>
+                        <View style={styles.cardText}>
+                            <Title style={styles.cardTitle}>Meus Dados</Title>
+                            <Paragraph style={styles.cardSubtitle}>
+                                Dados pessoais, endereço e senha
+                            </Paragraph>
+                        </View>
+                        <Avatar.Icon size={24} icon="chevron-right" color="#DDD" style={{ backgroundColor: 'transparent' }} />
+                    </View>
+                </Card>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={handleContactSupport} activeOpacity={0.9}>
+                <Card style={styles.actionCard}>
+                    <View style={styles.cardContent}>
+                        <View style={[styles.iconBox, { backgroundColor: '#E3F2FD' }]}>
+                            <Avatar.Icon size={32} icon="email-outline" color="#0A84FF" style={{ backgroundColor: 'transparent' }} />
+                        </View>
+                        <View style={styles.cardText}>
+                            <Title style={styles.cardTitle}>Suporte</Title>
+                            <Paragraph style={styles.cardSubtitle}>
+                                Fale com nossa equipe
+                            </Paragraph>
+                        </View>
+                        <Avatar.Icon size={24} icon="chevron-right" color="#DDD" style={{ backgroundColor: 'transparent' }} />
+                    </View>
+                </Card>
+            </TouchableOpacity>
+
+        </ScrollView>
+
+        <View style={styles.footer}>
+            <Button 
+                icon="logout" 
+                mode="outlined" 
+                onPress={handleLogoutPress} 
+                textColor="#FF3B30"
+                style={{ borderColor: '#FF3B30', width: '100%', borderRadius: 12 }}
+                labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
+            >
+            Sair da Conta
+            </Button>
+            <Paragraph style={styles.versionText}>Versão 1.0.0</Paragraph>
         </View>
 
-        <Card style={styles.card}>
-          <List.Accordion title="Notificações" id="1" left={props => <List.Icon {...props} icon="bell-outline" />}>
-            <List.Item title="Alertas de Vazamento" right={() => <Switch value={notificationPrefs.notif_vazamento} onValueChange={(v) => handleNotificationChange('notif_vazamento', v)} />} />
-            <List.Item title="Alto Consumo" right={() => <Switch value={notificationPrefs.notif_consumo_alto} onValueChange={(v) => handleNotificationChange('notif_consumo_alto', v)} />} />
-            <List.Item title="Metas e Objetivos" right={() => <Switch value={notificationPrefs.notif_metas} onValueChange={(v) => handleNotificationChange('notif_metas', v)} />} />
-            <List.Item title="Desafios da Comunidade" right={() => <Switch value={notificationPrefs.notif_comunidade} onValueChange={(v) => handleNotificationChange('notif_comunidade', v)} />} />
-            <List.Item title="Relatórios de Economia" right={() => <Switch value={notificationPrefs.notif_relatorios} onValueChange={(v) => handleNotificationChange('notif_relatorios', v)} />} />
-          </List.Accordion>
-          <Divider />
-          <List.Accordion title="Ajuda & Suporte" id="2" left={props => <List.Icon {...props} icon="help-circle-outline" />}>
-            <List.Item title="Central de Ajuda" onPress={() => { }} />
-            <List.Item title="Suporte Técnico" onPress={() => { }} />
-            <List.Item title="Termos de Serviço" onPress={() => { }} />
-          </List.Accordion>
-        </Card>
+        <Modal
+            visible={editModalVisible}
+            animationType="slide"
+            presentationStyle="pageSheet"
+            onRequestClose={() => setEditModalVisible(false)}
+        >
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{flex:1, backgroundColor:'#fff'}}>
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalHeader}>
+                        <Title style={styles.modalTitle}>Editar Dados</Title>
+                        <IconButton icon="close" size={24} onPress={() => setEditModalVisible(false)} />
+                    </View>
+                    
+                    <ScrollView contentContainerStyle={styles.modalBody} showsVerticalScrollIndicator={false}>
+                        
+                        <Title style={styles.sectionHeader}>Informações Pessoais</Title>
+                        <View style={styles.inputGroup}>
+                            <TextInput
+                                label="Nome Completo"
+                                value={formData.name}
+                                onChangeText={(text) => setFormData({...formData, name: text})}
+                                mode="outlined"
+                                style={styles.input}
+                                outlineColor="#E0E0E0"
+                                activeOutlineColor="#0A84FF"
+                                error={!!errors.name}
+                                left={<TextInput.Icon icon="account-outline" color="#0A84FF" />}
+                            />
+                            {errors.name && <HelperText type="error">{errors.name}</HelperText>}
+                        </View>
+                        
+                        <View style={styles.inputGroup}>
+                            <TextInput
+                                label="E-mail"
+                                value={formData.email}
+                                onChangeText={(text) => setFormData({...formData, email: text})}
+                                mode="outlined"
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                                style={styles.input}
+                                outlineColor="#E0E0E0"
+                                activeOutlineColor="#0A84FF"
+                                error={!!errors.email}
+                                left={<TextInput.Icon icon="email-outline" color="#0A84FF" />}
+                            />
+                            {errors.email && <HelperText type="error">{errors.email}</HelperText>}
+                        </View>
 
-        <Button icon="logout" mode="contained" onPress={handleLogoutPress} style={styles.logoutButton} buttonColor={colors.error}>
-          Sair da Conta
-        </Button>
-      </ScrollView>
-      <Snackbar visible={snackbar.visible} onDismiss={() => setSnackbar({ ...snackbar, visible: false })} duration={3000}>
-        {snackbar.message}
-      </Snackbar>
-    </>
+                        <View style={styles.inputGroup}>
+                            <TextInput
+                                label="CPF"
+                                value={formData.cpf}
+                                mode="outlined"
+                                style={styles.input}
+                                outlineColor="#E0E0E0"
+                                activeOutlineColor="#0A84FF"
+                                error={!!errors.cpf}
+                                keyboardType="numeric"
+                                left={<TextInput.Icon icon="card-account-details-outline" color="#0A84FF" />}
+                                render={props => (
+                                    <MaskedTextInput
+                                      {...props}
+                                      mask="999.999.999-99"
+                                      onChangeText={(text, raw) => setFormData({...formData, cpf: text})}
+                                    />
+                                )}
+                            />
+                            {errors.cpf && <HelperText type="error">{errors.cpf}</HelperText>}
+                        </View>
+
+                        <Title style={styles.sectionHeader}>Endereço</Title>
+                        <View style={{flexDirection: 'row', gap: 10}}>
+                            <View style={{flex: 1}}>
+                                <TextInput
+                                    label="CEP"
+                                    value={formData.cep}
+                                    mode="outlined"
+                                    style={styles.input}
+                                    outlineColor="#E0E0E0"
+                                    activeOutlineColor="#0A84FF"
+                                    keyboardType="numeric"
+                                    right={isLoadingCep ? <TextInput.Icon icon="loading" /> : null}
+                                    render={props => (
+                                        <MaskedTextInput
+                                            {...props}
+                                            mask="99999-999"
+                                            onChangeText={(text, raw) => {
+                                                setFormData({...formData, cep: text});
+                                                if (raw.length === 8) fetchAddressFromCep(raw);
+                                            }}
+                                        />
+                                    )}
+                                />
+                            </View>
+                            <View style={{width: 100}}>
+                                <TextInput
+                                    label="Nº"
+                                    value={formData.numero}
+                                    onChangeText={text => setFormData({...formData, numero: text})}
+                                    mode="outlined"
+                                    style={styles.input}
+                                    outlineColor="#E0E0E0"
+                                    activeOutlineColor="#0A84FF"
+                                    keyboardType="numeric"
+                                />
+                            </View>
+                        </View>
+
+                        <TextInput
+                            label="Rua / Logradouro"
+                            value={formData.logradouro}
+                            onChangeText={text => setFormData({...formData, logradouro: text})}
+                            mode="outlined"
+                            style={styles.input}
+                            outlineColor="#E0E0E0"
+                            activeOutlineColor="#0A84FF"
+                        />
+
+                        <TextInput
+                            label="Bairro"
+                            value={formData.bairro}
+                            onChangeText={text => setFormData({...formData, bairro: text})}
+                            mode="outlined"
+                            style={styles.input}
+                            outlineColor="#E0E0E0"
+                            activeOutlineColor="#0A84FF"
+                        />
+
+                        <View style={{flexDirection: 'row', gap: 10}}>
+                            <View style={{flex: 1}}>
+                                <TextInput
+                                    label="Cidade"
+                                    value={formData.cidade}
+                                    onChangeText={text => setFormData({...formData, cidade: text})}
+                                    mode="outlined"
+                                    style={styles.input}
+                                    outlineColor="#E0E0E0"
+                                    activeOutlineColor="#0A84FF"
+                                />
+                            </View>
+                            <View style={{width: 80}}>
+                                <TextInput
+                                    label="UF"
+                                    value={formData.uf}
+                                    onChangeText={text => setFormData({...formData, uf: text})}
+                                    mode="outlined"
+                                    style={styles.input}
+                                    outlineColor="#E0E0E0"
+                                    activeOutlineColor="#0A84FF"
+                                    maxLength={2}
+                                    autoCapitalize="characters"
+                                />
+                            </View>
+                        </View>
+
+                        <View style={styles.divider}>
+                            <Paragraph style={styles.dividerText}>Segurança</Paragraph>
+                        </View>
+
+                        {/* SENHA ATUAL - OBRIGATÓRIA SE MUDAR A SENHA */}
+                        <View style={styles.inputGroup}>
+                            <TextInput
+                                label="Senha Atual"
+                                value={formData.currentPassword}
+                                onChangeText={(text) => setFormData({...formData, currentPassword: text})}
+                                mode="outlined"
+                                secureTextEntry={!showCurrentPassword}
+                                style={styles.input}
+                                outlineColor="#E0E0E0"
+                                activeOutlineColor="#0A84FF"
+                                error={!!errors.currentPassword}
+                                left={<TextInput.Icon icon="lock-alert-outline" color="#0A84FF" />}
+                                right={<TextInput.Icon icon={showCurrentPassword ? "eye-off" : "eye"} onPress={() => setShowCurrentPassword(!showCurrentPassword)} />}
+                            />
+                            {errors.currentPassword ? (
+                                <HelperText type="error">{errors.currentPassword}</HelperText>
+                            ) : (
+                                <HelperText type="info">Necessária apenas para alterar a senha.</HelperText>
+                            )}
+                        </View>
+
+                        <View style={styles.inputGroup}>
+                            <TextInput
+                                label="Nova Senha"
+                                value={formData.password}
+                                onChangeText={(text) => setFormData({...formData, password: text})}
+                                mode="outlined"
+                                secureTextEntry={!showPassword}
+                                style={styles.input}
+                                outlineColor="#E0E0E0"
+                                activeOutlineColor="#0A84FF"
+                                error={!!errors.password}
+                                left={<TextInput.Icon icon="lock-outline" color="#0A84FF" />}
+                                right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={() => setShowPassword(!showPassword)} />}
+                            />
+                            {errors.password && <HelperText type="error">{errors.password}</HelperText>}
+                        </View>
+
+                        <View style={styles.inputGroup}>
+                            <TextInput
+                                label="Confirmar Nova Senha"
+                                value={formData.confirmPassword}
+                                onChangeText={(text) => setFormData({...formData, confirmPassword: text})}
+                                mode="outlined"
+                                secureTextEntry={!showConfirmPassword}
+                                style={styles.input}
+                                outlineColor="#E0E0E0"
+                                activeOutlineColor="#0A84FF"
+                                disabled={!formData.password}
+                                error={!!errors.confirmPassword}
+                                left={<TextInput.Icon icon="lock-check-outline" color="#0A84FF" />}
+                                right={<TextInput.Icon icon={showConfirmPassword ? "eye-off" : "eye"} onPress={() => setShowConfirmPassword(!showConfirmPassword)} />}
+                            />
+                            {errors.confirmPassword && <HelperText type="error">{errors.confirmPassword}</HelperText>}
+                        </View>
+
+                        <Button 
+                            mode="contained" 
+                            onPress={handleSaveData} 
+                            loading={isSaving}
+                            style={styles.saveButton}
+                            contentStyle={{ paddingVertical: 8 }}
+                            buttonColor="#0A84FF"
+                        >
+                            Salvar Alterações
+                        </Button>
+                        <View style={{height: 40}} />
+                    </ScrollView>
+                </View>
+            </KeyboardAvoidingView>
+        </Modal>
+
+        <Snackbar 
+            visible={snackbar.visible} 
+            onDismiss={() => setSnackbar({ ...snackbar, visible: false })} 
+            duration={3000}
+            style={{ backgroundColor: '#1C1C1E', borderRadius: 8 }}
+        >
+            {snackbar.message}
+        </Snackbar>
+        </View>
+    </PaperProvider>
   );
 };
 
@@ -167,38 +590,116 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F7',
   },
   contentContainer: {
-    padding: 10,
-    paddingBottom: 20,
+    padding: 20,
   },
   centeredContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
     backgroundColor: '#F2F2F7',
   },
-  sectionTitle: {
+  actionCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    elevation: 0,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    marginBottom: 16,
+  },
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+  iconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  cardText: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1C1C1E',
+  },
+  cardSubtitle: {
+    fontSize: 13,
+    color: '#8A8A8E',
+    marginTop: 2,
+  },
+  footer: {
+    padding: 24,
+    backgroundColor: '#F2F2F7',
+    alignItems: 'center',
+  },
+  versionText: {
+    marginTop: 12,
+    fontSize: 12,
+    color: '#AEAEB2',
+  },
+  // Modal Styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F2F2F7',
+  },
+  modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginLeft: 5,
+    color: '#1C1C1E',
+  },
+  modalBody: {
+    padding: 24,
+  },
+  sectionHeader: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#0A84FF',
+    marginBottom: 15,
+    marginTop: 10,
+  },
+  inputGroup: {
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#fff',
+    fontSize: 16,
+    marginBottom: 6,
+  },
+  divider: {
+    marginTop: 20,
     marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F2F2F7',
+    paddingBottom: 5,
   },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 10,
-    marginBottom: 15,
+  dividerText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#0A84FF',
   },
-  card: {
-    marginBottom: 15,
-    borderRadius: 16,
-  },
-  logoutButton: {
-    marginTop: 15,
-    paddingVertical: 8,
-    borderRadius: 16,
-  },
+  saveButton: {
+    marginTop: 30,
+    borderRadius: 12,
+    elevation: 4,
+    shadowColor: '#0A84FF',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  }
 });
 
 export default ProfileScreen;

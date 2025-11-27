@@ -1,5 +1,4 @@
 // Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\UserService.js
-// CÓDIGO COMPLETO E CORRIGIDO
 
 import { Op } from 'sequelize';
 import User from "../models/User.js";
@@ -10,10 +9,15 @@ import Apartamento from '../models/Apartamento.js';
 import GamificationService from './GamificationService.js';
 import sequelize from '../config/sequelize.js';
 import GamificationLog from '../models/GamificationLog.js';
-import path from 'path'; // <<<<<<< IMPORTADO
-import fs from 'fs';   // <<<<<<< IMPORTADO
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
-const PRECO_POR_LITRO = 0.015; // R$ 0,015 por litro (valor exemplo)
+// Configuração de caminhos
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const PRECO_POR_LITRO = 0.015;
 
 export default class UserService {
     static async updateMe(userId, data) {
@@ -22,20 +26,19 @@ export default class UserService {
             if (!user) throw new Error('Usuário não encontrado');
 
             const allowedUpdates = [
-                'name', 'email',
+                'name', 'email', 'cpf', 'password',
                 'notif_vazamento', 'notif_consumo_alto', 'notif_metas',
                 'notif_comunidade', 'notif_relatorios'
             ];
 
             const updateData = {};
             for (const key of allowedUpdates) {
-                if (data[key] !== undefined) {
+                if (data[key] !== undefined && data[key] !== '') {
                     updateData[key] = data[key];
                 }
             }
 
             await user.update(updateData);
-
             return user;
         } catch (error) {
             console.error('Erro ao atualizar usuário', error);
@@ -43,19 +46,26 @@ export default class UserService {
         }
     }
 
-    // NOVO MÉTODO PARA UPLOAD DE FOTO DE PERFIL
     static async uploadProfilePicture(userId, file) {
         try {
             const user = await User.findByPk(userId);
             if (!user) throw new Error('Usuário não encontrado');
 
-            const uploadDir = path.join(process.cwd(), 'uploads');
+            // --- CORREÇÃO DO CAMINHO ---
+            // __dirname aqui é .../src/services
+            // Precisamos subir 2 niveis (services -> src -> raiz)
+            const uploadDir = path.resolve(__dirname, '..', '..', 'uploads');
+
+            console.log('------------------------------------------------');
+            console.log('💾 SALVANDO IMAGEM EM:', uploadDir);
+            console.log('------------------------------------------------');
 
             if (!fs.existsSync(uploadDir)) {
                 fs.mkdirSync(uploadDir, { recursive: true });
             }
 
-            const fileName = `user-${userId}-${Date.now()}-${file.filename}`;
+            // Gera nome único
+            const fileName = `user-${userId}-${Date.now()}-${file.filename.replace(/\s/g, '')}`;
             const filePath = path.join(uploadDir, fileName);
 
             const buffer = await file.toBuffer();

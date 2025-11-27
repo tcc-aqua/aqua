@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useCondominios } from "@/hooks/useCondominios";
-import { Building, Plus } from "lucide-react";
+import { Building, Plus, X } from "lucide-react";
 import { api } from "@/lib/api";
 
 export default function CriarCondominioButton({ onCreated, onApply }) {
@@ -25,8 +25,8 @@ export default function CriarCondominioButton({ onCreated, onApply }) {
     });
 
     const { addCondominio, fetchCondominios } = useCondominios([], () => onApply?.());
- 
-    
+
+
     const buscarCep = async (cep) => {
         if (!cep || cep.length < 8) return;
         try {
@@ -90,15 +90,28 @@ export default function CriarCondominioButton({ onCreated, onApply }) {
                 status: "ativo",
             });
 
-            // recarrega a tabela chamando a função onApply sem filtros
+
             fetchCondominios();
 
-            toast.success("Condomínio criado com sucesso!");
+          
         } catch (err) {
             console.error(err);
             toast.error("Erro ao criar condomínio!");
         }
     };
+
+    useEffect(() => {
+        const cep = formData.cep.replace(/\D/g, "");
+
+        if (cep.length !== 8) return;
+
+        const timeout = setTimeout(() => {
+            buscarCep(cep);
+        }, 300);
+
+        return () => clearTimeout(timeout);
+    }, [formData.cep]);
+
 
     return (
         <>
@@ -113,7 +126,6 @@ export default function CriarCondominioButton({ onCreated, onApply }) {
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
 
-                    {/* Barra superior colorida */}
                     <div className="h-2 w-full rounded-t-md bg-primary" />
 
                     <DialogHeader className="flex items-center space-x-2 pb-2 mt-3">
@@ -139,11 +151,22 @@ export default function CriarCondominioButton({ onCreated, onApply }) {
                                 <label className="text-sm font-medium text-foreground mb-1">CEP</label>
                                 <Input
                                     value={formData.cep}
-                                    onChange={(e) => setFormData({ ...formData, cep: e.target.value })}
-                                    onBlur={() => buscarCep(formData.cep)}
-                                    placeholder="Digite o CEP"
+                                    onChange={(e) => {
+                                        let value = e.target.value.replace(/\D/g, ""); 
+
+                                        if (value.length > 8) value = value.slice(0, 8); 
+                                      
+                                        if (value.length > 5) {
+                                            value = value.replace(/(\d{5})(\d{1,3})/, "$1-$2");
+                                        }
+
+                                        setFormData({ ...formData, cep: value });
+                                    }}
+                                    placeholder="00000-000"
+                                    maxLength={9}
                                     className="text-foreground border border-border rounded-md focus:border-primary focus:ring focus:ring-primary/20 transition"
                                 />
+
                             </div>
 
                             <div className="flex flex-col">
@@ -211,10 +234,10 @@ export default function CriarCondominioButton({ onCreated, onApply }) {
                             <Button
                                 type="button"
                                 variant="ghost"
-                                className="w-32 border-border text-foreground hover:bg-muted"
+                                className="w-32 border-border text-foreground"
                                 onClick={() => setIsOpen(false)}
                             >
-                                Cancelar
+                                <X /> Cancelar
                             </Button>
                             <Button
                                 type="submit"
