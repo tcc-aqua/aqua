@@ -104,17 +104,17 @@ const fetchData = async (filters = {}, page = 1, limit = 10) => {
       valueAtivos: { casas: sensorStats.casas, apartamentos: sensorStats.apartamentos },
       icon: Signal,
       bg: "bg-card",
-      iconColor: "text-purple-700",
-         borderColor:" border-b-purple-700 "
+      iconColor: "text-accent",
+         borderColor:" border-b-accent"
     },
     {
       title: "Sensores Ativos",
       value: sensorStats.ativos,
       icon: Check,
       bg: "bg-card",
-      iconColor: "text-green-700",
+      iconColor: "text-green-600",
       porcentagem: ((sensorStats.ativos / sensorStats.total) * 100).toFixed(0) + "%" + " operacionais",
-         borderColor:" border-b-green-700 "
+         borderColor:" border-b-green-600 "
     },
     {
       title: "Sensores Inativos",
@@ -135,9 +135,9 @@ const fetchData = async (filters = {}, page = 1, limit = 10) => {
       })(),
       icon: Droplet,
       bg: "bg-card",
-      iconColor: "text-sky-500",
+      iconColor: "text-blue-500",
       subTitle2: "Total acumulado",
-         borderColor:" border-b-sky-500 "
+         borderColor:" border-b-blue-500 "
     }
   ];
 
@@ -163,7 +163,7 @@ const fetchData = async (filters = {}, page = 1, limit = 10) => {
 
                       <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
                       {card.valueAtivos && (
-                        <p className="text-purple-700 text-sm mt-1">
+                        <p className="text-accent text-sm mt-1">
                           {card.valueAtivos.casas} casas + {card.valueAtivos.apartamentos} apartamentos
                         </p>
                       )}
@@ -175,7 +175,7 @@ const fetchData = async (filters = {}, page = 1, limit = 10) => {
                       )}
 
                       {card.subTitle2 && (
-                        <p className="text-sm mt-1 text-sky-500">{card.subTitle2}</p>
+                        <p className="text-sm mt-1 text-blue-500">{card.subTitle2}</p>
                       )}
                     </div>
                     <Icon className={`w-8 h-8 bg-${card.iconColor} ${card.iconColor}`} />

@@ -148,9 +148,9 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
             <div className="flex items-center">
               <img src="./logo.svg" className="w-12" />
               {mounted && theme === "dark" ? (
-                <img src="./escrita-dark.png" className="w-20 ml-4" />
+                <img src="./escrita-dark.png" className="w-19 ml-4" />
               ) : mounted ? (
-                <img src="./escrita.png" className="w-20 ml-4" />
+                <img src="./escrita.png" className="w-19 ml-4" />
               ) : null}
             </div>
           ) : (
@@ -312,7 +312,7 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
                 </TooltipTrigger>
           
                 <TooltipContent
-                  className="bg-destructive text-white"
+                  className=" text-white"
                   side="right"
                 >
                   Sair

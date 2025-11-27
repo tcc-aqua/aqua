@@ -350,7 +350,7 @@ export default function CondominiosDashboard() {
     {
       title: "Sensores Ativos",
       value: condominioStats.sensoresTotal ?? 0,
-      icon: Signal,
+      icon: Check,
       iconColor: "text-green-700",
       porcentagem:
         condominioStats.sensoresTotal > 0

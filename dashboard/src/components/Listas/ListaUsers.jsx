@@ -165,11 +165,11 @@ export default function UsersDashboard() {
       title: "Usuários Ativos",
       value: userStats.ativos,
       icon: UserCheck,
-      iconColor: "text-green-500",
+      iconColor: "text-green-600",
       porcentagem: userStats.total > 0
         ? ((userStats.ativos / userStats.total) * 100).toFixed(0) + "% ativos"
         : "0% ativos",
-           borderColor:" border-b-green-500 "
+           borderColor:" border-b-green-600 "
     },
     {
       title: "Síndicos",
