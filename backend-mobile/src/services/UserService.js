@@ -1,6 +1,3 @@
-// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\UserService.js
-// CÓDIGO COMPLETO E CORRIGIDO
-
 import { Op } from 'sequelize';
 import User from "../models/User.js";
 import Metas from "../models/Metas.js";
@@ -10,10 +7,10 @@ import Apartamento from '../models/Apartamento.js';
 import GamificationService from './GamificationService.js';
 import sequelize from '../config/sequelize.js';
 import GamificationLog from '../models/GamificationLog.js';
-import path from 'path'; // <<<<<<< IMPORTADO
-import fs from 'fs';   // <<<<<<< IMPORTADO
+import path from 'path';
+import fs from 'fs';
 
-const PRECO_POR_LITRO = 0.015; // R$ 0,015 por litro (valor exemplo)
+const PRECO_POR_LITRO = 0.015;
 
 export default class UserService {
     static async updateMe(userId, data) {
@@ -22,14 +19,14 @@ export default class UserService {
             if (!user) throw new Error('Usuário não encontrado');
 
             const allowedUpdates = [
-                'name', 'email',
+                'name', 'email', 'cpf', 'password',
                 'notif_vazamento', 'notif_consumo_alto', 'notif_metas',
                 'notif_comunidade', 'notif_relatorios'
             ];
 
             const updateData = {};
             for (const key of allowedUpdates) {
-                if (data[key] !== undefined) {
+                if (data[key] !== undefined && data[key] !== '') {
                     updateData[key] = data[key];
                 }
             }
@@ -43,7 +40,6 @@ export default class UserService {
         }
     }
 
-    // NOVO MÉTODO PARA UPLOAD DE FOTO DE PERFIL
     static async uploadProfilePicture(userId, file) {
         try {
             const user = await User.findByPk(userId);
