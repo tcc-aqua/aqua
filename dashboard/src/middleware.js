@@ -38,8 +38,19 @@ export function middleware(request) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Permite apenas superadmin
-    if (payload.type !== "superadmin") {
+    // Regras de acesso
+    if (payload.type === "superadmin") {
+      // Superadmin acessa tudo
+      return NextResponse.next();
+    } else if (payload.type === "admin") {
+      // Admin normal não pode acessar /settings
+      if (pathname.startsWith("/settings")) {
+        const unauthorizedUrl = new URL("/unauthorized", request.url);
+        return NextResponse.redirect(unauthorizedUrl);
+      }
+      return NextResponse.next();
+    } else {
+      // Qualquer outro tipo não tem acesso
       const unauthorizedUrl = new URL("/unauthorized", request.url);
       return NextResponse.redirect(unauthorizedUrl);
     }

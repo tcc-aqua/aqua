@@ -29,7 +29,8 @@ export function useAdminProfile() {
         id: decoded.id,
         email: decoded.email || "",
         role: decoded.role || decoded.type || "admin",
-        image: savedImage || decoded.img_url || "", // <-- AQUI funciona!
+        image: savedImage || decoded.img_url || "", 
+        criado_em: decoded.criado_em ||""
       });
 
     } catch (err) {

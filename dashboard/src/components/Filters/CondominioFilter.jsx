@@ -201,12 +201,12 @@ const handleCreateCondominio = async (e) => {
               >
                 <Check ></Check>Aplicar
               </Button>
-              <Button
+              {/* <Button
                 onClick={() => setIsOpen(true)}
                 className="h-7 w-full sm:w-auto rounded-md bg-accent/80"
               >
                 <Plus /> Adicionar
-              </Button>
+              </Button> */}
 
             </div>
           </div>

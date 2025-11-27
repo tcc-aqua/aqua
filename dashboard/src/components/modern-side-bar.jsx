@@ -322,7 +322,7 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
           ) : (
             <button
               onClick={() => handleLogout(router)}
-              className="flex items-center px-3 py-2.5 space-x-2.5 w-full rounded-md hover:bg-muted text-destructive cursor-pointer"
+              className="flex items-center px-3 py-2.5 space-x-2.5 w-full rounded-md hover:bg-red-200 text-destructive cursor-pointer "
             >
               <LogOut className="h-5 w-5" />
               <span>Sair</span>

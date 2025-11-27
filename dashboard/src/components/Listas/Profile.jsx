@@ -72,7 +72,7 @@ export default function EmployeeProfile() {
     const fields = [
       { ok: !!admin.image, weight: 40 },
       { ok: !!admin.email, weight: 30 },
-      { ok: !!admin.first_name && !!admin.last_name, weight: 30 },
+      { ok: !!admin.criado_em, weight: 30 },
     ];
     return Math.min(
       100,
@@ -97,13 +97,23 @@ export default function EmployeeProfile() {
     if (val < 70) return "Média";
     return "Forte";
   };
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
 
-  const timeline = admin?.activities || [
-    { id: 1, text: "Conta criada", date: admin?.criado_em },
-    { id: 2, text: "Perfil atualizado", date: "2024-10-12" },
-    { id: 3, text: "Senha alterada", date: "2025-02-01" },
-    { id: 4, text: "Cadastrou sensores", date: "2025-03-20" },
-  ];
+const timeline = admin?.activities || [
+  { id: 1, text: "Conta criada", date: formatDate(admin?.criado_em) },
+  { id: 2, text: "Perfil atualizado", date: formatDate("2024-10-12") },
+  { id: 3, text: "Senha alterada", date: formatDate("2025-02-01") },
+
+];
+
 
   const loadingUI = loading ? <Loading /> : null;
 
@@ -187,10 +197,10 @@ export default function EmployeeProfile() {
               </div>
             </div>
 
-            <h1 className="text-3xl font-bold">
+            {/* <h1 className="text-3xl font-bold">
               {admin.first_name}{" "}
               <span className="text-sky-600">{admin.last_name}</span>
-            </h1>
+            </h1> */}
 
             {getRoleBadge(admin.role)}
 
@@ -226,7 +236,7 @@ export default function EmployeeProfile() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
                   ["E-mail", admin.email, Mail],
-                  ["Criado em", admin.criado_em, Clock],
+                  ["Criado em", formatDate(admin.criado_em), Clock],
                 ].map(([label, value, Icon]) => (
                   <motion.div
                     key={label}
@@ -241,6 +251,7 @@ export default function EmployeeProfile() {
                   </motion.div>
                 ))}
               </div>
+
             </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

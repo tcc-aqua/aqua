@@ -56,8 +56,8 @@ export default function SettingsDashboard() {
   const API_URL =
     activeTab === "admins"
       ? "http://localhost:3333/api/admins"
-      : activeTab === "users"
-        ? "http://localhost:3333/api/users"
+      // : activeTab === "users"
+      //   ? "http://localhost:3333/api/users"
         : null;
 
   const fetchData = async () => {
@@ -193,7 +193,7 @@ export default function SettingsDashboard() {
               Administradores
             </button>
 
-            <button
+            {/* <button
               onClick={() => setActiveTab("users")}
               className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${activeTab === "users"
                   ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
@@ -202,7 +202,7 @@ export default function SettingsDashboard() {
             >
               <User size={18} />
               Usuários
-            </button>
+            </button> */}
 
             <button
               onClick={() => setActiveTab("geral")}

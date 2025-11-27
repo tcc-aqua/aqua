@@ -90,17 +90,20 @@ export function useComunicados() {
       setLoading(false);
     }
   };
+const marcarComoLido = async (id) => {
+  try {
+    await api.post("/comunicados/ler", { id });
 
-  const marcarComoLido = async (id) => {
-    try {
-      await api.post("/comunicados/ler", { id });
+   
+    setComunicados(prev =>
+      prev.map(c => (c.id === id ? { ...c, lido: true } : c))
+    );
 
-      await fetchComunicados();
-      toast.success("Comunicado marcado como lido!");
-    } catch (err) {
-      toast.error(err?.message || "Erro ao marcar como lido");
-    }
-  };
+    toast.success("Comunicado marcado como lido!");
+  } catch (err) {
+    toast.error(err?.message || "Erro ao marcar como lido");
+  }
+};
 
   useEffect(() => {
     fetchComunicados();

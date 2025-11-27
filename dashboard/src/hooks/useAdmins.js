@@ -25,25 +25,27 @@ export function useAdmins() {
   };
 
   // 🔹 Criar novo admin
-  const addAdmin = async (novo) => {
-    setLoading(true);
-    try {
-      const payload = {
-        email: novo.email,
-        password: novo.password,
-        role: novo.role,
-      };
+const addAdmin = async (novo) => {
+  setLoading(true);
+  try {
+    const payload = {
+      email: novo.email,
+      password: novo.password,
+      // role pode ser omitido se o back-end já define "admin" por default
+    };
 
-      const res = await api.post("/admins", payload);
+    const res = await api.post("/admins", payload);
 
-      setAdmins((prev) => [...prev, res.data]);
-      toast.success("Administrador criado com sucesso!");
-    } catch (err) {
-      toast.error("Erro ao criar administrador!");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setAdmins((prev) => [...prev, res?.data || res]);
+    toast.success("Administrador criado com sucesso!");
+  } catch (err) {
+    const msg = err?.response?.data?.message || err.message || "Erro ao criar administrador!";
+    toast.error(msg);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // 🔹 Atualizar administrador
   const editAdmin = async (id, dados) => {

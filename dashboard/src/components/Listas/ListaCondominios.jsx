@@ -30,6 +30,7 @@ import { useAtribuirSindico } from "@/hooks/useAtribuirSIndico";
 import { Input } from "@/components/ui/input";
 import { useCondominios } from "@/hooks/useCondominios";
 import { api } from "@/lib/api";
+import CriarCondominioButton from "../Inputs/ButtonCondominio/page";
 
 export default function CondominiosDashboard() {
   const [condominios, setCondominios] = useState([]);
@@ -328,7 +329,7 @@ export default function CondominiosDashboard() {
       valueAtivos: { total: condominioStats.ativos },
       icon: Building,
       iconColor: "text-accent",
-        borderColor: "border-b-accent",
+      borderColor: "border-b-accent",
     },
     {
       title: "Apartamentos Totais",
@@ -344,7 +345,7 @@ export default function CondominiosDashboard() {
       },
       icon: Check,
       iconColor: "text-orange-300",
-        borderColor: "border-b-orange-300",
+      borderColor: "border-b-orange-300",
     },
     {
       title: "Sensores Ativos",
@@ -359,9 +360,9 @@ export default function CondominiosDashboard() {
             100
           ).toFixed(0) + "% operacionais"
           : "0% operacionais",
-            borderColor: "border-b-green-700",
+      borderColor: "border-b-green-700",
     },
-    
+
     {
       title: "Total de Síndicos",
       value:
@@ -380,7 +381,7 @@ export default function CondominiosDashboard() {
             ) / condominios.length
           ).toFixed(0)} por condomínio`
           : "0",
-            borderColor: "border-b-yellow-500",
+      borderColor: "border-b-yellow-500",
     },
   ];
 
@@ -397,7 +398,7 @@ export default function CondominiosDashboard() {
             const Icon = card.icon;
             return (
               <AnimationWrapper key={card.title} delay={i * 0.2}>
-              <Card className={`border-b-4 ${card.borderColor}`}>
+                <Card className={`border-b-4 ${card.borderColor}`}>
                   <CardHeader>
                     <CardTitle className="font-bold text-xl text-foreground">
                       {card.title}
@@ -440,8 +441,12 @@ export default function CondominiosDashboard() {
           })}
         </section>
 
+      
 
         <AnimationWrapper delay={0.3}>
+            <div className="flex justify-end items-center mt-10">
+          <CriarCondominioButton onApply={() => fetchData(filters, page, limit)} />
+        </div>
 
           <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-950">
             <CardHeader>
