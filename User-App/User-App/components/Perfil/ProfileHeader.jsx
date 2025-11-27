@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Platform } from 'react-native';
-import { Avatar, Title, Paragraph, useTheme, Card, IconButton } from 'react-native-paper';
+import { Avatar, Title, Paragraph, useTheme, IconButton } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-// IMPORTANTE: Se rodar no celular físico, mude localhost para o IP do seu PC (ex: 192.168.x.x)
+// ATENÇÃO: Se estiver no celular, troque 'localhost' pelo IP do seu PC (ex: 192.168.1.5)
 const API_URL = 'http://localhost:3334';
 
 const ProfileHeader = ({ user, onProfileUpdate }) => {
@@ -14,28 +14,40 @@ const ProfileHeader = ({ user, onProfileUpdate }) => {
 
   if (!user) return null;
 
-  // Função para garantir que a imagem não venha do cache após update
-  const getFullImageUrl = (imgUrl) => {
-    if (!imgUrl) return null;
-    const cleanUrl = imgUrl.startsWith('http') ? imgUrl : `${API_URL}${imgUrl}`;
-    // Adiciona timestamp para evitar cache da imagem antiga
-    return `${cleanUrl}?t=${new Date().getTime()}`;
+  // Lógica para montar a URL da imagem baseada no que está salvo no Banco de Dados
+  const getFullImageUrl = () => {
+    // Tenta pegar o campo img_url (padrão tabela) ou user_img_url (padrão view)
+    const dbImageString = user.img_url || user.user_img_url;
+
+    if (!dbImageString) return null;
+
+    // Se no banco já estiver salvo como link completo (ex: Google Auth), usa ele
+    if (dbImageString.startsWith('http')) {
+        return dbImageString;
+    }
+
+    // Se estiver salvo o caminho relativo (ex: /api/uploads/foto.jpg), monta com a API
+    // Removemos a barra inicial do dbString se houver, para evitar duplicidade com a barra da API_URL
+    const cleanPath = dbImageString.startsWith('/') ? dbImageString : `/${dbImageString}`;
+    
+    // Adiciona timestamp (?t=...) para impedir que o celular mostre a foto velha (cache)
+    return `${API_URL}${cleanPath}?t=${new Date().getTime()}`;
   };
 
   const handlePickAndUploadImage = async () => {
-    // 1. Pedir permissão
+    // 1. Permissão
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permissionResult.granted === false) {
-      Alert.alert("Permissão necessária", "Precisamos de acesso à galeria para alterar sua foto.");
+      Alert.alert("Permissão negada", "É necessário permitir o acesso à galeria.");
       return;
     }
 
-    // 2. Selecionar imagem
+    // 2. Seleção
     const pickerResult = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
+      quality: 0.7,
     });
 
     if (pickerResult.canceled) return;
@@ -46,12 +58,11 @@ const ProfileHeader = ({ user, onProfileUpdate }) => {
       const asset = pickerResult.assets[0];
       const localUri = asset.uri;
       
-      // Preparar nome e tipo do arquivo
+      // Preparar arquivo para envio
       let filename = localUri.split('/').pop();
       let match = /\.(\w+)$/.exec(filename);
       let type = match ? `image/${match[1]}` : `image/jpeg`;
 
-      // 3. Montar FormData
       const formData = new FormData();
       formData.append('file', { 
         uri: Platform.OS === 'ios' ? localUri.replace('file://', '') : localUri, 
@@ -61,7 +72,7 @@ const ProfileHeader = ({ user, onProfileUpdate }) => {
 
       const authToken = await AsyncStorage.getItem('token');
       
-      // 4. Enviar para o Backend
+      // 3. Envio para o Backend (que salvará no servidor e atualizará o caminho no Banco)
       const response = await axios.post(`${API_URL}/api/user/upload-img`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -70,20 +81,25 @@ const ProfileHeader = ({ user, onProfileUpdate }) => {
       });
 
       if (response.status === 200) {
-        // Callback para a tela pai recarregar os dados
-        onProfileUpdate(); 
+        onProfileUpdate(); // Atualiza a tela pai
       }
 
     } catch (error) {
       console.error("Erro no upload:", error);
-      Alert.alert("Erro", "Falha ao enviar a imagem. Verifique sua conexão.");
+      Alert.alert("Erro", "Falha ao enviar a imagem.");
     } finally {
       setIsUploading(false);
     }
   };
 
-  const imageUrl = getFullImageUrl(user.img_url); // Usa img_url direto do banco (conforme seu model)
-  const userInitials = user.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U';
+  const imageUrl = getFullImageUrl();
+  
+  // Pega as iniciais do nome ou usa o nome vindo da View ou Tabela
+  const userName = user.user_name || user.name || 'Usuário';
+  const userEmail = user.user_email || user.email || '';
+  const userRole = user.role || user.user_role || 'morador';
+  
+  const userInitials = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
   return (
     <View style={styles.container}>
@@ -104,12 +120,10 @@ const ProfileHeader = ({ user, onProfileUpdate }) => {
             />
           )}
 
-          {/* Botão de Câmera Flutuante */}
           <View style={[styles.editIconContainer, { backgroundColor: colors.primary }]}>
             <IconButton icon="camera" iconColor="#FFF" size={20} style={{ margin: 0 }} />
           </View>
 
-          {/* Loading Overlay */}
           {isUploading && (
             <View style={styles.loadingOverlay}>
               <ActivityIndicator size="large" color="#FFF" />
@@ -118,12 +132,12 @@ const ProfileHeader = ({ user, onProfileUpdate }) => {
         </TouchableOpacity>
       </View>
 
-      <Title style={styles.name}>{user.name}</Title>
-      <Paragraph style={styles.email}>{user.email}</Paragraph>
+      <Title style={styles.name}>{userName}</Title>
+      <Paragraph style={styles.email}>{userEmail}</Paragraph>
       
-      <View style={[styles.badge, { backgroundColor: user.role === 'sindico' ? colors.tertiaryContainer : colors.secondaryContainer }]}>
-         <Paragraph style={{ fontSize: 12, fontWeight: 'bold', color: '#333' }}>
-            {user.role === 'sindico' ? 'SÍNDICO' : 'MORADOR'}
+      <View style={[styles.badge, { backgroundColor: userRole === 'sindico' ? '#FFD700' : '#E0E0E0' }]}>
+         <Paragraph style={{ fontSize: 12, fontWeight: 'bold', color: '#333', textTransform: 'uppercase' }}>
+            {userRole}
          </Paragraph>
       </View>
     </View>
@@ -137,10 +151,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 20,
     marginBottom: 20,
-    elevation: 2,
+    elevation: 3,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 }
   },
   avatarWrapper: {
     position: 'relative',
@@ -151,17 +166,18 @@ const styles = StyleSheet.create({
     bottom: 5,
     right: 5,
     borderRadius: 25,
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
     borderColor: '#fff',
+    elevation: 4
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 65, // Metade do size do Avatar (130)
+    borderRadius: 65,
     justifyContent: 'center',
     alignItems: 'center',
   },

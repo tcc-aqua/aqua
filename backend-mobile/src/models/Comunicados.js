@@ -1,5 +1,6 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/sequelize.js";
+import sequelizePaginate from 'sequelize-paginate';
 
 export default class Comunicados extends Model {}
 
@@ -18,8 +19,13 @@ Comunicados.init({
         allowNull: false
     },
     addressee: {
-        type: DataTypes.ENUM('adminstradores', 'usuários'),
+        type: DataTypes.ENUM('usuários', 'sindicos', 'todos'),
+        defaultValue: 'usuários',
         allowNull: false
+    },
+    status: {
+        type: DataTypes.ENUM('ativo', 'inativo'),
+        defaultValue: 'ativo'
     }
 }, {
     sequelize,
@@ -27,4 +33,6 @@ Comunicados.init({
     timestamps: true,
     createdAt: 'criado_em',
     updatedAt: 'atualizado_em'
-})
+});
+
+sequelizePaginate.paginate(Comunicados);
