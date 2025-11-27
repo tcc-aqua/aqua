@@ -93,7 +93,7 @@ export default function CriarCondominioButton({ onCreated, onApply }) {
 
             fetchCondominios();
 
-            toast.success("Condomínio criado com sucesso!");
+          
         } catch (err) {
             console.error(err);
             toast.error("Erro ao criar condomínio!");
