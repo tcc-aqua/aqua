@@ -31,7 +31,7 @@ export default function LayoutDashboard({ children }) {
   
       <main
         className={`flex-1 transition-all duration-300 p-6 
-          ${isMobile ? "ml-0" : sidebarCollapsed ? "md:ml-15" : "md:ml-64"}
+          ${isMobile ? "ml-0" : sidebarCollapsed ? "md:ml-24" : "md:ml-64"}
         `}
       >
         {children}

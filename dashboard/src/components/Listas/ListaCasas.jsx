@@ -153,11 +153,11 @@ export default function CasasDashboard() {
       value: casas.reduce((acc, c) => acc + (Number(c.numero_moradores) || 0), 0),
       icon: User,
       bg: "bg-card",
-      iconColor: "text-purple-700",
+      iconColor: "text-sky-500",
       subTitle: casas.length > 0
         ? `Média de ${(casas.reduce((acc, c) => acc + (Number(c.numero_moradores) || 0), 0) / casas.length).toFixed(0)} por casa`
         : "0", 
-          borderColor:" border-b-purple-700 "
+          borderColor:" border-b-sky-500"
     },
     {
       title: "Sensores Ativos",
@@ -218,7 +218,7 @@ export default function CasasDashboard() {
                         <p className="text-sm mt-1 text-green-600">{card.porcentagem}</p>
                       )}
                       {card.subTitle && (
-                        <p className="text-sm mt-1 text-purple-600">{card.subTitle}</p>
+                        <p className="text-sm mt-1 text-sky-500">{card.subTitle}</p>
                       )}
 
                       {card.subTitle2 && (

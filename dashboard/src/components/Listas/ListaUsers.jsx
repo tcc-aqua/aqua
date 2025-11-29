@@ -291,11 +291,11 @@ export default function UsersDashboard() {
                         </td>
                         <td className="text-sm ">
                           <span
-                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-white font-semibold uppercase 
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-white font-bold uppercase tracking-wide
                               ${user.user_type === "casa"
                                 ? "bg-sky-700"
                                 : user.user_type === "condominio"
-                                  ? "bg-purple-400"
+                                  ? "bg-indigo-500"
                                   : "bg-gray-500"
                               }`}
                           >
@@ -318,11 +318,11 @@ export default function UsersDashboard() {
 
                         <td className="text-sm">
                           <span
-                            className={`inline-flex items-center  px-2 py-1 rounded-full text-white font-semibold uppercase
+                            className={`inline-flex items-center  px-2 py-1 rounded-full text-white font-bold uppercase tracking-wide
                          ${user.user_role === "morador"
-                                ? "bg-sky-500"
+                                ? "bg-sky-500 text-sky-700"
                                 : user.user_role === "sindico"
-                                  ? "bg-yellow-400 text-black"
+                                  ? "bg-yellow-500 text-black"
                                   : "bg-gray-500"
                               }`}
                           >

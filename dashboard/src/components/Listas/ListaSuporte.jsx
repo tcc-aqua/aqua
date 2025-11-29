@@ -181,9 +181,7 @@ const loadTickets = async () => {
                             <Trash className="w-4 h-4" />
                           </button>
 
-                          <button onClick={(e) => { e.stopPropagation(); abrirLidoModal(ticket); }} className="p-1.5 text-white bg-green-500 rounded-full shadow-md hover:bg-green-600 transition" title="Marcar como Visualizado">
-                            <Check className="w-4 h-4" />
-                          </button>
+                       
                         </div>
                       </div>
 
@@ -249,27 +247,7 @@ const loadTickets = async () => {
           </DialogContent>
         </Dialog>
 
-        {/* Modal Marcar como Lido */}
-        <Dialog open={showLidoModal} onOpenChange={setShowLidoModal}>
-          <DialogContent className="sm:rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
-            <div className="h-2 w-full rounded-t-md bg-green-600" />
-            <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
-              <div className="p-4 rounded-full bg-green-100 dark:bg-green-900">
-                <Check className="h-10 w-10 text-green-600 dark:text-green-400" />
-              </div>
-              <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">Marcar como Lido</DialogTitle>
-            </DialogHeader>
-            <div className="mt-5 space-y-4 px-4 text-sm text-foreground/90 text-center">
-              <p className="text-lg">
-                Deseja realmente marcar o ticket <strong>{ticketParaMarcar?.assunto}</strong> como lido?
-              </p>
-            </div>
-            <DialogFooter className="pt-4 flex justify-end gap-3">
-              <Button type="button" variant="ghost" className="w-32 border-border text-foreground" onClick={() => setShowLidoModal(false)}>Cancelar</Button>
-              <Button type="button" className="w-32 bg-green-600 text-white hover:bg-green-700" onClick={confirmarLido}>Confirmar</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+
 
       </div>
     </>
