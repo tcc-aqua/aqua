@@ -4,6 +4,7 @@ import CountComunicadosAdminParaSindicoService from "../services/comunicados/cou
 import criadosPeloSindico from "../services/comunicados/criadosPeloSindico.js";
 import getComunicadosService from "../services/comunicados/getComunicado.js";
 import getTotalComunicados from "../services/comunicados/getTotalComunicados.js";
+import Comunicados from "../models/Comunicados.js"; 
 
 export default class ComunicadosController {
     static async getAllComunicados(req, reply) {
@@ -46,6 +47,8 @@ export default class ComunicadosController {
         const { lido } = req.body;
         const user_id = req.user.id;
 
+        console.log(`[VERIFICANDO] Comunicado ID: ${comunicado_id}, User ID AUTENTICADO: ${user_id}`);
+
         if (typeof lido !== 'boolean') {
             return reply.status(400).send({ message: "O status 'lido' deve ser um booleano." });
         }
@@ -56,7 +59,7 @@ export default class ComunicadosController {
         }
 
 
-        const [comunicadoLido] = await marcarComunicadoLidoService.updateStatusLido(
+       const comunicadoLido = await marcarComunicadoLidoService.updateStatusLido(
             comunicado_id,
             user_id,
             lido
