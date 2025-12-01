@@ -3,5 +3,5 @@ import { autenticarSindico } from "../middlewares/AuthMiddleware.js";
 
 export default async function comunicadosRoutes(fastify){
     fastify.get('/',  { preHandler: autenticarSindico }, ComunicadosController.getAllComunicados);
-    fastify.post('/', ComunicadosController.addComunicado);
+    fastify.post('/', { preHandler: autenticarSindico }, ComunicadosController.addComunicado);
 }

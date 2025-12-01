@@ -39,50 +39,67 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select";
-import { api } from "@/lib/api";
+import { api } from "@/lib/api"; 
 import { toast } from "sonner";
 
 import AnimationWrapper from "../../../layout/Animation/Animation";
 import { PaginationDemo } from "@/components/pagination";
-const CURRENT_USER_ID = 1;
+
+// ⚠️ SUBSTITUA ISTO: Este ID deve ser obtido do token do usuário logado (ex: via useAuth)
+// Usamos '1' temporariamente, mas deve ser real.
+const CURRENT_USER_ID = 1; 
 
 export default function ComunicadosDashboard() {
     const [open, setOpen] = useState(false);
     const [filtro, setFiltro] = useState("todos");
+    // O estado deve refletir a estrutura de dados da API
     const [comunicados, setComunicados] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const [novoComunicado, setNovoComunicado] = useState({
-        title: "", // Usando 'title' para corresponder à API de retorno
-        subject: "", // Usando 'subject' para corresponder à API de retorno
-        addressee: "usuários", 
+        title: "",
+        subject: "",
+        addressee: "usuários",
     });
+
     const loadComunicados = useCallback(async () => {
         setIsLoading(true);
-        const endpoint = '/comunicados'; 
-        const data = await api.get(endpoint);
+        const endpoint = '/comunicados';
+        
+        try {
+            const data = await api.get(endpoint);
 
-        if (data && !data.error && data.docs) {
-            const mappedComunicados = data.docs.map(c => ({
-                id: c.id,
-                titulo: c.title,
-                assunto: c.subject,
-                destinatario: c.addressee,
-                autorId: [11, 7].includes(c.id) ? CURRENT_USER_ID : 999,
-                autorNome: [11, 7].includes(c.id) ? "Síndico A (Você)" : "Administração",
-                dataCricao: c.criado_em,
-                status: c.id === 10 ? "lido" : "nao_lido",
-            }));
+            if (data && data.docs) {
+                // ✅ MAPEAMENTO REALISTA: Usando os nomes das colunas da API (c.title, c.subject, c.sindico_id)
+                const mappedComunicados = data.docs.map(c => ({
+                    id: c.id,
+                    titulo: c.title,
+                    assunto: c.subject,
+                    destinatario: c.addressee,
+                    // Usando o ID real do sindico retornado pela API
+                    autorId: c.sindico_id, 
+                    // O nome do autor deve vir de um JOIN na API, 
+                    // se não vier, simule baseado no ID do usuário atual para diferenciar
+                    autorNome: c.sindico_id === CURRENT_USER_ID ? "Síndico (Você)" : "Administração", 
+                    dataCricao: c.criado_em,
+                    // A API deve retornar o status de leitura para o usuário atual. 
+                    // Se não tiver, defina um padrão. Aqui mantemos 'nao_lido' se não definido.
+                    status: c.status_leitura || "nao_lido", 
+                }));
 
-            setComunicados(mappedComunicados);
-            toast.success(`Comunicados carregados com sucesso! Total: ${data.total}`);
-        } else if (data && data.error) {
+                setComunicados(mappedComunicados);
+                toast.success(`Comunicados carregados com sucesso! Total: ${data.total}`);
+            } else {
+                toast.error("Nenhum comunicado encontrado ou formato de resposta da API inválido.");
+                setComunicados([]);
+            }
+        } catch (error) {
+            console.error("Erro ao carregar comunicados:", error);
+            toast.error(error.message || "Falha ao carregar comunicados.");
             setComunicados([]);
-        } else {
-            toast.error("Resposta da API inválida ou nula.");
-            setComunicados([]);
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     }, []);
 
     useEffect(() => {
@@ -95,44 +112,59 @@ export default function ComunicadosDashboard() {
             return;
         }
 
+        // Não enviamos o sindico_id. O backend Fastify (via token) fará isso.
         const comunicadoParaCriar = {
             title: novoComunicado.title,
             subject: novoComunicado.subject,
-            addressee: novoComunicado.destinatario, 
+            addressee: novoComunicado.addressee, 
         };
+        
+        if (comunicadoParaCriar.addressee !== 'usuários') {
+            toast.warning("Como síndico, você só pode criar comunicados para 'usuários'.");
+            return;
+        }
 
         const toastId = toast.loading("Criando comunicado...");
-        const response = await api.post('/comunicados', comunicadoParaCriar);
 
-        toast.dismiss(toastId);
-        if (response && !response.error) {
-            await loadComunicados();
-            setNovoComunicado({ title: "", subject: "", destinatario: "usuários" });
-            setOpen(false);
-            toast.success("Comunicado criado e enviado com sucesso!");
-        } else if (response && response.error) {
-            toast.error(response.message || "Falha ao criar comunicado.");
+        try {
+            const response = await api.post('/comunicados', comunicadoParaCriar);
+            
+            if (response && response.id) {
+                await loadComunicados(); // Recarrega a lista para mostrar o novo item
+                setNovoComunicado({ title: "", subject: "", addressee: "usuários" });
+                setOpen(false);
+                toast.success("Comunicado criado e enviado com sucesso!");
+            } else {
+                 throw new Error(response.message || "Resposta da API inválida ao criar.");
+            }
+        } catch (error) {
+            toast.error(error.message || "Falha ao criar comunicado.");
+        } finally {
+            toast.dismiss(toastId);
         }
     };
 
     const handleUpdateStatus = async (id, novoStatus) => {
         const toastId = toast.loading(`Atualizando status para ${novoStatus}...`);
-        const response = await new Promise((resolve) =>
-            setTimeout(() => {
-                resolve({ success: true });
-            }, 500)
-        );
 
-        toast.dismiss(toastId);
-        if (response && !response.error) {
-            setComunicados(prev =>
-                prev.map(c =>
-                    c.id === id ? { ...c, status: novoStatus } : c
-                )
-            );
-            toast.success(`Comunicado marcado como ${novoStatus === 'lido' ? 'lido' : 'não lido'}!`);
-        } else {
-            toast.error("Falha ao atualizar status. (Rota PATCH simulada)");
+        try {
+            // ✅ CHAMADA REAL: PUT para atualizar o status de leitura no backend
+            const response = await api.put(`/comunicados/${id}/status`, { status: novoStatus });
+
+            if (response && response.message) { // Assumindo que a API retorna um sucesso
+                 setComunicados(prev =>
+                    prev.map(c =>
+                        c.id === id ? { ...c, status: novoStatus } : c
+                    )
+                );
+                toast.success(`Comunicado marcado como ${novoStatus === 'lido' ? 'lido' : 'não lido'}!`);
+            } else {
+                throw new Error("Falha na resposta da API ao atualizar status.");
+            }
+        } catch (error) {
+            toast.error(error.message || "Falha ao atualizar status.");
+        } finally {
+            toast.dismiss(toastId);
         }
     };
 
@@ -141,14 +173,22 @@ export default function ComunicadosDashboard() {
 
     const handleDeletar = async (id, titulo) => {
         const toastId = toast.loading(`Deletando comunicado "${titulo}"...`);
-        const response = await api.del(`/comunicados/${id}`);
 
-        toast.dismiss(toastId);
-        if (response && !response.error) {
-            setComunicados(prev => prev.filter(c => c.id !== id));
-            toast.success(`Comunicado "${titulo}" deletado!`);
-        } else if (response && response.error) {
-            toast.error(response.message || "Falha ao deletar comunicado.");
+        try {
+            // ✅ CHAMADA REAL: DELETE para excluir o comunicado
+            const response = await api.del(`/comunicados/${id}`); 
+
+            // Assumindo que o DELETE bem sucedido retorna um objeto vazio ou de sucesso
+            if (response && !response.error) {
+                setComunicados(prev => prev.filter(c => c.id !== id));
+                toast.success(`Comunicado "${titulo}" deletado!`);
+            } else {
+                throw new Error(response.message || "Falha na resposta da API ao deletar.");
+            }
+        } catch (error) {
+            toast.error(error.message || "Falha ao deletar comunicado.");
+        } finally {
+             toast.dismiss(toastId);
         }
     };
 
@@ -207,7 +247,7 @@ export default function ComunicadosDashboard() {
             minute: "2-digit",
         });
     };
-
+    
     const getDestinatarioLabel = (destinatario) => {
         switch (destinatario) {
             case 'usuários':
@@ -303,25 +343,29 @@ export default function ComunicadosDashboard() {
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Destinatário</label>
                                 <Select
-                                    value={novoComunicado.addressee} 
+                                    value={novoComunicado.addressee}
                                     onValueChange={(v) =>
                                         setNovoComunicado({ ...novoComunicado, addressee: v })
                                     }
+                                    disabled={true} 
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Selecione" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="usuários">Usuários</SelectItem>
-                                        <SelectItem value="sindicos">Síndicos</SelectItem>
-                                        <SelectItem value="administradores">Administradores</SelectItem>
+                                        <SelectItem value="usuários">Usuários (Padrão Condomínio)</SelectItem>
+                                        <SelectItem value="sindicos" disabled>Síndicos</SelectItem>
+                                        <SelectItem value="administradores" disabled>Administradores</SelectItem>
                                     </SelectContent>
                                 </Select>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    *Como síndico, seu comunicado é direcionado automaticamente para os usuários do seu condomínio.
+                                </p>
                             </div>
                         </div>
 
                         <DialogFooter>
-                            <Button onClick={handleCriarComunicado}>Salvar</Button>
+                            <Button onClick={handleCriarComunicado}>Salvar e Enviar</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -366,7 +410,7 @@ export default function ComunicadosDashboard() {
                                     >
                                         <div className={`w-10 h-10 flex items-center justify-center rounded-full flex-shrink-0 ${isLido ? 'bg-green-500/10' : 'bg-sky-500/10'}`}>
                                             {isLido ? (
-                                                <Eye className="w-5 h-5 text-green-600" />
+                                                <EyeOff className="w-5 h-5 text-green-600" />
                                             ) : (
                                                 <Bell className="w-5 h-5 text-sky-600" />
                                             )}
@@ -375,7 +419,7 @@ export default function ComunicadosDashboard() {
                                         <div className="flex-1 min-w-0 space-y-1">
                                             <p className={`font-bold truncate ${!isLido ? 'text-foreground' : 'text-muted-foreground'}`}>{c.titulo}</p>
                                             <p className="text-sm text-muted-foreground line-clamp-2">{c.assunto}</p>
-
+                                            
                                             <div className="flex items-center text-xs text-muted-foreground/80 pt-1 gap-4">
                                                 <span className="flex items-center gap-1">
                                                     <User size={12} />
@@ -395,6 +439,7 @@ export default function ComunicadosDashboard() {
                                         </div>
 
                                         <div className="flex gap-2 ml-auto flex-shrink-0">
+                                            
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>
                                                     <Button size="icon" variant="ghost" className={isLido ? "text-green-600 hover:bg-green-100" : "text-sky-600 hover:bg-sky-100"}>
@@ -416,11 +461,14 @@ export default function ComunicadosDashboard() {
                                                     </AlertDialogFooter>
                                                 </AlertDialogContent>
                                             </AlertDialog>
+
+
                                             {isCriador && (
                                                 <Button size="icon" variant="ghost">
                                                     <Pencil size={16} />
                                                 </Button>
                                             )}
+
                                             {isCriador && (
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
@@ -437,7 +485,7 @@ export default function ComunicadosDashboard() {
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
                                                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                            <AlertDialogAction
+                                                            <AlertDialogAction 
                                                                 className="bg-red-600 hover:bg-red-700"
                                                                 onClick={() => handleDeletar(c.id, c.titulo)}
                                                             >
@@ -454,10 +502,11 @@ export default function ComunicadosDashboard() {
                             })}
                         </CardContent>
                     )}
-
+                    
                     <PaginationDemo />
                 </Card>
             </div>
+
         </div>
     );
 }

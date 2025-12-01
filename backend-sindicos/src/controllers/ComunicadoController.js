@@ -10,8 +10,17 @@ export default class ComunicadosController {
         return reply.status(200).send(comunicados)
     }
 
-    static async addComunicado(req, reply) {
-        const comunicado = await addComunicadoService.createComunicado();
-        return reply.status(200).send(comunicado)
-    }
+   static async addComunicado(req, reply) {
+    const { title, subject, addressee } = req.body; 
+    const sindicoId = req.user.id; 
+
+    const comunicado = await addComunicadoService.createComunicado({
+        title,
+        subject,
+        addressee,
+        sindico_id: sindicoId 
+    });
+
+    return reply.status(200).send(comunicado)
+}
 }
