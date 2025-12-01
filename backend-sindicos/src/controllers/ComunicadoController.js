@@ -1,4 +1,6 @@
 import addComunicadoService from "../services/comunicados/addComunicado.js";
+import marcarComunicadoLidoService from "../services/comunicados/comunicadosLidos.js";
+import CountComunicadosAdminParaSindicoService from "../services/comunicados/countComunicadosParaSindico.js";
 import criadosPeloSindico from "../services/comunicados/criadosPeloSindico.js";
 import getComunicadosService from "../services/comunicados/getComunicado.js";
 import getTotalComunicados from "../services/comunicados/getTotalComunicados.js";
@@ -41,8 +43,8 @@ export default class ComunicadosController {
 
     static async updateLidoStatus(req, reply) {
         const { id: comunicado_id } = req.params;
-        const { lido } = req.body; 
-        const user_id = req.user.id; 
+        const { lido } = req.body;
+        const user_id = req.user.id;
 
         if (typeof lido !== 'boolean') {
             return reply.status(400).send({ message: "O status 'lido' deve ser um booleano." });
@@ -66,8 +68,13 @@ export default class ComunicadosController {
     }
 
     static async getNaoLidosCount(req, reply) {
-        const user_id = req.user.id; 
+        const user_id = req.user.id;
         const naoLidos = await marcarComunicadoLidoService.countNaoLidos(user_id);
         return reply.status(200).send({ total: naoLidos });
+    }
+
+    static async getAdminSindicosCount(req, reply) {
+        const total = await CountComunicadosAdminParaSindicoService.execute();
+        return reply.status(200).send({ total });
     }
 }

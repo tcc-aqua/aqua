@@ -1,4 +1,4 @@
-import ComunicadosLidos from "../../models/ComunicadosLidos.js";
+import ComunicadosLidos from "../../models/ComunicadoLido.js";
 import Comunicados from "../../models/Comunicados.js";
 import Condominio from "../../models/Condominio.js";
 import { Op } from "sequelize";

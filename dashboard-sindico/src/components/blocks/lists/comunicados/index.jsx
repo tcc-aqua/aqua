@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Trash, Plus, Bell, BellOff, Clock, Shield, Eye, EyeOff, User, Loader2 } from "lucide-react";
+import { Pencil, Trash, Plus, Bell, BellOff, Clock, Shield, Eye, EyeOff, User, Loader2, Mail } from "lucide-react";
 import {
     Dialog,
     DialogTrigger,
@@ -55,8 +55,9 @@ export default function ComunicadosDashboard() {
 
     const [totalComunicados, setTotalComunicados] = useState(0);
     const [myTotalComunicados, setMyTotalComunicados] = useState(0);
-    // NOVO ESTADO: Total de comunicados NÃO LIDOS (contagem precisa do backend)
     const [totalNaoLidos, setTotalNaoLidos] = useState(0);
+    // NOVO ESTADO: Contagem de comunicados Admin -> Síndicos
+    const [totalAdminParaSindicos, setTotalAdminParaSindicos] = useState(0); 
 
     const [novoComunicado, setNovoComunicado] = useState({
         title: "",
@@ -88,9 +89,6 @@ export default function ComunicadosDashboard() {
         }
     }, []);
 
-    /**
-     * NOVO: Carrega a contagem precisa de comunicados NÃO LIDOS.
-     */
     const loadTotalNaoLidos = useCallback(async () => {
         try {
             const { total } = await api.get('/comunicados/nao-lidos-count');
@@ -101,6 +99,21 @@ export default function ComunicadosDashboard() {
             console.error("Erro ao carregar o total de comunicados não lidos:", error);
         }
     }, []);
+    
+    /**
+     * NOVO: Carrega a contagem precisa de comunicados de Admin para Síndicos.
+     */
+    const loadTotalAdminParaSindicos = useCallback(async () => {
+        try {
+            // Rota implementada no service/controller
+            const { total } = await api.get('/comunicados/admin-para-sindicos-count'); 
+            if (typeof total === 'number') {
+                setTotalAdminParaSindicos(total);
+            }
+        } catch (error) {
+            console.error("Erro ao carregar o total de comunicados Admin -> Síndicos:", error);
+        }
+    }, []);
 
 
     const loadComunicados = useCallback(async () => {
@@ -108,12 +121,10 @@ export default function ComunicadosDashboard() {
         const endpoint = '/comunicados';
 
         try {
-            const data = await api.get(endpoint);
+            const { docs } = await api.get(endpoint);
 
-            if (data && data.docs) {
-                // A API deve retornar o campo `status_leitura` (lido/nao_lido)
-                // Se a API não retornar, o status será 'nao_lido' por padrão (fallback)
-                const mappedComunicados = data.docs.map(c => ({
+            if (docs) {
+                const mappedComunicados = docs.map(c => ({
                     id: c.id,
                     titulo: c.title,
                     assunto: c.subject,
@@ -121,7 +132,6 @@ export default function ComunicadosDashboard() {
                     autorId: c.sindico_id,
                     autorNome: c.sindico_id === CURRENT_USER_ID ? "Síndico (Você)" : "Administração",
                     dataCricao: c.criado_em,
-                    // O valor lido: true/false deve ser mapeado para o status 'lido'/'nao_lido'
                     status: c.ComunicadosLidos && c.ComunicadosLidos.lido ? "lido" : "nao_lido",
                 }));
 
@@ -142,8 +152,9 @@ export default function ComunicadosDashboard() {
         loadComunicados();
         loadTotalComunicados();
         loadMyTotalComunicados();
-        loadTotalNaoLidos(); // NOVO: Chama o carregamento da contagem de não lidos
-    }, [loadComunicados, loadTotalComunicados, loadMyTotalComunicados, loadTotalNaoLidos]);
+        loadTotalNaoLidos(); 
+        loadTotalAdminParaSindicos(); // NOVO: Chama o carregamento da contagem Admin -> Síndicos
+    }, [loadComunicados, loadTotalComunicados, loadMyTotalComunicados, loadTotalNaoLidos, loadTotalAdminParaSindicos]);
 
 
     // --- FUNÇÕES DE AÇÃO (CRUD/Status) ---
@@ -161,7 +172,7 @@ export default function ComunicadosDashboard() {
         };
 
         if (comunicadoParaCriar.addressee !== 'usuários') {
-            toast.warning("Como síndico, você só pode criar comunicados para 'usuários'.");
+            toast.warning("Como síndico, você só pode criar comunicados para 'usuários' do seu condomínio.");
             return;
         }
 
@@ -186,24 +197,23 @@ export default function ComunicadosDashboard() {
             toast.dismiss(toastId);
         }
     };
+    
     const handleUpdateLidoStatus = async (id, lido) => {
         const novoStatus = lido ? "lido" : "nao_lido";
         const toastId = toast.loading(`Atualizando status para ${novoStatus === 'lido' ? 'lido' : 'não lido'}...`);
 
         try {
-            // Rota implementada no service/controller
             const response = await api.put(`/comunicados/${id}/status/lido`, { lido: lido });
 
             if (response && response.message) {
-                // Atualiza o estado local
                 setComunicados(prev =>
                     prev.map(c =>
                         c.id === id ? { ...c, status: novoStatus } : c
                     )
                 );
-                // Atualiza as contagens precisas do backend
+                
                 await loadTotalNaoLidos();
-
+                
                 toast.success(`Comunicado marcado como ${novoStatus === 'lido' ? 'lido' : 'não lido'}!`);
             } else {
                 throw new Error("Falha na resposta da API ao atualizar status de leitura.");
@@ -227,9 +237,10 @@ export default function ComunicadosDashboard() {
 
             if (response && !response.error) {
                 setComunicados(prev => prev.filter(c => c.id !== id));
+                await loadComunicados(); // Recarrega para obter lista atualizada de comunicaos (no caso de paginação)
                 await loadTotalComunicados();
                 await loadMyTotalComunicados();
-                await loadTotalNaoLidos(); // Atualiza a contagem dos não lidos após a exclusão
+                await loadTotalNaoLidos(); 
                 toast.success(`Comunicado "${titulo}" deletado!`);
             } else {
                 throw new Error(response.message || "Falha na resposta da API ao deletar.");
@@ -243,9 +254,6 @@ export default function ComunicadosDashboard() {
 
     // --- DADOS E FILTROS DE VISUALIZAÇÃO ---
 
-    const paraAdmins = comunicados.filter(c => c.destinatario === "administradores").length;
-    // O totalNaoLidos agora vem do backend (mais preciso)
-
     const cardsData = [
         {
             title: "Total de Comunicados",
@@ -256,7 +264,7 @@ export default function ComunicadosDashboard() {
         },
         {
             title: "Não Lidos",
-            value: totalNaoLidos, // USANDO CONTADOR PRECISO DO BACKEND
+            value: totalNaoLidos, 
             icon: BellOff,
             iconColor: "text-red-500",
             subTitle1: totalNaoLidos > 0 ? `${totalNaoLidos} pendentes` : "Nenhum pendente",
@@ -269,11 +277,12 @@ export default function ComunicadosDashboard() {
             subTitle2: "Criados por mim",
         },
         {
-            title: "Para Mim (Síndico)",
-            value: paraAdmins, // Contagem baseada na lista atual (lista paginada)
-            icon: Shield,
+            // NOVO CARD: Usando o contador preciso do Admin -> Síndicos
+            title: "Admin -> Síndicos",
+            value: totalAdminParaSindicos, 
+            icon: Mail,
             iconColor: "text-purple-500",
-            subTitle: "Gestão interna",
+            subTitle: "Comunicados Globais",
         },
     ];
 
@@ -426,9 +435,6 @@ export default function ComunicadosDashboard() {
                     <TabsTrigger value="nao_lidos">Não Lidos ({totalNaoLidos})</TabsTrigger>
                     <TabsTrigger value="lidos">Lidos</TabsTrigger>
                     <TabsTrigger value="meus">Meus Comunicados</TabsTrigger>
-                    <TabsTrigger value="usuários">Para Usuários</TabsTrigger>
-                    <TabsTrigger value="sindicos">Para Síndicos</TabsTrigger>
-                    <TabsTrigger value="administradores">Para Administradores</TabsTrigger>
                 </TabsList>
             </Tabs>
 
@@ -450,7 +456,6 @@ export default function ComunicadosDashboard() {
                         <CardContent className="divide-y p-0">
                             {comunicadosFiltrados.map((c) => {
                                 const isCriador = c.autorId === CURRENT_USER_ID;
-                                // O status agora é populado corretamente com base na resposta da API
                                 const isLido = c.status === "lido";
 
                                 return (
@@ -491,7 +496,6 @@ export default function ComunicadosDashboard() {
                                         <div className="flex gap-2 ml-auto flex-shrink-0">
 
                                             {/* BOTÃO DE MARCAR LIDO/NÃO LIDO */}
-                                            {/* Não permite marcar/desmarcar o próprio comunicado criado */}
                                             {!isCriador && (
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
