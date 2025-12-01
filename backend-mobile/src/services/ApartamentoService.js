@@ -1,14 +1,11 @@
-// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\services\ApartamentoService.js
-// CÓDIGO COMPLETO E CORRIGIDO
-
 import Apartamento from "../models/Apartamento.js";
-import LeituraSensor from "../models/LeituraSensor.js"; // 1. Importa o modelo das leituras
+import LeituraSensor from "../models/LeituraSensor.js";
+import { Op } from "sequelize";
 
 export default class ApartamentoService {
 
     static async getConsumoTotal(apartamentoId) {
         try {
-
             const apartamento = await Apartamento.findByPk(apartamentoId);
 
             if (!apartamento) {
@@ -18,20 +15,55 @@ export default class ApartamentoService {
                 throw new Error('Apartamento não possui um sensor associado.');
             }
 
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            const ontemInicio = new Date(hoje);
+            ontemInicio.setDate(ontemInicio.getDate() - 1);
+            
+            const ontemFim = new Date(hoje);
 
             const consumoTotal = await LeituraSensor.sum('consumo', {
+                where: { sensor_id: apartamento.sensor_id }
+            });
+
+            const consumoHoje = await LeituraSensor.sum('consumo', {
                 where: {
-                    sensor_id: apartamento.sensor_id
+                    sensor_id: apartamento.sensor_id,
+                    data_registro: { [Op.gte]: hoje }
                 }
             });
 
+            const consumoOntem = await LeituraSensor.sum('consumo', {
+                where: {
+                    sensor_id: apartamento.sensor_id,
+                    data_registro: { 
+                        [Op.gte]: ontemInicio,
+                        [Op.lt]: ontemFim
+                    }
+                }
+            });
 
-            return { consumoTotal: consumoTotal || 0 };
+            const valHoje = consumoHoje || 0;
+            const valOntem = consumoOntem || 0;
+            let comparacao = 0;
+
+            if (valOntem > 0) {
+                comparacao = ((valHoje - valOntem) / valOntem) * 100;
+            } else if (valHoje > 0) {
+                comparacao = 100;
+            }
+
+            return { 
+                consumoTotal: parseFloat((consumoTotal || 0).toFixed(2)),
+                consumoHoje: parseFloat(valHoje.toFixed(2)),
+                consumoOntem: parseFloat(valOntem.toFixed(2)),
+                comparacaoPorcentagem: parseFloat(comparacao.toFixed(1))
+            };
 
         } catch (error) {
-            console.error('Erro ao listar consumo total do seu apartamento', error);
+            console.error('Erro ao listar dados de consumo do apartamento', error);
             throw error;
         }
     }
-
 }

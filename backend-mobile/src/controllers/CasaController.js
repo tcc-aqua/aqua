@@ -7,7 +7,7 @@ export default class CasaController {
     static async getConsumo(req, reply) {
         try {
             const { id } = req.params;
-            const userId = req.user.id; // Obtido do middleware de autenticação
+            const userId = req.user.id; 
             const consumo = await CasaService.getConsumoTotal(id, userId);
             return reply.status(200).send(consumo);
         } catch (error) {
