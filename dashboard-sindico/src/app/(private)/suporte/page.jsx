@@ -13,8 +13,9 @@ export default function Suporte() {
                 <main className="container mx-auto pt-20 ">
                     <div className="">
                         <h1 className="text-4xl font-black py-2">Central de Suporte</h1>
-                        <CardsSuporte/>
-                        <Mensagens/>
+                        <h1 className=" opacity-65 mb-3">Detalhes sobre mensagens</h1>
+                        <CardsSuporte />
+                        <Mensagens />
                     </div>
                 </main>
             </LayoutDashboard>
