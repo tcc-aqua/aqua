@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Home, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import AnimationWrapper from "@/components/Layout/Animation/Animation";
+import AnimationWrapper from "../components/layout/Animation/Animation";
 
 export default function NotFound() {
   return (

@@ -1,5 +1,5 @@
-import Header from "@/components/Layout/Header/page";
-import LayoutDashboard from "@/components/Layout/LayoutDashboard/page";
+import Header from "../../../components/layout/Header/page";
+import LayoutDashboard from "../../../components/layout/LayoutDashboard/page";
 import ComunicadosDashboard from "@/components/blocks/lists/comunicados/index";
 
 export default function Comunicados() {

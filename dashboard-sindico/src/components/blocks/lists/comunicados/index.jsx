@@ -56,7 +56,6 @@ export default function ComunicadosDashboard() {
     const [totalComunicados, setTotalComunicados] = useState(0);
     const [myTotalComunicados, setMyTotalComunicados] = useState(0);
     const [totalNaoLidos, setTotalNaoLidos] = useState(0);
-    // NOVO ESTADO: Contagem de comunicados Admin -> Síndicos
     const [totalAdminParaSindicos, setTotalAdminParaSindicos] = useState(0); 
 
     const [novoComunicado, setNovoComunicado] = useState({
@@ -65,7 +64,6 @@ export default function ComunicadosDashboard() {
         addressee: "usuários",
     });
 
-    // --- FUNÇÕES DE CARREGAMENTO ---
 
     const loadTotalComunicados = useCallback(async () => {
         try {
