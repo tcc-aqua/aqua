@@ -39,22 +39,24 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select";
-import { api } from "@/lib/api"; 
+import { api } from "@/lib/api";
 import { toast } from "sonner";
 
 import AnimationWrapper from "../../../layout/Animation/Animation";
 import { PaginationDemo } from "@/components/pagination";
 
-// ⚠️ SUBSTITUA ISTO: Este ID deve ser obtido do token do usuário logado (ex: via useAuth)
-// Usamos '1' temporariamente, mas deve ser real.
-const CURRENT_USER_ID = 1; 
+const CURRENT_USER_ID = 1;
 
 export default function ComunicadosDashboard() {
     const [open, setOpen] = useState(false);
     const [filtro, setFiltro] = useState("todos");
-    // O estado deve refletir a estrutura de dados da API
     const [comunicados, setComunicados] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    const [totalComunicados, setTotalComunicados] = useState(0);
+    const [myTotalComunicados, setMyTotalComunicados] = useState(0);
+    // NOVO ESTADO: Total de comunicados NÃO LIDOS (contagem precisa do backend)
+    const [totalNaoLidos, setTotalNaoLidos] = useState(0);
 
     const [novoComunicado, setNovoComunicado] = useState({
         title: "",
@@ -62,35 +64,69 @@ export default function ComunicadosDashboard() {
         addressee: "usuários",
     });
 
+    // --- FUNÇÕES DE CARREGAMENTO ---
+
+    const loadTotalComunicados = useCallback(async () => {
+        try {
+            const { total } = await api.get('/comunicados/total');
+            if (typeof total === 'number') {
+                setTotalComunicados(total);
+            }
+        } catch (error) {
+            console.error("Erro ao carregar o total de comunicados visíveis:", error);
+        }
+    }, []);
+
+    const loadMyTotalComunicados = useCallback(async () => {
+        try {
+            const { total } = await api.get('/comunicados/me');
+            if (typeof total === 'number') {
+                setMyTotalComunicados(total);
+            }
+        } catch (error) {
+            console.error("Erro ao carregar o total dos meus comunicados:", error);
+        }
+    }, []);
+
+    /**
+     * NOVO: Carrega a contagem precisa de comunicados NÃO LIDOS.
+     */
+    const loadTotalNaoLidos = useCallback(async () => {
+        try {
+            const { total } = await api.get('/comunicados/nao-lidos-count');
+            if (typeof total === 'number') {
+                setTotalNaoLidos(total);
+            }
+        } catch (error) {
+            console.error("Erro ao carregar o total de comunicados não lidos:", error);
+        }
+    }, []);
+
+
     const loadComunicados = useCallback(async () => {
         setIsLoading(true);
         const endpoint = '/comunicados';
-        
+
         try {
             const data = await api.get(endpoint);
 
             if (data && data.docs) {
-                // ✅ MAPEAMENTO REALISTA: Usando os nomes das colunas da API (c.title, c.subject, c.sindico_id)
+                // A API deve retornar o campo `status_leitura` (lido/nao_lido)
+                // Se a API não retornar, o status será 'nao_lido' por padrão (fallback)
                 const mappedComunicados = data.docs.map(c => ({
                     id: c.id,
                     titulo: c.title,
                     assunto: c.subject,
                     destinatario: c.addressee,
-                    // Usando o ID real do sindico retornado pela API
-                    autorId: c.sindico_id, 
-                    // O nome do autor deve vir de um JOIN na API, 
-                    // se não vier, simule baseado no ID do usuário atual para diferenciar
-                    autorNome: c.sindico_id === CURRENT_USER_ID ? "Síndico (Você)" : "Administração", 
+                    autorId: c.sindico_id,
+                    autorNome: c.sindico_id === CURRENT_USER_ID ? "Síndico (Você)" : "Administração",
                     dataCricao: c.criado_em,
-                    // A API deve retornar o status de leitura para o usuário atual. 
-                    // Se não tiver, defina um padrão. Aqui mantemos 'nao_lido' se não definido.
-                    status: c.status_leitura || "nao_lido", 
+                    // O valor lido: true/false deve ser mapeado para o status 'lido'/'nao_lido'
+                    status: c.ComunicadosLidos && c.ComunicadosLidos.lido ? "lido" : "nao_lido",
                 }));
 
                 setComunicados(mappedComunicados);
-                toast.success(`Comunicados carregados com sucesso! Total: ${data.total}`);
             } else {
-                toast.error("Nenhum comunicado encontrado ou formato de resposta da API inválido.");
                 setComunicados([]);
             }
         } catch (error) {
@@ -104,7 +140,13 @@ export default function ComunicadosDashboard() {
 
     useEffect(() => {
         loadComunicados();
-    }, [loadComunicados]);
+        loadTotalComunicados();
+        loadMyTotalComunicados();
+        loadTotalNaoLidos(); // NOVO: Chama o carregamento da contagem de não lidos
+    }, [loadComunicados, loadTotalComunicados, loadMyTotalComunicados, loadTotalNaoLidos]);
+
+
+    // --- FUNÇÕES DE AÇÃO (CRUD/Status) ---
 
     const handleCriarComunicado = async () => {
         if (!novoComunicado.title || !novoComunicado.subject) {
@@ -112,13 +154,12 @@ export default function ComunicadosDashboard() {
             return;
         }
 
-        // Não enviamos o sindico_id. O backend Fastify (via token) fará isso.
         const comunicadoParaCriar = {
             title: novoComunicado.title,
             subject: novoComunicado.subject,
-            addressee: novoComunicado.addressee, 
+            addressee: novoComunicado.addressee,
         };
-        
+
         if (comunicadoParaCriar.addressee !== 'usuários') {
             toast.warning("Como síndico, você só pode criar comunicados para 'usuários'.");
             return;
@@ -128,14 +169,16 @@ export default function ComunicadosDashboard() {
 
         try {
             const response = await api.post('/comunicados', comunicadoParaCriar);
-            
+
             if (response && response.id) {
-                await loadComunicados(); // Recarrega a lista para mostrar o novo item
+                await loadComunicados();
+                await loadTotalComunicados();
+                await loadMyTotalComunicados();
                 setNovoComunicado({ title: "", subject: "", addressee: "usuários" });
                 setOpen(false);
                 toast.success("Comunicado criado e enviado com sucesso!");
             } else {
-                 throw new Error(response.message || "Resposta da API inválida ao criar.");
+                throw new Error(response.message || "Resposta da API inválida ao criar.");
             }
         } catch (error) {
             toast.error(error.message || "Falha ao criar comunicado.");
@@ -143,44 +186,50 @@ export default function ComunicadosDashboard() {
             toast.dismiss(toastId);
         }
     };
-
-    const handleUpdateStatus = async (id, novoStatus) => {
-        const toastId = toast.loading(`Atualizando status para ${novoStatus}...`);
+    const handleUpdateLidoStatus = async (id, lido) => {
+        const novoStatus = lido ? "lido" : "nao_lido";
+        const toastId = toast.loading(`Atualizando status para ${novoStatus === 'lido' ? 'lido' : 'não lido'}...`);
 
         try {
-            // ✅ CHAMADA REAL: PUT para atualizar o status de leitura no backend
-            const response = await api.put(`/comunicados/${id}/status`, { status: novoStatus });
+            // Rota implementada no service/controller
+            const response = await api.put(`/comunicados/${id}/status/lido`, { lido: lido });
 
-            if (response && response.message) { // Assumindo que a API retorna um sucesso
-                 setComunicados(prev =>
+            if (response && response.message) {
+                // Atualiza o estado local
+                setComunicados(prev =>
                     prev.map(c =>
                         c.id === id ? { ...c, status: novoStatus } : c
                     )
                 );
+                // Atualiza as contagens precisas do backend
+                await loadTotalNaoLidos();
+
                 toast.success(`Comunicado marcado como ${novoStatus === 'lido' ? 'lido' : 'não lido'}!`);
             } else {
-                throw new Error("Falha na resposta da API ao atualizar status.");
+                throw new Error("Falha na resposta da API ao atualizar status de leitura.");
             }
         } catch (error) {
-            toast.error(error.message || "Falha ao atualizar status.");
+            toast.error(error.message || "Falha ao atualizar status de leitura.");
         } finally {
             toast.dismiss(toastId);
         }
     };
 
-    const handleMarcarLido = (id) => handleUpdateStatus(id, "lido");
-    const handleMarcarNaoLido = (id) => handleUpdateStatus(id, "nao_lido");
+    const handleMarcarLido = (id) => handleUpdateLidoStatus(id, true);
+    const handleMarcarNaoLido = (id) => handleUpdateLidoStatus(id, false);
+
 
     const handleDeletar = async (id, titulo) => {
         const toastId = toast.loading(`Deletando comunicado "${titulo}"...`);
 
         try {
-            // ✅ CHAMADA REAL: DELETE para excluir o comunicado
-            const response = await api.del(`/comunicados/${id}`); 
+            const response = await api.del(`/comunicados/${id}`);
 
-            // Assumindo que o DELETE bem sucedido retorna um objeto vazio ou de sucesso
             if (response && !response.error) {
                 setComunicados(prev => prev.filter(c => c.id !== id));
+                await loadTotalComunicados();
+                await loadMyTotalComunicados();
+                await loadTotalNaoLidos(); // Atualiza a contagem dos não lidos após a exclusão
                 toast.success(`Comunicado "${titulo}" deletado!`);
             } else {
                 throw new Error(response.message || "Falha na resposta da API ao deletar.");
@@ -188,40 +237,40 @@ export default function ComunicadosDashboard() {
         } catch (error) {
             toast.error(error.message || "Falha ao deletar comunicado.");
         } finally {
-             toast.dismiss(toastId);
+            toast.dismiss(toastId);
         }
     };
 
-    const total = comunicados.length;
-    const naoLidos = comunicados.filter(c => c.status === "nao_lido").length;
+    // --- DADOS E FILTROS DE VISUALIZAÇÃO ---
+
     const paraAdmins = comunicados.filter(c => c.destinatario === "administradores").length;
-    const meusComunicados = comunicados.filter(c => c.autorId === CURRENT_USER_ID).length;
+    // O totalNaoLidos agora vem do backend (mais preciso)
 
     const cardsData = [
         {
             title: "Total de Comunicados",
-            value: total,
+            value: totalComunicados,
             icon: Bell,
             iconColor: "text-blue-500",
             porcentagem: "Visão Geral",
         },
         {
             title: "Não Lidos",
-            value: naoLidos,
+            value: totalNaoLidos, // USANDO CONTADOR PRECISO DO BACKEND
             icon: BellOff,
             iconColor: "text-red-500",
-            subTitle1: naoLidos > 0 ? `${naoLidos} pendentes` : "Nenhum pendente",
+            subTitle1: totalNaoLidos > 0 ? `${totalNaoLidos} pendentes` : "Nenhum pendente",
         },
         {
             title: "Meus Comunicados",
-            value: meusComunicados,
+            value: myTotalComunicados,
             icon: User,
             iconColor: "text-primary",
             subTitle2: "Criados por mim",
         },
         {
             title: "Para Mim (Síndico)",
-            value: paraAdmins,
+            value: paraAdmins, // Contagem baseada na lista atual (lista paginada)
             icon: Shield,
             iconColor: "text-purple-500",
             subTitle: "Gestão interna",
@@ -232,7 +281,7 @@ export default function ComunicadosDashboard() {
         if (filtro === "lidos") return c.status === "lido";
         if (filtro === "nao_lidos") return c.status === "nao_lido";
         if (filtro === "administradores") return c.destinatario === "administradores";
-        if (filtro === "usuários" || filtro === "sindicos") return c.destinatario === filtro; 
+        if (filtro === "usuários" || filtro === "sindicos") return c.destinatario === filtro;
         if (filtro === "meus") return c.autorId === CURRENT_USER_ID;
         return true;
     });
@@ -247,7 +296,7 @@ export default function ComunicadosDashboard() {
             minute: "2-digit",
         });
     };
-    
+
     const getDestinatarioLabel = (destinatario) => {
         switch (destinatario) {
             case 'usuários':
@@ -347,7 +396,7 @@ export default function ComunicadosDashboard() {
                                     onValueChange={(v) =>
                                         setNovoComunicado({ ...novoComunicado, addressee: v })
                                     }
-                                    disabled={true} 
+                                    disabled={true}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Selecione" />
@@ -374,7 +423,7 @@ export default function ComunicadosDashboard() {
             <Tabs value={filtro} onValueChange={setFiltro}>
                 <TabsList className="flex flex-wrap">
                     <TabsTrigger value="todos">Todos</TabsTrigger>
-                    <TabsTrigger value="nao_lidos">Não Lidos ({naoLidos})</TabsTrigger>
+                    <TabsTrigger value="nao_lidos">Não Lidos ({totalNaoLidos})</TabsTrigger>
                     <TabsTrigger value="lidos">Lidos</TabsTrigger>
                     <TabsTrigger value="meus">Meus Comunicados</TabsTrigger>
                     <TabsTrigger value="usuários">Para Usuários</TabsTrigger>
@@ -401,6 +450,7 @@ export default function ComunicadosDashboard() {
                         <CardContent className="divide-y p-0">
                             {comunicadosFiltrados.map((c) => {
                                 const isCriador = c.autorId === CURRENT_USER_ID;
+                                // O status agora é populado corretamente com base na resposta da API
                                 const isLido = c.status === "lido";
 
                                 return (
@@ -419,7 +469,7 @@ export default function ComunicadosDashboard() {
                                         <div className="flex-1 min-w-0 space-y-1">
                                             <p className={`font-bold truncate ${!isLido ? 'text-foreground' : 'text-muted-foreground'}`}>{c.titulo}</p>
                                             <p className="text-sm text-muted-foreground line-clamp-2">{c.assunto}</p>
-                                            
+
                                             <div className="flex items-center text-xs text-muted-foreground/80 pt-1 gap-4">
                                                 <span className="flex items-center gap-1">
                                                     <User size={12} />
@@ -439,61 +489,67 @@ export default function ComunicadosDashboard() {
                                         </div>
 
                                         <div className="flex gap-2 ml-auto flex-shrink-0">
-                                            
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button size="icon" variant="ghost" className={isLido ? "text-green-600 hover:bg-green-100" : "text-sky-600 hover:bg-sky-100"}>
-                                                        {isLido ? <EyeOff size={16} /> : <Eye size={16} />}
-                                                    </Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Confirmação de Leitura</AlertDialogTitle>
-                                                        <AlertDialogDescription>
-                                                            {isLido ? `Tem certeza que deseja marcar o comunicado "${c.titulo}" como NÃO LIDO?` : `Tem certeza que deseja marcar o comunicado "${c.titulo}" como VISUALIZADO?`}
-                                                        </AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => isLido ? handleMarcarNaoLido(c.id) : handleMarcarLido(c.id)}>
-                                                            {isLido ? "Marcar como Não Lido" : "Marcar como Visualizado"}
-                                                        </AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
 
-
-                                            {isCriador && (
-                                                <Button size="icon" variant="ghost">
-                                                    <Pencil size={16} />
-                                                </Button>
-                                            )}
-
-                                            {isCriador && (
+                                            {/* BOTÃO DE MARCAR LIDO/NÃO LIDO */}
+                                            {/* Não permite marcar/desmarcar o próprio comunicado criado */}
+                                            {!isCriador && (
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
-                                                        <Button size="icon" variant="ghost" className="text-red-600 hover:bg-red-100">
-                                                            <Trash size={16} />
+                                                        <Button size="icon" variant="ghost" className={isLido ? "text-green-600 hover:bg-green-100" : "text-sky-600 hover:bg-sky-100"}>
+                                                            {isLido ? <EyeOff size={16} /> : <Eye size={16} />}
                                                         </Button>
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
-                                                            <AlertDialogTitle>Confirmação de Exclusão</AlertDialogTitle>
+                                                            <AlertDialogTitle>Confirmação de Leitura</AlertDialogTitle>
                                                             <AlertDialogDescription>
-                                                                Tem certeza que deseja excluir permanentemente o comunicado: **{c.titulo}**?
+                                                                {isLido ? `Tem certeza que deseja marcar o comunicado "${c.titulo}" como NÃO LIDO?` : `Tem certeza que deseja marcar o comunicado "${c.titulo}" como VISUALIZADO?`}
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
                                                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                            <AlertDialogAction 
-                                                                className="bg-red-600 hover:bg-red-700"
-                                                                onClick={() => handleDeletar(c.id, c.titulo)}
+                                                            <AlertDialogAction
+                                                                onClick={() => isLido ? handleMarcarNaoLido(c.id) : handleMarcarLido(c.id)}
                                                             >
-                                                                Excluir
+                                                                {isLido ? "Marcar como Não Lido" : "Marcar como Visualizado"}
                                                             </AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>
                                                 </AlertDialog>
+                                            )}
+
+                                            {/* BOTÕES DE EDIÇÃO E EXCLUSÃO (Apenas para o criador) */}
+                                            {isCriador && (
+                                                <>
+                                                    <Button size="icon" variant="ghost">
+                                                        <Pencil size={16} />
+                                                    </Button>
+
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button size="icon" variant="ghost" className="text-red-600 hover:bg-red-100">
+                                                                <Trash size={16} />
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Confirmação de Exclusão</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    Tem certeza que deseja excluir permanentemente o comunicado: **{c.titulo}**?
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                                <AlertDialogAction
+                                                                    className="bg-red-600 hover:bg-red-700"
+                                                                    onClick={() => handleDeletar(c.id, c.titulo)}
+                                                                >
+                                                                    Excluir
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </>
                                             )}
 
                                         </div>
@@ -502,7 +558,7 @@ export default function ComunicadosDashboard() {
                             })}
                         </CardContent>
                     )}
-                    
+
                     <PaginationDemo />
                 </Card>
             </div>
