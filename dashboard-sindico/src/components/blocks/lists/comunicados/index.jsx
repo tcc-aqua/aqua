@@ -98,12 +98,8 @@ export default function ComunicadosDashboard() {
         }
     }, []);
     
-    /**
-     * NOVO: Carrega a contagem precisa de comunicados de Admin para Síndicos.
-     */
     const loadTotalAdminParaSindicos = useCallback(async () => {
         try {
-            // Rota implementada no service/controller
             const { total } = await api.get('/comunicados/admin-para-sindicos-count'); 
             if (typeof total === 'number') {
                 setTotalAdminParaSindicos(total);
@@ -151,7 +147,7 @@ export default function ComunicadosDashboard() {
         loadTotalComunicados();
         loadMyTotalComunicados();
         loadTotalNaoLidos(); 
-        loadTotalAdminParaSindicos(); // NOVO: Chama o carregamento da contagem Admin -> Síndicos
+        loadTotalAdminParaSindicos();
     }, [loadComunicados, loadTotalComunicados, loadMyTotalComunicados, loadTotalNaoLidos, loadTotalAdminParaSindicos]);
 
 
@@ -168,11 +164,8 @@ export default function ComunicadosDashboard() {
             subject: novoComunicado.subject,
             addressee: novoComunicado.addressee,
         };
-
-        if (comunicadoParaCriar.addressee !== 'usuários') {
-            toast.warning("Como síndico, você só pode criar comunicados para 'usuários' do seu condomínio.");
-            return;
-        }
+        
+        // A RESTRIÇÃO FOI REMOVIDA AQUI, PERMITINDO 'usuários' OU 'administradores'
 
         const toastId = toast.loading("Criando comunicado...");
 
@@ -235,7 +228,7 @@ export default function ComunicadosDashboard() {
 
             if (response && !response.error) {
                 setComunicados(prev => prev.filter(c => c.id !== id));
-                await loadComunicados(); // Recarrega para obter lista atualizada de comunicaos (no caso de paginação)
+                await loadComunicados();
                 await loadTotalComunicados();
                 await loadMyTotalComunicados();
                 await loadTotalNaoLidos(); 
@@ -275,7 +268,6 @@ export default function ComunicadosDashboard() {
             subTitle2: "Criados por mim",
         },
         {
-            // NOVO CARD: Usando o contador preciso do Admin -> Síndicos
             title: "Admin -> Síndicos",
             value: totalAdminParaSindicos, 
             icon: Mail,
@@ -403,19 +395,19 @@ export default function ComunicadosDashboard() {
                                     onValueChange={(v) =>
                                         setNovoComunicado({ ...novoComunicado, addressee: v })
                                     }
-                                    disabled={true}
+                                    disabled={false}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Selecione" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="usuários">Usuários (Padrão Condomínio)</SelectItem>
-                                        <SelectItem value="sindicos" disabled>Síndicos</SelectItem>
-                                        <SelectItem value="administradores" disabled>Administradores</SelectItem>
+                                        <SelectItem value="usuários">Usuários do Condomínio</SelectItem>
+                                        <SelectItem value="administradores">Administradores</SelectItem>
+                                        <SelectItem value="sindicos" disabled>Síndicos (Global)</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    *Como síndico, seu comunicado é direcionado automaticamente para os usuários do seu condomínio.
+                                    Selecione o grupo que deve receber este comunicado.
                                 </p>
                             </div>
                         </div>

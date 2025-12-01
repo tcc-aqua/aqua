@@ -12,9 +12,6 @@ export default class addComunicadoService {
                 throw new Error("Síndico não encontrado.");
             }
 
-            if (addressee !== 'usuários') {
-                throw new Error("Síndico só pode criar comunicados para usuários do seu condomínio.");
-            }
             const condominioId = sindico.residencia_id; 
 
         
