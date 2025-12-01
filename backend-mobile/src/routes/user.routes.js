@@ -1,3 +1,4 @@
+// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\routes\user.routes.js
 
 import UserController from "../controllers/UserController.js";
 import { authMiddleware } from "../middlewares/AuthMidlleweare.js";
@@ -30,4 +31,14 @@ export default async function userRoutes(fastify) {
         },
         preHandler: [authMiddleware]
     }, UserController.getStats);
+
+    // --- NOVA ROTA PARA O GRÁFICO ---
+    fastify.get('/me/consumo-semanal', {
+        schema: {
+            summary: 'Histórico de consumo semanal',
+            tags: ['users'],
+            description: 'Retorna o consumo agrupado por dia dos últimos 7 dias.'
+        },
+        preHandler: [authMiddleware]
+    }, UserController.getConsumoSemanal);
 }

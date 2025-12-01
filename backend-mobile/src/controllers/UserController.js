@@ -1,5 +1,4 @@
 // Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\controllers\UserController.js
-// CÓDIGO COMPLETO E CORRIGIDO
 
 import UserService from "../services/UserService.js";
 
@@ -36,5 +35,19 @@ export default class UserController {
         const userId = req.user.id;
         const stats = await UserService.getUserStats(userId);
         return reply.status(200).send(stats);
+    }
+
+    // --- NOVO MÉTODO ADICIONADO AQUI ---
+    static async getConsumoSemanal(req, reply) {
+        try {
+            const userId = req.user.id;
+            const dados = await UserService.getWeeklyConsumption(userId);
+            
+            // Retorna o array JSON direto: [{ data: '01/12', consumo: 150 }, ...]
+            return reply.status(200).send(dados);
+        } catch (error) {
+            console.error('Erro ao buscar consumo semanal no controller:', error);
+            return reply.status(500).send({ error: 'Erro interno ao buscar dados de consumo.' });
+        }
     }
 }

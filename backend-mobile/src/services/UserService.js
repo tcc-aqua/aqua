@@ -20,6 +20,78 @@ const __dirname = path.dirname(__filename);
 const PRECO_POR_LITRO = 0.015;
 
 export default class UserService {
+    static async getWeeklyConsumption(userId) {
+        try {
+            // 1. Busca usuário para descobrir tipo de residência e sensor
+            const user = await User.findByPk(userId, {
+                include: [
+                    { model: Casa, as: 'casa' },
+                    { model: Apartamento, as: 'apartamento' }
+                ]
+            });
+
+            if (!user) throw new Error('Usuário não encontrado');
+
+            // 2. Identifica o ID do sensor
+            const sensorId = user.residencia_type === 'casa'
+                ? user.casa?.sensor_id
+                : user.apartamento?.sensor_id;
+
+            if (!sensorId) {
+                // Se não tiver sensor, retorna lista vazia
+                return [];
+            }
+
+            // 3. Define data de 7 dias atrás
+            const seteDiasAtras = new Date();
+            seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
+            seteDiasAtras.setHours(0, 0, 0, 0);
+
+            // 4. Consulta Agrupada: Soma consumo por dia
+            const leituras = await LeituraSensor.findAll({
+                where: {
+                    sensor_id: sensorId,
+                    data_registro: {
+                        [Op.gte]: seteDiasAtras // >= 7 dias atrás
+                    }
+                },
+                attributes: [
+                    // SQL: DATE(data_registro)
+                    [sequelize.fn('DATE', sequelize.col('data_registro')), 'data_leitura'],
+                    // SQL: SUM(consumo)
+                    [sequelize.fn('SUM', sequelize.col('consumo')), 'total_litros']
+                ],
+                group: [sequelize.fn('DATE', sequelize.col('data_registro'))],
+                order: [[sequelize.fn('DATE', sequelize.col('data_registro')), 'ASC']],
+                raw: true
+            });
+
+            // 5. Formata para o padrão esperado pelo Gráfico (DD/MM e Number)
+            const dadosFormatados = leituras.map(item => {
+                let dataString = item.data_leitura;
+
+                // Garante que é uma string no formato YYYY-MM-DD
+                // (Caso o driver do MySQL retorne um objeto Date)
+                if (dataString instanceof Date) {
+                    dataString = dataString.toISOString().split('T')[0];
+                }
+
+                // Agora dataString é certeza "2025-12-01"
+                const [ano, mes, dia] = dataString.toString().split('-');
+
+                return {
+                    data: `${dia}/${mes}`, // Retorna "01/12"
+                    consumo: parseFloat(item.total_litros)
+                };
+            });
+
+            return dadosFormatados;
+
+        } catch (error) {
+            console.error('Erro ao buscar consumo semanal:', error);
+            throw error;
+        }
+    }
     static async updateMe(userId, data) {
         try {
             const user = await User.findByPk(userId);
