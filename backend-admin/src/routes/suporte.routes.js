@@ -5,34 +5,44 @@ export default async function suporteRoutes(fastify) {
 
     fastify.get('/',
         {
+            preHandler: autenticarAdmin,
             schema: {
-                summary: 'Listando todas as mensagens de clientes para a administração',
+                summary: 'Listando todas as mensagens enviadas ao suporte',
                 tags: ['suporte'],
-                description: 'Listando todas as mensagens'
+                description: 'Lista todas as mensagens enviadas por usuários ou admins'
             }
         }, SuporteController.getAll);
 
+
     fastify.post('/',
         {
+            preHandler: autenticarAdmin,
             schema: {
-                summary: 'Respondendo mensagem de cliente',
+                summary: 'Enviar mensagem (admin)',
                 tags: ['suporte'],
-                description: 'Enviando mensagem para o cliente'
+                description: 'Admin envia mensagem para usuários, síndicos ou administrativos'
             }
         }, SuporteController.enviarMensagem);
 
-    fastify.delete('/:id', { preHandler: autenticarAdmin }, SuporteController.deletarMensagem);
 
-
-    fastify.patch(
-        '/:id/visualizado',
+    fastify.post('/responder',
         {
+            preHandler: autenticarAdmin,
             schema: {
-                summary: 'Marcar mensagem como visualizada',
+                summary: 'Responder mensagem (admin)',
                 tags: ['suporte'],
-                description: 'Marca a mensagem como visualizada pelo usuário'
+                description: 'Admin responde uma mensagem enviada por um usuário'
             }
-        },
-        SuporteController.marcarComoVisualizada
-    );
+        }, SuporteController.responderMensagem);
+
+
+    fastify.delete('/:id',
+        {
+            preHandler: autenticarAdmin,
+            schema: {
+                summary: 'Deletar mensagem (admin)',
+                tags: ['suporte'],
+                description: 'Admin deleta uma mensagem'
+            }
+        }, SuporteController.deletarMensagem);
 }
