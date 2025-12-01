@@ -8,12 +8,12 @@ import fastifyFormbody from '@fastify/formbody'
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import userRoutes from './routes/user.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import moradoresRoutes from './routes/moradores.routes.js';
 import comunicadosRoutes from './routes/comunicados.routes.js';
 import relatorioRoutes from './routes/relatorios.routes.js';
+import suporteRoutes from './routes/suporte.routes.js';
 
 if (!fs.existsSync('./logs')) fs.mkdirSync('./logs')
 
@@ -97,11 +97,11 @@ fastify.get('/api', {
 })
 
 // routes
-await fastify.register(userRoutes, { prefix: '/api/users' })
 await fastify.register(dashboardRoutes, { prefix: '/api/dashboard' })
 await fastify.register(authRoutes, { prefix: '/api/auth' })
 await fastify.register(moradoresRoutes, { prefix: '/api/moradores' })
 await fastify.register(comunicadosRoutes, { prefix: '/api/comunicados' })
 await fastify.register(relatorioRoutes, { prefix: '/api/relatorios' })
+await fastify.register(suporteRoutes, { prefix: '/api/suporte' })
 
 export default fastify;
