@@ -40,10 +40,10 @@ export default class RelatorioController {
     }
 
     static async getUsuariosStatusSemana(req, reply) {
-        const sindicoId = req.user.id; // do middleware de autenticação
+        const sindicoId = req.user.id; 
         const hoje = new Date();
         const inicioSemana = new Date(hoje);
-        inicioSemana.setDate(hoje.getDate() - hoje.getDay() + 1); // Ajusta para segunda-feira
+        inicioSemana.setDate(hoje.getDate() - hoje.getDay() + 1); 
 
         const statusSemana = await UserStatusService.getUsuariosStatusPorSemana(
             sindicoId,
