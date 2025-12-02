@@ -15,7 +15,7 @@ export default class GetCondominioInfo {
           "estado",
           "cep",
           "codigo_acesso",
-          "sindico_id",
+    
         ]
       });
 

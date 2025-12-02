@@ -57,12 +57,6 @@ export default function CardCondominioInfo() {
         />
 
         <InfoItem
-          icon={<UserSquare2 className="w-5 h-5 text-primary mt-1" />}
-          label="Síndico Responsável"
-          value={condominio.sindico_id}
-        />
-
-        <InfoItem
           icon={<Hash className="w-5 h-5 text-primary mt-1" />}
           label="Código de Acesso"
           value={condominio.codigo_acesso}
@@ -95,9 +89,8 @@ function InfoItem({ icon, label, value, bold = false, chip = false, color }) {
             </span>
           ) : (
             <p
-              className={`text-base leading-snug ${
-                bold ? "font-bold" : "font-medium"
-              } ${color ? color : ""}`}
+              className={`text-base leading-snug ${bold ? "font-bold" : "font-medium"
+                } ${color ? color : ""}`}
             >
               {value}
             </p>

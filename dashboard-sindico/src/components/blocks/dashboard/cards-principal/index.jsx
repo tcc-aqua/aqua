@@ -45,12 +45,7 @@ export default function CardsPrincipal() {
       icon: Cpu,
       iconColor: "text-green-500",
     },
-    {
-      title: "Usuários Registrados",
-      value: info.usuariosRegistrados ?? 3,
-      icon: Users,
-      iconColor: "text-purple-500",
-    },
+
     {
         title: "Consumo Total",
         value: `${info.consumoTotal ?? 0} L`,
@@ -60,7 +55,7 @@ export default function CardsPrincipal() {
   ];
 
   return (
-    <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+    <section className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
       {cardsData.map((card) => {
         const Icon = card.icon;
 
