@@ -6,17 +6,16 @@ import { Op } from "sequelize";
 export default class marcarComunicadoLidoService {
     static async updateStatusLido(comunicado_id, user_id, lido) {
         try {
-            const [comunicadoLido, created] = await ComunicadosLidos.upsert({
+            const [comunicadoLido] = await ComunicadosLidos.upsert({ 
                 comunicado_id,
                 user_id,
                 lido
-            });
-
-            return [comunicadoLido, created];
+            }, { returning: true }); 
+            return comunicadoLido; 
 
         } catch (error) {
-            console.error("Erro ao marcar status do comunicado:", error);
-            throw new Error("Falha ao atualizar o status de leitura do comunicado.");
+            console.error("Erro ao marcar status do comunicado (Detalhes do BD):", error);
+            throw new Error("Falha ao atualizar o status de leitura do comunicado."); 
         }
     }
 
@@ -28,14 +27,32 @@ export default class marcarComunicadoLidoService {
             });
 
             const condominio_id = condominio ? condominio.id : null;
+
             const whereComunicadosVisiveis = {
+                // EXCLUSÃO: O síndico não pode ter criado o comunicado
+                sindico_id: { [Op.ne]: user_id }, 
+                
                 [Op.or]: [
-                    { addressee: { [Op.in]: ['usuários', 'sindicos'] }, condominio_id: null },
-                    { condominio_id },
-                    { sindico_id: user_id }
-                ],
-                [Op.not]: { sindico_id: user_id }
+                    // A) Comunicados GLOBAIS destinados a SÍNDICOS (Condomínio ID é nulo)
+                    { 
+                        addressee: 'sindicos', 
+                        condominio_id: null 
+                    },
+                    
+                    // B) TODOS os comunicados associados ao SEU Condomínio ID, de qualquer destinatário
+                    ...(condominio_id ? [{ condominio_id }] : []),
+                ]
             };
+            
+            // Caso o síndico não esteja associado a um condomínio, remove o filtro B
+            if (!condominio_id) {
+                 whereComunicadosVisiveis[Op.or] = [
+                    { 
+                        addressee: 'sindicos', 
+                        condominio_id: null 
+                    }
+                 ];
+            }
 
             const comunicadosVisiveis = await Comunicados.findAll({
                 where: whereComunicadosVisiveis,
@@ -43,6 +60,8 @@ export default class marcarComunicadoLidoService {
             });
 
             const comunicadosVisiveisIds = comunicadosVisiveis.map(c => c.id);
+            const totalVisivel = comunicadosVisiveisIds.length;
+            if (totalVisivel === 0) return 0;
             const comunicadosLidosCount = await ComunicadosLidos.count({
                 where: {
                     user_id: user_id,
@@ -51,14 +70,13 @@ export default class marcarComunicadoLidoService {
                 }
             });
 
-            const totalVisivel = comunicadosVisiveisIds.length;
             const naoLidos = totalVisivel - comunicadosLidosCount;
 
             return naoLidos;
 
         } catch (error) {
             console.error("Erro ao contar comunicados não lidos:", error);
-            throw new Error("Falha ao obter a contagem de comunicados não lidos.");
+            throw error; 
         }
     }
 }

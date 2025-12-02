@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Trash, Plus, Bell, BellOff, Clock, Shield, Eye, EyeOff, User, Loader2, Mail } from "lucide-react";
+import { Pencil, Trash, Plus, Bell, Clock, User, Loader2, Mail } from "lucide-react";
 import {
     Dialog,
     DialogTrigger,
@@ -45,7 +45,7 @@ import { toast } from "sonner";
 import AnimationWrapper from "../../../layout/Animation/Animation";
 import { PaginationDemo } from "@/components/pagination";
 
-const CURRENT_USER_ID = 1;
+const CURRENT_USER_ID = "e0420793-fe3a-4941-82d6-c454f5a2ccaa"; // ID DE SÍNDICO DE EXEMPLO
 
 export default function ComunicadosDashboard() {
     const [open, setOpen] = useState(false);
@@ -55,8 +55,6 @@ export default function ComunicadosDashboard() {
 
     const [totalComunicados, setTotalComunicados] = useState(0);
     const [myTotalComunicados, setMyTotalComunicados] = useState(0);
-    const [totalNaoLidos, setTotalNaoLidos] = useState(0);
-    // NOVO ESTADO: Contagem de comunicados Admin -> Síndicos
     const [totalAdminParaSindicos, setTotalAdminParaSindicos] = useState(0); 
 
     const [novoComunicado, setNovoComunicado] = useState({
@@ -64,8 +62,6 @@ export default function ComunicadosDashboard() {
         subject: "",
         addressee: "usuários",
     });
-
-    // --- FUNÇÕES DE CARREGAMENTO ---
 
     const loadTotalComunicados = useCallback(async () => {
         try {
@@ -89,23 +85,8 @@ export default function ComunicadosDashboard() {
         }
     }, []);
 
-    const loadTotalNaoLidos = useCallback(async () => {
-        try {
-            const { total } = await api.get('/comunicados/nao-lidos-count');
-            if (typeof total === 'number') {
-                setTotalNaoLidos(total);
-            }
-        } catch (error) {
-            console.error("Erro ao carregar o total de comunicados não lidos:", error);
-        }
-    }, []);
-    
-    /**
-     * NOVO: Carrega a contagem precisa de comunicados de Admin para Síndicos.
-     */
     const loadTotalAdminParaSindicos = useCallback(async () => {
         try {
-            // Rota implementada no service/controller
             const { total } = await api.get('/comunicados/admin-para-sindicos-count'); 
             if (typeof total === 'number') {
                 setTotalAdminParaSindicos(total);
@@ -132,7 +113,7 @@ export default function ComunicadosDashboard() {
                     autorId: c.sindico_id,
                     autorNome: c.sindico_id === CURRENT_USER_ID ? "Síndico (Você)" : "Administração",
                     dataCricao: c.criado_em,
-                    status: c.ComunicadosLidos && c.ComunicadosLidos.lido ? "lido" : "nao_lido",
+                    // REMOÇÃO DA PROPRIEDADE 'status' RELACIONADA À LEITURA
                 }));
 
                 setComunicados(mappedComunicados);
@@ -152,12 +133,12 @@ export default function ComunicadosDashboard() {
         loadComunicados();
         loadTotalComunicados();
         loadMyTotalComunicados();
-        loadTotalNaoLidos(); 
-        loadTotalAdminParaSindicos(); // NOVO: Chama o carregamento da contagem Admin -> Síndicos
-    }, [loadComunicados, loadTotalComunicados, loadMyTotalComunicados, loadTotalNaoLidos, loadTotalAdminParaSindicos]);
+        // REMOÇÃO DE loadTotalNaoLidos
+        loadTotalAdminParaSindicos();
+    }, [loadComunicados, loadTotalComunicados, loadMyTotalComunicados, loadTotalAdminParaSindicos]);
 
 
-    // --- FUNÇÕES DE AÇÃO (CRUD/Status) ---
+    // --- FUNÇÕES DE AÇÃO (CRUD) ---
 
     const handleCriarComunicado = async () => {
         if (!novoComunicado.title || !novoComunicado.subject) {
@@ -170,12 +151,7 @@ export default function ComunicadosDashboard() {
             subject: novoComunicado.subject,
             addressee: novoComunicado.addressee,
         };
-
-        if (comunicadoParaCriar.addressee !== 'usuários') {
-            toast.warning("Como síndico, você só pode criar comunicados para 'usuários' do seu condomínio.");
-            return;
-        }
-
+        
         const toastId = toast.loading("Criando comunicado...");
 
         try {
@@ -198,36 +174,7 @@ export default function ComunicadosDashboard() {
         }
     };
     
-    const handleUpdateLidoStatus = async (id, lido) => {
-        const novoStatus = lido ? "lido" : "nao_lido";
-        const toastId = toast.loading(`Atualizando status para ${novoStatus === 'lido' ? 'lido' : 'não lido'}...`);
-
-        try {
-            const response = await api.put(`/comunicados/${id}/status/lido`, { lido: lido });
-
-            if (response && response.message) {
-                setComunicados(prev =>
-                    prev.map(c =>
-                        c.id === id ? { ...c, status: novoStatus } : c
-                    )
-                );
-                
-                await loadTotalNaoLidos();
-                
-                toast.success(`Comunicado marcado como ${novoStatus === 'lido' ? 'lido' : 'não lido'}!`);
-            } else {
-                throw new Error("Falha na resposta da API ao atualizar status de leitura.");
-            }
-        } catch (error) {
-            toast.error(error.message || "Falha ao atualizar status de leitura.");
-        } finally {
-            toast.dismiss(toastId);
-        }
-    };
-
-    const handleMarcarLido = (id) => handleUpdateLidoStatus(id, true);
-    const handleMarcarNaoLido = (id) => handleUpdateLidoStatus(id, false);
-
+    // REMOÇÃO DE handleUpdateLidoStatus, handleMarcarLido E handleMarcarNaoLido
 
     const handleDeletar = async (id, titulo) => {
         const toastId = toast.loading(`Deletando comunicado "${titulo}"...`);
@@ -237,10 +184,10 @@ export default function ComunicadosDashboard() {
 
             if (response && !response.error) {
                 setComunicados(prev => prev.filter(c => c.id !== id));
-                await loadComunicados(); // Recarrega para obter lista atualizada de comunicaos (no caso de paginação)
+                await loadComunicados();
                 await loadTotalComunicados();
                 await loadMyTotalComunicados();
-                await loadTotalNaoLidos(); 
+                // REMOÇÃO DE loadTotalNaoLidos
                 toast.success(`Comunicado "${titulo}" deletado!`);
             } else {
                 throw new Error(response.message || "Falha na resposta da API ao deletar.");
@@ -262,13 +209,7 @@ export default function ComunicadosDashboard() {
             iconColor: "text-blue-500",
             porcentagem: "Visão Geral",
         },
-        {
-            title: "Não Lidos",
-            value: totalNaoLidos, 
-            icon: BellOff,
-            iconColor: "text-red-500",
-            subTitle1: totalNaoLidos > 0 ? `${totalNaoLidos} pendentes` : "Nenhum pendente",
-        },
+        // REMOÇÃO DO CARD "NÃO LIDOS"
         {
             title: "Meus Comunicados",
             value: myTotalComunicados,
@@ -277,7 +218,6 @@ export default function ComunicadosDashboard() {
             subTitle2: "Criados por mim",
         },
         {
-            // NOVO CARD: Usando o contador preciso do Admin -> Síndicos
             title: "Admin -> Síndicos",
             value: totalAdminParaSindicos, 
             icon: Mail,
@@ -287,8 +227,7 @@ export default function ComunicadosDashboard() {
     ];
 
     const comunicadosFiltrados = comunicados.filter((c) => {
-        if (filtro === "lidos") return c.status === "lido";
-        if (filtro === "nao_lidos") return c.status === "nao_lido";
+        // REMOÇÃO DOS FILTROS "lidos" e "nao_lidos"
         if (filtro === "administradores") return c.destinatario === "administradores";
         if (filtro === "usuários" || filtro === "sindicos") return c.destinatario === filtro;
         if (filtro === "meus") return c.autorId === CURRENT_USER_ID;
@@ -337,10 +276,7 @@ export default function ComunicadosDashboard() {
                                 <CardContent className="flex flex-row items-center justify-between -mt-1">
                                     <div className="flex flex-col">
                                         <p className="font-bold text-3xl text-foreground">{card.value}</p>
-
-                                        {card.subTitle1 && (
-                                            <p className="text-red-500 text-sm mt-1">{card.subTitle1}</p>
-                                        )}
+                                        
                                         {card.porcentagem && (
                                             <p className="text-blue-500 text-sm mt-1">{card.porcentagem}</p>
                                         )}
@@ -405,19 +341,19 @@ export default function ComunicadosDashboard() {
                                     onValueChange={(v) =>
                                         setNovoComunicado({ ...novoComunicado, addressee: v })
                                     }
-                                    disabled={true}
+                                    disabled={false}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Selecione" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="usuários">Usuários (Padrão Condomínio)</SelectItem>
-                                        <SelectItem value="sindicos" disabled>Síndicos</SelectItem>
-                                        <SelectItem value="administradores" disabled>Administradores</SelectItem>
+                                        <SelectItem value="usuários">Usuários do Condomínio</SelectItem>
+                                        <SelectItem value="administradores">Administradores</SelectItem>
+                                        <SelectItem value="sindicos" disabled>Síndicos (Global)</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    *Como síndico, seu comunicado é direcionado automaticamente para os usuários do seu condomínio.
+                                    Selecione o grupo que deve receber este comunicado.
                                 </p>
                             </div>
                         </div>
@@ -432,8 +368,7 @@ export default function ComunicadosDashboard() {
             <Tabs value={filtro} onValueChange={setFiltro}>
                 <TabsList className="flex flex-wrap">
                     <TabsTrigger value="todos">Todos</TabsTrigger>
-                    <TabsTrigger value="nao_lidos">Não Lidos ({totalNaoLidos})</TabsTrigger>
-                    <TabsTrigger value="lidos">Lidos</TabsTrigger>
+                    {/* REMOÇÃO DOS FILTROS LIDOS/NÃO LIDOS */}
                     <TabsTrigger value="meus">Meus Comunicados</TabsTrigger>
                 </TabsList>
             </Tabs>
@@ -456,23 +391,18 @@ export default function ComunicadosDashboard() {
                         <CardContent className="divide-y p-0">
                             {comunicadosFiltrados.map((c) => {
                                 const isCriador = c.autorId === CURRENT_USER_ID;
-                                const isLido = c.status === "lido";
-
+                                
                                 return (
                                     <div
                                         key={c.id}
-                                        className={`flex items-start py-4 px-6 gap-4 transition-colors ${!isLido ? 'bg-secondary/10 hover:bg-secondary/20' : 'hover:bg-muted/50'}`}
+                                        className={`flex items-start py-4 px-6 gap-4 transition-colors hover:bg-muted/50`}
                                     >
-                                        <div className={`w-10 h-10 flex items-center justify-center rounded-full flex-shrink-0 ${isLido ? 'bg-green-500/10' : 'bg-sky-500/10'}`}>
-                                            {isLido ? (
-                                                <EyeOff className="w-5 h-5 text-green-600" />
-                                            ) : (
-                                                <Bell className="w-5 h-5 text-sky-600" />
-                                            )}
+                                        <div className={`w-10 h-10 flex items-center justify-center rounded-full flex-shrink-0 bg-sky-500/10`}>
+                                            <Bell className="w-5 h-5 text-sky-600" />
                                         </div>
 
                                         <div className="flex-1 min-w-0 space-y-1">
-                                            <p className={`font-bold truncate ${!isLido ? 'text-foreground' : 'text-muted-foreground'}`}>{c.titulo}</p>
+                                            <p className={`font-bold truncate text-foreground`}>{c.titulo}</p>
                                             <p className="text-sm text-muted-foreground line-clamp-2">{c.assunto}</p>
 
                                             <div className="flex items-center text-xs text-muted-foreground/80 pt-1 gap-4">
@@ -481,7 +411,7 @@ export default function ComunicadosDashboard() {
                                                     Criado por: <span className="font-semibold text-foreground/70">{c.autorNome}</span>
                                                 </span>
                                                 <span className="flex items-center gap-1">
-                                                    <Eye size={12} />
+                                                    <User size={12} />
                                                     Destino: <span className="font-semibold text-foreground/70">
                                                         {getDestinatarioLabel(c.destinatario)}
                                                     </span>
@@ -495,32 +425,7 @@ export default function ComunicadosDashboard() {
 
                                         <div className="flex gap-2 ml-auto flex-shrink-0">
 
-                                            {/* BOTÃO DE MARCAR LIDO/NÃO LIDO */}
-                                            {!isCriador && (
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button size="icon" variant="ghost" className={isLido ? "text-green-600 hover:bg-green-100" : "text-sky-600 hover:bg-sky-100"}>
-                                                            {isLido ? <EyeOff size={16} /> : <Eye size={16} />}
-                                                        </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>Confirmação de Leitura</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                {isLido ? `Tem certeza que deseja marcar o comunicado "${c.titulo}" como NÃO LIDO?` : `Tem certeza que deseja marcar o comunicado "${c.titulo}" como VISUALIZADO?`}
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                            <AlertDialogAction
-                                                                onClick={() => isLido ? handleMarcarNaoLido(c.id) : handleMarcarLido(c.id)}
-                                                            >
-                                                                {isLido ? "Marcar como Não Lido" : "Marcar como Visualizado"}
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
-                                            )}
+                                            {/* REMOÇÃO DO BOTÃO DE MARCAR LIDO/NÃO LIDO */}
 
                                             {/* BOTÕES DE EDIÇÃO E EXCLUSÃO (Apenas para o criador) */}
                                             {isCriador && (

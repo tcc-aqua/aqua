@@ -18,7 +18,7 @@ ComunicadosLidos.init({
         onDelete: "CASCADE",
         onUpdate: "CASCADE"
     },
-    comunicado_id: {
+    comunicado_id: { 
         type: DataTypes.INTEGER,
         allowNull: false,
         references: { model: Comunicados, key: "id" },

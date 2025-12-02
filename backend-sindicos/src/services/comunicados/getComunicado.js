@@ -18,17 +18,30 @@ export default class getComunicadosService {
         order: [['criado_em', 'DESC']],
         where: {
           [Op.or]: [
-            // comunicados gerais para todos os usuários
-            { addressee: 'usuários', condominio_id: null },
-            // comunicados gerais para todos os síndicos
-            { addressee: 'sindicos', condominio_id: null },
-            // comunicados específicos do condomínio
-            { condominio_id },
-            // comunicados direcionados a esse síndico especificamente
-            { sindico_id }
+            { sindico_id },
+            
+            { 
+              addressee: 'sindicos', 
+              [Op.or]: [
+                { condominio_id: null },
+                { condominio_id }        
+              ]
+            },
+            
+            {
+              addressee: { [Op.notIn]: ['usuários', 'administradores'] }, 
+              condominio_id,
+            }
           ]
         }
       };
+      
+      if (!condominio_id) {
+          options.where[Op.or] = [
+              { sindico_id },
+              { addressee: 'sindicos', condominio_id: null }
+          ];
+      }
 
       return await Comunicados.paginate(options);
 

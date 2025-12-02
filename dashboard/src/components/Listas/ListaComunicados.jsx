@@ -57,6 +57,8 @@ export default function ComunicadosDashboard() {
     naoLidos: comunicados.filter((c) => !c.lido).length,
     usuários: comunicados.filter((c) => c.addressee === "usuários").length,
     administradores: comunicados.filter((c) => c.addressee === "administradores").length,
+    // NOVO: Adiciona contagem para Síndicos
+    sindicos: comunicados.filter((c) => c.addressee === "sindicos").length,
   };
 
   const cardsData = [
@@ -93,13 +95,22 @@ export default function ComunicadosDashboard() {
       subTitle: "Gestão interna",
       borderColor: "border-b-purple-700",
     },
+    // NOVO CARD: Contagem para Síndicos (opcional, mas bom para consistência)
+    {
+      title: "Para Síndicos",
+      value: comunicadoStats.sindicos,
+      icon: Users,
+      iconColor: "text-blue-500",
+      subTitle: "Para colegas síndicos",
+      borderColor: "border-b-blue-500",
+    },
   ];
 
   return (
     <div className="container mx-auto mt-6 space-y-6">
       {/* Cards de estatísticas */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-        {cardsData.map((card, i) => {
+        {cardsData.slice(0, 4).map((card, i) => { // Mantém a visualização de 4 cards
           const Icon = card.icon;
           return (
             <AnimationWrapper key={card.title} delay={i * 0.2}>
@@ -137,6 +148,7 @@ export default function ComunicadosDashboard() {
           <TabsTrigger className="cursor-pointer" value="todos">Todos</TabsTrigger>
           <TabsTrigger className="cursor-pointer" value="administradores">Administradores</TabsTrigger>
           <TabsTrigger className="cursor-pointer" value="usuários">Usuários</TabsTrigger>
+          <TabsTrigger className="cursor-pointer" value="sindicos">Síndicos</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -162,7 +174,7 @@ export default function ComunicadosDashboard() {
                   <p className="text-sm text-muted-foreground truncate">{c.subject}</p>
                 </div>
                 <div className="w-36 text-sm text-center">
-                  {c.addressee === "administradores" ? "Administradores" : "Usuários"}
+                  {c.addressee === "administradores" ? "Administradores" : c.addressee === "usuários" ? "Usuários" : "Síndicos"}
                 </div>
                 <div className="w-40 text-sm text-center">
                   {c.criado_em ? new Date(c.criado_em).toLocaleString("pt-BR") : "-"}
@@ -275,6 +287,8 @@ export default function ComunicadosDashboard() {
                   <SelectContent>
                     <SelectItem value="usuários">Usuários</SelectItem>
                     <SelectItem value="administradores">Administradores</SelectItem>
+                    {/* NOVO: Adiciona a opção Síndicos */}
+                    <SelectItem value="sindicos">Síndicos</SelectItem> 
                   </SelectContent>
                 </Select>
               </div>
@@ -351,6 +365,8 @@ export default function ComunicadosDashboard() {
                   <SelectContent>
                     <SelectItem value="usuários">Usuários</SelectItem>
                     <SelectItem value="administradores">Administradores</SelectItem>
+                    {/* NOVO: Adiciona a opção Síndicos */}
+                    <SelectItem value="sindicos">Síndicos</SelectItem> 
                   </SelectContent>
                 </Select>
               </div>
@@ -380,7 +396,7 @@ export default function ComunicadosDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal Excluir */}
+      {/* Modal Excluir (sem alteração) */}
       <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
         <DialogContent className="sm:rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
           <div className="h-2 w-full rounded-t-md bg-red-600" />
@@ -420,7 +436,7 @@ export default function ComunicadosDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal Marcar como Lido */}
+      {/* Modal Marcar como Lido (sem alteração) */}
       <Dialog open={showLidoModal} onOpenChange={setShowLidoModal}>
         <DialogContent className="sm:max-w- rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
           <div className="h-2 w-full rounded-t-md bg-green-600" />

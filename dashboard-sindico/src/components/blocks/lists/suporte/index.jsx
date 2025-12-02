@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
     Card,
     CardHeader,
@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Trash, Plus, Bell, Eye, EyeOff, Clock, User, MessageSquare } from "lucide-react";
+import { Pencil, Trash, Plus, Bell, Eye, EyeOff, Clock, User, MessageSquare, Loader2, Mailbox, Send } from "lucide-react";
 import {
     Dialog,
     DialogTrigger,
@@ -30,7 +30,6 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -40,78 +39,92 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select";
-
 import { PaginationDemo } from "@/components/pagination";
 
-const CURRENT_USER_ID = 101;
+// IMPORTANTE: Assumindo que você tem uma função fetch autenticada (ex: api)
+import { api } from "@/lib/api"; 
+
+// Este ID deve ser obtido do contexto do usuário logado (geralmente via hook ou estado global)
+// Por enquanto, usaremos um placeholder. O Service usa o ID do usuário logado (remetente_id).
+const CURRENT_USER_ID = "e0420793-fe3a-4941-82d6-c454f5a2ccaa"; // Exemplo do ID do síndico que estava funcionando
 
 export default function Mensagens() {
     const [open, setOpen] = useState(false);
     const [filtro, setFiltro] = useState("todos");
+    const [isLoading, setIsLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
-    const [novoComunicado, setNovoComunicado] = useState({
-        titulo: "",
+    const [mensagens, setMensagens] = useState([]); // Agora armazena as mensagens de Suporte
+    
+    // Placeholder para o modal de nova mensagem (ajustar para enviar para destinatario_id)
+    const [novaMensagem, setNovaMensagem] = useState({
         assunto: "",
-        destinatario: "usuarios",
+        mensagem: "",
+        destinatario_id: "", // ID do destinatário específico
     });
+    
+    // --- FUNÇÃO DE FETCH ---
+    const fetchMensagens = useCallback(async (page = 1, statusFiltro = "todos") => {
+        setIsLoading(true);
+        try {
+            // Constrói os parâmetros de busca
+            let url = `/suporte?page=${page}&limit=10`;
 
-    const [comunicados, setComunicados] = useState([
-        {
-            id: 1,
-            titulo: "Manutenção no Sistema",
-            assunto: "O sistema ficará fora do ar das 02h às 03h para manutenção preventiva.",
-            destinatario: "usuarios",
-            status: "nao_lido",
-            autorId: 101,
-            autorNome: "Síndico A",
-            dataCricao: new Date(Date.now() - 86400000).toISOString(),
-        },
-        {
-            id: 2,
-            titulo: "Reunião Geral",
-            assunto: "Reunião obrigatória para administradores nesta sexta. Revisar orçamento.",
-            destinatario: "administradores",
-            status: "lido",
-            autorId: 102,
-            autorNome: "Administradora B",
-            dataCricao: new Date(Date.now() - 3600000).toISOString(),
-        },
-        {
-            id: 3,
-            titulo: "Troca de Lâmpadas",
-            assunto: "Comunicado sobre a substituição de lâmpadas do hall de entrada.",
-            destinatario: "usuarios",
-            status: "nao_lido",
-            autorId: 101,
-            autorNome: "Síndico A",
-            dataCricao: new Date(Date.now() - 7200000).toISOString(),
-        },
-    ]);
+            // Adicionar filtros de status aqui
+            if (statusFiltro !== "todos" && statusFiltro !== "meus") {
+                 // Adapte esta lógica de filtro se seu backend suportar filtros por query string
+                // Ex: url += `&status=${statusFiltro}`; 
+            }
 
-    const handleMarcarLido = (id) => {
-        setComunicados(prev =>
-            prev.map(c =>
-                c.id === id ? { ...c, status: "lido" } : c
-            )
-        );
-    };
+            const response = await api.get(url); 
+            
+            // O backend retorna { docs: [...], pages: N, total: M }
+            setMensagens(response.docs || []);
+            setTotalPages(response.pages || 1);
+            setCurrentPage(page);
 
-    const handleMarcarNaoLido = (id) => {
-        setComunicados(prev =>
-            prev.map(c =>
-                c.id === id ? { ...c, status: "nao_lido" } : c
-            )
-        );
-    };
+        } catch (error) {
+            console.error("Erro ao buscar mensagens de suporte:", error);
+            // Poderia adicionar uma notificação de erro aqui
+            setMensagens([]);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
 
-    const comunicadosFiltrados = comunicados.filter((c) => {
-        if (filtro === "lidos") return c.status === "lido";
-        if (filtro === "nao_lidos") return c.status === "nao_lido";
-        if (filtro === "administradores") return c.destinatario === "administradores";
-        if (filtro === "usuarios") return c.destinatario === "usuarios";
-        if (filtro === "meus") return c.autorId === CURRENT_USER_ID;
+    useEffect(() => {
+        // Busca os dados na montagem do componente
+        fetchMensagens(1, filtro);
+    }, [fetchMensagens, filtro]); // Refaz a busca ao mudar o filtro (se o filtro for tratado pelo Service/URL)
+
+    // --- Lógica de Filtro Front-end (Adaptada) ---
+    // NOTA: Para grandes volumes, é melhor filtrar no Service (Backend).
+    // Aqui, aplicamos os filtros que não foram passados ao Service.
+    const mensagensFiltradas = mensagens.filter((m) => {
+        if (filtro === "lidos") return m.status === "respondido"; // Mapeando lido para 'respondido'
+        if (filtro === "nao_lidos") return m.status === "pendente"; // Mapeando não lido para 'pendente'
+        if (filtro === "meus") return m.remetente_id === CURRENT_USER_ID; // Mensagens que eu enviei
+        
+        // Os filtros 'usuarios'/'administradores' são complexos aqui sem o relacionamento completo.
+        // Iremos ignorar o filtro de destinatário por enquanto.
         return true;
     });
+
+    // --- Funções de Ação (Placeholder) ---
+    const handleMarcarRespondido = async (id) => {
+        try {
+            // Exemplo de chamada para o endpoint de resposta
+            const respostaDummy = "O síndico marcou como respondida por leitura no sistema.";
+            await api.put(`/suporte/${id}/responder`, { resposta: respostaDummy });
+            // Recarrega a lista após a ação
+            fetchMensagens(currentPage, filtro); 
+        } catch (error) {
+             console.error("Erro ao marcar como respondido:", error);
+        }
+    };
+    
+    // Não implementaremos 'Marcar como Não Lido' no status 'respondido'/'pendente' padrão.
 
     const formatarData = (dataString) => {
         if (!dataString) return "-";
@@ -124,73 +137,67 @@ export default function Mensagens() {
         });
     };
 
+    // Função de renderização para o nome do autor
+    const renderNomeUsuario = (usuarioObj, defaultText = "N/A") => {
+        if (usuarioObj && usuarioObj.name) {
+            return `${usuarioObj.name} (${usuarioObj.residencia_type === 'apartamento' ? 'Ap.' : 'Casa'})`;
+        }
+        return defaultText;
+    };
+    
+    // Renderiza o componente
     return (
         <div className="container mx-auto mt-6 space-y-6">
 
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                    <MessageSquare className="inline-block w-8 h-8 mr-2 text-primary" />
-                    Central de Mensagens
-                </h1>
-
+                {/* O Modal de Criação de Mensagem precisaria ser refeito para buscar destinatários válidos */}
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
                         <Button className="flex gap-2">
                             <Plus size={18} /> Criar Mensagem
                         </Button>
                     </DialogTrigger>
+                    {/* ... (Conteúdo do Dialog omitido para foco no fetch) */}
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Nova Mensagem</DialogTitle>
                             <DialogDescription>
-                                Preencha as informações para criar um novo comunicado.
+                                Envie uma mensagem de suporte para um destinatário específico.
                             </DialogDescription>
                         </DialogHeader>
 
                         <div className="space-y-4 mt-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Título</label>
-                                <Input
-                                    placeholder="Digite o título..."
-                                    value={novoComunicado.titulo}
-                                    onChange={(e) =>
-                                        setNovoComunicado({ ...novoComunicado, titulo: e.target.value })
-                                    }
-                                />
-                            </div>
-
-                            <div className="space-y-2">
                                 <label className="text-sm font-medium">Assunto</label>
-                                <Textarea
+                                <Input
                                     placeholder="Digite o assunto..."
-                                    value={novoComunicado.assunto}
-                                    onChange={(e) =>
-                                        setNovoComunicado({ ...novoComunicado, assunto: e.target.value })
-                                    }
+                                    value={novaMensagem.assunto}
+                                    onChange={(e) => setNovaMensagem({ ...novaMensagem, assunto: e.target.value })}
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Destinatário</label>
-                                <Select
-                                    value={novoComunicado.destinatario}
-                                    onValueChange={(v) =>
-                                        setNovoComunicado({ ...novoComunicado, destinatario: v })
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecione" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="usuarios">Usuários</SelectItem>
-                                        <SelectItem value="administradores">Administradores</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <label className="text-sm font-medium">Conteúdo</label>
+                                <Textarea
+                                    placeholder="Digite o conteúdo da mensagem..."
+                                    value={novaMensagem.mensagem}
+                                    onChange={(e) => setNovaMensagem({ ...novaMensagem, mensagem: e.target.value })}
+                                />
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Destinatário (ID)</label>
+                                <Input
+                                    placeholder="Insira o ID do usuário destinatário..."
+                                    value={novaMensagem.destinatario_id}
+                                    onChange={(e) => setNovaMensagem({ ...novaMensagem, destinatario_id: e.target.value })}
+                                />
+                                <p className="text-xs text-muted-foreground">Em produção, seria um Select com busca.</p>
                             </div>
                         </div>
 
                         <DialogFooter>
-                            <Button onClick={() => setOpen(false)}>Salvar</Button>
+                            <Button onClick={() => console.log('Simulação de Envio de Mensagem')}>Enviar</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -199,105 +206,121 @@ export default function Mensagens() {
             <Tabs value={filtro} onValueChange={setFiltro}>
                 <TabsList className="flex flex-wrap">
                     <TabsTrigger value="todos">Todos</TabsTrigger>
-                    <TabsTrigger value="nao_lidos">Não Lidos</TabsTrigger>
-                    <TabsTrigger value="lidos">Lidos</TabsTrigger>
-                    <TabsTrigger value="meus">Enviados por Mim</TabsTrigger>
-                    <TabsTrigger value="administradores">Para Administradores</TabsTrigger>
-                    <TabsTrigger value="usuarios">Para Usuários</TabsTrigger>
+                    <TabsTrigger value="nao_lidos">Pendentes</TabsTrigger>
+                    <TabsTrigger value="lidos">Respondidas</TabsTrigger>
+                    <TabsTrigger value="meus">Enviadas por Mim</TabsTrigger>
                 </TabsList>
             </Tabs>
 
             <div className="space-y-4">
                 <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle className="text-lg font-bold">Mensagens Recentes</CardTitle>
+                        <CardTitle className="text-lg font-bold">Mensagens de Suporte</CardTitle>
                     </CardHeader>
                     <CardContent className="divide-y p-0">
-                        {comunicadosFiltrados.map((c) => {
-                            const isCriador = c.autorId === CURRENT_USER_ID;
-                            const isLido = c.status === "lido";
+                        {isLoading ? (
+                            <div className="flex justify-center items-center py-8">
+                                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                <span className="ml-2 text-muted-foreground">Carregando mensagens...</span>
+                            </div>
+                        ) : mensagensFiltradas.length === 0 ? (
+                            <div className="p-8 text-center text-muted-foreground">
+                                Nenhuma mensagem encontrada com o filtro atual.
+                            </div>
+                        ) : (
+                            mensagensFiltradas.map((m) => {
+                                // Mapeamento do status e autor
+                                const isEnviadoPorMim = m.remetente_id === CURRENT_USER_ID;
+                                const isRespondido = m.status === "respondido";
+                                const IconeStatus = isRespondido ? EyeOff : Bell;
 
-                            return (
-                                <div
-                                    key={c.id}
-                                    className={`flex items-start py-4 px-6 gap-4 transition-colors ${!isLido ? 'bg-secondary/10 hover:bg-secondary/20' : 'hover:bg-muted/50'}`}
-                                >
-                                    <div className={`w-10 h-10 flex items-center justify-center rounded-full flex-shrink-0 ${isLido ? 'bg-green-500/10' : 'bg-sky-500/10'}`}>
-                                        {isLido ? (
-                                            <Eye className="w-5 h-5 text-green-600" />
-                                        ) : (
-                                            <Bell className="w-5 h-5 text-sky-600" />
-                                        )}
-                                    </div>
+                                return (
+                                    <div
+                                        key={m.id}
+                                        className={`flex items-start py-4 px-6 gap-4 transition-colors ${!isRespondido ? 'bg-secondary/10 hover:bg-secondary/20' : 'hover:bg-muted/50'}`}
+                                    >
+                                        <div className={`w-10 h-10 flex items-center justify-center rounded-full flex-shrink-0 ${isRespondido ? 'bg-green-500/10' : 'bg-sky-500/10'}`}>
+                                            <IconeStatus className={`w-5 h-5 ${isRespondido ? 'text-green-600' : 'text-sky-600'}`} />
+                                        </div>
 
-                                    <div className="flex-1 min-w-0 space-y-1">
-                                        <p className={`font-bold truncate ${!isLido ? 'text-foreground' : 'text-muted-foreground'}`}>{c.titulo}</p>
-                                        <p className="text-sm text-muted-foreground line-clamp-2">{c.assunto}</p>
+                                        <div className="flex-1 min-w-0 space-y-1">
+                                            <p className={`font-bold truncate ${!isRespondido ? 'text-foreground' : 'text-muted-foreground'}`}>{m.assunto}</p>
+                                            <p className="text-sm text-muted-foreground line-clamp-2">{m.mensagem}</p>
+                                            {m.resposta && (
+                                                <blockquote className="border-l-4 border-gray-300 pl-3 text-sm italic text-gray-500 mt-2">
+                                                    Resposta: {m.resposta.substring(0, 80)}...
+                                                </blockquote>
+                                            )}
 
-                                        <div className="flex flex-wrap items-center text-xs text-muted-foreground/80 pt-1 gap-x-4 gap-y-1">
-                                            <span className="flex items-center gap-1">
-                                                <User size={12} />
-                                                Enviado por: <span className="font-semibold text-foreground/70">{c.autorNome}</span>
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <Eye size={12} />
-                                                Destino: <span className="font-semibold text-foreground/70">
-                                                    {c.destinatario === "administradores" ? "Administradores" : "Usuários"}
+                                            <div className="flex flex-wrap items-center text-xs text-muted-foreground/80 pt-1 gap-x-4 gap-y-1">
+                                                <span className="flex items-center gap-1">
+                                                    <Send size={12} />
+                                                    De: <span className="font-semibold text-foreground/70">{renderNomeUsuario(m.Remetente, m.remetente_id)}</span>
                                                 </span>
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <Clock size={12} />
-                                                Data: <span className="font-semibold text-foreground/70">{formatarData(c.dataCricao)}</span>
-                                            </span>
+                                                <span className="flex items-center gap-1">
+                                                    <Mailbox size={12} />
+                                                    Para: <span className="font-semibold text-foreground/70">{renderNomeUsuario(m.Destinatario, m.destinatario_id)}</span>
+                                                </span>
+                                                <span className="flex items-center gap-1">
+                                                    <Clock size={12} />
+                                                    Data: <span className="font-semibold text-foreground/70">{formatarData(m.criado_em)}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-2 ml-auto flex-shrink-0">
+                                            {/* Botão de Marcar como Respondido / Responder */}
+                                            {!isRespondido && (
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button size="icon" variant="ghost" className="text-blue-600 hover:text-blue-700">
+                                                            <MessageSquare size={16} />
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Responder Mensagem</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Você pode registrar a resposta aqui ou usar este botão para marcar como respondida.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleMarcarRespondido(m.id)}>
+                                                                Marcar como Respondida
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            )}
+
+                                            {/* Botão de Editar (Apenas para o criador e se não foi respondido) */}
+                                            {isEnviadoPorMim && !isRespondido && (
+                                                <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-primary">
+                                                    <Pencil size={16} />
+                                                </Button>
+                                            )}
+                                            {/* Botão de Deletar (Se for o criador) */}
+                                            {isEnviadoPorMim && (
+                                                <Button size="icon" variant="ghost" className="text-red-600 hover:bg-red-500/10">
+                                                    <Trash size={16} />
+                                                </Button>
+                                            )}
+
                                         </div>
                                     </div>
-
-                                    <div className="flex gap-2 ml-auto flex-shrink-0">
-                                        
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button size="icon" variant="ghost" className={isLido ? "text-green-600 hover:text-green-700" : "text-sky-600 hover:text-sky-700"}>
-                                                    {isLido ? <EyeOff size={16} /> : <Eye size={16} />}
-                                                </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Confirmação de Status</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        {isLido ? `Tem certeza que deseja marcar a mensagem "${c.titulo}" como NÃO LIDA?` : `Tem certeza que deseja marcar a mensagem "${c.titulo}" como VISUALIZADA?`}
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => isLido ? handleMarcarNaoLido(c.id) : handleMarcarLido(c.id)}>
-                                                        {isLido ? "Marcar como Não Lido" : "Marcar como Visualizada"}
-                                                    </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
-
-
-                                        {isCriador && (
-                                            <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-primary">
-                                                <Pencil size={16} />
-                                            </Button>
-                                        )}
-
-                                        {isCriador && (
-                                            <Button size="icon" variant="ghost" className="text-red-600 hover:bg-red-500/10">
-                                                <Trash size={16} />
-                                            </Button>
-                                        )}
-
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })
+                        )}
                     </CardContent>
-                    <PaginationDemo />
+                    <PaginationDemo 
+                        currentPage={currentPage} 
+                        totalPages={totalPages} 
+                        onPageChange={(page) => fetchMensagens(page, filtro)}
+                    />
                 </Card>
             </div>
 
         </div>
     );
-}   
+}
