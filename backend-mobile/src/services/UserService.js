@@ -7,12 +7,6 @@ import Apartamento from '../models/Apartamento.js';
 import GamificationService from './GamificationService.js';
 import sequelize from '../config/sequelize.js';
 import GamificationLog from '../models/GamificationLog.js';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const PRECO_POR_LITRO = 0.015;
 
@@ -108,27 +102,15 @@ export default class UserService {
             const user = await User.findByPk(userId);
             if (!user) throw new Error('Usuário não encontrado');
 
-            const uploadDir = path.resolve(__dirname, '..', '..', 'uploads');
-
-            console.log('------------------------------------------------');
-            console.log('💾 SALVANDO IMAGEM EM:', uploadDir);
-            console.log('------------------------------------------------');
-
-            if (!fs.existsSync(uploadDir)) {
-                fs.mkdirSync(uploadDir, { recursive: true });
-            }
-
-            const fileName = `user-${userId}-${Date.now()}-${file.filename.replace(/\s/g, '')}`;
-            const filePath = path.join(uploadDir, fileName);
-
             const buffer = await file.toBuffer();
-            await fs.promises.writeFile(filePath, buffer);
+            const mimetype = file.mimetype;
+            
+            const base64Image = `data:${mimetype};base64,${buffer.toString('base64')}`;
 
-            const fileUrl = `/api/uploads/${fileName}`;
-            user.img_url = fileUrl;
+            user.img_url = base64Image;
             await user.save();
 
-            return fileUrl;
+            return base64Image;
         } catch (error) {
             console.error('Erro ao salvar foto de perfil do usuário', error);
             throw new Error('Erro interno ao processar a imagem.');

@@ -17,53 +17,44 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-// ATENÇÃO: Se estiver no emulador Android use 'http://10.0.2.2:3334'
-// Se for dispositivo físico, use o IP da máquina.
 const API_BASE_URL = 'http://localhost:3334/api';
 
-const Header = () => {
+const Header = ({ user }) => { // Recebe user via prop
   const [notificationsVisible, setNotificationsVisible] = useState(false);
-  const [userInfo, setUserInfo] = useState(null);
+  const [userInfo, setUserInfo] = useState(user);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [scaleAnim] = useState(new Animated.Value(1));
 
-  const loadData = useCallback(async () => {
+  // Atualiza o estado local sempre que a prop user mudar (ex: upload de foto)
+  useEffect(() => {
+    if (user) {
+      setUserInfo(user);
+    }
+  }, [user]);
+
+  const loadNotifications = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) return;
 
       const headers = { Authorization: `Bearer ${token}` };
-
-      // Carregar Perfil
-      const profileReq = axios.get(`${API_BASE_URL}/profile`, { headers });
-      // Carregar Comunicados (Notificações)
-      const notifReq = axios.get(`${API_BASE_URL}/comunicados`, { headers });
-
-      const [profileRes, notifRes] = await Promise.all([profileReq, notifReq]);
-
-      setUserInfo(profileRes.data);
+      const notifRes = await axios.get(`${API_BASE_URL}/comunicados`, { headers });
       
       const allNotifs = notifRes.data;
       setNotifications(allNotifs);
       setUnreadCount(allNotifs.filter(n => !n.lido).length);
 
     } catch (error) {
-      console.error("Erro header:", error);
-    } finally {
-      setIsLoading(false);
+      console.error("Erro notifications:", error);
     }
   }, []);
 
-  // CORREÇÃO: Usamos useEffect padrão em vez de useFocusEffect
   useEffect(() => {
-    loadData();
-    
-    // Opcional: Atualizar a cada 30 segundos para checar novas notificações
-    const interval = setInterval(loadData, 30000);
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 30000);
     return () => clearInterval(interval);
-  }, [loadData]);
+  }, [loadNotifications]);
 
   const getFormattedLocation = () => {
     if (!userInfo) return "";
@@ -81,7 +72,6 @@ const Header = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Atualiza localmente
       const updatedList = notifications.map(n => 
         n.id === item.id ? { ...n, lido: true } : n
       );
@@ -96,8 +86,7 @@ const Header = () => {
   const toggleNotifications = () => {
     setNotificationsVisible(prev => !prev);
     if (!notificationsVisible) {
-        // Recarregar dados ao abrir o modal para garantir frescor
-        loadData();
+        loadNotifications();
         Animated.spring(scaleAnim, {
             toValue: 0.95,
             useNativeDriver: true,
@@ -131,13 +120,13 @@ const Header = () => {
     </TouchableOpacity>
   );
 
-  const userImage = userInfo?.img_url 
-    ? { uri: userInfo.img_url.startsWith('http') ? userInfo.img_url : `${API_BASE_URL.replace('/api', '')}${userInfo.img_url}` } 
+  // Usa a prop img_url (tabela) ou user_img_url (view)
+  const imageUrl = userInfo?.img_url || userInfo?.user_img_url;
+  
+  // Se tiver imagem (agora é base64), usa ela. Se não, logo.
+  const userImageSource = imageUrl 
+    ? { uri: imageUrl } 
     : require('../assets/logo.png');
-
-  if (isLoading) {
-    return <View style={styles.loadingContainer}><ActivityIndicator color="#0A84FF" /></View>;
-  }
 
   return (
     <>
@@ -146,10 +135,10 @@ const Header = () => {
             
             <View style={styles.profileSection}>
                 <View style={styles.imageBorder}>
-                    <Image source={userImage} style={styles.profileImage} />
+                    <Image source={userImageSource} style={styles.profileImage} />
                 </View>
                 <View style={styles.textContainer}>
-                    <Text style={styles.greeting}>Olá, {userInfo?.user_name?.split(' ')[0] || 'Usuário'}</Text>
+                    <Text style={styles.greeting}>Olá, {userInfo?.user_name?.split(' ')[0] || userInfo?.name?.split(' ')[0] || 'Usuário'}</Text>
                     <View style={styles.locationContainer}>
                         <Ionicons name="location-sharp" size={12} color="#0A84FF" style={{marginRight: 2}} />
                         <Text style={styles.location}>{getFormattedLocation()}</Text>
@@ -228,11 +217,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F2F2F7',
   },
-  loadingContainer: {
-    height: 80, 
-    justifyContent: 'center', 
-    backgroundColor:'#fff'
-  },
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -241,7 +225,7 @@ const styles = StyleSheet.create({
     padding: 2,
     borderRadius: 22,
     borderWidth: 2,
-    borderColor: '#E3F2FD', // Azul bem claro
+    borderColor: '#E3F2FD',
   },
   profileImage: {
     width: 36,
@@ -295,7 +279,6 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: 'bold',
   },
-  // Modal Styles
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
@@ -346,7 +329,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   unreadCard: {
-    backgroundColor: '#F0F9FF', // Azul muito leve para não lidos
+    backgroundColor: '#F0F9FF',
   },
   iconContainer: {
     width: 36,

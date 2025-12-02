@@ -33,7 +33,7 @@ User.init({
         allowNull: false
     },
     img_url: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT('long'),
         allowNull: true
     },
     type: {

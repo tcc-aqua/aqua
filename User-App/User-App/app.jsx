@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, StatusBar } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 import Login from './screens/Login'; 
 import Header from './components/Header';
@@ -11,6 +12,9 @@ import Metas from './screens/Metas';
 import Relatorios from './screens/Relatorios';
 import Perfil from './screens/Perfil';
 import LoadingScreen from './screens/Loading';
+
+// Ajuste o IP conforme necessário
+const API_URL = 'http://localhost:3334/api';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -29,6 +33,8 @@ export default function App() {
         setUserData(JSON.parse(userString));
         setIsLoggedIn(true);
         setActiveScreen('Inicio');
+        // Atualiza dados frescos do servidor ao abrir
+        handleUpdateUser(); 
       } else {
         await AsyncStorage.multiRemove(['token', 'user']);
         setIsLoggedIn(false);
@@ -66,12 +72,32 @@ export default function App() {
     }
   };
 
+  // Função para forçar a atualização dos dados do usuário globalmente
+  const handleUpdateUser = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return;
+
+      const response = await axios.get(`${API_URL}/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data) {
+        setUserData(response.data);
+        await AsyncStorage.setItem('user', JSON.stringify(response.data));
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar usuário no App.jsx:", error);
+    }
+  };
+
   const renderActiveScreen = () => {
     switch (activeScreen) {
       case 'Inicio': return <Inicio />;
       case 'Metas': return <Metas />;
       case 'Relatorios': return <Relatorios />;
-      case 'Perfil': return <Perfil onLogout={handleLogout} />;
+      case 'Perfil': 
+        return <Perfil onLogout={handleLogout} onUpdateUser={handleUpdateUser} />;
       default: return <Inicio />;
     }
   };
@@ -86,6 +112,7 @@ export default function App() {
       <SafeAreaView style={styles.container}>
         {isLoggedIn && userData ? (
           <>
+            {/* O Header recebe o userData atualizado automaticamente */}
             <Header user={userData} />
             <View style={styles.contentArea}>
               {renderActiveScreen()}

@@ -2,22 +2,22 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, ActivityIndicator, Alert, Linking, TouchableOpacity, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import {
   Button,
-  useTheme,
-  Snackbar,
   Title,
-  Paragraph,
   Card,
   Avatar,
   Provider as PaperProvider,
   DefaultTheme,
   TextInput,
   IconButton,
-  HelperText
+  HelperText,
+  Switch,
+  Text
 } from 'react-native-paper';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProfileHeader from '../components/Perfil/ProfileHeader';
-import { MaskedTextInput, mask } from 'react-native-mask-text';
+import { MaskedTextInput } from 'react-native-mask-text';
+import { MotiView } from 'moti';
 
 const API_URL = 'http://localhost:3334/api';
 
@@ -33,16 +33,14 @@ const blueTheme = {
     placeholder: '#8A8A8E',
     onSurface: '#1C1C1E',
     error: '#FF3B30',
-    elevation: {
-      level2: '#FFFFFF'
-    }
   },
 };
 
-const ProfileScreen = ({ onLogout }) => {
+const ProfileScreen = ({ onLogout, onUpdateUser }) => { // Recebe onUpdateUser
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -52,14 +50,12 @@ const ProfileScreen = ({ onLogout }) => {
     name: '',
     email: '',
     cpf: '',
-    // Endereço
     cep: '',
     logradouro: '',
     numero: '',
     bairro: '',
     cidade: '',
     uf: '',
-    // Senhas
     currentPassword: '',
     password: '',
     confirmPassword: ''
@@ -89,15 +85,12 @@ const ProfileScreen = ({ onLogout }) => {
             name: data.user_name || data.name || '',
             email: data.user_email || data.email || '',
             cpf: data.cpf || '',
-            
-            // Mapeando dados de endereço (ajuste conforme seu retorno do backend)
             cep: data.cep || '',
             logradouro: data.logradouro || '',
             numero: data.numero || '',
             bairro: data.bairro || '',
             cidade: data.cidade || '',
             uf: data.uf || '',
-
             currentPassword: '',
             password: '',
             confirmPassword: ''
@@ -107,7 +100,6 @@ const ProfileScreen = ({ onLogout }) => {
     } catch (error) {
       console.error("ERRO AO BUSCAR PERFIL:", error);
       if (error.response?.status === 401) onLogout();
-      else Alert.alert("Erro", "Não foi possível carregar seus dados.");
     } finally {
       setIsLoading(false);
     }
@@ -136,7 +128,6 @@ const ProfileScreen = ({ onLogout }) => {
             }));
         }
     } catch (error) { 
-        console.error("Erro ao buscar CEP:", error);
         setErrors(prev => ({...prev, cep: 'CEP não encontrado.'}));
     } 
     finally { setIsLoadingCep(false); }
@@ -146,71 +137,32 @@ const ProfileScreen = ({ onLogout }) => {
     let newErrors = {};
     let isValid = true;
 
-    if (!formData.name.trim()) {
-        newErrors.name = 'Nome é obrigatório.';
-        isValid = false;
-    }
-
-    if (!formData.email.includes('@') || !formData.email.includes('.')) {
-        newErrors.email = 'E-mail inválido.';
-        isValid = false;
-    }
-
+    if (!formData.name.trim()) { newErrors.name = 'Nome é obrigatório.'; isValid = false; }
+    if (!formData.email.includes('@')) { newErrors.email = 'E-mail inválido.'; isValid = false; }
     const cpfClean = formData.cpf.replace(/\D/g, '');
-    if (cpfClean.length !== 11) {
-        newErrors.cpf = 'CPF incompleto.';
-        isValid = false;
-    }
+    if (cpfClean.length !== 11) { newErrors.cpf = 'CPF incompleto.'; isValid = false; }
 
-    // Validação de Senha
     if (formData.password) {
-        if (!formData.currentPassword) {
-            newErrors.currentPassword = 'Para alterar a senha, informe a senha atual.';
-            isValid = false;
-        }
-        if (formData.password.length < 6) {
-            newErrors.password = 'A nova senha deve ter no mínimo 6 caracteres.';
-            isValid = false;
-        }
-        if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = 'As senhas não coincidem.';
-            isValid = false;
-        }
+        if (!formData.currentPassword) { newErrors.currentPassword = 'Informe a senha atual.'; isValid = false; }
+        if (formData.password.length < 6) { newErrors.password = 'Mínimo 6 caracteres.'; isValid = false; }
+        if (formData.password !== formData.confirmPassword) { newErrors.confirmPassword = 'Senhas não coincidem.'; isValid = false; }
     }
 
     setErrors(newErrors);
     return isValid;
   };
 
+  // Aqui está a mágica: atualiza local E chama a função do pai (App.jsx)
   const handleProfileUpdate = () => {
-    setSnackbar({ visible: true, message: 'Foto de perfil atualizada!' });
-    setTimeout(() => {
-        fetchProfileData();
-    }, 500);
+    fetchProfileData();
+    if (onUpdateUser) onUpdateUser();
   };
 
   const handleLogoutPress = async () => {
     try {
         await AsyncStorage.multiRemove(['token', 'user']);
-    } catch (e) {
-        console.error(e);
     } finally {
         onLogout();
-    }
-  };
-
-  const handleContactSupport = async () => {
-    const email = 'servicesaquateam@gmail.com';
-    const subject = `Suporte Aqua - Usuário: ${user?.user_name || 'Desconhecido'}`;
-    const body = 'Olá equipe Aqua, preciso de ajuda com...';
-    
-    const url = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-    const canOpen = await Linking.canOpenURL(url);
-    if (canOpen) {
-        await Linking.openURL(url);
-    } else {
-        setSnackbar({ visible: true, message: 'Não foi possível abrir o app de e-mail.' });
     }
   };
 
@@ -224,7 +176,6 @@ const ProfileScreen = ({ onLogout }) => {
             name: formData.name,
             email: formData.email,
             cpf: formData.cpf,
-            // Enviando endereço
             cep: formData.cep,
             logradouro: formData.logradouro,
             numero: formData.numero,
@@ -235,8 +186,6 @@ const ProfileScreen = ({ onLogout }) => {
         
         if (formData.password) {
             payload.password = formData.password;
-            // Opcional: Enviar currentPassword se o backend exigir verificação
-            // payload.currentPassword = formData.currentPassword; 
         }
 
         await axios.put(`${API_URL}/user/me`, payload, {
@@ -244,11 +193,10 @@ const ProfileScreen = ({ onLogout }) => {
         });
 
         setEditModalVisible(false);
-        setSnackbar({ visible: true, message: 'Dados atualizados com sucesso!' });
-        fetchProfileData();
+        handleProfileUpdate(); // Atualiza tudo
         setFormData(prev => ({...prev, currentPassword: '', password: '', confirmPassword: ''}));
+        Alert.alert("Sucesso", "Perfil atualizado!");
     } catch (error) {
-        console.error("Erro ao atualizar:", error);
         const msg = error.response?.data?.message || "Falha ao atualizar dados.";
         Alert.alert("Erro", msg);
     } finally {
@@ -259,447 +207,158 @@ const ProfileScreen = ({ onLogout }) => {
   if (isLoading) {
     return (
       <PaperProvider theme={blueTheme}>
-        <View style={styles.centeredContainer}>
-            <ActivityIndicator size="large" color="#0A84FF" />
-        </View>
+        <View style={styles.centeredContainer}><ActivityIndicator size="large" color="#0A84FF" /></View>
       </PaperProvider>
     );
   }
 
-  if (!user) {
-    return (
-      <PaperProvider theme={blueTheme}>
-        <View style={styles.centeredContainer}>
-            <Title>Erro ao carregar perfil.</Title>
-            <Button onPress={onLogout} style={{ marginTop: 20 }}>Voltar ao Login</Button>
-        </View>
-      </PaperProvider>
-    );
-  }
+  if (!user) return null;
 
   return (
     <PaperProvider theme={blueTheme}>
         <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.contentContainer}>
+        <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
             
-            <ProfileHeader user={{
-                name: user.user_name || user.name,
-                email: user.user_email || user.email,
-                img_url: user.user_img_url || user.img_url,
-                role: user.role
-            }} onProfileUpdate={handleProfileUpdate} />
+            <MotiView from={{ opacity: 0, translateY: -20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing' }}>
+                <ProfileHeader user={{
+                    name: user.user_name || user.name,
+                    email: user.user_email || user.email,
+                    img_url: user.user_img_url || user.img_url,
+                    role: user.role
+                }} onProfileUpdate={handleProfileUpdate} />
+            </MotiView>
 
-            <TouchableOpacity onPress={() => setEditModalVisible(true)} activeOpacity={0.9}>
-                <Card style={styles.actionCard}>
-                    <View style={styles.cardContent}>
+            <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>Configurações</Text>
+                
+                <TouchableOpacity onPress={() => setEditModalVisible(true)} activeOpacity={0.7}>
+                    <View style={styles.optionRow}>
                         <View style={[styles.iconBox, { backgroundColor: '#E3F2FD' }]}>
-                            <Avatar.Icon size={32} icon="account-edit-outline" color="#0A84FF" style={{ backgroundColor: 'transparent' }} />
+                            <IconButton icon="account-cog" iconColor="#0A84FF" size={24} style={{margin:0}} />
                         </View>
-                        <View style={styles.cardText}>
-                            <Title style={styles.cardTitle}>Meus Dados</Title>
-                            <Paragraph style={styles.cardSubtitle}>
-                                Dados pessoais, endereço e senha
-                            </Paragraph>
+                        <View style={{flex: 1}}>
+                            <Text style={styles.optionTitle}>Editar Perfil</Text>
+                            <Text style={styles.optionSub}>Nome, endereço e senha</Text>
                         </View>
-                        <Avatar.Icon size={24} icon="chevron-right" color="#DDD" style={{ backgroundColor: 'transparent' }} />
+                        <IconButton icon="chevron-right" iconColor="#CCC" size={24} />
                     </View>
-                </Card>
-            </TouchableOpacity>
+                </TouchableOpacity>
 
-            <TouchableOpacity onPress={handleContactSupport} activeOpacity={0.9}>
-                <Card style={styles.actionCard}>
-                    <View style={styles.cardContent}>
-                        <View style={[styles.iconBox, { backgroundColor: '#E3F2FD' }]}>
-                            <Avatar.Icon size={32} icon="email-outline" color="#0A84FF" style={{ backgroundColor: 'transparent' }} />
-                        </View>
-                        <View style={styles.cardText}>
-                            <Title style={styles.cardTitle}>Suporte</Title>
-                            <Paragraph style={styles.cardSubtitle}>
-                                Fale com nossa equipe
-                            </Paragraph>
-                        </View>
-                        <Avatar.Icon size={24} icon="chevron-right" color="#DDD" style={{ backgroundColor: 'transparent' }} />
+                <View style={styles.divider} />
+
+                <View style={styles.optionRow}>
+                    <View style={[styles.iconBox, { backgroundColor: '#FFF3E0' }]}>
+                        <IconButton icon="bell-outline" iconColor="#FF9800" size={24} style={{margin:0}} />
                     </View>
-                </Card>
-            </TouchableOpacity>
+                    <View style={{flex: 1}}>
+                        <Text style={styles.optionTitle}>Notificações</Text>
+                        <Text style={styles.optionSub}>Alertas de consumo e metas</Text>
+                    </View>
+                    <Switch value={notificationsEnabled} onValueChange={setNotificationsEnabled} color="#0A84FF" />
+                </View>
+                
+                <View style={styles.divider} />
+
+                <TouchableOpacity onPress={() => Linking.openURL('mailto:support@aqua.com')} activeOpacity={0.7}>
+                    <View style={styles.optionRow}>
+                        <View style={[styles.iconBox, { backgroundColor: '#E8F5E9' }]}>
+                            <IconButton icon="help-circle-outline" iconColor="#4CAF50" size={24} style={{margin:0}} />
+                        </View>
+                        <View style={{flex: 1}}>
+                            <Text style={styles.optionTitle}>Ajuda e Suporte</Text>
+                            <Text style={styles.optionSub}>Fale com nossa equipe</Text>
+                        </View>
+                        <IconButton icon="chevron-right" iconColor="#CCC" size={24} />
+                    </View>
+                </TouchableOpacity>
+            </View>
+
+            <View style={styles.sectionContainer}>
+                <TouchableOpacity onPress={handleLogoutPress} activeOpacity={0.7}>
+                    <View style={styles.optionRow}>
+                        <View style={[styles.iconBox, { backgroundColor: '#FFEBEE' }]}>
+                            <IconButton icon="logout" iconColor="#FF3B30" size={24} style={{margin:0}} />
+                        </View>
+                        <View style={{flex: 1}}>
+                            <Text style={[styles.optionTitle, {color: '#FF3B30'}]}>Sair da Conta</Text>
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </View>
+
+            <Text style={styles.versionText}>Aqua App v1.0.0</Text>
+            <View style={{height: 30}} />
 
         </ScrollView>
 
-        <View style={styles.footer}>
-            <Button 
-                icon="logout" 
-                mode="outlined" 
-                onPress={handleLogoutPress} 
-                textColor="#FF3B30"
-                style={{ borderColor: '#FF3B30', width: '100%', borderRadius: 12 }}
-                labelStyle={{ fontSize: 16, fontWeight: 'bold' }}
-            >
-            Sair da Conta
-            </Button>
-            <Paragraph style={styles.versionText}>Versão 1.0.0</Paragraph>
-        </View>
-
-        <Modal
-            visible={editModalVisible}
-            animationType="slide"
-            presentationStyle="pageSheet"
-            onRequestClose={() => setEditModalVisible(false)}
-        >
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{flex:1, backgroundColor:'#fff'}}>
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalHeader}>
-                        <Title style={styles.modalTitle}>Editar Dados</Title>
-                        <IconButton icon="close" size={24} onPress={() => setEditModalVisible(false)} />
-                    </View>
-                    
-                    <ScrollView contentContainerStyle={styles.modalBody} showsVerticalScrollIndicator={false}>
-                        
-                        <Title style={styles.sectionHeader}>Informações Pessoais</Title>
-                        <View style={styles.inputGroup}>
-                            <TextInput
-                                label="Nome Completo"
-                                value={formData.name}
-                                onChangeText={(text) => setFormData({...formData, name: text})}
-                                mode="outlined"
-                                style={styles.input}
-                                outlineColor="#E0E0E0"
-                                activeOutlineColor="#0A84FF"
-                                error={!!errors.name}
-                                left={<TextInput.Icon icon="account-outline" color="#0A84FF" />}
-                            />
-                            {errors.name && <HelperText type="error">{errors.name}</HelperText>}
-                        </View>
-                        
-                        <View style={styles.inputGroup}>
-                            <TextInput
-                                label="E-mail"
-                                value={formData.email}
-                                onChangeText={(text) => setFormData({...formData, email: text})}
-                                mode="outlined"
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                style={styles.input}
-                                outlineColor="#E0E0E0"
-                                activeOutlineColor="#0A84FF"
-                                error={!!errors.email}
-                                left={<TextInput.Icon icon="email-outline" color="#0A84FF" />}
-                            />
-                            {errors.email && <HelperText type="error">{errors.email}</HelperText>}
-                        </View>
-
-                        <View style={styles.inputGroup}>
-                            <TextInput
-                                label="CPF"
-                                value={formData.cpf}
-                                mode="outlined"
-                                style={styles.input}
-                                outlineColor="#E0E0E0"
-                                activeOutlineColor="#0A84FF"
-                                error={!!errors.cpf}
-                                keyboardType="numeric"
-                                left={<TextInput.Icon icon="card-account-details-outline" color="#0A84FF" />}
-                                render={props => (
-                                    <MaskedTextInput
-                                      {...props}
-                                      mask="999.999.999-99"
-                                      onChangeText={(text, raw) => setFormData({...formData, cpf: text})}
-                                    />
-                                )}
-                            />
-                            {errors.cpf && <HelperText type="error">{errors.cpf}</HelperText>}
-                        </View>
-
-                        <Title style={styles.sectionHeader}>Endereço</Title>
-                        <View style={{flexDirection: 'row', gap: 10}}>
-                            <View style={{flex: 1}}>
-                                <TextInput
-                                    label="CEP"
-                                    value={formData.cep}
-                                    mode="outlined"
-                                    style={styles.input}
-                                    outlineColor="#E0E0E0"
-                                    activeOutlineColor="#0A84FF"
-                                    keyboardType="numeric"
-                                    right={isLoadingCep ? <TextInput.Icon icon="loading" /> : null}
-                                    render={props => (
-                                        <MaskedTextInput
-                                            {...props}
-                                            mask="99999-999"
-                                            onChangeText={(text, raw) => {
-                                                setFormData({...formData, cep: text});
-                                                if (raw.length === 8) fetchAddressFromCep(raw);
-                                            }}
-                                        />
-                                    )}
-                                />
-                            </View>
-                            <View style={{width: 100}}>
-                                <TextInput
-                                    label="Nº"
-                                    value={formData.numero}
-                                    onChangeText={text => setFormData({...formData, numero: text})}
-                                    mode="outlined"
-                                    style={styles.input}
-                                    outlineColor="#E0E0E0"
-                                    activeOutlineColor="#0A84FF"
-                                    keyboardType="numeric"
-                                />
-                            </View>
-                        </View>
-
-                        <TextInput
-                            label="Rua / Logradouro"
-                            value={formData.logradouro}
-                            onChangeText={text => setFormData({...formData, logradouro: text})}
-                            mode="outlined"
-                            style={styles.input}
-                            outlineColor="#E0E0E0"
-                            activeOutlineColor="#0A84FF"
-                        />
-
-                        <TextInput
-                            label="Bairro"
-                            value={formData.bairro}
-                            onChangeText={text => setFormData({...formData, bairro: text})}
-                            mode="outlined"
-                            style={styles.input}
-                            outlineColor="#E0E0E0"
-                            activeOutlineColor="#0A84FF"
-                        />
-
-                        <View style={{flexDirection: 'row', gap: 10}}>
-                            <View style={{flex: 1}}>
-                                <TextInput
-                                    label="Cidade"
-                                    value={formData.cidade}
-                                    onChangeText={text => setFormData({...formData, cidade: text})}
-                                    mode="outlined"
-                                    style={styles.input}
-                                    outlineColor="#E0E0E0"
-                                    activeOutlineColor="#0A84FF"
-                                />
-                            </View>
-                            <View style={{width: 80}}>
-                                <TextInput
-                                    label="UF"
-                                    value={formData.uf}
-                                    onChangeText={text => setFormData({...formData, uf: text})}
-                                    mode="outlined"
-                                    style={styles.input}
-                                    outlineColor="#E0E0E0"
-                                    activeOutlineColor="#0A84FF"
-                                    maxLength={2}
-                                    autoCapitalize="characters"
-                                />
-                            </View>
-                        </View>
-
-                        <View style={styles.divider}>
-                            <Paragraph style={styles.dividerText}>Segurança</Paragraph>
-                        </View>
-
-                        {/* SENHA ATUAL - OBRIGATÓRIA SE MUDAR A SENHA */}
-                        <View style={styles.inputGroup}>
-                            <TextInput
-                                label="Senha Atual"
-                                value={formData.currentPassword}
-                                onChangeText={(text) => setFormData({...formData, currentPassword: text})}
-                                mode="outlined"
-                                secureTextEntry={!showCurrentPassword}
-                                style={styles.input}
-                                outlineColor="#E0E0E0"
-                                activeOutlineColor="#0A84FF"
-                                error={!!errors.currentPassword}
-                                left={<TextInput.Icon icon="lock-alert-outline" color="#0A84FF" />}
-                                right={<TextInput.Icon icon={showCurrentPassword ? "eye-off" : "eye"} onPress={() => setShowCurrentPassword(!showCurrentPassword)} />}
-                            />
-                            {errors.currentPassword ? (
-                                <HelperText type="error">{errors.currentPassword}</HelperText>
-                            ) : (
-                                <HelperText type="info">Necessária apenas para alterar a senha.</HelperText>
-                            )}
-                        </View>
-
-                        <View style={styles.inputGroup}>
-                            <TextInput
-                                label="Nova Senha"
-                                value={formData.password}
-                                onChangeText={(text) => setFormData({...formData, password: text})}
-                                mode="outlined"
-                                secureTextEntry={!showPassword}
-                                style={styles.input}
-                                outlineColor="#E0E0E0"
-                                activeOutlineColor="#0A84FF"
-                                error={!!errors.password}
-                                left={<TextInput.Icon icon="lock-outline" color="#0A84FF" />}
-                                right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={() => setShowPassword(!showPassword)} />}
-                            />
-                            {errors.password && <HelperText type="error">{errors.password}</HelperText>}
-                        </View>
-
-                        <View style={styles.inputGroup}>
-                            <TextInput
-                                label="Confirmar Nova Senha"
-                                value={formData.confirmPassword}
-                                onChangeText={(text) => setFormData({...formData, confirmPassword: text})}
-                                mode="outlined"
-                                secureTextEntry={!showConfirmPassword}
-                                style={styles.input}
-                                outlineColor="#E0E0E0"
-                                activeOutlineColor="#0A84FF"
-                                disabled={!formData.password}
-                                error={!!errors.confirmPassword}
-                                left={<TextInput.Icon icon="lock-check-outline" color="#0A84FF" />}
-                                right={<TextInput.Icon icon={showConfirmPassword ? "eye-off" : "eye"} onPress={() => setShowConfirmPassword(!showConfirmPassword)} />}
-                            />
-                            {errors.confirmPassword && <HelperText type="error">{errors.confirmPassword}</HelperText>}
-                        </View>
-
-                        <Button 
-                            mode="contained" 
-                            onPress={handleSaveData} 
-                            loading={isSaving}
-                            style={styles.saveButton}
-                            contentStyle={{ paddingVertical: 8 }}
-                            buttonColor="#0A84FF"
-                        >
-                            Salvar Alterações
-                        </Button>
-                        <View style={{height: 40}} />
-                    </ScrollView>
+        <Modal visible={editModalVisible} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setEditModalVisible(false)}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{flex:1, backgroundColor:'#F2F2F7'}}>
+                <View style={styles.modalHeader}>
+                    <Title style={{fontSize: 18, fontWeight: 'bold'}}>Editar Dados</Title>
+                    <Button onPress={() => setEditModalVisible(false)}>Fechar</Button>
                 </View>
+                <ScrollView contentContainerStyle={{padding: 20}} showsVerticalScrollIndicator={false}>
+                    <Card style={styles.formCard}>
+                        <Card.Content>
+                            <Title style={styles.formTitle}>Pessoal</Title>
+                            <TextInput label="Nome" value={formData.name} onChangeText={t => setFormData({...formData, name: t})} mode="outlined" style={styles.input} dense />
+                            <TextInput label="E-mail" value={formData.email} onChangeText={t => setFormData({...formData, email: t})} mode="outlined" style={styles.input} dense keyboardType="email-address" />
+                            <TextInput label="CPF" value={formData.cpf} mode="outlined" style={styles.input} dense render={p => <MaskedTextInput {...p} mask="999.999.999-99" onChangeText={(t, r) => setFormData({...formData, cpf: t})} />} />
+                        </Card.Content>
+                    </Card>
+
+                    <Card style={styles.formCard}>
+                        <Card.Content>
+                            <Title style={styles.formTitle}>Endereço</Title>
+                            <View style={{flexDirection:'row', gap:10}}>
+                                <TextInput label="CEP" value={formData.cep} mode="outlined" style={[styles.input, {flex:1}]} dense keyboardType="numeric" right={isLoadingCep && <TextInput.Icon icon="loading"/>} render={p => <MaskedTextInput {...p} mask="99999-999" onChangeText={(t, r) => { setFormData({...formData, cep: t}); if(r.length===8) fetchAddressFromCep(r); }} />} />
+                                <TextInput label="Nº" value={formData.numero} onChangeText={t => setFormData({...formData, numero: t})} mode="outlined" style={[styles.input, {width:80}]} dense />
+                            </View>
+                            <TextInput label="Logradouro" value={formData.logradouro} onChangeText={t => setFormData({...formData, logradouro: t})} mode="outlined" style={styles.input} dense />
+                            <TextInput label="Bairro" value={formData.bairro} onChangeText={t => setFormData({...formData, bairro: t})} mode="outlined" style={styles.input} dense />
+                            <View style={{flexDirection:'row', gap:10}}>
+                                <TextInput label="Cidade" value={formData.cidade} onChangeText={t => setFormData({...formData, cidade: t})} mode="outlined" style={[styles.input, {flex:1}]} dense />
+                                <TextInput label="UF" value={formData.uf} onChangeText={t => setFormData({...formData, uf: t})} mode="outlined" style={[styles.input, {width:60}]} dense maxLength={2} />
+                            </View>
+                        </Card.Content>
+                    </Card>
+
+                    <Card style={styles.formCard}>
+                        <Card.Content>
+                            <Title style={styles.formTitle}>Segurança</Title>
+                            <TextInput label="Senha Atual" value={formData.currentPassword} onChangeText={t => setFormData({...formData, currentPassword: t})} mode="outlined" style={styles.input} dense secureTextEntry={!showCurrentPassword} right={<TextInput.Icon icon="eye" onPress={() => setShowCurrentPassword(!showCurrentPassword)}/>} />
+                            <TextInput label="Nova Senha" value={formData.password} onChangeText={t => setFormData({...formData, password: t})} mode="outlined" style={styles.input} dense secureTextEntry={!showPassword} right={<TextInput.Icon icon="eye" onPress={() => setShowPassword(!showPassword)}/>} />
+                            <TextInput label="Confirmar" value={formData.confirmPassword} onChangeText={t => setFormData({...formData, confirmPassword: t})} mode="outlined" style={styles.input} dense secureTextEntry={!showConfirmPassword} right={<TextInput.Icon icon="eye" onPress={() => setShowConfirmPassword(!showConfirmPassword)}/>} />
+                        </Card.Content>
+                    </Card>
+
+                    <Button mode="contained" onPress={handleSaveData} loading={isSaving} style={styles.saveButton} contentStyle={{paddingVertical: 6}}>Salvar Alterações</Button>
+                    <View style={{height:40}}/>
+                </ScrollView>
             </KeyboardAvoidingView>
         </Modal>
-
-        <Snackbar 
-            visible={snackbar.visible} 
-            onDismiss={() => setSnackbar({ ...snackbar, visible: false })} 
-            duration={3000}
-            style={{ backgroundColor: '#1C1C1E', borderRadius: 8 }}
-        >
-            {snackbar.message}
-        </Snackbar>
         </View>
     </PaperProvider>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F2F2F7',
-  },
-  contentContainer: {
-    padding: 20,
-  },
-  centeredContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F2F2F7',
-  },
-  actionCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    elevation: 0,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    marginBottom: 16,
-  },
-  cardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  iconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  cardText: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1C1C1E',
-  },
-  cardSubtitle: {
-    fontSize: 13,
-    color: '#8A8A8E',
-    marginTop: 2,
-  },
-  footer: {
-    padding: 24,
-    backgroundColor: '#F2F2F7',
-    alignItems: 'center',
-  },
-  versionText: {
-    marginTop: 12,
-    fontSize: 12,
-    color: '#AEAEB2',
-  },
-  // Modal Styles
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F7',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1C1C1E',
-  },
-  modalBody: {
-    padding: 24,
-  },
-  sectionHeader: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#0A84FF',
-    marginBottom: 15,
-    marginTop: 10,
-  },
-  inputGroup: {
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: '#fff',
-    fontSize: 16,
-    marginBottom: 6,
-  },
-  divider: {
-    marginTop: 20,
-    marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F7',
-    paddingBottom: 5,
-  },
-  dividerText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#0A84FF',
-  },
-  saveButton: {
-    marginTop: 30,
-    borderRadius: 12,
-    elevation: 4,
-    shadowColor: '#0A84FF',
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-  }
+  container: { flex: 1, backgroundColor: '#F2F2F7' },
+  contentContainer: { paddingBottom: 20 },
+  centeredContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F2F2F7' },
+  sectionContainer: { backgroundColor: '#fff', marginHorizontal: 20, borderRadius: 16, padding: 10, marginBottom: 20, elevation: 2 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginLeft: 10, marginTop: 10, marginBottom: 10, color: '#1C1C1E' },
+  optionRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 10 },
+  iconBox: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 15 },
+  optionTitle: { fontSize: 16, fontWeight: '600', color: '#1C1C1E' },
+  optionSub: { fontSize: 12, color: '#8A8A8E' },
+  divider: { height: 1, backgroundColor: '#F2F2F7', marginLeft: 65 },
+  versionText: { textAlign: 'center', color: '#AEAEB2', fontSize: 12, marginTop: 10 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E5EA' },
+  formCard: { backgroundColor: '#fff', borderRadius: 12, marginBottom: 15, elevation: 2 },
+  formTitle: { fontSize: 16, fontWeight: 'bold', color: '#0A84FF', marginBottom: 10 },
+  input: { backgroundColor: '#fff', marginBottom: 10, fontSize: 14 },
+  saveButton: { borderRadius: 10, marginTop: 10, backgroundColor: '#0A84FF' }
 });
 
 export default ProfileScreen;
