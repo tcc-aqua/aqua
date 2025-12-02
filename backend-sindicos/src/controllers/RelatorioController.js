@@ -1,3 +1,4 @@
+import UserStatusService from "../services/relatorios/getComparacaoUsuarios.js";
 import UserAlertService from "../services/relatorios/getConsumoAlto.js";
 import UserConsumoMedio from "../services/relatorios/getConsumoMensal.js";
 import QtdApartamentos from "../services/relatorios/getQtdApartamentos.js";
@@ -25,15 +26,29 @@ export default class RelatorioController {
     }
 
     static async getNumeroApartamentos(req, reply) {
-        const sindicoId = req.user.id; 
+        const sindicoId = req.user.id;
         const numeroApartamentos = await QtdApartamentos.getNumeroApartamentos(sindicoId);
 
         return reply.status(200).send({ numero_apartamentos: numeroApartamentos });
     }
 
     static async getSensoresStatus(req, reply) {
-          const sindicoId = req.user.id; 
-          const statusSensores = await StatusSensores.getSensoresStatus(sindicoId);
-          return reply.status(200).send(statusSensores);
-        }
+        const sindicoId = req.user.id;
+        const statusSensores = await StatusSensores.getSensoresStatus(sindicoId);
+        return reply.status(200).send(statusSensores);
+    }
+
+    static async getUsuariosStatusSemana(req, reply) {
+        const sindicoId = req.user.id; // do middleware de autenticação
+        const hoje = new Date();
+        const inicioSemana = new Date(hoje);
+        inicioSemana.setDate(hoje.getDate() - hoje.getDay() + 1); // Ajusta para segunda-feira
+
+        const statusSemana = await UserStatusService.getUsuariosStatusPorSemana(
+            sindicoId,
+            inicioSemana
+        );
+
+        return reply.status(200).send(statusSemana);
+    }
 }
