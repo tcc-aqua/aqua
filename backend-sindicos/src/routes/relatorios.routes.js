@@ -1,6 +1,6 @@
-import RelatorioController from "../controllers/RelatorioController.js";
 import { autenticarSindico } from "../middlewares/AuthMiddleware.js";
+import RelatorioController from "../controllers/RelatorioController.js";
 
 export default async function relatorioRoutes(fastify){
-    fastify.get('/',  {preHandler: autenticarSindico}, RelatorioController.info)
+    fastify.get('/consumo-alto',  {preHandler: autenticarSindico}, RelatorioController.getUsersComConsumoAlto)
 }
