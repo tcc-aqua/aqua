@@ -152,6 +152,19 @@ const MetasScreen = () => {
     );
   };
 
+  const handleSetPrincipal = async (metaId) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      await axios.patch(`${API_URL}/metas/${metaId}/principal`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      fetchMetasAndStats(true);
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível definir como principal.");
+    }
+  };
+
   const getStatusConfig = (status, progress) => {
     if (status === 'excedida') return { color: theme.colors.danger, label: 'Excedida', icon: 'alert-circle-outline' };
     if (status === 'atingida') return { color: theme.colors.success, label: 'Concluída', icon: 'trophy-outline' };
@@ -245,6 +258,7 @@ const MetasScreen = () => {
               const ratio = limit > 0 ? current / limit : 0;
               const displayRatio = Math.min(ratio, 1);
               const { color, label, icon } = getStatusConfig(meta.status, ratio);
+              const isPrincipal = meta.is_principal;
               
               return (
                   <MotiView 
@@ -253,18 +267,31 @@ const MetasScreen = () => {
                       animate={{ opacity: 1, translateY: 0 }} 
                       transition={{ delay: index * 100 }}
                   >
-                      <Surface style={styles.metaCard} elevation={2}>
+                      <Surface style={[styles.metaCard, isPrincipal && styles.metaCardPrincipal]} elevation={2}>
                           <View style={styles.cardHeader}>
                             <View style={{flexDirection:'row', alignItems:'center'}}>
                                 <View style={[styles.iconContainer, { backgroundColor: color + '20' }]}>
                                     <IconButton icon={icon} iconColor={color} size={24} />
                                 </View>
                                 <View style={{marginLeft: 10}}>
-                                    <Text style={styles.cardTitle}>{formatPeriodo(meta.periodo)}</Text>
+                                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                        <Text style={styles.cardTitle}>{formatPeriodo(meta.periodo)}</Text>
+                                        {isPrincipal && (
+                                            <Avatar.Icon size={20} icon="pin" style={{backgroundColor: '#FFD700', marginLeft: 8}} color="#FFF" />
+                                        )}
+                                    </View>
                                     <Text style={styles.cardDateRange}>{formatData(meta.inicio_periodo)} a {formatData(meta.fim_periodo)}</Text>
                                 </View>
                             </View>
-                            <IconButton icon="dots-vertical" onPress={() => openEditModal(meta)} />
+                            <View style={{flexDirection: 'row'}}>
+                                <IconButton 
+                                    icon={isPrincipal ? "star" : "star-outline"} 
+                                    iconColor={isPrincipal ? "#FFD700" : "#CCC"}
+                                    size={24}
+                                    onPress={() => handleSetPrincipal(meta.id)}
+                                />
+                                <IconButton icon="dots-vertical" onPress={() => openEditModal(meta)} />
+                            </View>
                           </View>
 
                           <View style={styles.progressSection}>
@@ -414,6 +441,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#E5E5EA',
+  },
+  metaCardPrincipal: {
+    borderColor: '#FFD700',
+    borderWidth: 2,
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   iconContainer: {

@@ -45,4 +45,15 @@ export default class MetasController {
             return reply.status(400).send({ error: error.message });
         }
     }
+
+    static async setPrincipal(req, reply) {
+        try {
+            const userId = req.user.id;
+            const { id } = req.params;
+            const meta = await MetasService.setPrincipal(id, userId);
+            return reply.status(200).send({ message: 'Meta definida como principal', meta });
+        } catch (error) {
+            return reply.status(400).send({ error: error.message });
+        }
+    }
 }

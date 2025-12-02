@@ -26,12 +26,14 @@ export default class MetasService {
             
             const { count, rows: metas } = await Metas.findAndCountAll({
                 where: { user_id: userId },
-                order: [['criado_em', 'DESC']],
+                order: [
+                    ['is_principal', 'DESC'], 
+                    ['criado_em', 'DESC']
+                ],
                 limit,
                 offset,
             });
 
-            // Atualiza progresso
             const updatedMetas = await Promise.all(metas.map(async (meta) => {
                 let consumoCalculado = 0;
 
@@ -53,21 +55,21 @@ export default class MetasService {
                 const fim = new Date(meta.fim_periodo);
                 let novoStatus = meta.status;
 
-                // Lógica de Status
                 if (atual > limite) {
                     novoStatus = 'excedida';
                 } else if (hoje > fim && atual <= limite) {
                     novoStatus = 'atingida';
-                } else {
+                } else if (hoje <= fim && atual <= limite) {
                     novoStatus = 'em_andamento';
                 }
 
-                // Só faz update no banco se mudou algo
-                if (meta.consumo_atual !== atual || meta.status !== novoStatus) {
+                if (parseFloat(meta.consumo_atual) !== atual || meta.status !== novoStatus) {
                     await meta.update({
                         consumo_atual: atual,
                         status: novoStatus
                     });
+                    meta.consumo_atual = atual;
+                    meta.status = novoStatus;
                 }
 
                 return meta;
@@ -102,6 +104,9 @@ export default class MetasService {
                 default: fim_periodo.setDate(inicio_periodo.getDate() + 7);
             }
 
+            const count = await Metas.count({ where: { user_id: userId } });
+            const is_principal = count === 0;
+
             const meta = await Metas.create({ 
                 user_id: userId,
                 residencia_id: user.residencia_id, 
@@ -111,7 +116,8 @@ export default class MetasService {
                 consumo_atual: 0,
                 inicio_periodo,
                 fim_periodo,
-                status: 'em_andamento'
+                status: 'em_andamento',
+                is_principal
             });
 
             return meta;
@@ -121,11 +127,21 @@ export default class MetasService {
         }
     }
 
+    static async setPrincipal(metaId, userId) {
+        const meta = await Metas.findOne({ where: { id: metaId, user_id: userId } });
+        if (!meta) throw new Error("Meta não encontrada.");
+
+        await Metas.update({ is_principal: false }, { where: { user_id: userId } });
+
+        await meta.update({ is_principal: true });
+
+        return meta;
+    }
+
     static async updateMeta(id, userId, data) {
         const meta = await Metas.findOne({ where: { id, user_id: userId } });
         if (!meta) throw new Error("Meta não encontrada ou permissão negada.");
 
-        // Se atualizar o limite, recalcula o status
         if (data.limite_consumo) {
             const novoLimite = parseFloat(data.limite_consumo);
             const atual = parseFloat(meta.consumo_atual);
@@ -142,7 +158,21 @@ export default class MetasService {
     static async deleteMeta(id, userId) {
         const meta = await Metas.findOne({ where: { id, user_id: userId } });
         if (!meta) throw new Error("Meta não encontrada ou permissão negada.");
+        
+        const wasPrincipal = meta.is_principal;
+        
         await meta.destroy();
+
+        if (wasPrincipal) {
+            const latest = await Metas.findOne({ 
+                where: { user_id: userId }, 
+                order: [['criado_em', 'DESC']] 
+            });
+            if (latest) {
+                await latest.update({ is_principal: true });
+            }
+        }
+        
         return true;
     }
 }
