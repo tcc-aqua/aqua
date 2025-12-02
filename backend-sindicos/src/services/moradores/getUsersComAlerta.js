@@ -1,19 +1,27 @@
 import Alertas from "../../models/Alertas.js";
 import UserView from "../../models/UserView.js";
+import User from "../../models/User.js";
+import Apartamento from "../../models/Apartamento.js";
 
 export default class GetUsersWithAlert {
   static async count(sindico_id) {
     try {
-      // Pegar o condomínio do síndico
-      const sindico = await UserView.findByPk(sindico_id, {
-        attributes: ['condominio_id']
+      // Busca o condomínio do síndico
+      const sindico = await User.findByPk(sindico_id, {
+        include: [
+          {
+            model: Apartamento,
+            as: 'apartamento',
+            attributes: ['condominio_id']
+          }
+        ]
       });
 
-      if (!sindico || !sindico.condominio_id) {
+      if (!sindico || !sindico.apartamento?.condominio_id) {
         return 0;
       }
 
-      const condominioId = sindico.condominio_id;
+      const condominioId = sindico.apartamento.condominio_id;
 
       // Contar alertas ativos (não resolvidos) de consumo alto ou vazamento
       // Para usuários do condomínio
@@ -22,12 +30,12 @@ export default class GetUsersWithAlert {
         col: 'residencia_id',
         where: {
           resolvido: false,
-          tipo: ['vazamento', 'consumo_alto'],
+          tipo: ['vazamento', 'consumo_alto']
         },
         include: [
           {
             model: UserView,
-            as: 'apartamento', // se necessário, pode usar alias do relacionamento
+            as: 'apartamento', // relacionamento definido no model Alertas
             where: { condominio_id: condominioId },
             attributes: []
           }
@@ -37,7 +45,7 @@ export default class GetUsersWithAlert {
       return count;
     } catch (error) {
       console.error("Erro ao contar usuários com alertas:", error);
-      throw error;
+      return 0;
     }
   }
 }

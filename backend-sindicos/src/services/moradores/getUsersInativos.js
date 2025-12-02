@@ -1,28 +1,20 @@
 import UserView from "../../models/UserView.js";
 
 export default class GetUsersInativos {
-  static async getUsersRegistradosInativos(sindico_id) {
+  static async getUsersRegistradosInativos(condominio_id) {
     try {
-      const sindico = await UserView.findByPk(sindico_id, {
-        attributes: ['condominio_id']
-      });
-
-      if (!sindico || !sindico.condominio_id) {
-        return 0; 
-      }
-
-      const condominioId = sindico.condominio_id;
+      if (!condominio_id) return 0;
 
       const users = await UserView.count({
         where: {
-          condominio_id: condominioId,
-          status: 'inativo'
+          condominio_id,
+          user_status: 'inativo' 
         }
       });
 
       return users;
     } catch (error) {
-      console.error("Erro ao contar usuários:", error);
+      console.error("Erro ao contar usuários inativos:", error);
       throw error;
     }
   }

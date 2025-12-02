@@ -1,22 +1,14 @@
 import UserView from "../../models/UserView.js";
 
 export default class GetUsersTotal {
-  static async getUsersRegistrados(sindico_id) {
+  static async getUsersRegistrados(condominio_id) {
     try {
-      const sindico = await UserView.findByPk(sindico_id, {
-        attributes: ['condominio_id']
-      });
-
-      if (!sindico || !sindico.condominio_id) {
-        return 0; 
-      }
-
-      const condominioId = sindico.condominio_id;
+      if (!condominio_id) return 0;
 
       const users = await UserView.count({
         where: {
-          condominio_id: condominioId,
-        }
+          condominio_id,
+        },
       });
 
       return users;
