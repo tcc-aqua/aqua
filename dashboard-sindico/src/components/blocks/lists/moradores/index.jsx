@@ -9,6 +9,25 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { api } from "@/lib/api"; 
 
+const getResidenciaAddress = (user) => {
+    if (user.user_type === "condominio") {
+        return `Bloco ${user.bloco || user.logradouro || 'N/A'}, ${user.numero || 'N/A'}`;
+    }
+    return `${user.logradouro || 'N/A'}, ${user.numero || 'N/A'}`;
+};
+
+const getResidenciaItem = (user) => {
+    if (user.user_type === "condominio") {
+        return `Bloco ${user.bloco || user.logradouro || 'N/A'}, Apto ${user.numero || 'N/A'}`;
+    }
+    return `${user.logradouro || 'N/A'}, N° ${user.numero || 'N/A'}`;
+};
+
+const getFullAddress = (user) => {
+    return `${user.bairro || 'N/A'}, ${user.cidade || 'N/A'} / ${user.uf || 'N/A'}, CEP: ${user.cep || 'N/A'}`;
+};
+
+
 export default function UsersTableOnly() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true); 
@@ -25,13 +44,15 @@ export default function UsersTableOnly() {
             
             try {
                 const path = `/moradores?page=${currentPage}&limit=${limit}`;
-                const data = await api.get(path);
+                const response = await api.get(path);
                 
-                if (data && !data.error) {
+                if (response && !response.error) {
+                    const data = response.users || response; 
+                    
                     setUsers(data.docs || data.data || []); 
                     setTotalPages(data.pages || 1); 
-                } else if (data && data.error) {
-                    setError(data.message || "Erro ao buscar usuários.");
+                } else if (response && response.error) {
+                    setError(response.message || "Erro ao buscar usuários.");
                 } else {
                     setError("Resposta inesperada da API.");
                 }
@@ -58,11 +79,11 @@ export default function UsersTableOnly() {
             u.user_name,
             u.user_email,
             u.user_cpf,
-            u.user_type === "casa" ? `${u.logradouro}, ${u.numero}` : `Bloco ${u.logradouro}, ${u.numero}`,
+            getResidenciaItem(u), 
             u.user_type,
             u.user_role,
             u.user_status,
-            `${u.bairro}, ${u.cidade} / ${u.uf}, CEP: ${u.cep}`
+            getFullAddress(u) 
         ]);
 
         let csvContent = "data:text/csv;charset=utf-8," 
@@ -85,11 +106,11 @@ export default function UsersTableOnly() {
             u.user_name,
             u.user_email,
             u.user_cpf,
-            u.user_type === "casa" ? `${u.logradouro}, ${u.numero}` : `Bloco ${u.logradouro}, ${u.numero}`,
+            getResidenciaItem(u), 
             u.user_type,
             u.user_role,
             u.user_status,
-            `${u.bairro}, ${u.cidade} / ${u.uf}, CEP: ${u.cep}`
+            getFullAddress(u) 
         ]);
 
         autoTable(doc, {
@@ -106,7 +127,7 @@ export default function UsersTableOnly() {
     
     return (
         <Card className="mx-auto mt-10 hover:border-sky-400 dark:hover:border-sky-950">
-            <CardHeader className="flex justify-between items-center">
+            <CardHeader className="flex flex-row justify-between items-center">
                 <CardTitle>Lista de Usuários</CardTitle>
                 <div className="flex gap-2">
                     <Button size="sm" variant="secondary" onClick={exportCSV} disabled={loading || users.length === 0}>
@@ -157,11 +178,11 @@ export default function UsersTableOnly() {
                                         </td>
 
                                         <td className="px-4 py-2 text-sm">
-                                            {user.user_type === "casa" ? `${user.logradouro}, ${user.numero}` : `Bloco ${user.logradouro}, ${user.numero}`}
+                                            {getResidenciaAddress(user)}
                                             <div className="text-xs text-foreground/80">
-                                                {user.bairro}, {user.cidade} / {user.uf}
+                                                {user.bairro || 'N/A'}, {user.cidade || 'N/A'} / {user.uf || 'N/A'}
                                             </div>
-                                            <div className="text-[10px] text-foreground/60">CEP: {user.cep}</div>
+                                            <div className="text-[10px] text-foreground/60">CEP: {user.cep || 'N/A'}</div>
                                         </td>
 
                                         <td className="text-sm">

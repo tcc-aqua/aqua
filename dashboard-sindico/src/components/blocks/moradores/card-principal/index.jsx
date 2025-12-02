@@ -25,11 +25,12 @@ export default function CardsPrincipal() {
                 const response = await api.get(path);
                 
                 if (response && !response.error) {
+                    
                     setStats({
-                        total: response.count_users?.total || 0, 
-                        ativos: response.users_ativos?.count || 0,
-                        inativos: response.users_inativos?.count || 0,
-                        alerta: response.users_with_alert?.count || 0,
+                        total: response.count_users || 0, 
+                        ativos: response.users_ativos || 0,
+                        inativos: response.users_inativos || 0,
+                        alerta: response.users_with_alert || 0,
                     });
                 } else if (response && response.error) {
                     setError(response.message || "Erro ao buscar estatísticas.");
