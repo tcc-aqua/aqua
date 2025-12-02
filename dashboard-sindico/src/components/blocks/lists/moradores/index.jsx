@@ -155,7 +155,6 @@ export default function UsersTableOnly() {
                             <thead className="bg-muted">
                                 <tr>
                                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Usuário</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium uppercase">Residência</th>
                                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Tipo</th>
                                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Função</th>
                                     <th className="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
@@ -177,13 +176,7 @@ export default function UsersTableOnly() {
                                             </div>
                                         </td>
 
-                                        <td className="px-4 py-2 text-sm">
-                                            {getResidenciaAddress(user)}
-                                            <div className="text-xs text-foreground/80">
-                                                {user.bairro || 'N/A'}, {user.cidade || 'N/A'} / {user.uf || 'N/A'}
-                                            </div>
-                                            <div className="text-[10px] text-foreground/60">CEP: {user.cep || 'N/A'}</div>
-                                        </td>
+                                        
 
                                         <td className="text-sm">
                                             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-white font-semibold uppercase ${user.user_type === "casa" ? "bg-sky-700" : "bg-purple-400"}`}>
