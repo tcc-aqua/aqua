@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Trash, Plus, Bell, Clock, User, Loader2, Mail } from "lucide-react";
+import { Pencil, Trash, Plus, Bell, Clock, User, Loader2, Mail, MailOpen } from "lucide-react";
 import {
     Dialog,
     DialogTrigger,
@@ -45,7 +45,7 @@ import { toast } from "sonner";
 import AnimationWrapper from "../../../layout/Animation/Animation";
 import { PaginationDemo } from "@/components/pagination";
 
-const CURRENT_USER_ID = "e0420793-fe3a-4941-82d6-c454f5a2ccaa"; // ID DE SÍNDICO DE EXEMPLO
+const CURRENT_USER_ID = "e0420793-fe3a-4941-82d6-c454f5a2ccaa";
 
 export default function ComunicadosDashboard() {
     const [open, setOpen] = useState(false);
@@ -55,7 +55,8 @@ export default function ComunicadosDashboard() {
 
     const [totalComunicados, setTotalComunicados] = useState(0);
     const [myTotalComunicados, setMyTotalComunicados] = useState(0);
-    const [totalAdminParaSindicos, setTotalAdminParaSindicos] = useState(0); 
+    const [totalAdminParaSindicos, setTotalAdminParaSindicos] = useState(0);
+    const [totalRecebidos, setTotalRecebidos] = useState(0); 
 
     const [novoComunicado, setNovoComunicado] = useState({
         title: "",
@@ -87,12 +88,23 @@ export default function ComunicadosDashboard() {
 
     const loadTotalAdminParaSindicos = useCallback(async () => {
         try {
-            const { total } = await api.get('/comunicados/admin-para-sindicos-count'); 
+            const { total } = await api.get('/comunicados/admin-para-sindicos-count');
             if (typeof total === 'number') {
                 setTotalAdminParaSindicos(total);
             }
         } catch (error) {
             console.error("Erro ao carregar o total de comunicados Admin -> Síndicos:", error);
+        }
+    }, []);
+    
+    const loadTotalRecebidos = useCallback(async () => {
+        try {
+            const { total_recebidos } = await api.get('/comunicados/recebidos-count');
+            if (typeof total_recebidos === 'number') {
+                setTotalRecebidos(total_recebidos);
+            }
+        } catch (error) {
+            console.error("Erro ao carregar o total de comunicados recebidos:", error);
         }
     }, []);
 
@@ -113,7 +125,6 @@ export default function ComunicadosDashboard() {
                     autorId: c.sindico_id,
                     autorNome: c.sindico_id === CURRENT_USER_ID ? "Síndico (Você)" : "Administração",
                     dataCricao: c.criado_em,
-                    // REMOÇÃO DA PROPRIEDADE 'status' RELACIONADA À LEITURA
                 }));
 
                 setComunicados(mappedComunicados);
@@ -133,12 +144,9 @@ export default function ComunicadosDashboard() {
         loadComunicados();
         loadTotalComunicados();
         loadMyTotalComunicados();
-        // REMOÇÃO DE loadTotalNaoLidos
         loadTotalAdminParaSindicos();
-    }, [loadComunicados, loadTotalComunicados, loadMyTotalComunicados, loadTotalAdminParaSindicos]);
-
-
-    // --- FUNÇÕES DE AÇÃO (CRUD) ---
+        loadTotalRecebidos(); 
+    }, [loadComunicados, loadTotalComunicados, loadMyTotalComunicados, loadTotalAdminParaSindicos, loadTotalRecebidos]);
 
     const handleCriarComunicado = async () => {
         if (!novoComunicado.title || !novoComunicado.subject) {
@@ -151,7 +159,7 @@ export default function ComunicadosDashboard() {
             subject: novoComunicado.subject,
             addressee: novoComunicado.addressee,
         };
-        
+
         const toastId = toast.loading("Criando comunicado...");
 
         try {
@@ -161,6 +169,7 @@ export default function ComunicadosDashboard() {
                 await loadComunicados();
                 await loadTotalComunicados();
                 await loadMyTotalComunicados();
+                await loadTotalRecebidos(); 
                 setNovoComunicado({ title: "", subject: "", addressee: "usuários" });
                 setOpen(false);
                 toast.success("Comunicado criado e enviado com sucesso!");
@@ -173,8 +182,6 @@ export default function ComunicadosDashboard() {
             toast.dismiss(toastId);
         }
     };
-    
-    // REMOÇÃO DE handleUpdateLidoStatus, handleMarcarLido E handleMarcarNaoLido
 
     const handleDeletar = async (id, titulo) => {
         const toastId = toast.loading(`Deletando comunicado "${titulo}"...`);
@@ -187,7 +194,7 @@ export default function ComunicadosDashboard() {
                 await loadComunicados();
                 await loadTotalComunicados();
                 await loadMyTotalComunicados();
-                // REMOÇÃO DE loadTotalNaoLidos
+                await loadTotalRecebidos(); 
                 toast.success(`Comunicado "${titulo}" deletado!`);
             } else {
                 throw new Error(response.message || "Falha na resposta da API ao deletar.");
@@ -199,8 +206,6 @@ export default function ComunicadosDashboard() {
         }
     };
 
-    // --- DADOS E FILTROS DE VISUALIZAÇÃO ---
-
     const cardsData = [
         {
             title: "Total de Comunicados",
@@ -209,7 +214,6 @@ export default function ComunicadosDashboard() {
             iconColor: "text-blue-500",
             porcentagem: "Visão Geral",
         },
-        // REMOÇÃO DO CARD "NÃO LIDOS"
         {
             title: "Meus Comunicados",
             value: myTotalComunicados,
@@ -218,8 +222,15 @@ export default function ComunicadosDashboard() {
             subTitle2: "Criados por mim",
         },
         {
+            title: "Recebidos",
+            value: totalRecebidos, 
+            icon: MailOpen, 
+            iconColor: "text-green-600",
+            subTitle2: "Enviados por outros",
+        },
+        {
             title: "Admin -> Síndicos",
-            value: totalAdminParaSindicos, 
+            value: totalAdminParaSindicos,
             icon: Mail,
             iconColor: "text-purple-500",
             subTitle: "Comunicados Globais",
@@ -227,7 +238,6 @@ export default function ComunicadosDashboard() {
     ];
 
     const comunicadosFiltrados = comunicados.filter((c) => {
-        // REMOÇÃO DOS FILTROS "lidos" e "nao_lidos"
         if (filtro === "administradores") return c.destinatario === "administradores";
         if (filtro === "usuários" || filtro === "sindicos") return c.destinatario === filtro;
         if (filtro === "meus") return c.autorId === CURRENT_USER_ID;
@@ -276,7 +286,7 @@ export default function ComunicadosDashboard() {
                                 <CardContent className="flex flex-row items-center justify-between -mt-1">
                                     <div className="flex flex-col">
                                         <p className="font-bold text-3xl text-foreground">{card.value}</p>
-                                        
+
                                         {card.porcentagem && (
                                             <p className="text-blue-500 text-sm mt-1">{card.porcentagem}</p>
                                         )}
@@ -284,7 +294,7 @@ export default function ComunicadosDashboard() {
                                             <p className="text-purple-500 text-sm mt-1">{card.subTitle}</p>
                                         )}
                                         {card.subTitle2 && (
-                                            <p className="text-primary text-sm mt-1">{card.subTitle2}</p>
+                                            <p className={`${card.title === 'Recebidos' ? 'text-green-600' : 'text-primary'} text-sm mt-1`}>{card.subTitle2}</p>
                                         )}
                                     </div>
 
@@ -368,7 +378,6 @@ export default function ComunicadosDashboard() {
             <Tabs value={filtro} onValueChange={setFiltro}>
                 <TabsList className="flex flex-wrap">
                     <TabsTrigger value="todos">Todos</TabsTrigger>
-                    {/* REMOÇÃO DOS FILTROS LIDOS/NÃO LIDOS */}
                     <TabsTrigger value="meus">Meus Comunicados</TabsTrigger>
                 </TabsList>
             </Tabs>
@@ -391,7 +400,7 @@ export default function ComunicadosDashboard() {
                         <CardContent className="divide-y p-0">
                             {comunicadosFiltrados.map((c) => {
                                 const isCriador = c.autorId === CURRENT_USER_ID;
-                                
+
                                 return (
                                     <div
                                         key={c.id}
@@ -424,10 +433,6 @@ export default function ComunicadosDashboard() {
                                         </div>
 
                                         <div className="flex gap-2 ml-auto flex-shrink-0">
-
-                                            {/* REMOÇÃO DO BOTÃO DE MARCAR LIDO/NÃO LIDO */}
-
-                                            {/* BOTÕES DE EDIÇÃO E EXCLUSÃO (Apenas para o criador) */}
                                             {isCriador && (
                                                 <>
                                                     <Button size="icon" variant="ghost">
@@ -467,7 +472,6 @@ export default function ComunicadosDashboard() {
                             })}
                         </CardContent>
                     )}
-
                     <PaginationDemo />
                 </Card>
             </div>

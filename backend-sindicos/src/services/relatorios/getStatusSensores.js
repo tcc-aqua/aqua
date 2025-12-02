@@ -1,46 +1,45 @@
-import Sensor from "../../models/Sensor.js";
+import Condominio from "../../models/Condominio.js";
 import Apartamento from "../../models/Apartamento.js";
-import User from "../../models/User.js";
-import { Sequelize } from "sequelize";
+import Sensor from "../../models/Sensor.js";
 
 export default class StatusSensores {
-    static async getStatusCounts(sindico_id) {
-        try {
-            const sindico = await User.findByPk(sindico_id);
-            if (!sindico) {
-                throw new Error("Síndico não encontrado");
-            }
 
-            const condominioId = sindico.condominio_id;
+  static async getSensoresStatus(sindicoId) {
+    try {
+      const condominios = await Condominio.findAll({
+        where: { sindico_id: sindicoId },
+        attributes: ["id"],
+      });
 
-            const ativos = await Sensor.count({
-                where: { status: "ativo" },
-                include: [
-                    {
-                        model: Apartamento,
-                        where: { condominio_id: condominioId }
-                    }
-                ]
-            });
+      const condominioIds = condominios.map(c => c.id);
+      if (!condominioIds.length) return { ativos: 0, inativos: 0 };
 
-            const inativos = await Sensor.count({
-                where: { status: "inativo" },
-                include: [
-                    {
-                        model: Apartamento,
-                        where: { condominio_id: condominioId }
-                    }
-                ]
-            });
+      const apartamentos = await Apartamento.findAll({
+        where: { condominio_id: condominioIds },
+        attributes: ["sensor_id"],
+      });
 
-            return {
-                ativos,
-                inativos
-            };
+      const sensorIds = apartamentos.map(a => a.sensor_id).filter(Boolean);
+      if (!sensorIds.length) return { ativos: 0, inativos: 0 };
 
-        } catch (error) {
-            console.error("Erro ao contar sensores ativos/inativos:", error);
-            throw error;
-        }
+      const sensores = await Sensor.findAll({
+        where: { id: sensorIds },
+        attributes: ["status"],
+      });
+
+      const statusCounts = sensores.reduce(
+        (acc, s) => {
+          if (s.status === "ativo") acc.ativos += 1;
+          else if (s.status === "inativo") acc.inativos += 1;
+          return acc;
+        },
+        { ativos: 0, inativos: 0 }
+      );
+
+      return statusCounts;
+    } catch (error) {
+      console.error("Erro ao buscar status dos sensores:", error);
+      throw error;
     }
+  }
 }

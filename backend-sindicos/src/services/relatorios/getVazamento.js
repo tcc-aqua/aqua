@@ -1,9 +1,10 @@
 import Condominio from "../../models/Condominio.js";
 import Apartamento from "../../models/Apartamento.js";
-import  Alerta  from "../../models/Alertas.js";
+import Alerta from "../../models/Alertas.js";
 
-export default class UserAlertService {
-  static async getUsersWithHighConsumptionAlert(sindicoId) {
+export default class GetVazamentos {
+
+  static async getUsersComVazamento(sindicoId) {
     try {
       const condominios = await Condominio.findAll({
         where: { sindico_id: sindicoId },
@@ -11,7 +12,6 @@ export default class UserAlertService {
       });
 
       const condominioIds = condominios.map(c => c.id);
-
       if (!condominioIds.length) return 0;
 
       const apartamentos = await Apartamento.findAll({
@@ -20,17 +20,17 @@ export default class UserAlertService {
       });
 
       const apartamentoIds = apartamentos.map(a => a.id);
-      const responsavelIds = apartamentos.map(a => a.responsavel_id).filter(Boolean);
 
       const alertas = await Alerta.findAll({
         where: {
-          tipo: "consumo_alto",
+          tipo: "vazamento", 
           resolvido: false,
           residencia_type: "apartamento",
           residencia_id: apartamentoIds,
         },
         attributes: ["residencia_id"],
       });
+
       const usuariosComAlerta = alertas
         .map(a => {
           const apt = apartamentos.find(ap => ap.id === a.residencia_id);
@@ -38,11 +38,9 @@ export default class UserAlertService {
         })
         .filter(Boolean);
 
-      const quantidadeUnica = [...new Set(usuariosComAlerta)].length;
-
-      return quantidadeUnica;
+      return [...new Set(usuariosComAlerta)].length;
     } catch (error) {
-      console.error("Erro ao buscar usuários com alerta:", error);
+      console.error("Erro ao buscar usuários com alerta de vazamento:", error);
       throw error;
     }
   }

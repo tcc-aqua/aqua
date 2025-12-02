@@ -6,6 +6,7 @@ export default async function comunicadosRoutes(fastify) {
     fastify.get('/total', { preHandler: autenticarSindico }, ComunicadosController.getTotalCount);
     fastify.get('/admin-para-sindicos-count', { preHandler: autenticarSindico }, ComunicadosController.getAdminSindicosCount);
     fastify.get('/me', { preHandler: autenticarSindico }, ComunicadosController.getMyTotalCount);
+    fastify.get('/recebidos-count', { preHandler: autenticarSindico }, ComunicadosController.countRecebidos);
     fastify.get('/nao-lidos-count', { preHandler: autenticarSindico }, ComunicadosController.getNaoLidosCount);
     fastify.put('/:id/status/lido', { preHandler: autenticarSindico }, ComunicadosController.updateLidoStatus);
     fastify.post('/', { preHandler: autenticarSindico }, ComunicadosController.addComunicado);
