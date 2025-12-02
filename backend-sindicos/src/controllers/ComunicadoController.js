@@ -4,7 +4,8 @@ import CountComunicadosAdminParaSindicoService from "../services/comunicados/cou
 import criadosPeloSindico from "../services/comunicados/criadosPeloSindico.js";
 import getComunicadosService from "../services/comunicados/getComunicado.js";
 import getTotalComunicados from "../services/comunicados/getTotalComunicados.js";
-import Comunicados from "../models/Comunicados.js"; 
+import Comunicados from "../models/Comunicados.js";
+import CountComunicadosRecebidosService from "../services/comunicados/getComunicadosRecebidos.js";
 
 export default class ComunicadosController {
     static async getAllComunicados(req, reply) {
@@ -59,7 +60,7 @@ export default class ComunicadosController {
         }
 
 
-       const comunicadoLido = await marcarComunicadoLidoService.updateStatusLido(
+        const comunicadoLido = await marcarComunicadoLidoService.updateStatusLido(
             comunicado_id,
             user_id,
             lido
@@ -79,5 +80,13 @@ export default class ComunicadosController {
     static async getAdminSindicosCount(req, reply) {
         const total = await CountComunicadosAdminParaSindicoService.execute();
         return reply.status(200).send({ total });
+    }
+
+    static async countRecebidos(request, reply) {
+        const sindico_id = request.user.id;
+        const total = await CountComunicadosRecebidosService.countRecebidos(sindico_id);
+        return reply.status(200).send({
+            total_recebidos: total
+        });
     }
 }

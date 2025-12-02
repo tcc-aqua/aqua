@@ -1,6 +1,3 @@
-// Arquivo: C:\Users\24250553\Documents\3mdR\aqua\backend-mobile\src\models\User.js
-// CÓDIGO COMPLETO E CORRIGIDO
-
 import sequelize from "../config/sequelize.js";
 import { DataTypes, Model } from "sequelize";
 import { v4 as uuidv4 } from 'uuid';
@@ -35,8 +32,8 @@ User.init({
         type: DataTypes.STRING(255),
         allowNull: false
     },
-    img_url: { // <<<<<<<<<<<< CAMPO ADICIONADO
-        type: DataTypes.STRING,
+    img_url: {
+        type: DataTypes.TEXT('long'),
         allowNull: true
     },
     type: {
@@ -64,31 +61,6 @@ User.init({
     role: {
         type: DataTypes.ENUM('morador', 'sindico'),
         defaultValue: 'morador',
-        allowNull: false
-    },
-    notif_vazamento: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true,
-        allowNull: false
-    },
-    notif_consumo_alto: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true,
-        allowNull: false
-    },
-    notif_metas: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true,
-        allowNull: false
-    },
-    notif_comunidade: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-        allowNull: false
-    },
-    notif_relatorios: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true,
         allowNull: false
     }
 }, {

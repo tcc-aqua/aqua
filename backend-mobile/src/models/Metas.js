@@ -1,6 +1,4 @@
-
-
-import {Model, DataTypes } from 'sequelize';
+import { Model, DataTypes } from 'sequelize';
 import sequelize from '../config/sequelize.js';
 import User from './User.js';
 import sequelizePaginate from 'sequelize-paginate'
@@ -34,9 +32,18 @@ Metas.init({
         type: DataTypes.DECIMAL(10, 2),
         defaultValue: 0
     },
+    consumo_atual: {
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0
+    },
     status: {
         type: DataTypes.ENUM('em_andamento', 'atingida', 'excedida'),
         defaultValue: 'em_andamento'
+    },
+    is_principal: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
     },
     inicio_periodo: {
         type: DataTypes.DATE,

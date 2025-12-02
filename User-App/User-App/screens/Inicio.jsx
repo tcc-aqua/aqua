@@ -11,7 +11,6 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// AJUSTE SEU IP AQUI SE NECESSÁRIO
 const API_URL = 'http://localhost:3334/api';
 
 const theme = {
@@ -30,14 +29,13 @@ export default function Inicio() {
   const [isLoading, setIsLoading] = useState(true);
   const [consumptionData, setConsumptionData] = useState({ 
     todayConsumption: 0, 
-    yesterdayConsumption: 0, // Consumo de Ontem
+    yesterdayConsumption: 0, 
     comparison: 0 
   });
   const [dailyGoal, setDailyGoal] = useState(200);
   const [dicaDoPingo, setDicaDoPingo] = useState("Economize água!");
 
   const loadDashboardData = useCallback(async (isSilent = false) => {
-    // Se for silencioso (auto-refresh), não mostra loading
     if (!isSilent) setIsLoading(true);
 
     try {
@@ -60,7 +58,6 @@ export default function Inicio() {
         axios.get(`${API_URL}/dica`, { headers }),
       ]);
       
-      // Atualiza Estados com dados reais
       const consumoResult = consumoResponse.data;
       if (consumoResult) {
         setConsumptionData({
@@ -70,8 +67,15 @@ export default function Inicio() {
         });
       }
 
-      if (metasResponse.data?.docs?.length > 0) {
-        setDailyGoal(parseFloat(metasResponse.data.docs[0].limite_consumo));
+      const metas = metasResponse.data?.docs || [];
+      const metaPrincipal = metas.find(m => m.is_principal);
+      
+      if (metaPrincipal) {
+        setDailyGoal(parseFloat(metaPrincipal.limite_consumo));
+      } else if (metas.length > 0) {
+        setDailyGoal(parseFloat(metas[0].limite_consumo));
+      } else {
+        setDailyGoal(200);
       }
       
       if (dicaResponse.data?.dica) {
@@ -85,18 +89,16 @@ export default function Inicio() {
     }
   }, []);
 
-  // Efeito para carregar dados iniciais e configurar o intervalo de 5s
   useEffect(() => {
-    loadDashboardData(false); // Carga inicial com loading
+    loadDashboardData(false);
 
     const intervalId = setInterval(() => {
-        loadDashboardData(true); // Recarga silenciosa a cada 5s
+        loadDashboardData(true);
     }, 5000);
 
-    return () => clearInterval(intervalId); // Limpa ao sair da tela
+    return () => clearInterval(intervalId);
   }, [loadDashboardData]);
 
-  // --- LÓGICA VISUAL ---
   const percentageUsed = useMemo(() => {
       if(dailyGoal <= 0) return 0;
       return (consumptionData.todayConsumption / dailyGoal) * 100;
@@ -128,7 +130,6 @@ export default function Inicio() {
         showsVerticalScrollIndicator={false}
       >
         
-        {/* CARD PRINCIPAL (HERO) */}
         <MotiView 
             from={{ scale: 0.95, opacity: 0 }} 
             animate={{ scale: 1, opacity: 1 }} 
@@ -166,10 +167,8 @@ export default function Inicio() {
             </LinearGradient>
         </MotiView>
 
-        {/* GRID DE INFORMAÇÕES */}
         <View style={styles.gridContainer}>
             
-            {/* Card 1: Comparativo com Ontem */}
             <MotiView from={{ translateX: -20, opacity: 0 }} animate={{ translateX: 0, opacity: 1 }} transition={{ delay: 100 }} style={styles.gridItem}>
                 <Surface style={styles.statCard} elevation={2}>
                     <View style={[styles.iconCircle, { backgroundColor: '#E3F2FD' }]}>
@@ -178,7 +177,6 @@ export default function Inicio() {
                     <Text style={styles.statLabel}>Ontem</Text>
                     <Text style={styles.statValue}>{consumptionData.yesterdayConsumption.toFixed(0)} L</Text>
                     
-                    {/* Exibe porcentagem de aumento ou queda */}
                     <View style={styles.trendContainer}>
                         <MaterialCommunityIcons 
                             name={consumptionData.comparison > 0 ? "arrow-up" : "arrow-down"} 
@@ -192,7 +190,6 @@ export default function Inicio() {
                 </Surface>
             </MotiView>
 
-            {/* Card 2: Status/Nível */}
             <MotiView from={{ translateX: 20, opacity: 0 }} animate={{ translateX: 0, opacity: 1 }} transition={{ delay: 200 }} style={styles.gridItem}>
                 <Surface style={styles.statCard} elevation={2}>
                     <View style={[styles.iconCircle, { backgroundColor: statusColor + '20' }]}>
@@ -205,7 +202,6 @@ export default function Inicio() {
             </MotiView>
         </View>
 
-        {/* Card 3: Falta para Meta (Full Width) */}
         <MotiView from={{ translateY: 20, opacity: 0 }} animate={{ translateY: 0, opacity: 1 }} transition={{ delay: 300 }}>
             <Surface style={styles.infoRowCard} elevation={1}>
                 <View style={styles.infoRowLeft}>
@@ -223,7 +219,6 @@ export default function Inicio() {
             </Surface>
         </MotiView>
 
-        {/* DICA DO PINGO */}
         <MotiView from={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 400 }} style={styles.tipContainer}>
             <View style={styles.mascotContainer}>
                 <View style={styles.mascotCircle}>
@@ -255,11 +250,9 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingTop: 10, // Menos espaço no topo pois header foi removido
+    paddingTop: 10, 
     paddingBottom: 40,
   },
-  
-  // HERO CARD
   heroContainer: {
     shadowColor: "#0A84FF",
     shadowOffset: { width: 0, height: 8 },
@@ -333,8 +326,6 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: 6,
   },
-
-  // GRID
   gridContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -379,8 +370,6 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       marginTop: 2
   },
-
-  // INFO ROW CARD
   infoRowCard: {
     backgroundColor: '#FFF',
     borderRadius: 20,
@@ -409,8 +398,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-
-  // DICA DO PINGO
   tipContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',

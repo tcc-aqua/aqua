@@ -19,12 +19,7 @@ const tabs = [
     icon: <Users className="w-5 h-5" aria-hidden="true" />,
     render: <ChartTooltipLabelFormatter />,
   },
-  {
-    name: "Comunicados Emitidos x Visualizados",
-    value: "dados_gerais",
-    icon: <FileText className="w-5 h-5" aria-hidden="true" />,
-    render: <ChartRadarMultiple />,
-  },
+
 ];
 
 export default function TabsIconDemo() {

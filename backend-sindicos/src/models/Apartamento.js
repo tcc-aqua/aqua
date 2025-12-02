@@ -59,5 +59,6 @@ Apartamento.init({
 })
 
 Apartamento.belongsTo(Condominio, { as: 'condominio', foreignKey: 'condominio_id' });
+Apartamento.belongsTo(Sensor, { foreignKey: "sensor_id" });
 
 sequelizePaginate.paginate(Apartamento);

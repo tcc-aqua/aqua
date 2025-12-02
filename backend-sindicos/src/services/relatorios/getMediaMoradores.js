@@ -1,33 +1,28 @@
+import { fn, col } from "sequelize";
+import Condominio from "../../models/Condominio.js";
 import Apartamento from "../../models/Apartamento.js";
-import User from "../../models/User.js";
-import { Sequelize } from "sequelize";
 
 export default class MediaMoradores {
-    static async getMediaMoradores(sindico_id) {
-        try {
-            // 1. Buscar síndico
-            const sindico = await User.findByPk(sindico_id);
-            if (!sindico) throw new Error("Síndico não encontrado");
+  static async getMediaMoradoresPorApartamento(sindicoId) {
+    try {
+      const condominios = await Condominio.findAll({
+        where: { sindico_id: sindicoId },
+        attributes: ["id"],
+      });
 
-            const condominioId = sindico.condominio_id;
+      const condominioIds = condominios.map(c => c.id);
+      if (!condominioIds.length) return 0;
 
-            // 2. Calcular média de moradores por apartamento
-            const resultado = await Apartamento.findOne({
-                attributes: [
-                    [Sequelize.fn("AVG", Sequelize.col("numero_moradores")), "media_moradores"]
-                ],
-                where: {
-                    condominio_id: condominioId,
-                    status: "ativo"
-                },
-                raw: true
-            });
+      const media = await Apartamento.findAll({
+        where: { condominio_id: condominioIds },
+        attributes: [[fn("AVG", col("numero_moradores")), "media_moradores"]],
+        raw: true,
+      });
 
-            return Number(resultado?.media_moradores || 0);
-
-        } catch (error) {
-            console.error("Erro ao calcular média de moradores:", error);
-            throw error;
-        }
+      return parseFloat(media[0].media_moradores) || 0;
+    } catch (error) {
+      console.error("Erro ao calcular média de moradores:", error);
+      throw error;
     }
+  }
 }
