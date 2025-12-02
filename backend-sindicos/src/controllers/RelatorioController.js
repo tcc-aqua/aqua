@@ -1,6 +1,7 @@
 import UserAlertService from "../services/relatorios/getConsumoAlto.js";
 import UserConsumoMedio from "../services/relatorios/getConsumoMensal.js";
 import QtdApartamentos from "../services/relatorios/getQtdApartamentos.js";
+import StatusSensores from "../services/relatorios/getStatusSensores.js";
 import GetVazamentos from "../services/relatorios/getVazamento.js";
 
 export default class RelatorioController {
@@ -29,4 +30,10 @@ export default class RelatorioController {
 
         return reply.status(200).send({ numero_apartamentos: numeroApartamentos });
     }
+
+    static async getSensoresStatus(req, reply) {
+          const sindicoId = req.user.id; 
+          const statusSensores = await StatusSensores.getSensoresStatus(sindicoId);
+          return reply.status(200).send(statusSensores);
+        }
 }

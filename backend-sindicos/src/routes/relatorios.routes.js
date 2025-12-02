@@ -6,4 +6,5 @@ export default async function relatorioRoutes(fastify){
     fastify.get('/consumo-medio',  {preHandler: autenticarSindico}, RelatorioController.getConsumoMedio)
     fastify.get('/apartamentos',  {preHandler: autenticarSindico}, RelatorioController.getNumeroApartamentos)
     fastify.get('/vazamentos',  {preHandler: autenticarSindico}, RelatorioController.getUsersComVazamento)
+    fastify.get('/status-sensores',  {preHandler: autenticarSindico}, RelatorioController.getSensoresStatus)
 }
