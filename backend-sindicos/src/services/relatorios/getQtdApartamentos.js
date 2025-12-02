@@ -1,10 +1,13 @@
 import CondominioView from "../../models/CondominioView.js";
 
 export default class QtdApartamentos {
-  static async getNumeroApartamentos(sindicoId) {
+  static async getNumeroApartamentos(sindico_id) {
     try {
+      if (!sindico_id) return 0;
+
+      // Buscar o condomínio onde o usuário é síndico
       const condominio = await CondominioView.findOne({
-        where: { sindico_id: sindicoId },
+        where: { sindico_id }, // coluna correta na view
         attributes: ["numero_apartamentos"],
       });
 
