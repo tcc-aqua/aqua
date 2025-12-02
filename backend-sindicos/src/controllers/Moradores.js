@@ -6,19 +6,28 @@ import GetUsersWithAlert from "../services/moradores/getUsersComAlerta.js";
 
 export default class MoradoresController {
     static async info(req, reply) {
-        const sindico_id = req.user.id;
-        const users = await getUsersRegistrados.getAllUsersRegistrados(sindico_id);
-        const users_ativos = await GetUsuariosRegistradosAtivos.getUsersAtivosRegistrados(sindico_id);
-        const users_inativos = await GetUsersInativos.getUsersRegistradosInativos(sindico_id);
-        const count_users = await GetUsersTotal.getUsersRegistrados(sindico_id);
-        const users_with_alert = await GetUsersWithAlert.count(sindico_id);
+        try {
+            const sindico_id = req.user.id;
 
-        return reply.status(200).send({
-            users,
-            count_users,
-            users_ativos,
-            users_inativos,
-            users_with_alert
-        })
+            const page = Number(req.query.page) || 1;
+            const limit = Number(req.query.limit) || 10;
+
+            const users = await getUsersRegistrados.getAllUsersRegistrados(page, limit, sindico_id);
+            const users_ativos = await GetUsuariosRegistradosAtivos.getUsersAtivosRegistrados(sindico_id);
+            const users_inativos = await GetUsersInativos.getUsersRegistradosInativos(sindico_id);
+            const count_users = await GetUsersTotal.getUsersRegistrados(sindico_id);
+            const users_with_alert = await GetUsersWithAlert.count(sindico_id);
+
+            return reply.status(200).send({
+                users,
+                count_users,
+                users_ativos,
+                users_inativos,
+                users_with_alert
+            });
+        } catch (error) {
+            console.error("Erro ao buscar informações dos moradores:", error);
+            return reply.status(500).send({ message: "Erro interno do servidor." });
+        }
     }
 }

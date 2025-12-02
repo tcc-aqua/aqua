@@ -16,7 +16,16 @@ export const autenticarSindico = async (request, reply) => {
       return reply.status(403).send({ message: 'Acesso negado.' });
     }
 
-    request.user = user; 
+    request.user = {
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      condominio_id: user.condominio_id,
+      status: user.status
+    };
+    request.user = user;
+    console.log('Middleware user:', request.user);
+
   } catch (error) {
     console.error('Erro na autenticação:', error);
     return reply.status(401).send({ message: 'Token inválido ou expirado.' });

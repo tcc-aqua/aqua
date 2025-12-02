@@ -1,0 +1,24 @@
+{"level":30,"time":1764715921408,"pid":9421,"hostname":"pop-os","msg":"Server listening at http://127.0.0.1:3334"}
+{"level":30,"time":1764715921408,"pid":9421,"hostname":"pop-os","msg":"Server listening at http://192.168.18.11:3334"}
+{"level":30,"time":1764716139356,"pid":9421,"hostname":"pop-os","reqId":"req-1","req":{"method":"POST","url":"/api/auth/login","host":"localhost:3334","remoteAddress":"127.0.0.1","remotePort":53726},"msg":"incoming request"}
+{"level":30,"time":1764716139369,"pid":9421,"hostname":"pop-os","reqId":"req-1","res":{"statusCode":400},"responseTime":12.881304000038654,"msg":"request completed"}
+{"level":30,"time":1764716140715,"pid":9421,"hostname":"pop-os","reqId":"req-2","req":{"method":"POST","url":"/api/auth/login","host":"localhost:3334","remoteAddress":"127.0.0.1","remotePort":53726},"msg":"incoming request"}
+{"level":30,"time":1764716140717,"pid":9421,"hostname":"pop-os","reqId":"req-2","res":{"statusCode":400},"responseTime":2.174523000139743,"msg":"request completed"}
+{"level":30,"time":1764716153875,"pid":9421,"hostname":"pop-os","reqId":"req-3","req":{"method":"POST","url":"/api/auth/login","host":"localhost:3334","remoteAddress":"127.0.0.1","remotePort":53726},"msg":"incoming request"}
+{"level":30,"time":1764716153882,"pid":9421,"hostname":"pop-os","reqId":"req-3","res":{"statusCode":400},"responseTime":7.1264519998803735,"msg":"request completed"}
+{"level":30,"time":1764716154705,"pid":9421,"hostname":"pop-os","reqId":"req-4","req":{"method":"POST","url":"/api/auth/login","host":"localhost:3334","remoteAddress":"127.0.0.1","remotePort":53726},"msg":"incoming request"}
+{"level":30,"time":1764716154708,"pid":9421,"hostname":"pop-os","reqId":"req-4","res":{"statusCode":400},"responseTime":2.1739329998381436,"msg":"request completed"}
+{"level":30,"time":1764716210367,"pid":9756,"hostname":"pop-os","msg":"Server listening at http://127.0.0.1:3334"}
+{"level":30,"time":1764716210367,"pid":9756,"hostname":"pop-os","msg":"Server listening at http://192.168.18.11:3334"}
+{"level":30,"time":1764716210902,"pid":9756,"hostname":"pop-os","reqId":"req-1","req":{"method":"POST","url":"/api/auth/register","host":"localhost:3334","remoteAddress":"127.0.0.1","remotePort":49688},"msg":"incoming request"}
+{"level":30,"time":1764716210910,"pid":9756,"hostname":"pop-os","reqId":"req-1","res":{"statusCode":400},"responseTime":7.29546400019899,"msg":"request completed"}
+{"level":30,"time":1764716211573,"pid":9756,"hostname":"pop-os","reqId":"req-2","req":{"method":"POST","url":"/api/auth/register","host":"localhost:3334","remoteAddress":"127.0.0.1","remotePort":49688},"msg":"incoming request"}
+{"level":30,"time":1764716211574,"pid":9756,"hostname":"pop-os","reqId":"req-2","res":{"statusCode":400},"responseTime":1.3230460002087057,"msg":"request completed"}
+{"level":30,"time":1764716228548,"pid":9756,"hostname":"pop-os","reqId":"req-3","req":{"method":"POST","url":"/api/auth/register","host":"localhost:3334","remoteAddress":"127.0.0.1","remotePort":49688},"msg":"incoming request"}
+{"level":30,"time":1764716228648,"pid":9756,"hostname":"pop-os","reqId":"req-3","res":{"statusCode":400},"responseTime":98.99675799999386,"msg":"request completed"}
+{"level":30,"time":1764716243186,"pid":9756,"hostname":"pop-os","reqId":"req-4","req":{"method":"POST","url":"/api/auth/register","host":"localhost:3334","remoteAddress":"127.0.0.1","remotePort":49688},"msg":"incoming request"}
+{"level":30,"time":1764716243263,"pid":9756,"hostname":"pop-os","reqId":"req-4","res":{"statusCode":400},"responseTime":75.93965700035915,"msg":"request completed"}
+{"level":30,"time":1764716244062,"pid":9756,"hostname":"pop-os","reqId":"req-5","req":{"method":"POST","url":"/api/auth/register","host":"localhost:3334","remoteAddress":"127.0.0.1","remotePort":49688},"msg":"incoming request"}
+{"level":30,"time":1764716244139,"pid":9756,"hostname":"pop-os","reqId":"req-5","res":{"statusCode":400},"responseTime":76.59838199988008,"msg":"request completed"}
+{"level":30,"time":1764716252448,"pid":9756,"hostname":"pop-os","reqId":"req-6","req":{"method":"POST","url":"/api/auth/register","host":"localhost:3334","remoteAddress":"127.0.0.1","remotePort":49688},"msg":"incoming request"}
+{"level":30,"time":1764716252544,"pid":9756,"hostname":"pop-os","reqId":"req-6","res":{"statusCode":201},"responseTime":95.92921099998057,"msg":"request completed"}
