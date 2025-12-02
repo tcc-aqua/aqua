@@ -1,23 +1,11 @@
 import MetasController from "../controllers/MetasController.js";
+import { authMiddleware } from "../middlewares/AuthMidlleweare.js";
 
 export default async function metasRoutes(fastify) {
-    fastify.get('/',
-        {
-            schema: {
-                summary: 'Listando todas as metas do usuário',
-                tags: ['metas'],
-                description: 'Metas do usuário referente ao consumo.'
-            }
-        },
-        MetasController.getAll);
-
-    fastify.post('/', 
-        {
-            schema: {
-                summary: 'Criando uma nova meta',
-                tags: ['metas'],
-                description: 'Criando uma nova meta referente ao consumo de água planejada durante determinado tempo'
-            }
-        },
-        MetasController.create);
+    fastify.get('/', { preHandler: [authMiddleware] }, MetasController.getAll);
+    fastify.post('/', { preHandler: [authMiddleware] }, MetasController.create);
+    
+    // Novas rotas
+    fastify.put('/:id', { preHandler: [authMiddleware] }, MetasController.update);
+    fastify.delete('/:id', { preHandler: [authMiddleware] }, MetasController.delete);
 }
