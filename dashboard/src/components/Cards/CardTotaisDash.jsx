@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Users, UserPlus, AlertTriangle, Cpu, Siren, Check, Signal, Sigma, SigmaIcon, ListTodo, CircleGauge, ListOrdered, Layers } from "lucide-react";
+import { Users, UserPlus, AlertTriangle, Cpu, Siren, Check, Signal, Sigma, SigmaIcon, ListTodo, CircleGauge, ListOrdered, Layers, UserCheck } from "lucide-react";
 
 const cardVariants = {
   hidden: { y: -120, opacity: 0, zIndex: -1 },
@@ -91,7 +91,7 @@ export default function CardTopDash() {
     {
       title: "Usuários ativos",
       value: userStats.usuariosAtivos,
-      icon: Check,
+      icon: UserCheck,
       iconColor: "text-green-600",
       detalhe2: "Total de Usuários",
       // `${userStats.totalCasas} moradores + ${userStats.totalApartamentos} síndicos`

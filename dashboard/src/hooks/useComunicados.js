@@ -9,7 +9,6 @@ export function useComunicados() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-
   const fetchComunicados = async () => {
     setLoading(true);
     setError(null);
@@ -25,7 +24,6 @@ export function useComunicados() {
       setLoading(false);
     }
   };
-
 
   const addComunicado = async (novo) => {
     setLoading(true);
@@ -50,10 +48,10 @@ export function useComunicados() {
       const res = await api.put(`/comunicados/${id}`, dados);
       const updated = res?.data || res;
 
-      if (!updated || updated.error) throw new Error(updated?.error || "Erro ao atualizar comunicado");
+      if (!updated || updated.error)
+        throw new Error(updated?.error || "Erro ao atualizar comunicado");
 
       toast.success("Comunicado atualizado com sucesso!");
-
 
       await fetchComunicados();
     } catch (err) {
@@ -67,7 +65,8 @@ export function useComunicados() {
     setLoading(true);
     try {
       const res = await api.del(`/comunicados/${id}`);
-      if (res?.error) throw new Error(res?.message || "Erro ao excluir comunicado");
+      if (res?.error)
+        throw new Error(res?.message || "Erro ao excluir comunicado");
 
       toast.success("Comunicado excluído com sucesso!");
 
@@ -90,20 +89,27 @@ export function useComunicados() {
       setLoading(false);
     }
   };
+
 const marcarComoLido = async (id) => {
   try {
-    await api.post("/comunicados/ler", { id });
+    const res = await api.post("/comunicados/ler", {
+      comunicado_id: id,
+    });
 
-   
-    setComunicados(prev =>
-      prev.map(c => (c.id === id ? { ...c, lido: true } : c))
+
+    setComunicados((prev) =>
+      prev.map((c) =>
+        c.id === id ? { ...c, lido: true } : c
+      )
     );
 
-    toast.success("Comunicado marcado como lido!");
-  } catch (err) {
-    toast.error(err?.message || "Erro ao marcar como lido");
+    return res.data;
+  } catch (error) {
+    console.error("Erro ao marcar como lido:", error);
+    throw error;
   }
 };
+
 
   useEffect(() => {
     fetchComunicados();

@@ -91,12 +91,13 @@ export default function CardAlertasRecentes() {
                 const { spanBgClass, spanTextClass } = getAlertaLevelColorClasses(alerta.nivel);
 
                 return (
-                  <div key={alerta.id} className="p-4 flex justify-between m-2 bg-muted/10 items-start w-100 rounded-lg gap-2">
+                  <div key={alerta.id} className="p-4 flex justify-between m-2 bg-muted/10 items-start w-100 rounded-lg ">
                     <div>
 
                       <span
-                        className={`font-semibold p-1 rounded-full inline-flex items-center gap-1
-                ${alerta.residencia_type === "casa" ? "bg-sky-700 text-white" : "bg-indigo-500 text-white"}`}
+                       className={`
+                             inline-flex items-center gap-2 px-2 py-1 rounded-md border font-semibold
+                ${alerta.residencia_type === "casa" ? "text-sky-600 " : "text-indigo-500 "}`}
                       >
                         {renderIconeResidencia(alerta.residencia_type)}
                         {alerta.residencia_type}

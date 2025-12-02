@@ -58,7 +58,7 @@ export default function SettingsDashboard() {
       ? "http://localhost:3333/api/admins"
       // : activeTab === "users"
       //   ? "http://localhost:3333/api/users"
-        : null;
+      : null;
 
   const fetchData = async () => {
     if (activeTab === "geral") return;
@@ -174,8 +174,8 @@ export default function SettingsDashboard() {
       <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground">
         <Toaster position="top-right" richColors />
 
-        {/* Sidebar */}
-        <aside className="w-full md:w-64 md:h-65 bg-sidebar border-b md:border-b-0 md:border-r border-border flex-shrink-0 flex flex-col rounded-none md:rounded-md ">
+
+        {/* <aside className="w-full md:w-64 md:h-65 bg-sidebar border-b md:border-b-0 md:border-r border-border flex-shrink-0 flex flex-col rounded-none md:rounded-md ">
           <div className="flex items-center gap-2 p-6 text-lg font-semibold border-b border-border text-accent">
             <Settings className="text-accent" size={20} />
             Configurações
@@ -185,15 +185,15 @@ export default function SettingsDashboard() {
             <button
               onClick={() => setActiveTab("admins")}
               className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${activeTab === "admins"
-                  ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
-                  : "text-sidebar-foreground hover:text-accent"
+                ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
+                : "text-sidebar-foreground hover:text-accent"
                 }`}
             >
               <Shield size={18} />
               Administradores
-            </button>
+            </button> */}
 
-            {/* <button
+        {/* <button
               onClick={() => setActiveTab("users")}
               className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${activeTab === "users"
                   ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
@@ -203,22 +203,43 @@ export default function SettingsDashboard() {
               <User size={18} />
               Usuários
             </button> */}
-
+        {/* 
             <button
               onClick={() => setActiveTab("geral")}
               className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 rounded-md whitespace-nowrap ${activeTab === "geral"
-                  ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
-                  : "text-sidebar-foreground hover:text-accent"
+                ? "bg-muted border-b-2 md:border-b-0 md:border-r-4 border-accent text-accent"
+                : "text-sidebar-foreground hover:text-accent"
                 }`}
             >
               <BookOpen size={18} />
               Geral
-            </button>
-          </nav>
-        </aside>
+            </button> */}
+        {/* </nav>
+        </aside> */}
 
         <main className="flex-1 p-4 sm:p-6 md:p-10 overflow-x-auto">
+          <h1 className="font-bold  text-accent text-3xl">Criar novos Administradores</h1>
+          <h2 className="font-semibold text-foreground/60 mt-3  ml-3">Crie e edite seus administradores</h2>
           <AnimationWrapper delay={0.2}>
+
+            <div className="flex gap-4 items-center justify-end mb-5">
+              {activeTab !== "geral" && (
+                <span className="text-sm text-muted-foreground">
+                  {data.length} registros
+                </span>
+              )}
+
+              {activeTab === "admins" && (
+                <Button
+                  className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                  variant="default"
+                  onClick={() => setShowNewAdminModal(true)}
+                >
+                  <Plus size={14} />
+                  Novo Admin
+                </Button>
+              )}
+            </div>
             <Card className="mx-auto">
               <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <CardTitle>
@@ -227,24 +248,6 @@ export default function SettingsDashboard() {
                   {activeTab === "geral" && "Configurações Gerais"}
                 </CardTitle>
 
-                <div className="flex gap-4 items-center">
-                  {activeTab !== "geral" && (
-                    <span className="text-sm text-muted-foreground">
-                      {data.length} registros
-                    </span>
-                  )}
-
-                  {activeTab === "admins" && (
-                    <Button
-                      className="h-8 sm:h-7 w-full sm:w-auto rounded-md bg-accent/80"
-                      variant="default"
-                      onClick={() => setShowNewAdminModal(true)}
-                    >
-                      <Plus size={14} />
-                      Novo Admin
-                    </Button>
-                  )}
-                </div>
               </CardHeader>
 
               <CardContent className="overflow-x-auto">
@@ -319,16 +322,18 @@ export default function SettingsDashboard() {
                                 )}
                                 <td className="text-sm">
                                   <span
-                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-white font-semibold uppercase ${role === "morador"
-                                        ? "bg-sky-500"
+                                    className={`
+      inline-flex items-center gap-1 px-2 py-1 rounded-md border  font-semibold
+      ${role === "morador"
+                                        ? "text-sky-500 "
                                         : role === "sindico"
-                                          ? "bg-yellow-400 text-black"
+                                          ? "text-yellow-500 "
                                           : role === "admin"
-                                            ? "bg-blue-600"
+                                            ? "text-blue-600 "
                                             : role === "superadmin"
-                                              ? "bg-purple-600"
-                                              : "bg-gray-500"
-                                      }`}
+                                              ? "text-purple-600 "
+                                              : "text-gray-500 "}
+    `}
                                   >
                                     {role === "morador" ? (
                                       <>
@@ -359,14 +364,19 @@ export default function SettingsDashboard() {
                                   </span>
                                 </td>
 
-                                <td className="px-2 sm:px-4 py-2">
+                                <td className="text-sm font-semibold px-3 py-4">
                                   <span
-                                    className={`inline-block w-3 h-3 rounded-full mt-3 ${status === "ativo"
-                                        ? "bg-green-600"
-                                        : "bg-destructive"
-                                      }`}
-                                  />
+                                    className={`
+                             inline-flex items-center gap-2 px-2 py-1 rounded-md border 
+                           ${status === "ativo"
+                                        ? "text-green-500 border-green-600"
+                                        : "text-destructive border-red-600"}`}
+                                  >
+
+                                    {status === "ativo" ? "Ativo" : "Inativo"}
+                                  </span>
                                 </td>
+
 
                                 {activeTab === "admins" && (
                                   <td className="px-2 sm:px-4 py-2 flex items-center gap-2 text-sm">
@@ -459,23 +469,23 @@ export default function SettingsDashboard() {
           <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
             <div
               className={`h-2 w-full rounded-t-md ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
-                  ? "bg-red-600"
-                  : "bg-green-600"
+                ? "bg-red-600"
+                : "bg-green-600"
                 }`}
             />
 
             <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
               <div
                 className={`p-4 rounded-full ${(selectedItem?.status || selectedItem?.user_status) === "ativo"
-                    ? "bg-red-100 dark:bg-red-900"
-                    : "bg-green-100 dark:bg-green-900"
+                  ? "bg-red-100 dark:bg-red-900"
+                  : "bg-green-100 dark:bg-green-900"
                   }`}
               >
                 <AlertTriangle
                   className={`h-10 w-10 ${(selectedItem?.status || selectedItem?.user_status) ===
-                      "ativo"
-                      ? "text-red-600 dark:text-red-400"
-                      : "text-green-600 dark:text-green-400"
+                    "ativo"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
                     }`}
                 />
               </div>
@@ -489,9 +499,9 @@ export default function SettingsDashboard() {
                 Deseja realmente{" "}
                 <span
                   className={`font-semibold ${(selectedItem?.status ||
-                      selectedItem?.user_status) === "ativo"
-                      ? "text-red-600 dark:text-red-400"
-                      : "text-green-600 dark:text-green-400"
+                    selectedItem?.user_status) === "ativo"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
                     }`}
                 >
                   {(selectedItem?.status ||
@@ -519,9 +529,9 @@ export default function SettingsDashboard() {
 
               <Button
                 className={`flex items-center gap-2 px-6 py-3 text-white transition ${(selectedItem?.status ||
-                    selectedItem?.user_status) === "ativo"
-                    ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-                    : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                  selectedItem?.user_status) === "ativo"
+                  ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+                  : "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
                   }`}
                 onClick={toggleStatus}
               >
@@ -626,7 +636,7 @@ export default function SettingsDashboard() {
 
               <DialogFooter className="pt-6 flex justify-end gap-3">
                 <Button
-                 variant="ghost"
+                  variant="ghost"
                   onClick={() => setOpenEditAdmin(false)}
                   className="w-32"
                 >

@@ -256,9 +256,22 @@ const fetchData = async (filters = {}, page = 1, limit = 10) => {
                           )}
                         </td>
 
-                        <td className="px-4 py-2 text-sm">
-                          <span className={`inline-block w-3 h-3 rounded-full  ${sensor.sensor_status === "ativo" ? "bg-green-600" : sensor.sensor_status === "inativo" ? "bg-destructive" : "bg-yellow-600"}`} title={sensor.sensor_status} />
+                   
+                        <td className="text-sm font-semibold px-3 py-4">
+                          <span
+                            className={`
+                             inline-flex items-center gap-2 px-2 py-1 rounded-md border 
+                              ${sensor.sensor_status  === "ativo"
+                                ? "text-green-500 border-green-600"
+                                : "text-destructive border-red-600"}`}
+                          >
+
+                            {sensor.sensor_status  === "ativo" ? "Ativo" : "Inativo"}
+                          </span>
                         </td>
+
+                        
+                        
                         <td className="px-4 py-2 text-sm font-bold">
                           <div className="flex items-start gap-2">
                             <Droplet className="w-5 h-5 text-sky-500 mt-1" />

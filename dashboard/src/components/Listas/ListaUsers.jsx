@@ -39,9 +39,9 @@ export default function UsersDashboard() {
   const [showSindicoModal, setShowSindicoModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
- 
+
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10); 
+  const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
   const API_URL = "http://localhost:3333/api/users";
@@ -89,7 +89,7 @@ export default function UsersDashboard() {
       const filteredUsers = usersArray.filter(user => {
         const matchesSearch = filters.search
           ? user.user_name.toLowerCase().includes(filters.search.toLowerCase()) ||
-            (user.user_email?.toLowerCase().includes(filters.search.toLowerCase()))
+          (user.user_email?.toLowerCase().includes(filters.search.toLowerCase()))
           : true;
 
         const matchesStatus = filters.status ? user.user_status === filters.status : true;
@@ -101,7 +101,7 @@ export default function UsersDashboard() {
 
       setUsers(filteredUsers);
 
-    
+
       const totalUsers = allData.total ?? usersArray.length;
       setTotalPages(Math.ceil(totalUsers / limit));
 
@@ -159,7 +159,7 @@ export default function UsersDashboard() {
       icon: Users,
       iconColor: "text-accent",
       detalhe: `${userStats.casas ?? 0} casas + ${userStats.condominios ?? 0} condomínios`,
-         borderColor:" border-b-accent "
+      borderColor: " border-b-accent "
     },
     {
       title: "Usuários Ativos",
@@ -169,7 +169,7 @@ export default function UsersDashboard() {
       porcentagem: userStats.total > 0
         ? ((userStats.ativos / userStats.total) * 100).toFixed(0) + "% ativos"
         : "0% ativos",
-           borderColor:" border-b-green-600 "
+      borderColor: " border-b-green-600 "
     },
     {
       title: "Síndicos",
@@ -177,7 +177,7 @@ export default function UsersDashboard() {
       icon: Crown,
       iconColor: "text-yellow-500",
       subTitle: "Síndicos Totais",
-         borderColor:" border-b-yellow-500 "
+      borderColor: " border-b-yellow-500 "
     },
     {
       title: "Moradores",
@@ -185,7 +185,7 @@ export default function UsersDashboard() {
       icon: User,
       iconColor: "text-sky-500",
       subTitle2: "Usuários finais",
-         borderColor:" border-b-sky-500 "
+      borderColor: " border-b-sky-500 "
     },
   ];
 
@@ -203,7 +203,7 @@ export default function UsersDashboard() {
             const Icon = card.icon;
             return (
               <AnimationWrapper key={card.title} delay={i * 0.2}>
-               <Card className={`border-b-4 ${card.borderColor}`}>
+                <Card className={`border-b-4 ${card.borderColor}`}>
                   <CardHeader>
                     <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                   </CardHeader>
@@ -289,24 +289,23 @@ export default function UsersDashboard() {
                             </div>
                           </div>
                         </td>
-                        <td className="text-sm ">
+                        <td className="text-sm">
                           <span
-                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-white font-bold uppercase tracking-wide
-                              ${user.user_type === "casa"
-                                ? "bg-sky-700"
-                                : user.user_type === "condominio"
-                                  ? "bg-indigo-500"
-                                  : "bg-gray-500"
+                            className={`px-2 py-1 rounded-md border font-semibold ${user.user_type === "casa"
+                              ? "text-sky-600"
+                              : user.user_type === "condominio"
+                                ? "text-indigo-500 "
+                                : "text-gray-400 "
                               }`}
                           >
                             {user.user_type === "casa" ? (
                               <>
-                                <Home className="w-4 h-4" />
+                                <Home className="w-4 h-4 inline-block mr-1" />
                                 Casa
                               </>
                             ) : user.user_type === "condominio" ? (
                               <>
-                                <Building className="w-4 h-4" />
+                                <Building className="w-4 h-4 inline-block mr-1" />
                                 Condomínio
                               </>
                             ) : (
@@ -318,36 +317,46 @@ export default function UsersDashboard() {
 
                         <td className="text-sm">
                           <span
-                            className={`inline-flex items-center  px-2 py-1 rounded-full text-white font-bold uppercase tracking-wide
-                         ${user.user_role === "morador"
-                                ? "bg-sky-500 text-sky-700"
-                                : user.user_role === "sindico"
-                                  ? "bg-yellow-500 text-black"
-                                  : "bg-gray-500"
+                            className={`px-2 py-1 rounded-md border font-semibold ${user.user_role === "morador"
+                              ? "text-sky-500"
+                              : user.user_role === "sindico"
+                                ? "text-yellow-500"
+                                : "bg-gray-400 text-gray-700"
                               }`}
                           >
                             {user.user_role === "morador" ? (
                               <>
-                                <User className="w-4 h-4" />
+                                <User className="w-4 h-4 inline-block mr-1" />
                                 Morador
                               </>
                             ) : user.user_role === "sindico" ? (
                               <>
-                                <Crown className="w-4 h-4" />
+                                <Crown className="w-4 h-4 inline-block mr-1" />
                                 Síndico
                               </>
                             ) : (
                               <>
-                                <UserCircle2 className="w-4 h-4" />
+                                <UserCircle2 className="w-4 h-4 inline-block mr-1" />
                                 Desconhecido
                               </>
                             )}
                           </span>
                         </td>
 
-                        <td className=" text-sm font-bold flex items-center px-9 py-4">
-                          <span className={`inline-block w-3 h-3 rounded-full mt-3  ${user.user_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={user.user_status} />
+
+                        <td className="text-sm font-semibold px-3 py-4">
+                          <span
+                            className={`
+                             inline-flex items-center gap-2 px-2 py-1 rounded-md border 
+                              ${user.user_status === "ativo"
+                                ? "text-green-500 border-green-600"
+                                : "text-destructive border-red-600"}`}
+                          >
+
+                            {user.user_status === "ativo" ? "Ativo" : "Inativo"}
+                          </span>
                         </td>
+
 
                         <td className="px-4 py-2 text-sm text-center -">
                           <Tooltip>
@@ -390,12 +399,12 @@ export default function UsersDashboard() {
               )}
             </CardContent>
             <Separator />
-             <PaginationDemo
-            currentPage={page}
-            totalPages={totalPages}
-            onChangePage={(newPage) => setPage(newPage)}
-            maxVisible={5}
-          />
+            <PaginationDemo
+              currentPage={page}
+              totalPages={totalPages}
+              onChangePage={(newPage) => setPage(newPage)}
+              maxVisible={5}
+            />
           </Card>
         </AnimationWrapper >
 

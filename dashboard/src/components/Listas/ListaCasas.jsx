@@ -333,9 +333,20 @@ export default function CasasDashboard() {
                           </div>
                         </td>
 
-                        <td className="text-sm font-bold flex items-center ml-7 py-10">
-                          <span className={`inline-block w-3 h-3 rounded-full ${casa.casa_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={casa.casa_status} />
+                        
+                        <td className="text-sm font-semibold px-3 py-4">
+                          <span
+                            className={`
+                             inline-flex items-center gap-2 px-2 py-1 rounded-md border 
+                              ${casa.casa_status === "ativo"
+                                ? "text-green-500 border-green-600"
+                                : "text-destructive border-red-600"}`}
+                          >
+
+                            {casa.casa_status === "ativo" ? "Ativo" : "Inativo"}
+                          </span>
                         </td>
+
                         <td className="px-4 py-2 text-sm">
                           <Tooltip>
                             <TooltipTrigger asChild>

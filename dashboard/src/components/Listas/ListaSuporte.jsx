@@ -225,7 +225,7 @@ const loadTickets = async () => {
           <PaginationDemo currentPage={page} totalPages={totalPages} onChangePage={(newPage) => setPage(newPage)} maxVisible={5} />
         </div>
 
-        {/* Modal Excluir */}
+ 
         <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
           <DialogContent className="sm:rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
             <div className="h-2 w-full rounded-t-md bg-red-600" />

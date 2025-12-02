@@ -512,9 +512,20 @@ export default function CondominiosDashboard() {
                         <td className="px-4 py-2 text-sm">{condominio.numero_sensores}/300
                           <div className="text-[10px] text-foreground/60">Total de Sensores</div>
                         </td>
-                        <td className="text-sm font-bold flex items-center ml-7 py-9">
-                          <span className={`inline-block w-3 h-3 rounded-full ${condominio.condominio_status === "ativo" ? "bg-green-600" : "bg-destructive"}`} title={condominio.condominio_status} />
+                       
+                        <td className="text-sm font-semibold px-3 py-4">
+                          <span
+                            className={`
+                             inline-flex items-center gap-2 px-2 py-1 rounded-md border 
+                              ${condominio.condominio_status === "ativo"
+                                ? "text-green-500 border-green-600"
+                                : "text-destructive border-red-600"}`}
+                          >
+
+                            {condominio.condominio_status === "ativo" ? "Ativo" : "Inativo"}
+                          </span>
                         </td>
+
                         <td className="px-4 py-2 text-sm justify-center font-semibold">
                           {condominio.sindico_nome && (
                             <div className="flex flex-col items-center justify-center">

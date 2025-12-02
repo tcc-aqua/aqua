@@ -170,7 +170,7 @@ export default function LogsDashboard() {
                 Logs do Sistema
               </CardTitle>
 
-              <ExportarTabela data={logs} fileName="logs" />
+              <ExportarTabela  data={logs} fileName="logs" />
             </div>
 
             <Separator />
@@ -243,9 +243,7 @@ export default function LogsDashboard() {
                       >
                         {log.acao}
                       </span>
-                      <span className="text-muted-foreground text-xs bg-muted px-2 py-1 rounded-md border border-border">
-                        {log.user_id || "null"}
-                      </span>
+               
 
                       <div className="flex items-center gap-2 flex-nowrap">
 

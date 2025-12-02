@@ -57,7 +57,6 @@ export default function ComunicadosDashboard() {
     naoLidos: comunicados.filter((c) => !c.lido).length,
     usuários: comunicados.filter((c) => c.addressee === "usuários").length,
     administradores: comunicados.filter((c) => c.addressee === "administradores").length,
-    // NOVO: Adiciona contagem para Síndicos
     sindicos: comunicados.filter((c) => c.addressee === "sindicos").length,
   };
 
@@ -238,7 +237,6 @@ export default function ComunicadosDashboard() {
         </Card>
       </div>
 
-      {/* Modal Criar */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
         <DialogContent className="sm:rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">
           <div className="h-2 w-full rounded-t-md bg-primary" />

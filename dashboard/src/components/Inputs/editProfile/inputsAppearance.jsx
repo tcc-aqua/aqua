@@ -29,11 +29,11 @@ export default function InputAppearance() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-lg space-y-4">
+    <div className="mx-auto max-w-lg space-y-2">
 
-      <Card className="shadow-md hover:shadow-lg transition-shadow hover:border-sky-400 dark:hover:border-sky-950">
-        <CardContent className="flex justify-between items-center">
-          <div className="flex flex-col">
+      <Card className="shadow-md hover:shadow-lg transition-shadow hover:border-sky-400 dark:hover:border-sky-950 md:h-15">
+        <CardContent className="flex justify-between items-center  md:-mt-3">
+          <div className="flex flex-col justify-center">
             <p className="text-sm font-semibold flex items-center gap-2">
               <Layout size={16} /> Sidebar Compacta
             </p>
@@ -55,9 +55,9 @@ export default function InputAppearance() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-md hover:shadow-lg transition-shadow hover:border-sky-400 dark:hover:border-sky-950">
-        <CardContent className="flex justify-between items-center">
-          <div className="flex flex-col">
+      <Card className="shadow-md hover:shadow-lg transition-shadow hover:border-sky-400 dark:hover:border-sky-950 md:h-15">
+        <CardContent className="flex justify-between items-center  md:-mt-3">
+          <div className="flex flex-col justify-center">
             <p className="text-sm font-semibold flex items-center gap-2">
               <Info size={16} /> Mostrar Informações Pessoais
             </p>
@@ -67,14 +67,21 @@ export default function InputAppearance() {
           </div>
           <Switch
             checked={showPersonalInfo}
-            onCheckedChange={(checked) => setShowPersonalInfo(!!checked)}
+            onCheckedChange={(checked) => {
+              setShowPersonalInfo(!!checked);
+              localStorage.setItem("showPersonalInfo", !!checked);
+
+              window.dispatchEvent(
+                new CustomEvent("toggle-personal-info", { detail: !!checked })
+              );
+            }}
           />
         </CardContent>
       </Card>
 
-      <Card className="shadow-md hover:shadow-lg transition-shadow mt-3 hover:border-sky-400 dark:hover:border-sky-950">
-        <CardContent className="flex justify-between items-center">
-          <div className="flex flex-col">
+      <Card className="shadow-md hover:shadow-lg transition-shadow hover:border-sky-400 dark:hover:border-sky-950 md:h-15 ">
+        <CardContent className="flex justify-between items-center md:-mt-3">
+          <div className="flex flex-col justify-center">
             <p className="text-sm font-semibold flex items-center gap-2">
               <Activity size={16} /> Animações
             </p>
@@ -88,13 +95,11 @@ export default function InputAppearance() {
               setEnableAnimations(checked);
               localStorage.setItem("enableAnimations", checked);
 
-              // Dispara evento global
               window.dispatchEvent(
                 new CustomEvent("toggle-animations", { detail: checked })
               );
             }}
           />
-
         </CardContent>
       </Card>
 

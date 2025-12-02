@@ -15,6 +15,7 @@ import {
   MapPin,
   Signal,
   User,
+  Building,
 } from "lucide-react";
 import {
   Dialog,
@@ -152,7 +153,7 @@ export default function ApartamentosDashboard() {
       title: "Total de Apartamentos",
       value: apStats.total,
       valueAtivas: apStats.ativas,
-      icon: Grid,
+      icon: Building,
       iconColor: "text-orange-300",
         borderColor:" border-b-orange-300"
     },
@@ -376,15 +377,21 @@ export default function ApartamentosDashboard() {
                           </div>
                         </td>
 
-                        <td className="text-sm font-bold flex items-center ml-7 py-9">
+                     
+                        
+                        <td className="text-sm font-semibold px-3 py-4">
                           <span
-                            className={`inline-block w-3 h-3 rounded-full mt-3 ${ap.apartamento_status === "ativo"
-                              ? "bg-green-600"
-                              : "bg-destructive"
-                              }`}
-                            title={ap.apartamento_status}
-                          />
+                            className={`
+                             inline-flex items-center gap-2 px-2 py-1 rounded-md border 
+                              ${ap.apartamento_status === "ativo"
+                                ? "text-green-500 border-green-600"
+                                : "text-destructive border-red-600"}`}
+                          >
+
+                            {ap.apartamento_status === "ativo" ? "Ativo" : "Inativo"}
+                          </span>
                         </td>
+
                         <td className="px-4 py-2 text-sm">
                           <Tooltip>
                             <TooltipTrigger asChild>

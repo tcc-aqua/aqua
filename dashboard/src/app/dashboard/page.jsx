@@ -40,7 +40,7 @@ export default function Dashboard() {
 
           </section>
           <AnimationWrapper delay={0.3}>
-            <div className="mt-10"><LogsDashboard></LogsDashboard></div>
+            <div className="mt-20"><LogsDashboard></LogsDashboard></div>
           </AnimationWrapper>
 
 

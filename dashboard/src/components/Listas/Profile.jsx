@@ -35,6 +35,7 @@ import {
   Check,
   X,
 } from "lucide-react";
+import InputAppearance from "../Inputs/editProfile/inputsAppearance";
 
 export const adminEvent = new EventTarget();
 export default function EmployeeProfile() {
@@ -151,17 +152,17 @@ const timeline = admin?.activities || [
     if (!role) return null;
     const r = role.toLowerCase();
     const colors = {
-      superadmin: "from-purple-600 to-purple-400",
-      admin: "from-sky-600 to-sky-400",
+      superadmin: "text-purple-600 border-purple-700",
+      admin: "text-blue-600 border-blue-700", 
     };
     const icons = { superadmin: ShieldCheck, admin: UserCircle2 };
     const Icon = icons[r] || UserCircle2;
 
     return (
       <span
-        className={`inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-bold uppercase text-white shadow-md bg-gradient-to-r ${colors[r]}`}
+        className={`px-2 py-1 rounded-md border font-semibold shadow-md  ${colors[r]}`}
       >
-        <Icon className="w-4 h-4" />
+        <Icon className="w-4 h-4  inline-block mr-1" />
         {r}
       </span>
     );
@@ -193,10 +194,6 @@ const timeline = admin?.activities || [
               </div>
             </div>
 
-            {/* <h1 className="text-3xl font-bold">
-              {admin.first_name}{" "}
-              <span className="text-sky-600">{admin.last_name}</span>
-            </h1> */}
 
             {getRoleBadge(admin.role)}
 
@@ -227,7 +224,7 @@ const timeline = admin?.activities || [
           <div className="md:col-span-2 space-y-6">
             <Card className="p-6 rounded-3xl shadow-xl">
               <h3 className="text-2xl font-semibold mb-4">
-                Informações de Contato
+                Informações 
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
@@ -252,25 +249,11 @@ const timeline = admin?.activities || [
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <Card className="p-4 rounded-2xl shadow">
-                <h4 className="font-semibold mb-3">Atividades recentes</h4>
-                <div className="space-y-3">
-                  {(showAllTimeline ? timeline : timeline.slice(0, 3)).map((t) => (
-                    <motion.div
-                      key={t.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex gap-3"
-                    >
-                      <div className="flex flex-col items-center">
-                        <div className="w-2 h-2 rounded-full bg-sky-500" />
-                        <div className="w-px h-full bg-muted/50" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{t.text}</p>
-                        <p className="text-xs text-muted-foreground">{t.date}</p>
-                      </div>
-                    </motion.div>
-                  ))}
+                <h4 className="font-semibold ">Preferências</h4>
+                <div className="">      
+               
+                      <InputAppearance></InputAppearance>
+          
                 </div>
                 {timeline.length > 3 && (
                   <div className="mt-3 flex justify-end">
