@@ -8,12 +8,18 @@ export default class ComunicadosService {
         try {
             const user = await User.findByPk(userId);
             
-            // Lógica para pegar comunicados GERAIS + comunicados ESPECÍFICOS DA CASA
+            // Removemos 'status: ativo' do filtro
             const whereClause = {
-                status: 'ativo',
                 [Op.or]: [
-                    { addressee: { [Op.in]: ['usuários', 'todos'] }, casa_id: null, condominio_id: null },
-                    user.residencia_type === 'casa' ? { casa_id: user.residencia_id } : null
+                    { 
+                        addressee: { [Op.in]: ['usuários', 'todos'] },
+                        casa_id: null,
+                        condominio_id: null
+                    },
+                    // Se o usuário tem casa, traz comunicados dessa casa
+                    user.residencia_type === 'casa' ? { casa_id: user.residencia_id } : null,
+                    // Se o usuário está em condomínio
+                    user.residencia_type === 'apartamento' && user.residencia_id ? { condominio_id: await getCondominioId(user.residencia_id) } : null
                 ].filter(Boolean)
             };
 
@@ -35,6 +41,7 @@ export default class ComunicadosService {
                 criado_em: c.criado_em,
                 lido: lidosIds.includes(c.id)
             }));
+
         } catch (error) {
             console.error('Erro ao listar comunicados', error);
             throw error;
@@ -42,10 +49,29 @@ export default class ComunicadosService {
     }
 
     static async marcarComoLido(userId, comunicadoId) {
-        const jaLido = await ComunicadoLido.findOne({ where: { user_id: userId, comunicado_id: comunicadoId } });
-        if (!jaLido) {
-            await ComunicadoLido.create({ user_id: userId, comunicado_id: comunicadoId, lido: true });
+        try {
+            const jaLido = await ComunicadoLido.findOne({
+                where: { user_id: userId, comunicado_id: comunicadoId }
+            });
+
+            if (!jaLido) {
+                await ComunicadoLido.create({
+                    user_id: userId,
+                    comunicado_id: comunicadoId,
+                    lido: true
+                });
+            }
+            return { message: 'Marcado como lido' };
+        } catch (error) {
+            console.error('Erro ao marcar comunicado', error);
+            throw error;
         }
-        return { message: 'Marcado como lido' };
     }
+}
+
+// Helper para pegar ID do condomínio a partir do Apartamento
+async function getCondominioId(aptoId) {
+    const { default: Apartamento } = await import("../models/Apartamento.js");
+    const apto = await Apartamento.findByPk(aptoId);
+    return apto ? apto.condominio_id : null;
 }

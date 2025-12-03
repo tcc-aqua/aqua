@@ -7,8 +7,10 @@ import Apartamento from "../models/Apartamento.js";
 import sequelize from "../config/sequelize.js";
 
 export default class MonitoringService {
+    
     static async registrarLeitura(codigoSensor, consumo, vazamentoDetectado) {
         const transaction = await sequelize.transaction();
+        
         try {
             const sensor = await Sensor.findOne({ where: { codigo: codigoSensor }, transaction });
             if (!sensor) throw new Error("Sensor não encontrado.");
@@ -45,6 +47,7 @@ export default class MonitoringService {
 
             await transaction.commit();
             return leitura;
+
         } catch (error) {
             await transaction.rollback();
             throw error;
@@ -52,26 +55,40 @@ export default class MonitoringService {
     }
 
     static async gerarAlertaVazamento(sensorId, type, id, transaction) {
+        const hoje = new Date();
+        hoje.setHours(0,0,0,0);
+
+        // Verifica alerta existente (Tabela Alertas deve ter sido criada corretamente pelo outro script, 
+        // mas aqui focamos em não quebrar o Comunicado)
         const alertaExistente = await Alerta.findOne({
-            where: { sensor_id: sensorId, tipo: 'vazamento', resolvido: false },
+            where: {
+                sensor_id: sensorId,
+                tipo: 'vazamento',
+                resolvido: false
+            },
             transaction
         });
 
         if (!alertaExistente) {
             await Alerta.create({
-                sensor_id: sensorId, residencia_type: type, residencia_id: id,
-                tipo: 'vazamento', mensagem: 'Vazamento detectado! Verifique suas instalações.', nivel: 'critico'
+                sensor_id: sensorId,
+                residencia_type: type,
+                residencia_id: id,
+                tipo: 'vazamento',
+                mensagem: 'O sensor detectou um fluxo contínuo ou anormal de água.',
+                nivel: 'alto'
             }, { transaction });
 
-            // CRIA A NOTIFICAÇÃO NO APP
+            // CRIA COMUNICADO SEM O CAMPO STATUS
             await Comunicados.create({
                 title: '🚨 ALERTA DE VAZAMENTO',
-                subject: 'O sensor detectou um fluxo anormal de água. Verifique torneiras e canos imediatamente.',
+                subject: 'Detectamos uma anomalia no seu consumo agora. Verifique torneiras e tubulações imediatamente.',
                 addressee: 'usuários',
-                status: 'ativo',
+                // Removido status: 'ativo',
                 casa_id: type === 'casa' ? id : null,
-                condominio_id: null // Se quiser lógica pra apto, expandir aqui
             }, { transaction });
+            
+            console.log("!!! ALERTA DE VAZAMENTO GERADO !!!");
         }
     }
 }
