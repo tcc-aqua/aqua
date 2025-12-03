@@ -27,20 +27,24 @@ export default class AdminController {
     }
 
     static async update(req, reply) {
+        const { id } = req.params;
+        const adminId = req.admin.id;
         const validateAdmin = updateAdminDTO.parse(req.body);
-        const admin = await AdminService.updateAdmin(validateAdmin);
+        const admin = await AdminService.updateAdmin(id, validateAdmin, adminId);
         return reply.status(200).send(admin);
     }
 
     static async inativar(req, reply) {
         const { id } = req.params;
-        const admin = await AdminService.inativarAdmin(id);
+        const adminId = req.admin.id;
+        const admin = await AdminService.inativarAdmin(id, adminId);
         return reply.status(200).send(admin);
     }
 
     static async ativar(req, reply) {
         const { id } = req.params;
-        const admin = await AdminService.ativarAdmin(id);
+        const adminId = req.admin.id;
+        const admin = await AdminService.ativarAdmin(id, adminId);
         return reply.status(200).send(admin);
     }
 

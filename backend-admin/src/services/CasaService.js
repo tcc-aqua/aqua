@@ -1,5 +1,6 @@
 import Casa from "../models/Casa.js";
 import CasaView from "../models/CasaView.js";
+import AuditLogService from "./AuditLog.js";
 
 export default class CasaService {
 
@@ -73,47 +74,60 @@ export default class CasaService {
         }
     }
 
-    static async inativarCasa(id) {
-        try {
-            const casa = await Casa.findByPk(id);
-            if (!casa) {
-                throw new Error('Casa não encontrada');
-            }
+  static async inativarCasa(casaId, adminId) {
+    try {
+        const casa = await Casa.findByPk(casaId);
+        if (!casa) throw new Error('Casa não encontrada');
+        if (casa.status === 'inativo') throw new Error('Casa já está inativa');
 
-            if (casa.status === 'inativo') {
-                throw new Error('Casa já está inativa');
-            }
+        const valorAntigo = casa.status;
 
-            await casa.update({
-                status: 'inativo'
-            })
-            return casa;
-        } catch (error) {
-            console.error('Erro ao inativar casa:', error.message);
-            throw new Error(error.message);
-        }
+        await casa.update({ status: 'inativo' });
+
+        
+        await AuditLogService.criarLog({
+            user_id: casaId,    
+            acao: 'update',
+            campo: 'status',
+            valor_antigo: valorAntigo,
+            valor_novo: 'inativo',
+            alterado_por: adminId 
+        });
+
+        return { message: 'Casa inativada com sucesso!', casa };
+    } catch (error) {
+        console.error('Erro ao inativar casa:', error);
+        throw error;
     }
+}
 
-    static async ativarCasa(id) {
-        try {
-            const casa = await Casa.findByPk(id);
-            if (!casa) {
-                throw new Error('Casa não encontrada');
-            }
+static async ativarCasa(casaId, adminId) {
+    try {
+        const casa = await Casa.findByPk(casaId);
+        if (!casa) throw new Error('Casa não encontrada');
+        if (casa.status === 'ativo') throw new Error('Casa já está ativada');
 
-            if (casa.status === 'ativo') {
-                throw new Error('Casa já está ativada');
-            }
+        const valorAntigo = casa.status;
 
-            await casa.update({
-                status: 'ativo'
-            })
-            return { message: 'Casa ativada com sucesso', casa };
-        } catch (error) {
-            console.error('Erro ao ativar casa');
-            throw error;
-        }
+        await casa.update({ status: 'ativo' });
+
+        // Criando log
+        await  AuditLogService.criarLog({
+            user_id: casaId,
+            acao: 'update',
+            campo: 'status',
+            valor_antigo: valorAntigo,
+            valor_novo: 'ativo',
+            alterado_por: adminId
+        });
+
+        return { message: 'Casa ativada com sucesso!', casa };
+    } catch (error) {
+        console.error('Erro ao ativar casa:', error);
+        throw error;
     }
+}
+
 
 
 }

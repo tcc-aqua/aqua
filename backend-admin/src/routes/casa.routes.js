@@ -1,4 +1,5 @@
 import CasaController from "../controllers/CasaController.js";
+import { autenticarAdmin } from "../middlewares/AuthMiddleware.js";
 
 export default async function casaRoutes(fastify) {
 
@@ -55,7 +56,8 @@ export default async function casaRoutes(fastify) {
                                 summary: 'Ativando uma casa',
                                 tags: ['casas'],
                                 description: 'Ativando uma casa inativada do sistema'
-                        }
+                        },
+                        preHandler: autenticarAdmin
                 },
                 CasaController.ativar)
 
@@ -65,7 +67,8 @@ export default async function casaRoutes(fastify) {
                                 summary: 'Inativando uma casa',
                                 tags: ['casas'],
                                 description: 'Inativando uma casa do sistema'
-                        }
+                        },
+                        preHandler: autenticarAdmin
                 },
                 CasaController.inativar)
 }

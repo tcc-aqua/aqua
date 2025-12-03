@@ -1,6 +1,7 @@
 import Sensor from "../models/Sensor.js";
 import { Op } from 'sequelize';
 import SensorView from "../models/SensorView.js";
+import AuditLogService from "./AuditLog.js";
 
 
 export default class SensorService {
@@ -150,56 +151,87 @@ export default class SensorService {
         }
     }
 
-    static async updatesensor(id, { codigo }) {
-        try {
-            const sensor = await Sensor.findByPk(id);
-            if (!sensor) {
-                throw new Error('Sensor não encontrado');
-            }
+static async updatesensor(id, adminId, { codigo }) {
+    try {
+        const sensor = await Sensor.findByPk(id);
+        if (!sensor) throw new Error('Sensor não encontrado');
 
-            await sensor.update({
-                codigo
-            })
-            return sensor;
-        } catch (error) {
-            console.error('Erro ao atualizar sensor', error);
-            throw error;
-        }
+        const valorAntigo = { codigo: sensor.codigo };
+
+        await sensor.update({ codigo });
+
+        const valorNovo = { codigo };
+
+        await AuditLogService.criarLog({
+            user_id: id,
+            acao: 'update',
+            campo: 'sensor_codigo',
+            valor_antigo: JSON.stringify(valorAntigo),
+            valor_novo: JSON.stringify(valorNovo),
+            alterado_por: adminId
+        });
+
+        return sensor;
+    } catch (error) {
+        console.error('Erro ao atualizar sensor', error);
+        throw error;
     }
+}
 
-    static async inativarSensor(id) {
-        try {
-            const sensor = await Sensor.findByPk(id);
-            if (!sensor) {
-                throw new Error('Sensor não encontrado');
-            }
+static async inativarSensor(id, adminId) {
+    try {
+        const sensor = await Sensor.findByPk(id);
+        if (!sensor) throw new Error('Sensor não encontrado');
 
-            await sensor.update({
-                status: 'inativo'
-            })
-            return sensor;
-        } catch (error) {
-            console.error('Erro ao inativar sensor', error);
-            throw error;
-        }
+        const valorAntigo = { status: sensor.status };
+
+        await sensor.update({ status: 'inativo' });
+
+        const valorNovo = { status: 'inativo' };
+
+        await AuditLogService.criarLog({
+            user_id: id,
+            acao: 'update',
+            campo: 'sensor_status',
+            valor_antigo: JSON.stringify(valorAntigo),
+            valor_novo: JSON.stringify(valorNovo),
+            alterado_por: adminId
+        });
+
+        return sensor;
+    } catch (error) {
+        console.error('Erro ao inativar sensor', error);
+        throw error;
     }
+}
 
-    static async ativarSensor(id) {
-        try {
-            const sensor = await Sensor.findByPk(id);
-            if (!sensor) {
-                throw new Error('Sensor não encontrado');
-            }
+static async ativarSensor(id, adminId) {
+    try {
+        const sensor = await Sensor.findByPk(id);
+        if (!sensor) throw new Error('Sensor não encontrado');
 
-            await sensor.update({
-                status: 'ativo'
-            })
-            return sensor;
-        } catch (error) {
-            console.error('Erro ao ativar sensor', error);
-            throw error;
-        }
+        const valorAntigo = { status: sensor.status };
+
+        await sensor.update({ status: 'ativo' });
+
+        const valorNovo = { status: 'ativo' };
+
+        await AuditLogService.criarLog({
+            user_id: id,
+            acao: 'update',
+            campo: 'sensor_status',
+            valor_antigo: JSON.stringify(valorAntigo),
+            valor_novo: JSON.stringify(valorNovo),
+            alterado_por: adminId
+        });
+
+        return sensor;
+    } catch (error) {
+        console.error('Erro ao ativar sensor', error);
+        throw error;
     }
+}
+
 
 
 }

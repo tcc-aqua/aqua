@@ -35,13 +35,15 @@ export default class CasaController {
 
     static async inativar(req, reply) {
         const { id } = req.params;
-        const casa = await CasaService.inativarCasa(id);
+        const adminId = req.admin.id;
+        const casa = await CasaService.inativarCasa(id, adminId);
         return reply.status(200).send(casa);
     }
 
     static async ativar(req, reply) {
         const { id } = req.params;
-        const casa = await CasaService.ativarCasa(id);
+        const adminId = req.admin.id;
+        const casa = await CasaService.ativarCasa(id, adminId);
         return reply.status(200).send(casa);
     }
 

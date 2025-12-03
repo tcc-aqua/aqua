@@ -1,5 +1,6 @@
 import Apartamento from "../models/Apartamento.js";
 import ApartamentoView from "../models/ApartamentoView.js";
+import AuditLogService from './AuditLog.js';
 
 export default class ApartamentoService {
 
@@ -50,7 +51,7 @@ export default class ApartamentoService {
         }
     }
 
-    static async countApartamentos(){
+    static async countApartamentos() {
         try {
             const apartamentos = await Apartamento.count();
             return apartamentos;
@@ -60,38 +61,61 @@ export default class ApartamentoService {
         }
     }
 
-    static async inativarApartamento(id) {
+    static async inativarApartamento(apartamentoId, adminId) {
         try {
-            const apartamento = await Apartamento.findByPk(id);
+            const apartamento = await Apartamento.findByPk(apartamentoId);
             if (!apartamento) {
-                throw new Error('Apartamento não encontrada.')
+                throw new Error('Apartamento não encontrado.');
             }
-            await apartamento.update({
-                status: 'inativo'
-            })
 
-            return { message: 'Apartamento inativada com sucesso!', apartamento }
+            const valorAntigo = apartamento.status;
+
+            await apartamento.update({ status: 'inativo' });
+
+
+            await AuditLogService.criarLog({
+                user_id: apartamentoId,
+                acao: 'update',
+                campo: 'status',
+                valor_antigo: valorAntigo,
+                valor_novo: 'inativo',
+                alterado_por: adminId
+            });
+
+            return { message: 'Apartamento inativado com sucesso!', apartamento };
         } catch (error) {
             console.error('Erro ao inativar apartamento', error);
             throw error;
         }
     }
 
-    static async ativarApartamento(id) {
+    static async ativarApartamento(apartamentoId, adminId) {
         try {
-            const apartamento = await Apartamento.findByPk(id);
+            const apartamento = await Apartamento.findByPk(apartamentoId);
             if (!apartamento) {
-                throw new Error('Apartamento não encontrada.')
+                throw new Error('Apartamento não encontrado.');
             }
-            await apartamento.update({
-                status: 'ativo'
-            })
 
-            return { message: 'Apartamento ativada com sucesso!', apartamento }
+            const valorAntigo = apartamento.status;
+
+            await apartamento.update({ status: 'ativo' });
+
+
+            await AuditLogService.criarLog({
+                user_id: apartamentoId,
+                acao: 'update',
+                campo: 'status',
+                valor_antigo: valorAntigo,
+                valor_novo: 'ativo',
+                alterado_por: adminId
+            });
+
+            return { message: 'Apartamento ativado com sucesso!', apartamento };
         } catch (error) {
             console.error('Erro ao ativar apartamento', error);
             throw error;
         }
     }
+
 
 }

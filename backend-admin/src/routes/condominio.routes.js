@@ -1,4 +1,5 @@
 import CondominioController from "../controllers/CondominioController.js";
+import { autenticarAdmin } from "../middlewares/AuthMiddleware.js";
 
 export default async function condominioRoutes(fastify) {
 
@@ -68,7 +69,8 @@ export default async function condominioRoutes(fastify) {
                 summary: 'Atualizando cadastro de um condominio',
                 tags: ['condominios'],
                 description: 'Atualizando informações de um condominio do sistema'
-            }
+            },
+            preHandler: autenticarAdmin
         },
         CondominioController.update);
 
@@ -78,7 +80,8 @@ export default async function condominioRoutes(fastify) {
                 summary: 'Atualizando cadastro do nome de um condominio',
                 tags: ['condominios'],
                 description: 'Atualizando informações de um condominio do sistema'
-            }
+            },
+            preHandler: autenticarAdmin
         },
         CondominioController.updateName);
 
@@ -88,17 +91,19 @@ export default async function condominioRoutes(fastify) {
                 summary: 'Atribuindo um sindico para o condominio',
                 tags: ['condominios'],
                 description: 'Aualizando o sindico do condominio'
-            }
+            },
+            preHandler: autenticarAdmin
         },
         CondominioController.atribuirSindico);
 
-    fastify.patch('/:id/inativar', 
+    fastify.patch('/:id/inativar',
         {
             schema: {
                 summary: 'Inativando um condominio',
                 tags: ['condominios'],
                 description: 'Inativando um condominio do sistema'
-            }
+            },
+            preHandler: autenticarAdmin
         },
         CondominioController.inativar);
 
@@ -108,7 +113,8 @@ export default async function condominioRoutes(fastify) {
                 summary: 'Ativando um condominio',
                 tags: ['condominios'],
                 description: 'Ativando um condominio do sistema'
-            }
+            },
+            preHandler: autenticarAdmin
         },
         CondominioController.ativar);
 }

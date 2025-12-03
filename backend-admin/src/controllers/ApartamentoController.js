@@ -29,14 +29,16 @@ export default class ApartamentoController {
     }
 
     static async inativar(req, reply) {
-        const {id} = req.params;
-        const apartamento = await ApartamentoService.inativarApartamento(id);
+        const { id } = req.params;
+        const adminId = req.admin.id;
+        const apartamento = await ApartamentoService.inativarApartamento(id, adminId);
         return reply.status(200).send(apartamento);
     }
 
     static async ativar(req, reply) {
-        const {id} = req.params;
-        const apartamento = await ApartamentoService.ativarApartamento(id);
+        const { id } = req.params;
+        const adminId = req.admin.id;
+        const apartamento = await ApartamentoService.ativarApartamento(id, adminId);
         return reply.status(200).send(apartamento);
     }
 

@@ -1,9 +1,7 @@
 import Admin from '../models/Admin.js'
+import AuditLogService from './AuditLog.js';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs'
-
-
 
 export default class AdminService {
 
@@ -70,15 +68,30 @@ export default class AdminService {
         }
     }
 
-    static async updateAdmin(id, { email, type }) {
+    static async updateAdmin(id, { email, type }, adminAlterador) {
         try {
             const admin = await Admin.findByPk(id);
-            if (!admin) {
-                throw new Error('Administrador não encontrado');
+            if (!admin) throw new Error('Administrador não encontrado');
+
+            const valorAntigo = {
+                email: admin.email,
+                type: admin.type
+            };
+
+            await admin.update({ email, type });
+
+            if (adminAlterador) {
+                await AuditLogService.criarLog({
+                    user_id: admin.id,
+                    acao: 'update',
+                    campo: null,
+                    valor_antigo: JSON.stringify(valorAntigo),
+                    valor_novo: JSON.stringify({ email: admin.email, type: admin.type }),
+                    alterado_por: adminAlterador.id,
+                    alterado_por_email: adminAlterador.email
+                });
             }
-            await admin.update({
-                email, type
-            })
+
             return admin;
         } catch (error) {
             console.error('Erro ao atualizar administrador', error);
@@ -86,48 +99,83 @@ export default class AdminService {
         }
     }
 
-    static async inativarAdmin(id) {
+    static async inativarAdmin(id, adminAlterador) {
         try {
             const admin = await Admin.findByPk(id);
-            if (!admin) {
-                throw new Error('Administrador não encontrado');
+            if (!admin) throw new Error('Administrador não encontrado');
+
+            const valorAntigo = { status: admin.status };
+
+            await admin.update({ status: 'inativo' });
+
+            if (adminAlterador) {
+                await AuditLogService.criarLog({
+                    user_id: admin.id,
+                    acao: 'update',
+                    campo: 'status',
+                    valor_antigo: JSON.stringify(valorAntigo),
+                    valor_novo: JSON.stringify({ status: admin.status }),
+                    alterado_por: adminAlterador.id,
+                    alterado_por_email: adminAlterador.email
+                });
             }
 
-            await admin.update({
-                status: 'inativo'
-            })
-
-            return { message: 'Administrador inativado com sucesso!', admin }
+            return { message: 'Administrador inativado com sucesso!', admin };
         } catch (error) {
             console.error('Erro ao inativar administrador', error);
             throw error;
         }
     }
 
-    static async ativarAdmin(id) {
+    static async ativarAdmin(id, adminAlterador) {
         try {
             const admin = await Admin.findByPk(id);
-            if (!admin) {
-                throw new Error('Administrador não encontrado');
+            if (!admin) throw new Error('Administrador não encontrado');
+
+            const valorAntigo = { status: admin.status };
+
+            await admin.update({ status: 'ativo' });
+
+            if (adminAlterador) {
+                await AuditLogService.criarLog({
+                    user_id: admin.id,
+                    acao: 'update',
+                    campo: 'status',
+                    valor_antigo: JSON.stringify(valorAntigo),
+                    valor_novo: JSON.stringify({ status: admin.status }),
+                    alterado_por: adminAlterador.id,
+                    alterado_por_email: adminAlterador.email
+                });
             }
 
-            await admin.update({
-                status: 'ativo'
-            })
-
-            return { message: 'Administrador ativado com sucesso!', admin }
+            return { message: 'Administrador ativado com sucesso!', admin };
         } catch (error) {
             console.error('Erro ao ativar administrador', error);
             throw error;
         }
     }
 
-    static async updateMe(adminId, data) {
+    static async updateMe(adminId, data, adminAlterador) {
         try {
             const admin = await Admin.findByPk(adminId);
             if (!admin) throw new Error('Usuário não encontrado');
 
+            const valorAntigo = admin.toJSON();
+
             await admin.update(data);
+
+            if (adminAlterador) {
+                await AuditLogService.criarLog({
+                    user_id: admin.id,
+                    acao: 'update',
+                    campo: null, 
+                    valor_antigo: JSON.stringify(valorAntigo),
+                    valor_novo: JSON.stringify(admin.toJSON()),
+                    alterado_por: adminAlterador.id,
+                    alterado_por_email: adminAlterador.email
+                });
+            }
+
             const adminData = admin.toJSON();
             delete adminData.password;
             return adminData;
@@ -137,40 +185,40 @@ export default class AdminService {
         }
     }
 
-       static async uploadProfilePicture(adminId, file) {
-    try {
-      const baseUploadDir = path.join(process.cwd(), 'uploads');
-      const profileDir = path.join(baseUploadDir, 'profile_images');
+    static async uploadProfilePicture(adminId, file) {
+        try {
+            const baseUploadDir = path.join(process.cwd(), 'uploads');
+            const profileDir = path.join(baseUploadDir, 'profile_images');
 
-      if (!fs.existsSync(baseUploadDir)) fs.mkdirSync(baseUploadDir);
-      if (!fs.existsSync(profileDir)) fs.mkdirSync(profileDir);
+            if (!fs.existsSync(baseUploadDir)) fs.mkdirSync(baseUploadDir);
+            if (!fs.existsSync(profileDir)) fs.mkdirSync(profileDir);
 
-      const extension = path.extname(file.filename);
-      const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}${extension}`;
-      const filePath = path.join(profileDir, uniqueFilename);
+            const extension = path.extname(file.filename);
+            const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}${extension}`;
+            const filePath = path.join(profileDir, uniqueFilename);
 
-      const buffer = await file.toBuffer();
-      await fs.promises.writeFile(filePath, buffer);
+            const buffer = await file.toBuffer();
+            await fs.promises.writeFile(filePath, buffer);
 
-      const admin = await Admin.findByPk(adminId);
-      if (!admin) {
-        await fs.promises.unlink(filePath);
-        throw new Error('Administrador não encontrado');
-      }
+            const admin = await Admin.findByPk(adminId);
+            if (!admin) {
+                await fs.promises.unlink(filePath);
+                throw new Error('Administrador não encontrado');
+            }
 
-      // Remove imagem antiga se existir
-      if (admin.img_url) {
-        const oldPath = path.join(baseUploadDir, admin.img_url.replace('/api/uploads/', ''));
-        if (fs.existsSync(oldPath)) await fs.promises.unlink(oldPath).catch(console.error);
-      }
+            // Remove imagem antiga se existir
+            if (admin.img_url) {
+                const oldPath = path.join(baseUploadDir, admin.img_url.replace('/api/uploads/', ''));
+                if (fs.existsSync(oldPath)) await fs.promises.unlink(oldPath).catch(console.error);
+            }
 
-      admin.img_url = `/api/uploads/profile_images/${uniqueFilename}`;
-      await admin.save();
+            admin.img_url = `/api/uploads/profile_images/${uniqueFilename}`;
+            await admin.save();
 
-      return admin.img_url;
-    } catch (err) {
-      console.error('Erro ao atualizar foto de usuário', err);
-      throw err;
+            return admin.img_url;
+        } catch (err) {
+            console.error('Erro ao atualizar foto de usuário', err);
+            throw err;
+        }
     }
-  }
 }

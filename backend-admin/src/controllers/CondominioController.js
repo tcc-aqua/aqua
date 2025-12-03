@@ -1,6 +1,6 @@
 import CondominioService from "../services/CondominioService.js";
 import { createCondominioDTO } from "../dto/condominio/createCondominioDTO.js";
-import {updateCondominioDTO} from '../dto/condominio/updateCondominioDTO.js'
+import { updateCondominioDTO } from '../dto/condominio/updateCondominioDTO.js'
 import { atribuirSindicoDTO } from "../dto/condominio/atribuirSindicoDTO.js";
 import { updateNameCondominioDTO } from "../dto/condominio/updateNameCondominioDTO.js";
 
@@ -39,38 +39,43 @@ export default class CondominioController {
 
     static async update(req, reply) {
         const { id } = req.params;
+        const adminId = req.admin.id;
         const validateCondominio = updateCondominioDTO.parse(req.body);
-        const updateCondominio = await CondominioService.updateCondominio(id, validateCondominio);
+        const updateCondominio = await CondominioService.updateCondominio(id, adminId, validateCondominio);
         return reply.status(200).send(updateCondominio)
     }
 
     static async updateName(req, reply) {
         const { id } = req.params;
+        const adminId = req.admin.id;
         const validateCondominio = updateNameCondominioDTO.parse(req.body);
-        const updateCondominio = await CondominioService.updateNameCondominio(id, validateCondominio);
+        const updateCondominio = await CondominioService.updateNameCondominio(id, adminId, validateCondominio);
         return reply.status(200).send(updateCondominio)
     }
 
     static async atribuirSindico(req, reply) {
-        const {id} = req.params;
+        const { id } = req.params;
+        const adminId = req.admin.id;
         const validateSindico = atribuirSindicoDTO.parse(req.body);
-        const condominio = await CondominioService.atribuirSindico(id, validateSindico);
+        const condominio = await CondominioService.atribuirSindico(id, adminId, validateSindico);
         return reply.status(200).send(condominio);
     }
 
     static async inativar(req, reply) {
         const { id } = req.params;
-        const condominio = await CondominioService.inativarCondominio(id);
+        const adminId = req.admin.id;
+        const condominio = await CondominioService.inativarCondominio(id, adminId);
         return reply.status(200).send(condominio);
     }
 
     static async ativar(req, reply) {
         const { id } = req.params;
-        const condominio = await CondominioService.ativarCondominio(id);
+        const adminId = req.admin.id;
+        const condominio = await CondominioService.ativarCondominio(id, adminId);
         return reply.status(200).send(condominio);
     }
 
-    static async listarQtdApartamentos(req, reply){
+    static async listarQtdApartamentos(req, reply) {
         const { id } = req.params;
         const apartamentos = await CondominioService.countApartamentosPorCondominio(id);
         return reply.status(200).send(apartamentos);

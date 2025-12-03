@@ -1,5 +1,6 @@
 import ComunicadosLidos from "../models/ComunicadoLido.js";
 import Comunicados from "../models/Comunicados.js";
+import AuditLogService from "./AuditLog.js";
 
 export default class ComunicadosService {
 
@@ -73,21 +74,44 @@ export default class ComunicadosService {
         }
     }
 
-    static async update(id, { title, subject, addressee, condominio_id }) {
-        try {
-            const comunicado = await Comunicados.findByPk(id);
-            if (!comunicado) throw new Error('Comunicado não encontrado');
+   static async update( id, adminId,{ title, subject, addressee, condominio_id }) {
+    try {
+        const comunicado = await Comunicados.findByPk(id);
+        if (!comunicado) throw new Error('Comunicado não encontrado');
 
-            await comunicado.update({
-                title, subject, addressee, condominio_id
-            })
-            return comunicado;
+        const valorAntigo = {
+            title: comunicado.title,
+            subject: comunicado.subject,
+            addressee: comunicado.addressee,
+            condominio_id: comunicado.condominio_id
+        };
 
-        } catch (error) {
-            console.error("Erro ao atualizar comunicado.", error);
-            throw error;
-        }
+        await comunicado.update({
+            title, subject, addressee, condominio_id
+        });
+
+        const valorNovo = {
+            title, subject, addressee, condominio_id
+        };
+
+        // Criando log de auditoria
+        await AuditLogService.criarLog({
+            user_id: id,       // registro alterado
+            acao: 'update',
+            campo: 'comunicado',
+            valor_antigo: JSON.stringify(valorAntigo),
+            valor_novo: JSON.stringify(valorNovo),
+            alterado_por: adminId
+        });
+
+        return comunicado;
+
+    } catch (error) {
+        console.error("Erro ao atualizar comunicado.", error);
+        throw error;
     }
+}
+
 
     static async deleteComunicado(id) {
         try {

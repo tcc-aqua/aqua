@@ -1,4 +1,5 @@
 import SensorController from "../controllers/SensorController.js";
+import { autenticarAdmin } from "../middlewares/AuthMiddleware.js";
 
 export default async function sensorRoutes(fastify) {
 
@@ -88,7 +89,8 @@ export default async function sensorRoutes(fastify) {
                                 summary: 'Inativando sensor',
                                 tags: ['sensores'],
                                 description: 'Inativando um sensor do sistema'
-                        }
+                        },
+                        preHandler: autenticarAdmin
                 },
                 SensorController.inativar);
         fastify.patch('/:id/ativar',
@@ -97,7 +99,8 @@ export default async function sensorRoutes(fastify) {
                                 summary: 'Ativando sensor',
                                 tags: ['sensores'],
                                 description: 'Ativando um sensor do sistema'
-                        }
+                        },
+                        preHandler: autenticarAdmin
                 },
                 SensorController.ativar);
 }

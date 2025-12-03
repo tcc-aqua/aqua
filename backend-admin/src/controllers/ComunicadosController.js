@@ -16,8 +16,9 @@ export default class ComunicadosController {
 
     static async update(req, reply) {
         const { id } = req.params;
+        const adminId = req.admin.id;
         const validateComunicado = updateComunicado.parse(req.body);
-        const comunicado = await ComunicadosService.update(id, validateComunicado);
+        const comunicado = await ComunicadosService.update(id, adminId, validateComunicado);
         return reply.status(200).send(comunicado);
     }
 

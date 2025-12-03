@@ -1,4 +1,5 @@
 import ApartamentoController from "../controllers/ApartamentoController.js";
+import { autenticarAdmin } from "../middlewares/AuthMiddleware.js";
 
 export default async function unidadeRoutes(fastify) {
 
@@ -37,24 +38,26 @@ export default async function unidadeRoutes(fastify) {
                 tags: ['apartamentos'],
                 description: 'Fazendo contagem de apartamentos no sistema'
             }
-        },   ApartamentoController.count);
+        }, ApartamentoController.count);
 
     fastify.patch('/:id/inativar',
         {
-            schema :{
+            schema: {
                 summary: 'Inativando um apartamento',
                 tags: ['apartamentos'],
                 description: 'Inativando um apartamento especifico do sistema'
-            }
+            },
+            preHandler: autenticarAdmin
         }, ApartamentoController.inativar);
-        
+
     fastify.patch('/:id/ativar',
         {
             schema: {
                 summary: 'Ativando um apartamento',
                 tags: ['apartamentos'],
                 description: 'Ativando um apartamento especifico do sistema'
-            }
-        },      ApartamentoController.ativar);
+            },
+            preHandler: autenticarAdmin
+        }, ApartamentoController.ativar);
 
 }

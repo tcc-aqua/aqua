@@ -7,7 +7,6 @@ import {
   Home,
   Users,
   Building,
-  Grid,
   HousePlus,
   LogOut,
   Menu,
@@ -41,22 +40,36 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  useEffect(() => { navigationItems.forEach(item => router.prefetch(item.href)); }, [router]);
+  useEffect(() => {
+    navigationItems.forEach(item => router.prefetch(item.href));
+  }, [router]);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
   async function handleLogout() {
     const token = Cookies.get("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
       });
+
       if (res.ok) {
         Cookies.remove("token");
-        router.push("/");
-      } else console.error("Erro ao fazer logout");
+        router.push("/login");
+      } else {
+        const data = await res.json();
+        console.error("Erro ao fazer logout:", data.message || res.statusText);
+      }
     } catch (err) {
       console.error("Erro de conexão no logout:", err);
     }

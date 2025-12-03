@@ -53,13 +53,15 @@ export default class SensorController {
 
     static async inativar(req, reply) {
         const { id } = req.params;
-        const sensor = await SensorService.inativarSensor(id);
+            const adminId = req.admin.id;
+        const sensor = await SensorService.inativarSensor(id, adminId);
         return reply.status(200).send(sensor);
     }
 
     static async ativar(req, reply) {
         const { id } = req.params;
-        const sensor = await SensorService.ativarSensor(id);
+            const adminId = req.admin.id;
+        const sensor = await SensorService.ativarSensor(id, adminId);
         return reply.status(200).send(sensor);
     }
 
