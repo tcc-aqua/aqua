@@ -2,18 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { motion } from "framer-motion";
-import { Users, UserPlus, AlertTriangle, Cpu, Siren, Check, Signal, Sigma, SigmaIcon, ListTodo, CircleGauge, ListOrdered, Layers, UserCheck } from "lucide-react";
+import { Siren, Check,  Layers, UserCheck } from "lucide-react";
+import AnimationWrapper from "../Layout/Animation/Animation";
 
-const cardVariants = {
-  hidden: { y: -120, opacity: 0, zIndex: -1 },
-  visible: (delay = 0) => ({
-    y: 0,
-    opacity: 1,
-    zIndex: 10,
-    transition: { duration: 0.8, ease: "easeOut", delay },
-  }),
-};
 
 export default function CardTopDash() {
   const [userStats, setUserStats] = useState({
@@ -112,13 +103,7 @@ export default function CardTopDash() {
       {cards.map((card, i) => {
         const Icon = card.icon;
         return (
-          <motion.div
-            key={i}
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
-            custom={i * 0.2}
-          >
+      <AnimationWrapper key={i} delay={0.2 + i * 0.1}>
             <Card className={`border-b-4 ${card.borderColor}`}>
               <CardHeader>
                 <CardTitle className="font-bold text-xl text-foreground">
@@ -150,7 +135,7 @@ export default function CardTopDash() {
 
               </CardContent>
             </Card>
-          </motion.div>
+      </AnimationWrapper>
         );
       })}
     </section>

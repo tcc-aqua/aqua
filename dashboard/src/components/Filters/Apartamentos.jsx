@@ -10,8 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "../ui/card";
-import { motion } from "framer-motion";
 import { Check, Eraser } from "lucide-react";
+import AnimationWrapper from "../Layout/Animation/Animation";
 
 export default function ApartamentoFilter({ onApply }) {
   const [search, setSearch] = useState("");
@@ -34,23 +34,8 @@ export default function ApartamentoFilter({ onApply }) {
     if (onApply) onApply({});
   };
 
-  const cardVariants = {
-    hidden: { y: -120, opacity: 0, zIndex: -1 },
-    visible: (delay = 0) => ({
-      y: 0,
-      opacity: 1,
-      zIndex: 10,
-      transition: { duration: 0.8, ease: "easeOut", delay },
-    }),
-  };
-
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      custom={0.5}
-    >
+ <AnimationWrapper delay={0.2}>
       <Card className="container mx-auto p-4 rounded-md shadow-sm border-l-5 border-l-accent">
         <div className="flex flex-wrap gap-4 items-end">
           {/* Pesquisa */}
@@ -113,6 +98,6 @@ export default function ApartamentoFilter({ onApply }) {
             </div>
         </div>
       </Card>
-    </motion.div>
+      </AnimationWrapper>
   );
 }

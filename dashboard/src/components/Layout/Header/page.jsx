@@ -17,15 +17,56 @@ export default function Header() {
 
   const [imageSrc, setImageSrc] = useState(admin?.image || "./perfilImage/default-avatar.png");
 
-  useEffect(() => {
-    setImageSrc(admin?.image || "./perfilImage/default-avatar.png");
-  }, [admin?.image]);
+  const [showPersonalInfo, setShowPersonalInfo] = useState(
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("showPersonalInfo") || "true")
+      : true
+  );
 
   useEffect(() => {
-    const handler = (e) => setImageSrc(e.detail);
+    const handler = (e) => {
+      setShowPersonalInfo(e.detail);
+      localStorage.setItem("showPersonalInfo", JSON.stringify(e.detail));
+    };
+    window.addEventListener("toggle-personal-info", handler);
+    return () => window.removeEventListener("toggle-personal-info", handler);
+  }, []);
+
+  useEffect(() => {
+    const handler = (e) => {
+      const { id, image } = e.detail;
+
+
+      if (id === admin.id) {
+        setImageSrc(image);
+      }
+    };
+
     adminEvent.addEventListener("imageUpdate", handler);
     return () => adminEvent.removeEventListener("imageUpdate", handler);
-  }, []);
+  }, [admin?.id]);
+
+  useEffect(() => {
+    if (admin?.image) {
+      setImageSrc(admin.image);
+    }
+  }, [admin]);
+
+
+  function maskEmail(email) {
+    if (!email || typeof email !== "string") return "*****";
+
+    const [user, domain] = email.split("@");
+    if (!domain) return "*****";
+
+    // Mantém primeira e última letra, resto vira *
+    const maskedUser =
+      user.length <= 2
+        ? user[0] + "*".repeat(Math.max(user.length - 1, 1))
+        : user[0] + "*".repeat(user.length - 2) + user[user.length - 1];
+
+    return maskedUser + "@" + domain;
+  }
 
   const getTituloByPath = () => {
     if (pathname.startsWith("/dashboard")) return "Painel Administrativo";
@@ -45,7 +86,7 @@ export default function Header() {
   const titulo = getTituloByPath();
 
   return (
-    <header className="fixed top-0 left-0 w-full h-auto z-50 bg-sidebar backdrop-blur-lg border-b border-border shadow-sm transition-all">
+    <header className="fixed top-0 left-0 w-full h-auto z-50 bg-sidebar backdrop-blur-lg border-b-2 border-b-accent/60 border-border shadow-sm transition-all  ">
       <div className={`flex flex-col sm:flex-row items-center justify-between ${isMobile ? "px-4 py-3 space-y-2" : "px-10 py-4"}`}>
         <div className={`text-center select-none ${isMobile ? "order-1 w-full" : "absolute left-1/2 -translate-x-1/2"}`}>
           <h1 className={`font-semibold tracking-wide bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent drop-shadow-sm ${isMobile ? "text-lg leading-tight" : "text-3xl"}`}>
@@ -67,7 +108,7 @@ export default function Header() {
 
           <Link href="/profile" className="flex items-center space-x-3 pl-5 cursor-pointer group">
             <div className="relative">
-         
+
               <div className="w-10 h-10 rounded-full overflow-hidden border shadow-sm group-hover:scale-105 transition-transform">
                 <img src={imageSrc} alt="Avatar" className="w-full h-full object-cover" />
               </div>
@@ -78,8 +119,12 @@ export default function Header() {
             </div>
             {!isMobile && (
               <div className="leading-tight group-hover:opacity-80 transition-opacity">
-                <p className="text-sm font-semibold text-foreground break-all">
-                  {admin?.email || "—"}
+                    <p className="text-sm font-semibold text-foreground break-all">
+                  {admin?.email
+                    ? showPersonalInfo
+                      ? admin.email
+                      : maskEmail(admin.email)
+                    : "—"}
                 </p>
                 <p className="text-xs text-muted-foreground/70">
                   {admin?.role || "Admin"}

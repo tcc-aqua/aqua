@@ -13,32 +13,32 @@ export function useAdminProfile() {
 
   const token = Cookies.get("token");
 
-
-  useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const decoded = jwtDecode(token);
-
-      const savedImage = localStorage.getItem("admin_image");
-
-      setAdmin({
-        id: decoded.id,
-        email: decoded.email || "",
-        role: decoded.role || decoded.type || "admin",
-        image: savedImage || decoded.img_url || "", 
-        criado_em: decoded.criado_em ||""
-      });
-
-    } catch (err) {
-      console.error("Erro ao decodificar token:", err);
-    }
-
+useEffect(() => {
+  if (!token) {
     setLoading(false);
-  }, [token]);
+    return;
+  }
+
+  try {
+    const decoded = jwtDecode(token);
+
+    const savedImage = localStorage.getItem(`admin_image_${decoded.id}`);
+
+    setAdmin({
+      id: decoded.id,
+      email: decoded.email || "",
+      role: decoded.role || decoded.type || "admin",
+      image: savedImage || decoded.img_url || "",
+      criado_em: decoded.criado_em || ""
+    });
+
+  } catch (err) {
+    console.error("Erro ao decodificar token:", err);
+  }
+
+  setLoading(false);
+}, [token]);
+
 
   
   const uploadPhoto = async (file) => {
@@ -70,7 +70,8 @@ export function useAdminProfile() {
       
       setAdmin((prev) => ({ ...prev, image: fullUrl }));
 
-      localStorage.setItem("admin_image", fullUrl);
+    localStorage.setItem(`admin_image_${admin.id}`, fullUrl);
+
 
       toast.success("Foto atualizada!");
     } catch (err) {

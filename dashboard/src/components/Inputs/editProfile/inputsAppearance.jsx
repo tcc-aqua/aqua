@@ -10,12 +10,21 @@ export default function InputAppearance() {
   const [showPersonalInfo, setShowPersonalInfo] = useState(true);
   const [enableAnimations, setEnableAnimations] = useState(true);
 
+    useEffect(() => {
+    const stored = localStorage.getItem("enableAnimations");
+    if (stored !== null) setEnableAnimations(JSON.parse(stored));
+  }, []);
+  useEffect(() => {
+    const stored = localStorage.getItem("showPersonalInfo");
+    if (stored !== null) setShowPersonalInfo(JSON.parse(stored));
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("sidebarCompact");
     if (saved !== null) {
       setSidebarCompact(saved === "true");
     }
+    
 
     const handleToggle = (e) => {
       setSidebarCompact(e.detail);

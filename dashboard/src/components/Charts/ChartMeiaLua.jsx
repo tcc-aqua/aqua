@@ -18,6 +18,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import ExportarTabela from "../Layout/ExportTable/page";
 
 // Configuração de cores
 const chartConfig = {
@@ -68,8 +69,10 @@ useEffect(() => {
   return (
     <Card className="flex flex-col hover:border-sky-400 dark:hover:border-sky-950">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Total de Moradores</CardTitle>
-        <CardDescription>Últimos 6 meses</CardDescription>
+        <CardTitle>Total de Moradores 
+          <ExportarTabela data={chartData} fileName="novos_moradores_meia_lua" className="ml-2" />
+        </CardTitle>
+        <CardDescription className="mt-2">Últimos 6 meses</CardDescription>
       </CardHeader>
 
       <CardContent className="flex flex-1 items-center pb-0">

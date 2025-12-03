@@ -19,7 +19,8 @@ import {
   LayoutDashboard,
   House,
   Building2,
-  Layers3
+  Layers3,
+  Plus
 } from "lucide-react";
 
 import { useTheme } from "next-themes";
@@ -38,7 +39,7 @@ const navigationItems = [
   {
     id: "residencias",
     name: "Residências",
-    icon: Layers3,
+    icon: Plus,
     children: [
       { id: "apartamentos", name: "Apartamentos", href: "/apartamentos", icon: Building },
       { id: "casas", name: "Casas", href: "/casas", icon: House }
@@ -123,32 +124,32 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
     <>
       <button
         onClick={toggleSidebar}
-        className="fixed top-3 left-3 z-50 p-2 rounded-lg shadow-md border border-border md:hidden hover:bg-muted transition-all duration-200"
+        className="fixed top-3 left-3 z-50 p-2 rounded-lg shadow-md border border-border md:hidden hover:bg-muted transition-all duration-200 "
       >
         {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
       {isOpen && (
         <div
-          className="fixed inset-0 bg-accent/30 backdrop-blur-sm z-30 md:hidden"
+          className="fixed inset-0 bg-accent/30 backdrop-blur-sm z-30 md:hidden "
           onClick={toggleSidebar}
         />
       )}
 
       <div
-        className={`fixed top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border z-50 transition-all duration-300 flex flex-col
+        className={`fixed top-0 left-0 h-screen bg-sidebar  border-sidebar-border z-50 transition-all duration-300 flex flex-col border-r-2 border-r-accent/60
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           ${isCollapsed ? "w-26" : "w-56"} md:translate-x-0 overflow-hidden ${className}`}
       >
 
-        <div className="flex items-center justify-between p-2 border-b border-sidebar-border bg-sidebar/60">
+        <div className="flex items-center justify-between p-2 border-sidebar-border bg-sidebar/60 border-b-2 border-b-accent/60 ">
           {!isCollapsed ? (
             <div className="flex items-center">
               <img src="./logo.svg" className="w-12" />
               {mounted && theme === "dark" ? (
-                <img src="./escrita-dark.png" className="w-19 ml-4" />
+                <img src="./escrita-dark.png" className="w-18.5 ml-4" />
               ) : mounted ? (
-                <img src="./escrita.png" className="w-19 ml-4" />
+                <img src="./escrita.png" className="w-18.5 ml-4" />
               ) : null}
             </div>
           ) : (
@@ -163,7 +164,7 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-2 overflow-y-auto mt-4">
+        <nav className="flex-1 px-3 py-2 overflow-y-auto mt-4 ">
           <ul className="space-y-0.5">
             <TooltipProvider>
               {navigationItems.map(item => {
@@ -273,14 +274,14 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
         </nav>
 
 
-        <div className="p-3 border-t border-sidebar-border">
+        <div className="p-3 border-t border-sidebar-border ">
           {isCollapsed ? (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
                     href="/settings"
-                    className="flex items-center justify-center p-2.5 rounded-md hover:bg-muted hover:text-accent"
+                    className="flex items-center justify-center p-2.5 rounded-md hover:bg-muted hover:text-accent "
                   >
                     <Settings className="h-5 w-5" />
                   </Link>

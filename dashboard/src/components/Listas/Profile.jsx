@@ -48,7 +48,12 @@ export default function EmployeeProfile() {
   const [localImagePreview, setLocalImagePreview] = useState(null);
   const [showAllTimeline, setShowAllTimeline] = useState(false);
 
-  
+  const [showPersonalInfo, setShowPersonalInfo] = useState(
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("showPersonalInfo") || "true")
+      : true
+  );
+
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -103,12 +108,22 @@ export default function EmployeeProfile() {
     });
   };
 
-const timeline = admin?.activities || [
-  { id: 1, text: "Conta criada", date: formatDate(admin?.criado_em) },
-  { id: 2, text: "Perfil atualizado", date: formatDate("2024-10-12") },
-  { id: 3, text: "Senha alterada", date: formatDate("2025-02-01") },
+  const timeline = admin?.activities || [
+    { id: 1, text: "Conta criada", date: formatDate(admin?.criado_em) },
+    { id: 2, text: "Perfil atualizado", date: formatDate("2024-10-12") },
+    { id: 3, text: "Senha alterada", date: formatDate("2025-02-01") },
 
-];
+  ];
+  useEffect(() => {
+    const handler = (e) => {
+      setShowPersonalInfo(e.detail);
+      localStorage.setItem("showPersonalInfo", JSON.stringify(e.detail));
+    };
+
+    window.addEventListener("toggle-personal-info", handler);
+
+    return () => window.removeEventListener("toggle-personal-info", handler);
+  }, []);
 
 
   const loadingUI = loading ? <Loading /> : null;
@@ -143,17 +158,36 @@ const timeline = admin?.activities || [
     await uploadPhoto(file);
 
     //  dispara evento global para Header atualizar a imagem instantaneamente
-    const event = new CustomEvent("imageUpdate", { detail: URL.createObjectURL(file) });
+    const event = new CustomEvent("imageUpdate", {
+      detail: {
+        id: admin.id,                // ID do admin atual
+        image: URL.createObjectURL(file)
+      }
+    });
     adminEvent.dispatchEvent(event);
   };
-  
+  function maskEmail(email) {
+    if (!email || typeof email !== "string") return "*****";
+
+    const [user, domain] = email.split("@");
+    if (!domain) return "*****";
+
+    // Mantém apenas a primeira e última letra do usuário, no resto vira *
+    const maskedUser =
+      user.length <= 2
+        ? user[0] + "*".repeat(Math.max(user.length - 1, 1))
+        : user[0] + "*".repeat(user.length - 2) + user[user.length - 1];
+
+    return maskedUser + "@" + domain;
+  }
+
 
   const getRoleBadge = (role) => {
     if (!role) return null;
     const r = role.toLowerCase();
     const colors = {
       superadmin: "text-purple-600 border-purple-700",
-      admin: "text-blue-600 border-blue-700", 
+      admin: "text-blue-600 border-blue-700",
     };
     const icons = { superadmin: ShieldCheck, admin: UserCircle2 };
     const Icon = icons[r] || UserCircle2;
@@ -224,11 +258,15 @@ const timeline = admin?.activities || [
           <div className="md:col-span-2 space-y-6">
             <Card className="p-6 rounded-3xl shadow-xl">
               <h3 className="text-2xl font-semibold mb-4">
-                Informações 
+                Informações
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  ["E-mail", admin.email, Mail],
+                  [
+                    "E-mail",
+                    showPersonalInfo ? admin.email : maskEmail(admin.email),
+                    Mail
+                  ],
                   ["Criado em", formatDate(admin.criado_em), Clock],
                 ].map(([label, value, Icon]) => (
                   <motion.div
@@ -250,10 +288,10 @@ const timeline = admin?.activities || [
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <Card className="p-4 rounded-2xl shadow">
                 <h4 className="font-semibold ">Preferências</h4>
-                <div className="">      
-               
-                      <InputAppearance></InputAppearance>
-          
+                <div className="">
+
+                  <InputAppearance></InputAppearance>
+
                 </div>
                 {timeline.length > 3 && (
                   <div className="mt-3 flex justify-end">
@@ -276,6 +314,7 @@ const timeline = admin?.activities || [
                 <div>
                   <p className="text-sm text-muted-foreground">Nova senha</p>
 
+                 
                   <div className="mt-2 relative">
                     <Input
                       type={showPassword ? "text" : "password"}
@@ -292,6 +331,7 @@ const timeline = admin?.activities || [
                     </button>
                   </div>
 
+            
                   <div className="mt-2 text-xs flex justify-between text-muted-foreground">
                     <span>Força: {strengthLabel(passwordStrength)}</span>
                     <span>{formData.password.length} chars</span>
@@ -313,14 +353,43 @@ const timeline = admin?.activities || [
                     />
                   </div>
 
+               
+                  <div className="mt-4 relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Confirme a senha"
+                      value={formData.confirmPassword || ""}
+                      onChange={(e) => handleChange("confirmPassword", e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((x) => !x)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    >
+                      {showPassword ? <EyeOff /> : <Eye />}
+                    </button>
+                  </div>
+
+                
+                  {formData.confirmPassword &&
+                    formData.password !== formData.confirmPassword && (
+                      <p className="text-xs text-red-500 mt-1">As senhas não coincidem</p>
+                    )}
+
+                
                   <Button
-                    disabled={saving || !formData.password.trim()}
+                    disabled={
+                      saving ||
+                      !formData.password.trim() ||
+                      formData.password !== formData.confirmPassword
+                    }
                     className="mt-4 w-full flex gap-2 justify-center"
                     onClick={() => setShowModal(true)}
                   >
                     {saving ? <Loader2 className="animate-spin" /> : <Save />}
                     Salvar Senha
                   </Button>
+
                 </div>
 
                 <Dialog open={showModal} onOpenChange={setShowModal}>
@@ -328,7 +397,7 @@ const timeline = admin?.activities || [
                     <div className="h-2 w-full rounded-t-md bg-green-600" />
                     <DialogHeader className="flex flex-col items-center text-center space-y-4 pb-4 border-b border-border mt-3">
                       <div className="p-4 rounded-full bg-green-100 dark:bg-green-900">
-                        <AlertTriangle className="h-10 w-10 text-green-600 dark:text-green-400" />
+                        <Check className="h-10 w-10 text-green-600 dark:text-green-400" />
                       </div>
                       <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">
                         Confirmação

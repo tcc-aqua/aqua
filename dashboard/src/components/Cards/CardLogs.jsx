@@ -6,7 +6,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Search, User, ArrowBigRight, Clock, ListFilter, Hash } from "lucide-react";
+import { Search, User, ArrowBigRight, Clock, ListFilter, Hash, Calendar } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import ExportarTabela from "../Layout/ExportTable/page";
@@ -170,7 +170,7 @@ export default function LogsDashboard() {
                 Logs do Sistema
               </CardTitle>
 
-              <ExportarTabela  data={logs} fileName="logs" />
+              <ExportarTabela data={logs} fileName="logs" />
             </div>
 
             <Separator />
@@ -224,7 +224,7 @@ export default function LogsDashboard() {
                     className=" w-full p-3 rounded-md border border-border bg-card  hover:bg-muted/10 transition shadow-sm flex items-center justify-between flex-wrap gap-4 text-sm "
                   >
 
-                   <div className="flex items-center gap-4 flex-wrap">
+                    <div className="flex items-center gap-4 flex-wrap">
 
                       <div className="flex items-center gap-1">
                         <User className="w-4 h-4 text-primary/70" />
@@ -236,14 +236,14 @@ export default function LogsDashboard() {
                       <span
                         className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wide
                          ${log.acao === "create"
-                             ? "bg-green-600/20 text-green-500 border border-green-700/40"
+                            ? "bg-green-600/20 text-green-500 border border-green-700/40"
                             : log.acao === "update"
                               ? "bg-yellow-600/20 text-yellow-500 border border-yellow-700/40"
-                              : "bg-red-600/20 text-red-500 border border-red-700/40" } `}
+                              : "bg-red-600/20 text-red-500 border border-red-700/40"} `}
                       >
                         {log.acao}
                       </span>
-               
+
 
                       <div className="flex items-center gap-2 flex-nowrap">
 
@@ -290,9 +290,11 @@ export default function LogsDashboard() {
                     </div>
 
 
-                    <div className="text-xs text-muted-foreground whitespace-nowrap">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground whitespace-nowrap font-semibold">
+                      <Calendar className="h-4 w-4" />
                       {new Date(log.alterado_em).toLocaleString("pt-BR")}
                     </div>
+
 
                   </div>
                 ))}

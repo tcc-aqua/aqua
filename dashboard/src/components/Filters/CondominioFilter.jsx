@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { motion } from "framer-motion";
+
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { useCondominios } from "@/hooks/useCondominios";
 import { Plus, Eraser, Check, Building, PlusCircle } from 'lucide-react';
 import { api } from "@/lib/api";
+import AnimationWrapper from "../Layout/Animation/Animation";
 
 export default function CondominioFilter({ onApply }) {
   const [search, setSearch] = useState("");
@@ -135,25 +136,11 @@ const handleCreateCondominio = async (e) => {
 };
 
 
-  const cardVariants = {
-    hidden: { y: -120, opacity: 0, zIndex: -1 },
-    visible: (delay = 0) => ({
-      y: 0,
-      opacity: 1,
-      zIndex: 10,
-      transition: { duration: 0.8, ease: "easeOut", delay },
-    }),
-  };
 
   return (
     <>
 
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        animate="visible"
-        custom={0.5}
-      >
+      <AnimationWrapper delay={0.2}>
         <Card className="container mx-auto p-4 rounded-md shadow-sm mb-6 border-l-5 border-l-accent">
           <div className="flex flex-wrap gap-4 items-end">
 
@@ -211,7 +198,7 @@ const handleCreateCondominio = async (e) => {
             </div>
           </div>
         </Card>
-      </motion.div>
+      </AnimationWrapper>
 
   <Dialog open={isOpen} onOpenChange={setIsOpen}>
   <DialogContent className="sm: rounded-2xl shadow-2xl bg-background border border-border overflow-hidden">

@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ExportarTabela from "../Layout/ExportTable/page";
 
 const API_URL = "http://localhost:3333/api/crescimento";
 
@@ -88,8 +89,9 @@ const filteredData = React.useMemo(() => {
     <Card className="pt-0 hover:border-sky-400 dark:hover:border-sky-950 transition-colors duration-300">
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
         <div className="grid flex-1 gap-1">
+           
           <CardTitle>Crescimento de Usuários</CardTitle>
-          <CardDescription>
+          <CardDescription >
             {loading
               ? "Carregando dados..."
               : `Mostrando os últimos ${
@@ -99,6 +101,9 @@ const filteredData = React.useMemo(() => {
                     ? "6 meses"
                     : "12 meses"
                 }`}
+                  <div className="flex justify-end text-accent ">
+              <ExportarTabela data={filteredData} fileName="crescimento_usuarios" />
+             </div>
           </CardDescription>
         </div>
 

@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import Loading from "../Layout/Loading/page";
+import ExportarTabela from "../Layout/ExportTable/page";
 
 // Paleta de cores
 const palette = [
@@ -75,8 +76,14 @@ export default function DistribuicaoPorRegiao() {
     <AnimationWrapper delay={0.2}>
       <section className="container mx-auto mt-10">
         <Card className="w-full hover:border-sky-400 dark:hover:border-sky-950 ">
+    
+         
           <CardHeader>
+
             <CardTitle>Distribuição por Estado</CardTitle>
+                  <div className="flex justify-end ">
+ <ExportarTabela data={dados} fileName="distribuicao_por_regiao" /> 
+          </div>
           </CardHeader>
 
           <CardContent className="space-y-4 p-0">

@@ -10,8 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "../ui/card";
-import { motion } from "framer-motion";
 import { Check, Eraser } from "lucide-react";
+import AnimationWrapper from "../Layout/Animation/Animation";
 
 export default function AlertasFilter({ onApply }) {
   const [tipo, setTipo] = useState("all");
@@ -37,23 +37,8 @@ export default function AlertasFilter({ onApply }) {
     if (onApply) onApply({});
   };
 
-  const cardVariants = {
-    hidden: { y: -120, opacity: 0, zIndex: -1 },
-    visible: (delay = 0) => ({
-      y: 0,
-      opacity: 1,
-      zIndex: 10,
-      transition: { duration: 0.8, ease: "easeOut", delay },
-    }),
-  };
-
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      custom={0.3}
-    >
+    <AnimationWrapper delay={0.2}>
       <Card className="container mx-auto p-5 rounded-md shadow-sm mb-6 transition-all border-l-5 border-l-accent">
         <div className="flex flex-wrap items-end gap-4">
    
@@ -135,6 +120,6 @@ export default function AlertasFilter({ onApply }) {
           </div>
         </div>
       </Card>
-    </motion.div>
+    </AnimationWrapper>
   );
 }
