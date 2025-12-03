@@ -23,9 +23,18 @@ Comunicados.init({
         defaultValue: 'usuários',
         allowNull: false
     },
-    status: {
-        type: DataTypes.ENUM('ativo', 'inativo'),
-        defaultValue: 'ativo'
+    // Coluna STATUS removida para compatibilidade com o banco atual
+    condominio_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    casa_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    sindico_id: {
+        type: DataTypes.CHAR(36),
+        allowNull: true
     }
 }, {
     sequelize,

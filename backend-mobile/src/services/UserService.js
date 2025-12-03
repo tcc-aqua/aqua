@@ -4,11 +4,10 @@ import Metas from "../models/Metas.js";
 import LeituraSensor from '../models/LeituraSensor.js';
 import Casa from '../models/Casa.js';
 import Apartamento from '../models/Apartamento.js';
-import GamificationService from './GamificationService.js';
 import sequelize from '../config/sequelize.js';
-import GamificationLog from '../models/GamificationLog.js';
 
 const PRECO_POR_LITRO = 0.015;
+const PONTOS_POR_META = 50;
 
 export default class UserService {
     static async getWeeklyConsumption(userId) {
@@ -158,17 +157,9 @@ export default class UserService {
 
             const economia_total = agua_poupada * PRECO_POR_LITRO;
 
-            const pontos = await GamificationService.calculateTotalPoints(userId);
+            const pontos = metas_cumpridas * PONTOS_POR_META;
 
-            const userScores = await GamificationLog.findAll({
-                attributes: ['user_id', [sequelize.fn('SUM', sequelize.col('points')), 'total_points']],
-                group: ['user_id'],
-                order: [[sequelize.fn('SUM', sequelize.col('points')), 'DESC']],
-                raw: true
-            });
-
-            const userRankIndex = userScores.findIndex(score => score.user_id === userId);
-            const ranking = userRankIndex !== -1 ? userRankIndex + 1 : userScores.length + 1;
+            const ranking = 1; 
 
             return {
                 tempo_no_app: tempo_no_app || 0,

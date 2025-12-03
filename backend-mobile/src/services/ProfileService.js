@@ -1,4 +1,3 @@
-// AQUI: Adicionamos .js ao final de sequelize
 import sequelize from '../config/sequelize.js';
 
 class ProfileService {
