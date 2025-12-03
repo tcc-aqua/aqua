@@ -3,7 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart2, Users, FileText } from "lucide-react";
 import ChartPieInteractive from "./blocks/relatorios/charts/StatusSensores";
-import { ChartTooltipLabelFormatter } from "./blocks/relatorios/charts/UsuariosAtivos";
+import { ChartUsuariosSemana} from "./blocks/relatorios/charts/UsuariosAtivos";
 import { ChartRadarMultiple } from "./blocks/relatorios/charts/ComunicadosEmitidosVsVisualizados";
 
 const tabs = [
@@ -17,7 +17,7 @@ const tabs = [
     name: "Usuários Ativos",
     value: "usuarios_ativos",
     icon: <Users className="w-5 h-5" aria-hidden="true" />,
-    render: <ChartTooltipLabelFormatter />,
+    render: <ChartUsuariosSemana />,
   },
 
 ];

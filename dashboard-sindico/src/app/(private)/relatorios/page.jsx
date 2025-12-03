@@ -1,5 +1,5 @@
 import CardsRelatorio from "@/components/blocks/relatorios/card-principal";
-import MyChart5 from "@/components/blocks/relatorios/charts/MediaDeMoradores";
+import MediaMoradoresChart from "@/components/blocks/relatorios/charts/MediaDeMoradores";
 import Content from "@/components/blocks/relatorios/content/page";
 import Header from "@/components/layout/Header/page";
 import LayoutDashboard from "@/components/layout/LayoutDashboard/page";
@@ -18,7 +18,7 @@ export default function Moradores() {
             <CardsRelatorio />
             <section className="grid grid-cols-2 gap-10"> 
                 <Content/>
-                <MyChart5/>
+                <MediaMoradoresChart/>
             </section>
             <section>
             </section>
