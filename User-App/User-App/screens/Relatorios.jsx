@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Dimensions, TouchableOpacity, RefreshControl } from 'react-native';
-import { Text, Surface, ActivityIndicator, IconButton, Avatar } from 'react-native-paper';
+import { Text, Surface, ActivityIndicator, IconButton, Avatar, ProgressBar } from 'react-native-paper';
 import { BarChart } from 'react-native-gifted-charts';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MotiView } from 'moti';
@@ -8,8 +8,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as Haptics from 'expo-haptics';
 
-// Configurações de Tela e Tema
 const { width } = Dimensions.get('window');
+// Ajuste o IP se necessário (ex: http://192.168.X.X:3334/api)
 const API_URL = 'http://localhost:3334/api';
 
 const THEME = {
@@ -22,31 +22,66 @@ const THEME = {
     success: '#34C759',
     warning: '#FF9500',
     danger: '#FF3B30',
+    money: '#30B0C7'
+};
+
+// --- LÓGICA DE PREÇO SABESP (CORRIGIDA) ---
+const calculateSabespProjection = (avgLitersPerDay) => {
+    const daysInMonth = 30;
+    // Converte Litros p/ m³ (Ex: 500L/dia * 30 = 15.000L = 15m³)
+    const totalM3 = (avgLitersPerDay * daysInMonth) / 1000; 
+
+    let bill = 0;
+
+    // Valores de referência (Tarifa Mista Água + Esgoto já somados)
+    // Lógica Progressiva Acumulada:
+    
+    // Faixa 1: 0 a 10 m³ (Mínimo fixo)
+    if (totalM3 <= 10) {
+        bill = 71.70;
+    } 
+    // Faixa 2: 11 a 20 m³
+    // Paga o fixo dos 10 primeiros + excedente * tarifa da faixa 2
+    else if (totalM3 <= 20) {
+        bill = 71.70 + ((totalM3 - 10) * 5.68); 
+    } 
+    // Faixa 3: 21 a 50 m³
+    // Paga fixo faixa 1 + total da faixa 2 + excedente faixa 3
+    else if (totalM3 <= 50) {
+        bill = 71.70 + (10 * 5.68) + ((totalM3 - 20) * 14.14); 
+    } 
+    // Faixa 4: Acima de 50 m³
+    // Soma tudo anterior + excedente faixa 4
+    else {
+        bill = 71.70 + (10 * 5.68) + (30 * 14.14) + ((totalM3 - 50) * 16.98);
+    }
+    
+    return {
+        bill: bill,
+        volume: totalM3
+    };
 };
 
 export default function Relatorios() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [chartData, setChartData] = useState([]);
-    const [timeframe, setTimeframe] = useState('semana'); // semana, mes
+    const [metasHistory, setMetasHistory] = useState([]);
+    const [timeframe, setTimeframe] = useState('semana');
     const [selectedBar, setSelectedBar] = useState(null);
 
-    // --- BUSCA DE DADOS ---
-    const fetchConsumptionData = useCallback(async () => {
+    const fetchReportData = useCallback(async () => {
         try {
             const token = await AsyncStorage.getItem('token');
             if (!token) return;
+            const headers = { Authorization: `Bearer ${token}` };
 
-            // Chama a rota real do backend que retorna [{ data: 'dd/mm', consumo: 123 }]
-            const response = await axios.get(`${API_URL}/user/me/consumo-semanal`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            if (response.data) {
-                // Formata para o Gifted Charts
-                const formatted = response.data.map(item => ({
+            // 1. Consumo Gráfico (Semanal)
+            const respConsumo = await axios.get(`${API_URL}/user/me/consumo-semanal`, { headers });
+            if (respConsumo.data) {
+                const formatted = respConsumo.data.map(item => ({
                     value: Number(item.consumo),
-                    label: item.data,
+                    label: item.data.split('/')[0], // Apenas o dia
                     frontColor: getBarColor(Number(item.consumo)),
                     gradientColor: getGradientColor(Number(item.consumo)),
                     topLabelComponent: () => (
@@ -57,6 +92,13 @@ export default function Relatorios() {
                 }));
                 setChartData(formatted);
             }
+
+            // 2. Histórico de Metas (Simulado via endpoint de listagem)
+            const respMetas = await axios.get(`${API_URL}/metas?limit=5`, { headers });
+            if (respMetas.data?.docs) {
+                setMetasHistory(respMetas.data.docs);
+            }
+
         } catch (error) {
             console.error("Erro ao buscar relatórios:", error);
         } finally {
@@ -66,37 +108,40 @@ export default function Relatorios() {
     }, []);
 
     useEffect(() => {
-        fetchConsumptionData();
-    }, [fetchConsumptionData]);
+        fetchReportData();
+    }, [fetchReportData]);
 
     const onRefresh = () => {
         setRefreshing(true);
-        fetchConsumptionData();
+        fetchReportData();
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     };
 
-    // --- LÓGICA DE CORES E CÁLCULOS ---
+    // --- HELPERS VISUAIS ---
     const getBarColor = (val) => val > 200 ? THEME.danger : val > 150 ? THEME.warning : THEME.primary;
     const getGradientColor = (val) => val > 200 ? '#FF6B6B' : val > 150 ? '#FFD54F' : '#60efff';
 
     const statistics = useMemo(() => {
-        if (!chartData.length) return { total: 0, avg: 0, max: 0, min: 0 };
+        if (!chartData.length) return { total: 0, avg: 0, max: 0, projection: { bill: 0, volume: 0 } };
+        
         const values = chartData.map(d => d.value);
         const total = values.reduce((a, b) => a + b, 0);
+        const avg = total / values.length;
+        
         return {
             total,
-            avg: Math.round(total / values.length),
+            avg: Math.round(avg),
             max: Math.max(...values),
-            min: Math.min(...values)
+            // Passa a média diária para a projeção mensal
+            projection: calculateSabespProjection(avg)
         };
     }, [chartData]);
 
-    // --- RENDERIZAÇÃO ---
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={THEME.primary} />
-                <Text style={{ marginTop: 10, color: THEME.subtext }}>Carregando dados de consumo...</Text>
+                <Text style={{ marginTop: 10, color: THEME.subtext }}>Calculando projeções...</Text>
             </View>
         );
     }
@@ -110,141 +155,146 @@ export default function Relatorios() {
                 showsVerticalScrollIndicator={false}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff"/>}
             >
-                {/* HEADER DA TELA */}
                 <MotiView from={{ opacity: 0, translateY: -20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing' }}>
-                    <Text style={styles.pageTitle}>Relatório de Consumo</Text>
-                    <Text style={styles.pageSubtitle}>Análise detalhada do uso de água</Text>
+                    <Text style={styles.pageTitle}>Inteligência</Text>
+                    <Text style={styles.pageSubtitle}>Relatórios e Projeções</Text>
                 </MotiView>
 
-                {/* SELETOR DE PERÍODO */}
-                <View style={styles.toggleContainer}>
-                    {['semana', 'mes'].map((t) => (
-                        <TouchableOpacity 
-                            key={t} 
-                            style={[styles.toggleBtn, timeframe === t && styles.toggleBtnActive]}
-                            onPress={() => { setTimeframe(t); Haptics.selectionAsync(); }}
+                {/* === SEÇÃO DE PROJEÇÃO FINANCEIRA === */}
+                <MotiView from={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 100 }}>
+                    <Surface style={styles.projectionCard} elevation={4}>
+                        <LinearGradient
+                            colors={['#30B0C7', '#0083B0']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.projectionGradient}
                         >
-                            <Text style={[styles.toggleText, timeframe === t && styles.toggleTextActive]}>
-                                {t === 'semana' ? 'Últimos 7 Dias' : 'Mensal'}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
+                            <View style={styles.projectionRow}>
+                                <View>
+                                    <Text style={styles.projLabel}>Fatura Estimada (Fim do Mês)</Text>
+                                    <Text style={styles.projValue}>
+                                        R$ {statistics.projection.bill.toFixed(2).replace('.', ',')}
+                                    </Text>
+                                    <Text style={styles.projSub}>Estimativa SABESP (Água + Esgoto)</Text>
+                                </View>
+                                <View style={styles.iconCircle}>
+                                    <IconButton icon="cash-multiple" iconColor="#FFF" size={28} />
+                                </View>
+                            </View>
+
+                            <View style={styles.projDivider} />
+
+                            <View style={styles.projDetailsRow}>
+                                <View style={styles.projDetailItem}>
+                                    <Text style={styles.projDetailLabel}>Volume Est.</Text>
+                                    <Text style={styles.projDetailValue}>{statistics.projection.volume.toFixed(1)} m³</Text>
+                                </View>
+                                <View style={styles.verticalLine} />
+                                <View style={styles.projDetailItem}>
+                                    <Text style={styles.projDetailLabel}>Média Diária</Text>
+                                    <Text style={styles.projDetailValue}>{statistics.avg} L</Text>
+                                </View>
+                                <View style={styles.verticalLine} />
+                                <View style={styles.projDetailItem}>
+                                    <Text style={styles.projDetailLabel}>Status</Text>
+                                    <Text style={[styles.projDetailValue, { color: '#FFF', fontWeight:'bold' }]}>
+                                        {statistics.projection.volume <= 10 ? 'Mínimo' : 'Excedente'}
+                                    </Text>
+                                </View>
+                            </View>
+                        </LinearGradient>
+                    </Surface>
+                </MotiView>
+
+                {/* === GRÁFICO DE BARRAS === */}
+                <View style={styles.sectionSpacer}>
+                    <Text style={styles.sectionHeader}>Consumo Semanal</Text>
                 </View>
 
-                {/* GRÁFICO PRINCIPAL */}
-                <MotiView from={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 100 }}>
-                    <Surface style={styles.chartCard} elevation={4}>
-                        <View style={styles.chartHeader}>
-                            <View>
-                                <Text style={styles.chartTitle}>Consumo Diário</Text>
-                                <Text style={styles.chartSubtitle}>Litros por dia</Text>
-                            </View>
-                            <View style={styles.totalBadge}>
-                                <Text style={styles.totalBadgeLabel}>TOTAL</Text>
-                                <Text style={styles.totalBadgeValue}>{statistics.total} L</Text>
-                            </View>
-                        </View>
-
+                <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ delay: 200 }}>
+                    <Surface style={styles.chartCard} elevation={2}>
                         {chartData.length > 0 ? (
-                            <View style={{ alignItems: 'center', overflow: 'hidden' }}>
-                                <BarChart
-                                    data={chartData}
-                                    barWidth={28}
-                                    spacing={24}
-                                    roundedTop
-                                    roundedBottom
-                                    hideRules
-                                    xAxisThickness={0}
-                                    yAxisThickness={0}
-                                    yAxisTextStyle={{ color: THEME.subtext, fontSize: 10 }}
-                                    noOfSections={4}
-                                    maxValue={statistics.max * 1.2 || 100} // Dá um respiro no topo
-                                    isAnimated
-                                    showGradient
-                                    animationDuration={1000}
-                                    onPress={(item) => {
-                                        setSelectedBar(item);
-                                        Haptics.selectionAsync();
-                                    }}
-                                    renderTooltip={(item) => {
-                                        return (
-                                            <View style={styles.tooltip}>
-                                                <Text style={styles.tooltipText}>{item.value} Litros</Text>
-                                                <Text style={styles.tooltipDate}>{item.label}</Text>
-                                            </View>
-                                        );
-                                    }}
-                                    leftShiftForTooltip={10}
-                                    autoCenterTooltip
-                                />
-                            </View>
+                            <BarChart
+                                data={chartData}
+                                barWidth={22}
+                                spacing={20}
+                                roundedTop
+                                hideRules
+                                xAxisThickness={0}
+                                yAxisThickness={0}
+                                yAxisTextStyle={{ color: THEME.subtext, fontSize: 10 }}
+                                noOfSections={3}
+                                maxValue={statistics.max * 1.2 || 100}
+                                isAnimated
+                                showGradient
+                                animationDuration={800}
+                                renderTooltip={(item) => (
+                                    <View style={styles.tooltip}>
+                                        <Text style={styles.tooltipText}>{item.value} L</Text>
+                                    </View>
+                                )}
+                                leftShiftForTooltip={5}
+                                autoCenterTooltip
+                            />
                         ) : (
-                            <View style={styles.emptyChart}>
-                                <IconButton icon="chart-bar" size={40} iconColor={THEME.subtext} />
-                                <Text style={{ color: THEME.subtext }}>Sem dados registrados ainda.</Text>
-                            </View>
+                            <Text style={styles.emptyText}>Sem dados recentes para exibir.</Text>
                         )}
                     </Surface>
                 </MotiView>
 
-                {/* CARDS DE ESTATÍSTICAS (GRID) */}
-                <View style={styles.statsGrid}>
-                    <MotiView from={{ translateX: -20, opacity: 0 }} animate={{ translateX: 0, opacity: 1 }} transition={{ delay: 200 }} style={styles.statCardWrapper}>
-                        <Surface style={styles.statCard} elevation={2}>
-                            <Avatar.Icon size={40} icon="chart-line" style={{backgroundColor: '#E3F2FD'}} color={THEME.primary} />
-                            <View style={{marginLeft: 12}}>
-                                <Text style={styles.statLabel}>Média Diária</Text>
-                                <Text style={styles.statValue}>{statistics.avg} <Text style={styles.unit}>L</Text></Text>
-                            </View>
-                        </Surface>
-                    </MotiView>
+                {/* === HISTÓRICO DE METAS (GAMIFICAÇÃO) === */}
+                <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ delay: 300 }}>
+                    <Text style={styles.sectionHeader}>Histórico de Metas</Text>
+                    
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10, overflow: 'visible' }}>
+                        {metasHistory.length > 0 ? metasHistory.map((meta, index) => {
+                            const isSuccess = meta.status === 'atingida';
+                            const isFail = meta.status === 'excedida';
+                            const isActive = meta.status === 'em_andamento';
 
-                    <MotiView from={{ translateX: 20, opacity: 0 }} animate={{ translateX: 0, opacity: 1 }} transition={{ delay: 300 }} style={styles.statCardWrapper}>
-                        <Surface style={styles.statCard} elevation={2}>
-                            <Avatar.Icon size={40} icon="water-alert" style={{backgroundColor: '#FFEBEE'}} color={THEME.danger} />
-                            <View style={{marginLeft: 12}}>
-                                <Text style={styles.statLabel}>Pico de Uso</Text>
-                                <Text style={[styles.statValue, {color: THEME.danger}]}>{statistics.max} <Text style={[styles.unit, {color: THEME.danger}]}>L</Text></Text>
-                            </View>
-                        </Surface>
-                    </MotiView>
-                </View>
+                            let statusColor = THEME.primary;
+                            let icon = 'progress-clock';
+                            
+                            if (isSuccess) { statusColor = THEME.success; icon = 'trophy'; }
+                            if (isFail) { statusColor = THEME.danger; icon = 'alert-circle'; }
 
-                {/* LISTA DETALHADA */}
-                <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ delay: 400 }}>
-                    <Text style={styles.sectionHeader}>Histórico Detalhado</Text>
-                    {chartData.map((item, index) => (
-                        <Surface key={index} style={styles.listItem} elevation={1}>
-                            <View style={styles.listRow}>
-                                <View style={styles.dateBox}>
-                                    <Text style={styles.dateText}>{item.label.split('/')[0]}</Text>
-                                    <Text style={styles.monthText}>{getMonthName(item.label.split('/')[1])}</Text>
-                                </View>
-                                <View style={{ flex: 1, paddingHorizontal: 15 }}>
-                                    <View style={styles.barBackground}>
-                                        <View style={[
-                                            styles.barFill, 
-                                            { width: `${(item.value / statistics.max) * 100}%`, backgroundColor: item.frontColor }
-                                        ]} />
+                            // Cálculo do progresso (evita divisão por zero)
+                            const limite = Number(meta.limite_consumo) || 1;
+                            const atual = Number(meta.consumo_atual) || 0;
+                            const progresso = Math.min(atual / limite, 1);
+
+                            return (
+                                <Surface key={meta.id} style={[styles.historyCard, { marginLeft: index === 0 ? 0 : 12 }]} elevation={2}>
+                                    <View style={[styles.historyIcon, { backgroundColor: statusColor + '20' }]}>
+                                        <IconButton icon={icon} iconColor={statusColor} size={20} style={{margin:0}} />
                                     </View>
-                                </View>
-                                <Text style={styles.listValue}>{item.value} L</Text>
+                                    <Text style={styles.historyLabel} numberOfLines={1}>{meta.periodo}</Text>
+                                    <Text style={[styles.historyStatus, { color: statusColor }]}>
+                                        {isActive ? 'Ativa' : isSuccess ? 'Conquista' : 'Excedeu'}
+                                    </Text>
+                                    <View style={styles.miniProgress}>
+                                        <ProgressBar 
+                                            progress={progresso} 
+                                            color={statusColor} 
+                                            style={{height: 4, borderRadius: 2}} 
+                                        />
+                                    </View>
+                                </Surface>
+                            );
+                        }) : (
+                            <View style={styles.emptyHistory}>
+                                <Text style={{color: THEME.subtext}}>Nenhuma meta registrada no histórico.</Text>
                             </View>
-                        </Surface>
-                    ))}
+                        )}
+                        <View style={{width: 20}}/>
+                    </ScrollView>
                 </MotiView>
 
-                <View style={{ height: 80 }} />
+                <View style={{ height: 40 }} />
             </ScrollView>
         </View>
     );
 }
-
-// Helper para nome do mês
-const getMonthName = (monthNum) => {
-    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    return months[parseInt(monthNum) - 1] || '';
-};
 
 const styles = StyleSheet.create({
     container: {
@@ -255,204 +305,160 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: THEME.background
     },
     headerBackground: {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
-        height: 150,
+        height: 140,
         borderBottomLeftRadius: 30,
         borderBottomRightRadius: 30,
     },
     scrollContent: {
         paddingHorizontal: 20,
-        paddingTop: 60,
+        paddingTop: 50,
     },
     pageTitle: {
         fontSize: 28,
         fontWeight: 'bold',
         color: '#FFF',
-        marginBottom: 4,
     },
     pageSubtitle: {
         fontSize: 14,
-        color: 'rgba(255,255,255,0.8)',
-        marginBottom: 24,
-    },
-    toggleContainer: {
-        flexDirection: 'row',
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        borderRadius: 12,
-        padding: 4,
+        color: 'rgba(255,255,255,0.9)',
         marginBottom: 20,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.3)'
     },
-    toggleBtn: {
-        flex: 1,
-        paddingVertical: 8,
-        alignItems: 'center',
-        borderRadius: 8,
-    },
-    toggleBtnActive: {
-        backgroundColor: '#FFF',
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    toggleText: {
-        color: 'rgba(255,255,255,0.8)',
-        fontWeight: '600',
-        fontSize: 13
-    },
-    toggleTextActive: {
-        color: THEME.primary,
-        fontWeight: 'bold',
-    },
-    chartCard: {
-        backgroundColor: '#FFF',
+    
+    // PROJECTION CARD
+    projectionCard: {
         borderRadius: 24,
-        padding: 20,
-        marginBottom: 20,
-        paddingBottom: 30
+        marginBottom: 24,
+        overflow: 'hidden',
     },
-    chartHeader: {
+    projectionGradient: {
+        padding: 20,
+    },
+    projectionRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-        marginBottom: 20,
     },
-    chartTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: THEME.text,
+    projLabel: {
+        color: 'rgba(255,255,255,0.9)',
+        fontSize: 14,
+        fontWeight: '600',
+        marginBottom: 4,
     },
-    chartSubtitle: {
-        fontSize: 12,
-        color: THEME.subtext,
-    },
-    totalBadge: {
-        alignItems: 'flex-end',
-    },
-    totalBadgeLabel: {
-        fontSize: 10,
-        fontWeight: 'bold',
-        color: THEME.subtext,
-        letterSpacing: 1,
-    },
-    totalBadgeValue: {
-        fontSize: 20,
-        fontWeight: '800',
-        color: THEME.primary,
-    },
-    tooltip: {
-        backgroundColor: '#1C1C1E',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 8,
-        marginBottom: 5,
-        alignItems: 'center',
-    },
-    tooltipText: {
+    projValue: {
         color: '#FFF',
+        fontSize: 32,
         fontWeight: 'bold',
-        fontSize: 12,
     },
-    tooltipDate: {
-        color: '#CCC',
-        fontSize: 10,
+    projSub: {
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: 11,
+        marginTop: 2,
     },
-    emptyChart: {
-        height: 200,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#F9F9F9',
-        borderRadius: 16,
+    iconCircle: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 20,
     },
-    statsGrid: {
+    projDivider: {
+        height: 1,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        marginVertical: 16,
+    },
+    projDetailsRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 24,
-    },
-    statCardWrapper: {
-        width: '48%',
-    },
-    statCard: {
-        backgroundColor: '#FFF',
-        borderRadius: 16,
-        padding: 12,
-        flexDirection: 'row',
         alignItems: 'center',
     },
-    statLabel: {
-        fontSize: 12,
-        color: THEME.subtext,
-        fontWeight: '600',
+    projDetailItem: {
+        alignItems: 'center',
+        flex: 1,
     },
-    statValue: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: THEME.text,
+    projDetailLabel: {
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: 11,
+        marginBottom: 2,
     },
-    unit: {
-        fontSize: 12,
-        fontWeight: 'normal',
-        color: THEME.subtext,
+    projDetailValue: {
+        color: '#FFF',
+        fontSize: 15,
+        fontWeight: '700',
+    },
+    verticalLine: {
+        width: 1,
+        height: 24,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+    },
+
+    // CHART SECTION
+    sectionSpacer: {
+        marginBottom: 12,
     },
     sectionHeader: {
         fontSize: 18,
         fontWeight: 'bold',
         color: THEME.text,
-        marginBottom: 12,
-        marginLeft: 4,
     },
-    listItem: {
+    chartCard: {
+        backgroundColor: '#FFF',
+        borderRadius: 20,
+        padding: 16,
+        paddingBottom: 24,
+        marginBottom: 24,
+        alignItems: 'center',
+    },
+    tooltip: {
+        backgroundColor: '#1C1C1E',
+        padding: 6,
+        borderRadius: 6,
+    },
+    tooltipText: {
+        color: '#FFF',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    emptyText: {
+        color: THEME.subtext,
+        padding: 20,
+    },
+
+    // HISTORY SECTION
+    historyCard: {
         backgroundColor: '#FFF',
         borderRadius: 16,
         padding: 12,
-        marginBottom: 10,
+        width: 110,
+        marginRight: 4,
+        marginBottom: 10, // shadow space
     },
-    listRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    dateBox: {
-        width: 45,
-        height: 45,
-        backgroundColor: '#F2F2F7',
+    historyIcon: {
+        alignSelf: 'flex-start',
         borderRadius: 10,
+        marginBottom: 8,
+        width: 32,
+        height: 32,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    dateText: {
-        fontWeight: 'bold',
-        fontSize: 14,
+    historyLabel: {
+        fontSize: 12,
         color: THEME.text,
+        fontWeight: '600',
+        marginBottom: 2,
     },
-    monthText: {
-        fontSize: 10,
-        color: THEME.subtext,
-        textTransform: 'uppercase',
+    historyStatus: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        marginBottom: 8,
     },
-    barBackground: {
-        height: 8,
-        backgroundColor: '#F2F2F7',
-        borderRadius: 4,
+    miniProgress: {
         width: '100%',
-        overflow: 'hidden',
     },
-    barFill: {
-        height: '100%',
-        borderRadius: 4,
-    },
-    listValue: {
-        width: 60,
-        textAlign: 'right',
-        fontWeight: 'bold',
-        color: THEME.text,
-        fontSize: 14,
-    },
+    emptyHistory: {
+        padding: 10,
+    }
 });
