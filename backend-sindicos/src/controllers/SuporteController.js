@@ -73,4 +73,5 @@ export default class SuporteController {
 
         return reply.status(200).send(mensagensPaginadas);
     }
+
 }
