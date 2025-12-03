@@ -1,5 +1,4 @@
 import sequelize from '../config/sequelize.js';
-
 import User from './User.js';
 import Sensor from './Sensor.js';
 import LeituraSensor from './LeituraSensor.js';
@@ -9,6 +8,7 @@ import Condominio from './Condominio.js';
 import Metas from './Metas.js';
 import PasswordReset from './PasswordReset.js';
 import Comunicados from './Comunicados.js';
+import Alerta from './Alerta.js';
 
 const initializeAssociations = () => {
     Sensor.hasMany(LeituraSensor, { foreignKey: 'sensor_id', as: 'leituras' });
@@ -22,18 +22,12 @@ const initializeAssociations = () => {
 
     User.belongsTo(Casa, { foreignKey: 'residencia_id', constraints: false, as: 'casa' });
     User.belongsTo(Apartamento, { foreignKey: 'residencia_id', constraints: false, as: 'apartamento' });
+
+    Sensor.hasMany(Alerta, { foreignKey: 'sensor_id', as: 'alertas' });
+    Alerta.belongsTo(Sensor, { foreignKey: 'sensor_id', as: 'sensor' });
 };
 
 export {
-    sequelize,
-    initializeAssociations,
-    User,
-    Sensor,
-    LeituraSensor,
-    Casa,
-    Apartamento,
-    Condominio,
-    Metas,
-    PasswordReset,
-    Comunicados
+    sequelize, initializeAssociations, User, Sensor, LeituraSensor, 
+    Casa, Apartamento, Condominio, Metas, PasswordReset, Comunicados, Alerta
 };
