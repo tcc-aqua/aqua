@@ -14,17 +14,27 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Input} from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PaginationDemo } from "@/components/pagination";
 
-async function apiFetchClient(path, options = {}) {
-  const getClientToken = () => {
-    const match = document.cookie.match(new RegExp('(^| )token=([^;]+)'));
-    return match ? match[2] : null;
-  };
+// 🔥 Usa o token real e extrai o userId do JWT
+function getUserIdFromToken() {
+  const match = document.cookie.match(/(^| )token=([^;]+)/);
+  if (!match) return null;
 
-  const token = getClientToken();
+  try {
+    const token = match[2];
+    const payload = JSON.parse(atob(token.split(".")[1])); // decodifica o JWT
+    return payload.userId || payload.id || null;
+  } catch {
+    return null;
+  }
+}
+
+async function apiFetchClient(path, options = {}) {
+  const token = document.cookie.match(/(^| )token=([^;]+)/)?.[2];
+
   const headers = {
     "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
@@ -32,16 +42,15 @@ async function apiFetchClient(path, options = {}) {
   };
 
   const url = `${process.env.NEXT_PUBLIC_API_URL}${path}`;
-
   const res = await fetch(url, { ...options, headers });
   const data = await res.json();
+
   if (!res.ok) throw new Error(data?.message || "Erro na requisição");
   return data;
 }
 
-const CURRENT_USER_ID = "e0420793-fe3a-4941-82d6-c454f5a2ccaa";
-
 export default function Mensagens() {
+  const [CURRENT_USER_ID, setCURRENT_USER_ID] = useState(null);
   const [open, setOpen] = useState(false);
   const [filtro, setFiltro] = useState("todos");
   const [isLoading, setIsLoading] = useState(true);
@@ -57,7 +66,13 @@ export default function Mensagens() {
     destinatario_id: "",
   });
 
-  // Busca moradores para o select de destinatários
+  // 🔥 Pega o userId real logo no início
+  useEffect(() => {
+    const id = getUserIdFromToken();
+    if (id) setCURRENT_USER_ID(id);
+  }, []);
+
+  // Busca moradores
   useEffect(() => {
     async function fetchUsuarios() {
       try {
@@ -70,12 +85,11 @@ export default function Mensagens() {
     fetchUsuarios();
   }, []);
 
-  // Busca mensagens paginadas
-  const fetchMensagens = useCallback(async (page = 1, statusFiltro = "todos") => {
+  // Busca mensagens
+  const fetchMensagens = useCallback(async (page = 1) => {
     setIsLoading(true);
     try {
-      let url = `/suporte?page=${page}&limit=10`;
-      const response = await apiFetchClient(url);
+      const response = await apiFetchClient(`/suporte?page=${page}&limit=10`);
       setMensagens(response.docs || []);
       setTotalPages(response.pages || 1);
       setCurrentPage(page);
@@ -88,10 +102,10 @@ export default function Mensagens() {
   }, []);
 
   useEffect(() => {
-    fetchMensagens(1, filtro);
+    fetchMensagens(1);
   }, [fetchMensagens, filtro]);
 
-  // Filtragem front-end
+  // Filtro Front-End
   const mensagensFiltradas = mensagens.filter((m) => {
     if (filtro === "lidos") return m.status === "respondido";
     if (filtro === "nao_lidos") return m.status === "pendente";
@@ -120,7 +134,7 @@ export default function Mensagens() {
         method: "PUT",
         body: JSON.stringify({ resposta: "Mensagem marcada como respondida pelo síndico" }),
       });
-      fetchMensagens(currentPage, filtro);
+      fetchMensagens(currentPage);
     } catch (error) {
       console.error("Erro ao marcar como respondido:", error);
     }
@@ -130,15 +144,21 @@ export default function Mensagens() {
     if (!novaMensagem.destinatario_id) return alert("Selecione um destinatário");
     if (!novaMensagem.assunto || !novaMensagem.mensagem) return alert("Preencha todos os campos");
 
+    if (!CURRENT_USER_ID) return alert("ID do usuário não carregado");
+
     try {
       await apiFetchClient("/suporte/enviar-usuario", {
         method: "POST",
-        body: JSON.stringify({ ...novaMensagem, remetente_id: CURRENT_USER_ID }),
+        body: JSON.stringify({
+          ...novaMensagem,
+          remetente_id: CURRENT_USER_ID, // 🔥 Agora real
+        }),
       });
+
       alert("Mensagem enviada com sucesso!");
       setOpen(false);
       setNovaMensagem({ assunto: "", mensagem: "", destinatario_id: "" });
-      fetchMensagens(currentPage, filtro);
+      fetchMensagens(currentPage);
     } catch (err) {
       console.error("Erro ao enviar mensagem:", err);
       alert("Erro ao enviar mensagem");
@@ -208,7 +228,7 @@ export default function Mensagens() {
         </TabsList>
       </Tabs>
 
-      {/* Tabela de Mensagens */}
+      {/* Tabela */}
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-lg font-bold">Mensagens de Suporte</CardTitle>
@@ -221,7 +241,7 @@ export default function Mensagens() {
             </div>
           ) : mensagensFiltradas.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              Nenhuma mensagem encontrada com o filtro atual.
+              Nenhuma mensagem encontrada.
             </div>
           ) : (
             mensagensFiltradas.map((m) => {
@@ -232,28 +252,36 @@ export default function Mensagens() {
               return (
                 <div
                   key={m.id}
-                  className={`flex items-start py-4 px-6 gap-4 transition-colors ${!isRespondido ? 'bg-secondary/10 hover:bg-secondary/20' : 'hover:bg-muted/50'}`}
+                  className={`flex items-start py-4 px-6 gap-4 transition-colors
+                    ${!isRespondido ? 'bg-secondary/10 hover:bg-secondary/20' : 'hover:bg-muted/50'}`}
                 >
-                  <div className={`w-10 h-10 flex items-center justify-center rounded-full flex-shrink-0 ${isRespondido ? 'bg-green-500/10' : 'bg-sky-500/10'}`}>
-                    <IconeStatus className={`w-5 h-5 ${isRespondido ? 'text-green-600' : 'text-sky-600'}`} />
+                  <div className={`w-10 h-10 flex items-center justify-center rounded-full flex-shrink-0 
+                    ${isRespondido ? 'bg-green-500/10' : 'bg-sky-500/10'}`}>
+                    <IconeStatus className={`w-5 h-5 
+                      ${isRespondido ? 'text-green-600' : 'text-sky-600'}`} />
                   </div>
 
                   <div className="flex-1 min-w-0 space-y-1">
-                    <p className={`font-bold truncate ${!isRespondido ? 'text-foreground' : 'text-muted-foreground'}`}>{m.assunto}</p>
+                    <p className={`font-bold truncate 
+                      ${!isRespondido ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      {m.assunto}
+                    </p>
                     <p className="text-sm text-muted-foreground line-clamp-2">{m.mensagem}</p>
+
                     {m.resposta && (
                       <blockquote className="border-l-4 border-gray-300 pl-3 text-sm italic text-gray-500 mt-2">
                         Resposta: {m.resposta.substring(0, 80)}...
                       </blockquote>
                     )}
+
                     <div className="flex flex-wrap items-center text-xs text-muted-foreground/80 pt-1 gap-x-4 gap-y-1">
                       <span className="flex items-center gap-1">
                         <Send size={12} />
-                        De: <span className="font-semibold text-foreground/70">{renderNomeUsuario(m.Remetente, m.remetente_id)}</span>
+                        De: <span className="font-semibold text-foreground/70">{renderNomeUsuario(m.Remetente)}</span>
                       </span>
                       <span className="flex items-center gap-1">
                         <Mailbox size={12} />
-                        Para: <span className="font-semibold text-foreground/70">{renderNomeUsuario(m.Destinatario, m.destinatario_id)}</span>
+                        Para: <span className="font-semibold text-foreground/70">{renderNomeUsuario(m.Destinatario)}</span>
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock size={12} />
@@ -274,7 +302,7 @@ export default function Mensagens() {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Responder Mensagem</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Você pode registrar a resposta aqui ou usar este botão para marcar como respondida.
+                              Use este botão para marcar como respondida.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -287,16 +315,18 @@ export default function Mensagens() {
                       </AlertDialog>
                     )}
 
-                    {isEnviadoPorMim && !isRespondido && (
-                      <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-primary">
-                        <Pencil size={16} />
-                      </Button>
-                    )}
-
                     {isEnviadoPorMim && (
-                      <Button size="icon" variant="ghost" className="text-red-600 hover:bg-red-500/10">
-                        <Trash size={16} />
-                      </Button>
+                      <>
+                        {!isRespondido && (
+                          <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-primary">
+                            <Pencil size={16} />
+                          </Button>
+                        )}
+
+                        <Button size="icon" variant="ghost" className="text-red-600 hover:bg-red-500/10">
+                          <Trash size={16} />
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -308,7 +338,7 @@ export default function Mensagens() {
         <PaginationDemo
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={(page) => fetchMensagens(page, filtro)}
+          onPageChange={(page) => fetchMensagens(page)}
         />
       </Card>
     </div>

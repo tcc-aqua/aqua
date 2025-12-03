@@ -1,4 +1,5 @@
 import UserController from "../controllers/UserController.js";
+import { autenticarAdmin } from "../middlewares/AuthMiddleware.js";
 
 export default async function userRoutes(fastify) {
 
@@ -103,7 +104,7 @@ export default async function userRoutes(fastify) {
         {
             schema: {
                 summary: "Fazendo contagem de moradores do sistema que moram em apartamento",
-                tags: ['usuários'], 
+                tags: ['usuários'],
                 description: "Contagem de moradores de apto do sistema",
             }
         }, UserController.moradoresApartamentos);
@@ -122,7 +123,8 @@ export default async function userRoutes(fastify) {
                 summary: 'Inativando o usuário',
                 tags: ['usuários'],
                 description: "Inativando o usuário pelo id no sistema",
-            }
+            },
+            preHandler: autenticarAdmin,
         }, UserController.deactivate);
 
     fastify.patch('/:id/ativar',
@@ -131,7 +133,8 @@ export default async function userRoutes(fastify) {
                 summary: "Ativando o usuário",
                 tags: ['usuários'],
                 description: "Ativando o usuário pelo ID no sistema",
-            }
+            },
+            preHandler: autenticarAdmin,
         }, UserController.ativar);
 
     fastify.patch('/:id/sindico',
@@ -140,7 +143,8 @@ export default async function userRoutes(fastify) {
                 summary: "Tornando um usuário comum em sindico",
                 tags: ['usuários'],
                 description: "Atribuindo como sindico",
-            }
+            },
+            preHandler: autenticarAdmin,
         }, UserController.sindico);
 
     fastify.get('/novos-moradores',

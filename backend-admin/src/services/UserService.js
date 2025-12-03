@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import UserView from "../models/UserView.js";
 import { Sequelize } from "sequelize";
+import AuditLogService from './AuditLog.js';
 
 
 export default class UserService {
@@ -179,29 +180,53 @@ export default class UserService {
         }
     }
 
-    static async deactivateUser(id) {
+    static async deactivateUser(id, adminId) {
         try {
             const user = await User.findByPk(id);
-            if (!user) {
-                throw new Error('Usuário não encontrado.')
-            }
+            if (!user) throw new Error('Usuário não encontrado.');
+
+            const valorAntigo = user.status; // 
+
             await user.update({ status: 'inativo' });
+
+            await AuditLogService.criarLog({
+                user_id: user.id,
+                acao: 'update',
+                campo: 'status',
+                valor_antigo: valorAntigo,
+                valor_novo: 'inativo',
+                alterado_por: adminId
+            });
+
             const userWithoutPassword = user.toJSON();
             delete userWithoutPassword.password;
             return { message: 'Usuário inativado com sucesso!', user: userWithoutPassword };
+
         } catch (error) {
             console.error('Erro ao inativar usuário:', error);
             throw error;
         }
     }
 
-    static async ativarUser(id) {
+
+    static async ativarUser(id, adminId) {
         try {
             const user = await User.findByPk(id);
             if (!user) {
                 throw new Error('Usuário não encontrado.')
             }
+            const valorAntigo = user.status; 
+
             await user.update({ status: 'ativo' });
+
+            await AuditLogService.criarLog({
+                user_id: user.id,
+                acao: 'update',
+                campo: 'status',
+                valor_antigo: valorAntigo,
+                valor_novo: 'ativo',
+                alterado_por: adminId
+            });
             const userWithoutPassword = user.toJSON();
             delete userWithoutPassword.password;
             return { message: 'Usuário ativado com sucesso!', user: userWithoutPassword };
@@ -211,21 +236,35 @@ export default class UserService {
         }
     }
 
-    static async setarSindico(id) {
+    static async setarSindico(id, admin) { 
         try {
             const user = await User.findByPk(id);
-            if (!user) throw new Error('Usuario nao encontrado');
+            if (!user) throw new Error('Usuário não encontrado');
 
-            if (user.type === 'casa') throw new Error('Esse usuário não faz parte de um condominio')
-            if (user.role === 'sindico') throw new Error('Esse usuário ja é sindico')
+            if (user.type === 'casa') throw new Error('Esse usuário não faz parte de um condomínio');
+            if (user.role === 'sindico') throw new Error('Esse usuário já é síndico');
+
+            const valorAntigo = user.role;
 
             await user.update({
                 role: "sindico"
-            })
+            });
+
+        
+            await AuditLogService.criarLog({
+                user_id: user.id,
+                acao: 'update',
+                campo: 'role',
+                valor_antigo: valorAntigo,
+                valor_novo: 'sindico',
+                alterado_por: admin.id,       
+                alterado_por_email: admin.email 
+            });
 
             return user;
+
         } catch (error) {
-            console.error('Erro ao atualizar para sindico', error);
+            console.error('Erro ao atualizar para síndico', error);
             throw error;
         }
     }
