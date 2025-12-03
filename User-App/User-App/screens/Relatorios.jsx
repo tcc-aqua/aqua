@@ -1,252 +1,458 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Dimensions, Text as RNText } from 'react-native';
-import {
-  SegmentedButtons,
-  Card,
-  List,
-  Title,
-  Paragraph,
-  Icon,
-} from 'react-native-paper';
-// 1. Importação da nova biblioteca (Gifted Charts)
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { View, StyleSheet, ScrollView, Dimensions, TouchableOpacity, RefreshControl } from 'react-native';
+import { Text, Surface, ActivityIndicator, IconButton, Avatar } from 'react-native-paper';
 import { BarChart } from 'react-native-gifted-charts';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MotiView } from 'moti';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import * as Haptics from 'expo-haptics';
 
-const screenWidth = Dimensions.get('window').width;
+// Configurações de Tela e Tema
+const { width } = Dimensions.get('window');
+const API_URL = 'http://localhost:3334/api';
 
-const reportData = [
-  { date: '01/11', consumption: 170, savings: 5 },
-  { date: '02/11', consumption: 120, savings: 15 },
-  { date: '03/11', consumption: 140, savings: 12 },
-  { date: '04/11', consumption: 110, savings: 20 },
-  { date: '05/11', consumption: 165, savings: 8 },
-  { date: '06/11', consumption: 150, savings: 10 },
-  { date: '07/11', consumption: 130, savings: 18 },
-];
-
-const LOW_CONSUMPTION_THRESHOLD = 130;
-const HIGH_CONSUMPTION_THRESHOLD = 160;
-
-// Função de cor mantida
-const getBarColor = (consumption) => {
-  if (consumption >= HIGH_CONSUMPTION_THRESHOLD) return '#f31212ff';
-  if (consumption < LOW_CONSUMPTION_THRESHOLD) return '#2ecc71';
-  return '#3498db';
+const THEME = {
+    primary: '#0A84FF',
+    secondary: '#005ecb',
+    background: '#F2F2F7',
+    card: '#FFFFFF',
+    text: '#1C1C1E',
+    subtext: '#8E8E93',
+    success: '#34C759',
+    warning: '#FF9500',
+    danger: '#FF3B30',
 };
 
-// --- NOVO COMPONENTE DE GRÁFICO COM GIFTED CHARTS ---
-// --- SUBSTITUA O COMPONENTE ANTIGO POR ESTE ---
-const GiftedChartComponent = ({ data }) => {
-  // --- CONFIGURAÇÃO PARA SCROLL ---
-  const barWidth = 22; 
-  const spacing = 50; // Espaço FIXO e GRANDE entre as barras (ativa o scroll)
-  const initialSpacing = 20; // Espaço antes da primeira barra
+export default function Relatorios() {
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [chartData, setChartData] = useState([]);
+    const [timeframe, setTimeframe] = useState('semana'); // semana, mes
+    const [selectedBar, setSelectedBar] = useState(null);
 
-  // Largura da "janela" de visualização (o tamanho do card na tela)
-  const viewportWidth = screenWidth - 60; 
+    // --- BUSCA DE DADOS ---
+    const fetchConsumptionData = useCallback(async () => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            if (!token) return;
 
-  const chartData = data.map(item => ({
-    value: item.consumption,
-    label: item.date,
-    frontColor: getBarColor(item.consumption),
-    topLabelComponent: () => (
-      <RNText style={{ color: 'black', fontSize: 10, marginBottom: 5, fontWeight: 'bold' }}>
-        {item.consumption}
-      </RNText>
-    ),
-  }));
+            // Chama a rota real do backend que retorna [{ data: 'dd/mm', consumo: 123 }]
+            const response = await axios.get(`${API_URL}/user/me/consumo-semanal`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
-  return (
-    <View style={{ 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      // Removemos a largura fixa do container pai para deixar o scroll fluir
-    }}>
-      <BarChart
-        data={chartData}
-        // Define o tamanho da área visível. O conteúdo excedente será 'scrollável'
-        width={viewportWidth} 
-        
-        barWidth={barWidth}
-        spacing={spacing}
-        initialSpacing={initialSpacing}
-        
-        // Estilos mantidos
-        xAxisThickness={1}
-        xAxisColor={"#e0e0e0"}
-        yAxisThickness={0}
-        hideYAxisText
-        yAxisLabel=""
-        hideRules
-        roundedTop
-        roundedBottom={false}
-        height={220}
-        
-        labelTextStyle={{ 
-          color: 'gray', 
-          fontSize: 11, 
-          textAlign: 'center',
-          width: 60 // Aumentei a largura da label para a data não quebrar linha
-        }}
-        isAnimated
-        // Opcional: Rola para o final automaticamente (útil para ver o dia mais recente)
-        // scrollToEnd={true} 
-      />
-    </View>
-  );
-};
+            if (response.data) {
+                // Formata para o Gifted Charts
+                const formatted = response.data.map(item => ({
+                    value: Number(item.consumo),
+                    label: item.data,
+                    frontColor: getBarColor(Number(item.consumo)),
+                    gradientColor: getGradientColor(Number(item.consumo)),
+                    topLabelComponent: () => (
+                        <Text style={{ color: THEME.subtext, fontSize: 10, marginBottom: 4, fontWeight: 'bold' }}>
+                            {Number(item.consumo).toFixed(0)}
+                        </Text>
+                    ),
+                }));
+                setChartData(formatted);
+            }
+        } catch (error) {
+            console.error("Erro ao buscar relatórios:", error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    }, []);
 
-const ReportsScreen = () => {
-  const [timeframe, setTimeframe] = useState('7d');
-  const [viewMode, setViewMode] = useState('graph');
+    useEffect(() => {
+        fetchConsumptionData();
+    }, [fetchConsumptionData]);
 
-  // Os cálculos de resumo continuam os mesmos
-  const totalConsumption = reportData.reduce((acc, item) => acc + item.consumption, 0);
-  const totalSavings = reportData.reduce((acc, item) => acc + item.savings, 0);
-  const dailyAverage = Math.round(totalConsumption / reportData.length);
-  const bestDay = reportData.reduce(
-    (best, current) => (current.consumption < best.consumption ? current : best),
-    reportData[0]
-  );
+    const onRefresh = () => {
+        setRefreshing(true);
+        fetchConsumptionData();
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    };
 
-  const renderContent = () => {
-    if (viewMode === 'graph') {
-      return (
-        <Card style={styles.card}>
-          <Card.Content style={styles.chartCardContent}>
-            <Title style={styles.chartTitle}>Consumo Diário (Litros)</Title>
-            {/* Componente Novo aqui */}
-            <GiftedChartComponent data={reportData} />
-          </Card.Content>
-        </Card>
-      );
+    // --- LÓGICA DE CORES E CÁLCULOS ---
+    const getBarColor = (val) => val > 200 ? THEME.danger : val > 150 ? THEME.warning : THEME.primary;
+    const getGradientColor = (val) => val > 200 ? '#FF6B6B' : val > 150 ? '#FFD54F' : '#60efff';
+
+    const statistics = useMemo(() => {
+        if (!chartData.length) return { total: 0, avg: 0, max: 0, min: 0 };
+        const values = chartData.map(d => d.value);
+        const total = values.reduce((a, b) => a + b, 0);
+        return {
+            total,
+            avg: Math.round(total / values.length),
+            max: Math.max(...values),
+            min: Math.min(...values)
+        };
+    }, [chartData]);
+
+    // --- RENDERIZAÇÃO ---
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={THEME.primary} />
+                <Text style={{ marginTop: 10, color: THEME.subtext }}>Carregando dados de consumo...</Text>
+            </View>
+        );
     }
 
     return (
-      <View>
-        {reportData.map((item, index) => (
-          <Card key={index} style={styles.card}>
-            <List.Item
-              title={`Consumo: ${item.consumption} L`}
-              description={`Economia: ${item.savings} L`}
-              left={props => <List.Icon {...props} icon="calendar" />}
-              right={props => <Paragraph {...props} style={styles.reportDate}>{item.date}</Paragraph>}
-            />
-          </Card>
-        ))}
-      </View>
+        <View style={styles.container}>
+            <LinearGradient colors={[THEME.primary, '#F2F2F7']} style={styles.headerBackground} />
+            
+            <ScrollView 
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff"/>}
+            >
+                {/* HEADER DA TELA */}
+                <MotiView from={{ opacity: 0, translateY: -20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing' }}>
+                    <Text style={styles.pageTitle}>Relatório de Consumo</Text>
+                    <Text style={styles.pageSubtitle}>Análise detalhada do uso de água</Text>
+                </MotiView>
+
+                {/* SELETOR DE PERÍODO */}
+                <View style={styles.toggleContainer}>
+                    {['semana', 'mes'].map((t) => (
+                        <TouchableOpacity 
+                            key={t} 
+                            style={[styles.toggleBtn, timeframe === t && styles.toggleBtnActive]}
+                            onPress={() => { setTimeframe(t); Haptics.selectionAsync(); }}
+                        >
+                            <Text style={[styles.toggleText, timeframe === t && styles.toggleTextActive]}>
+                                {t === 'semana' ? 'Últimos 7 Dias' : 'Mensal'}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+
+                {/* GRÁFICO PRINCIPAL */}
+                <MotiView from={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 100 }}>
+                    <Surface style={styles.chartCard} elevation={4}>
+                        <View style={styles.chartHeader}>
+                            <View>
+                                <Text style={styles.chartTitle}>Consumo Diário</Text>
+                                <Text style={styles.chartSubtitle}>Litros por dia</Text>
+                            </View>
+                            <View style={styles.totalBadge}>
+                                <Text style={styles.totalBadgeLabel}>TOTAL</Text>
+                                <Text style={styles.totalBadgeValue}>{statistics.total} L</Text>
+                            </View>
+                        </View>
+
+                        {chartData.length > 0 ? (
+                            <View style={{ alignItems: 'center', overflow: 'hidden' }}>
+                                <BarChart
+                                    data={chartData}
+                                    barWidth={28}
+                                    spacing={24}
+                                    roundedTop
+                                    roundedBottom
+                                    hideRules
+                                    xAxisThickness={0}
+                                    yAxisThickness={0}
+                                    yAxisTextStyle={{ color: THEME.subtext, fontSize: 10 }}
+                                    noOfSections={4}
+                                    maxValue={statistics.max * 1.2 || 100} // Dá um respiro no topo
+                                    isAnimated
+                                    showGradient
+                                    animationDuration={1000}
+                                    onPress={(item) => {
+                                        setSelectedBar(item);
+                                        Haptics.selectionAsync();
+                                    }}
+                                    renderTooltip={(item) => {
+                                        return (
+                                            <View style={styles.tooltip}>
+                                                <Text style={styles.tooltipText}>{item.value} Litros</Text>
+                                                <Text style={styles.tooltipDate}>{item.label}</Text>
+                                            </View>
+                                        );
+                                    }}
+                                    leftShiftForTooltip={10}
+                                    autoCenterTooltip
+                                />
+                            </View>
+                        ) : (
+                            <View style={styles.emptyChart}>
+                                <IconButton icon="chart-bar" size={40} iconColor={THEME.subtext} />
+                                <Text style={{ color: THEME.subtext }}>Sem dados registrados ainda.</Text>
+                            </View>
+                        )}
+                    </Surface>
+                </MotiView>
+
+                {/* CARDS DE ESTATÍSTICAS (GRID) */}
+                <View style={styles.statsGrid}>
+                    <MotiView from={{ translateX: -20, opacity: 0 }} animate={{ translateX: 0, opacity: 1 }} transition={{ delay: 200 }} style={styles.statCardWrapper}>
+                        <Surface style={styles.statCard} elevation={2}>
+                            <Avatar.Icon size={40} icon="chart-line" style={{backgroundColor: '#E3F2FD'}} color={THEME.primary} />
+                            <View style={{marginLeft: 12}}>
+                                <Text style={styles.statLabel}>Média Diária</Text>
+                                <Text style={styles.statValue}>{statistics.avg} <Text style={styles.unit}>L</Text></Text>
+                            </View>
+                        </Surface>
+                    </MotiView>
+
+                    <MotiView from={{ translateX: 20, opacity: 0 }} animate={{ translateX: 0, opacity: 1 }} transition={{ delay: 300 }} style={styles.statCardWrapper}>
+                        <Surface style={styles.statCard} elevation={2}>
+                            <Avatar.Icon size={40} icon="water-alert" style={{backgroundColor: '#FFEBEE'}} color={THEME.danger} />
+                            <View style={{marginLeft: 12}}>
+                                <Text style={styles.statLabel}>Pico de Uso</Text>
+                                <Text style={[styles.statValue, {color: THEME.danger}]}>{statistics.max} <Text style={[styles.unit, {color: THEME.danger}]}>L</Text></Text>
+                            </View>
+                        </Surface>
+                    </MotiView>
+                </View>
+
+                {/* LISTA DETALHADA */}
+                <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ delay: 400 }}>
+                    <Text style={styles.sectionHeader}>Histórico Detalhado</Text>
+                    {chartData.map((item, index) => (
+                        <Surface key={index} style={styles.listItem} elevation={1}>
+                            <View style={styles.listRow}>
+                                <View style={styles.dateBox}>
+                                    <Text style={styles.dateText}>{item.label.split('/')[0]}</Text>
+                                    <Text style={styles.monthText}>{getMonthName(item.label.split('/')[1])}</Text>
+                                </View>
+                                <View style={{ flex: 1, paddingHorizontal: 15 }}>
+                                    <View style={styles.barBackground}>
+                                        <View style={[
+                                            styles.barFill, 
+                                            { width: `${(item.value / statistics.max) * 100}%`, backgroundColor: item.frontColor }
+                                        ]} />
+                                    </View>
+                                </View>
+                                <Text style={styles.listValue}>{item.value} L</Text>
+                            </View>
+                        </Surface>
+                    ))}
+                </MotiView>
+
+                <View style={{ height: 80 }} />
+            </ScrollView>
+        </View>
     );
-  };
+}
 
-  return (
-    <ScrollView style={styles.container}>
-      {/* Controles do Topo */}
-      <View style={styles.controlsContainer}>
-        <SegmentedButtons
-          value={timeframe}
-          onValueChange={setTimeframe}
-          buttons={[
-            { value: '7d', label: '7 Dias' },
-            { value: '30d', label: '30 Dias' },
-            { value: '90d', label: '90 Dias' },
-          ]}
-          style={styles.segmentedButton}
-        />
-        <SegmentedButtons
-          value={viewMode}
-          onValueChange={setViewMode}
-          buttons={[
-            { value: 'graph', label: 'Gráfico', icon: 'chart-bar' },
-            { value: 'list', label: 'Lista', icon: 'format-list-bulleted' },
-          ]}
-          style={styles.segmentedButton}
-        />
-      </View>
-
-      {/* Área de Conteúdo Principal */}
-      <View style={styles.contentContainer}>
-        {renderContent()}
-      </View>
-
-      {/* Grade de Resumo */}
-      <View style={styles.summaryGridContainer}>
-        <View style={styles.summaryRow}>
-          <Card style={styles.summaryCard}>
-            <Card.Content style={styles.summaryCardContent}>
-              <Icon source="water-outline" size={30} color="#3498db" />
-              <View>
-                <Paragraph style={styles.summaryLabel}>Consumo Total</Paragraph>
-                <Title style={styles.summaryValue}>{totalConsumption} L</Title>
-              </View>
-            </Card.Content>
-          </Card>
-          <Card style={styles.summaryCard}>
-            <Card.Content style={styles.summaryCardContent}>
-              <Icon source="leaf-outline" size={30} color="#2ecc71" />
-              <View>
-                <Paragraph style={styles.summaryLabel}>Economia</Paragraph>
-                <Title style={styles.summaryValue}>{totalSavings} L</Title>
-              </View>
-            </Card.Content>
-          </Card>
-        </View>
-
-        <View style={styles.summaryRow}>
-          <Card style={styles.summaryCard}>
-            <Card.Content style={styles.summaryCardContent}>
-              <Icon source="chart-line" size={30} color="#9b59b6" />
-              <View>
-                <Paragraph style={styles.summaryLabel}>Média Diária</Paragraph>
-                <Title style={styles.summaryValue}>{dailyAverage} L</Title>
-              </View>
-            </Card.Content>
-          </Card>
-          <Card style={styles.summaryCard}>
-            <Card.Content style={styles.summaryCardContent}>
-              <Icon source="trophy-outline" size={30} color="#f1c40f" />
-              <View>
-                <Paragraph style={styles.summaryLabel}>Melhor Dia</Paragraph>
-                <Title style={styles.summaryValue}>{bestDay.consumption} L</Title>
-                <Paragraph style={styles.bestDayDate}>({bestDay.date})</Paragraph>
-              </View>
-            </Card.Content>
-          </Card>
-        </View>
-      </View>
-    </ScrollView>
-  );
+// Helper para nome do mês
+const getMonthName = (monthNum) => {
+    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    return months[parseInt(monthNum) - 1] || '';
 };
 
-// --- SUBSTITUA OS ESTILOS ANTIGOS POR ESTES ---
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  controlsContainer: { padding: 10, backgroundColor: '#fff' },
-  segmentedButton: { marginBottom: 10 },
-  contentContainer: { paddingHorizontal: 10, alignItems: 'center' },
-  chartTitle: { textAlign: 'center', marginBottom: 10 },
-  
-  // Card centralizado
-  card: { 
-    marginBottom: 10, 
-    width: screenWidth - 20, 
-    alignSelf: 'center' 
-  },
-  
-  reportDate: { alignSelf: 'center', marginRight: 10, color: '#666' },
-  summaryGridContainer: { paddingHorizontal: 10, marginTop: 10, marginBottom: 20 },
-  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  summaryCard: { width: '48%' },
-  summaryCardContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 5, paddingVertical: 15 },
-  summaryLabel: { fontSize: 12, color: '#666' },
-  summaryValue: { fontSize: 18, lineHeight: 20 },
-  bestDayDate: { fontSize: 11, lineHeight: 12, color: '#666' },
-  
-  // Conteúdo do Card ajustado para centralizar o gráfico
-  chartCardContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 15,
-    paddingHorizontal: 10, 
-  },
+    container: {
+        flex: 1,
+        backgroundColor: THEME.background,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: THEME.background
+    },
+    headerBackground: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 150,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+    },
+    scrollContent: {
+        paddingHorizontal: 20,
+        paddingTop: 60,
+    },
+    pageTitle: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#FFF',
+        marginBottom: 4,
+    },
+    pageSubtitle: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.8)',
+        marginBottom: 24,
+    },
+    toggleContainer: {
+        flexDirection: 'row',
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 12,
+        padding: 4,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.3)'
+    },
+    toggleBtn: {
+        flex: 1,
+        paddingVertical: 8,
+        alignItems: 'center',
+        borderRadius: 8,
+    },
+    toggleBtnActive: {
+        backgroundColor: '#FFF',
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    toggleText: {
+        color: 'rgba(255,255,255,0.8)',
+        fontWeight: '600',
+        fontSize: 13
+    },
+    toggleTextActive: {
+        color: THEME.primary,
+        fontWeight: 'bold',
+    },
+    chartCard: {
+        backgroundColor: '#FFF',
+        borderRadius: 24,
+        padding: 20,
+        marginBottom: 20,
+        paddingBottom: 30
+    },
+    chartHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 20,
+    },
+    chartTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: THEME.text,
+    },
+    chartSubtitle: {
+        fontSize: 12,
+        color: THEME.subtext,
+    },
+    totalBadge: {
+        alignItems: 'flex-end',
+    },
+    totalBadgeLabel: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: THEME.subtext,
+        letterSpacing: 1,
+    },
+    totalBadgeValue: {
+        fontSize: 20,
+        fontWeight: '800',
+        color: THEME.primary,
+    },
+    tooltip: {
+        backgroundColor: '#1C1C1E',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 8,
+        marginBottom: 5,
+        alignItems: 'center',
+    },
+    tooltipText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        fontSize: 12,
+    },
+    tooltipDate: {
+        color: '#CCC',
+        fontSize: 10,
+    },
+    emptyChart: {
+        height: 200,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F9F9F9',
+        borderRadius: 16,
+    },
+    statsGrid: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 24,
+    },
+    statCardWrapper: {
+        width: '48%',
+    },
+    statCard: {
+        backgroundColor: '#FFF',
+        borderRadius: 16,
+        padding: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    statLabel: {
+        fontSize: 12,
+        color: THEME.subtext,
+        fontWeight: '600',
+    },
+    statValue: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: THEME.text,
+    },
+    unit: {
+        fontSize: 12,
+        fontWeight: 'normal',
+        color: THEME.subtext,
+    },
+    sectionHeader: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: THEME.text,
+        marginBottom: 12,
+        marginLeft: 4,
+    },
+    listItem: {
+        backgroundColor: '#FFF',
+        borderRadius: 16,
+        padding: 12,
+        marginBottom: 10,
+    },
+    listRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    dateBox: {
+        width: 45,
+        height: 45,
+        backgroundColor: '#F2F2F7',
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    dateText: {
+        fontWeight: 'bold',
+        fontSize: 14,
+        color: THEME.text,
+    },
+    monthText: {
+        fontSize: 10,
+        color: THEME.subtext,
+        textTransform: 'uppercase',
+    },
+    barBackground: {
+        height: 8,
+        backgroundColor: '#F2F2F7',
+        borderRadius: 4,
+        width: '100%',
+        overflow: 'hidden',
+    },
+    barFill: {
+        height: '100%',
+        borderRadius: 4,
+    },
+    listValue: {
+        width: 60,
+        textAlign: 'right',
+        fontWeight: 'bold',
+        color: THEME.text,
+        fontSize: 14,
+    },
 });
-
-export default ReportsScreen;
