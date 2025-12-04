@@ -8,7 +8,7 @@ export default class CasaService {
             const options = {
                 page,
                 paginate: limit,
-                order: [["casa_id", "ASC"]],
+                order: [["casa_id", "DESC"]],
             }
 
             const casas = await CasaView.paginate(options);
@@ -24,7 +24,7 @@ export default class CasaService {
             const options = {
                 page,
                 paginate: limit,
-                order: [["casa_id", "ASC"]],
+                order: [["casa_id", "DESC"]],
                 where: { casa_status: 'ativo' }
             }
             const casas = await CasaView.paginate(options);
@@ -40,7 +40,7 @@ export default class CasaService {
             const options = {
                 page,
                 paginate: limit,
-                order: [["casa_id", "ASC"]],
+                order: [["casa_id", "DESC"]],
                 where: { casa_status: 'inativo' }
             }
             const casas = await CasaView.paginate(options);
