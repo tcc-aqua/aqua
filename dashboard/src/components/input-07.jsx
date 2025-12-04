@@ -102,12 +102,7 @@ export default function InputWithAdornmentDemo() {
           Entrar
         </Button>
 
-        <a
-          href="/login"
-          className="text-[#0372c6] underline hover:text-blue-900 flex justify-center"
-        >
-          Esqueci minha senha
-        </a>
+
       </form>
     </>
   );
