@@ -305,7 +305,7 @@ export default function ApartamentosDashboard() {
                             <MapPin className="w-5 h-5 text-sky-600 mt-5" />
                             <div className="flex flex-col">
                               <div className="text-sm font-semibold">
-                                {ap.endereco_completo}
+                              Bloco - {ap.endereco_completo}
                               </div>
                               <div className="text-xs text-foreground/80">
                                 {ap.endereco_condominio}

@@ -86,7 +86,7 @@ export default function Header() {
   const titulo = getTituloByPath();
 
   return (
-    <header className="fixed top-0 left-0 w-full h-auto z-50 bg-sidebar backdrop-blur-lg border-b-2 border-b-accent/60 border-border shadow-sm transition-all  ">
+    <header className="fixed top-0 left-0 w-full h-auto z-50 bg-sidebar backdrop-blur-lg border-b-1  shadow-sm transition-all  ">
       <div className={`flex flex-col sm:flex-row items-center justify-between ${isMobile ? "px-4 py-3 space-y-2" : "px-10 py-4"}`}>
         <div className={`text-center select-none ${isMobile ? "order-1 w-full" : "absolute left-1/2 -translate-x-1/2"}`}>
           <h1 className={`font-semibold tracking-wide bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent drop-shadow-sm ${isMobile ? "text-lg leading-tight" : "text-3xl"}`}>

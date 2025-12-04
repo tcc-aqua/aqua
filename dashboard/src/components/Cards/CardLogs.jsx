@@ -10,11 +10,16 @@ import { Search, User, ArrowBigRight, Clock, ListFilter, Hash, Calendar } from "
 import { Separator } from "@/components/ui/separator";
 import AnimationWrapper from "../Layout/Animation/Animation";
 import ExportarTabela from "../Layout/ExportTable/page";
+import { PaginationDemo } from "../pagination/pagination";
 
 export default function LogsDashboard() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(15);
+  const [totalPages, setTotalPages] = useState(1);
+  
   const getValorColor = (valor) => {
     if (!valor) return "text-muted-foreground";
 
@@ -127,33 +132,32 @@ export default function LogsDashboard() {
       setLoading(false);
     }
   };
+const buscarInteligente = async () => {
+  if (!filters.search.trim()) {
+    fetchAll();
+    return;
+  }
 
-  const buscarInteligente = async () => {
-    if (filters.search.trim() === "") {
-      fetchAll();
-      return;
-    }
+  try {
+    setLoading(true);
+    const headers = getTokenHeader();
+    if (!headers) return;
 
-    try {
-      setLoading(true);
-      const headers = getTokenHeader();
-      if (!headers) return;
+    const url = `${API_URL}/search?search=${filters.search}`;
+    const res = await fetch(url, { headers });
+    const data = await res.json();
 
-      const url = `${API_URL}/search?campo=campo&valor=${filters.search}`;
-      const res = await fetch(url, { headers });
-      const data = await res.json();
-
-      setLogs(data.docs || data.logs || []);
-    } catch {
-      toast.error("Erro ao realizar busca.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setLogs(data.docs || data.logs || []);
+  } catch {
+    toast.error("Erro ao realizar busca.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchAll();
-  }, []);
+ }, [page]);
 
   if (loading) return <Loading />;
 
@@ -301,6 +305,12 @@ export default function LogsDashboard() {
               </div>
             )}
           </CardContent>
+          <Separator />
+           <PaginationDemo
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={(p) => setPage(p)}
+          />
 
         </Card>
       </AnimationWrapper>

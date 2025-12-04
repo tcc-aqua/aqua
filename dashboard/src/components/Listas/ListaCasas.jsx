@@ -69,26 +69,33 @@ export default function CasasDashboard() {
       const casasArray = allData.docs || [];
 
 
-      const filteredCasas = casasArray.filter(casa => {
-        const matchesSearch = filters.search
-          ? casa.endereco_completo.toLowerCase().includes(filters.search.toLowerCase()) ||
-          (casa.casa_codigo?.toLowerCase().includes(filters.search.toLowerCase()))
-          : true;
+      const filteredCasas = casasArray
+        .filter((casa) => {
+          const matchesSearch = filters.search
+            ? casa.endereco_completo.toLowerCase().includes(filters.search.toLowerCase()) ||
+            (casa.casa_codigo?.toLowerCase().includes(filters.search.toLowerCase()))
+            : true;
 
-        const matchesStatus = filters.status
-          ? casa.casa_status === filters.status
-          : true;
+          const matchesStatus = filters.status
+            ? casa.casa_status === filters.status
+            : true;
 
-        const matchesSensor = filters.sensor_status
-          ? casa.sensor_status === filters.sensor_status
-          : true;
+          const matchesSensor = filters.sensor_status
+            ? casa.sensor_status === filters.sensor_status
+            : true;
 
-        return matchesSearch && matchesStatus && matchesSensor;
-      });
+          return matchesSearch && matchesStatus && matchesSensor;
+        });
+
+
+      filteredCasas.sort((a, b) => Number(b.casa_id) - Number(a.casa_id));
+
 
       setCasas(filteredCasas);
 
-   const totalCasas = allData.total ?? casasArray.length;
+
+
+      const totalCasas = allData.total ?? casasArray.length;
 
       setTotalPages(Math.ceil((allData.total || 0) / limit));
 
@@ -128,7 +135,7 @@ export default function CasasDashboard() {
 
 
   const { showModal, setShowModal, selectedItem, confirmToggleStatus, toggleStatus } =
-    useToggleConfirm(API_CASAS, fetchData);
+    useToggleConfirm(API_CASAS, (filters) => fetchData(filters, page, limit));
 
 
   useEffect(() => {
@@ -146,7 +153,7 @@ export default function CasasDashboard() {
       icon: Home,
       bg: "bg-card",
       iconColor: "text-sky-700",
-        borderColor:" border-b-sky-700 "
+      borderColor: " border-b-sky-700 "
     },
     {
       title: "Total de Moradores",
@@ -156,8 +163,8 @@ export default function CasasDashboard() {
       iconColor: "text-sky-500",
       subTitle: casas.length > 0
         ? `Média de ${(casas.reduce((acc, c) => acc + (Number(c.numero_moradores) || 0), 0) / casas.length).toFixed(0)} por casa`
-        : "0", 
-          borderColor:" border-b-sky-500"
+        : "0",
+      borderColor: " border-b-sky-500"
     },
     {
       title: "Sensores Ativos",
@@ -168,7 +175,7 @@ export default function CasasDashboard() {
       porcentagem: sensorStats.total > 0
         ? ((sensorStats.ativos / sensorStats.total) * 100).toFixed(0) + "% operacionais"
         : "0% operacionais",
-          borderColor:" border-b-green-700 "
+      borderColor: " border-b-green-700 "
     },
     {
       title: "Consumo Total",
@@ -182,7 +189,7 @@ export default function CasasDashboard() {
       bg: "bg-card",
       iconColor: "text-blue-500",
       subTitle2: "Litros acumulados",
-  borderColor:" border-b-blue-500 "
+      borderColor: " border-b-blue-500 "
     }
   ];
 
@@ -201,7 +208,7 @@ export default function CasasDashboard() {
             return (
 
               <AnimationWrapper key={card.title} delay={i * 0.2}>
-               <Card className={`border-b-4 ${card.borderColor}`}>
+                <Card className={`border-b-4 ${card.borderColor}`}>
                   <CardHeader>
                     <CardTitle className="font-bold text-xl text-foreground">{card.title}</CardTitle>
                   </CardHeader>
@@ -333,7 +340,7 @@ export default function CasasDashboard() {
                           </div>
                         </td>
 
-                        
+
                         <td className="text-sm font-semibold px-3 py-4">
                           <span
                             className={`

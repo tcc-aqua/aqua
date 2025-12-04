@@ -19,7 +19,6 @@ import {
   LayoutDashboard,
   House,
   Building2,
-  Layers3,
   Plus
 } from "lucide-react";
 
@@ -47,7 +46,6 @@ const navigationItems = [
   },
   { id: "sensors", name: "Sensores", icon: Droplets, href: "/sensors" },
   { id: "alerts", name: "Alertas", icon: Siren, href: "/alerts" },
-  { id: "suporte", name: "Suporte", icon: Headset, href: "/suporte" },
   { id: "comunicados", name: "Comunicados", icon: Megaphone, href: "/comunicados" },
 ];
 
@@ -137,12 +135,12 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
       )}
 
       <div
-        className={`fixed top-0 left-0 h-screen bg-sidebar  border-sidebar-border z-50 transition-all duration-300 flex flex-col border-r-2 border-r-accent/60
+        className={`fixed top-0 left-0 h-screen bg-sidebar  border-sidebar-border z-50 transition-all duration-300 flex flex-col border-r-1
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           ${isCollapsed ? "w-26" : "w-56"} md:translate-x-0 overflow-hidden ${className}`}
       >
 
-        <div className="flex items-center justify-between p-2 border-sidebar-border bg-sidebar/60 border-b-2 border-b-accent/60 ">
+        <div className="flex items-center justify-between p-2 border-sidebar-border bg-sidebar/60 border-b ">
           {!isCollapsed ? (
             <div className="flex items-center">
               <img src="./logo.svg" className="w-12" />
