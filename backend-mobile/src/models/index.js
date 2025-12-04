@@ -9,6 +9,7 @@ import Metas from './Metas.js';
 import PasswordReset from './PasswordReset.js';
 import Comunicados from './Comunicados.js';
 import Alerta from './Alerta.js';
+import GamificationLog from './GamificationLog.js';
 
 const initializeAssociations = () => {
     Sensor.hasMany(LeituraSensor, { foreignKey: 'sensor_id', as: 'leituras' });
@@ -25,9 +26,12 @@ const initializeAssociations = () => {
 
     Sensor.hasMany(Alerta, { foreignKey: 'sensor_id', as: 'alertas' });
     Alerta.belongsTo(Sensor, { foreignKey: 'sensor_id', as: 'sensor' });
+
+    User.hasMany(GamificationLog, {foreignKey: 'user_id', as: 'logs '});
+    GamificationLog.belongsTo(User, {foreignKey: 'user_id', as: 'user' });
 };
 
 export {
     sequelize, initializeAssociations, User, Sensor, LeituraSensor, 
-    Casa, Apartamento, Condominio, Metas, PasswordReset, Comunicados, Alerta
+    Casa, Apartamento, Condominio, Metas, PasswordReset, Comunicados, Alerta, GamificationLog
 };

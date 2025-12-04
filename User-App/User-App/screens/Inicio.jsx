@@ -1,446 +1,453 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { ScrollView, StyleSheet, View, Dimensions, ActivityIndicator } from 'react-native';
-import { 
-  Provider as PaperProvider, 
-  Text, 
-  Surface,
-} from 'react-native-paper';
+import React, { useState, useCallback } from 'react';
+import { View, StyleSheet, ScrollView, RefreshControl, Dimensions, Alert, TouchableOpacity } from 'react-native';
+import { Text, Surface, ActivityIndicator, Avatar, Button, ProgressBar, Portal, Dialog, TextInput, Divider } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MotiView } from 'moti';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 
-const API_URL = 'http://localhost:3334/api';
+// ==========================================
+// ⚠️ CONFIRA SE O IP ESTÁ CORRETO
+// ==========================================
+const API_URL = 'http://192.168.0.15:3334/api';
 
-const theme = {
-  colors: { 
-    primary: '#0A84FF', 
-    background: '#F5F7FA',
-    surface: '#FFFFFF', 
-    text: '#1C1C1E', 
-    success: '#34C759', 
-    danger: '#FF3B30', 
-    warning: '#FF9500', 
-  },
+const THEME = {
+    primary: '#0A84FF',
+    secondary: '#005ecb',
+    background: '#F2F2F7',
+    card: '#FFFFFF',
+    text: '#1C1C1E',
+    subtext: '#8E8E93',
+    success: '#34C759',
+    warning: '#FF9500',
+    danger: '#FF3B30',
+    gold: '#FFD700',
+    bronze: '#CD7F32',
+    silver: '#C0C0C0',
+    darkCard: '#2c3e50'
 };
 
-export default function Inicio() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [consumptionData, setConsumptionData] = useState({ 
-    todayConsumption: 0, 
-    yesterdayConsumption: 0, 
-    comparison: 0 
-  });
-  const [dailyGoal, setDailyGoal] = useState(200);
-  const [dicaDoPingo, setDicaDoPingo] = useState("Economize água!");
+// Lógica auxiliar de níveis
+const getLevelInfo = (points) => {
+    const p = points || 0;
+    if (p < 100) return { title: 'Gota Iniciante', next: 100, prev: 0, color: '#4fc3f7', icon: 'water-outline' };
+    if (p < 500) return { title: 'Consciente', next: 500, prev: 100, color: '#29b6f6', icon: 'leaf' };
+    if (p < 1000) return { title: 'Guardião', next: 1000, prev: 500, color: '#0288d1', icon: 'shield-check' };
+    if (p < 3000) return { title: 'Mestre Eco', next: 3000, prev: 1000, color: '#01579b', icon: 'crown' };
+    return { title: 'Lenda da Água', next: 10000, prev: 3000, color: '#fbc02d', icon: 'trident' };
+};
 
-  const loadDashboardData = useCallback(async (isSilent = false) => {
-    if (!isSilent) setIsLoading(true);
+export default function HomeScreen() {
+    const navigation = useNavigation();
 
-    try {
-      const authToken = await AsyncStorage.getItem('token');
-      const userDataString = await AsyncStorage.getItem('user');
+    // Estados
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    
+    // Dados (Inicializados com valores seguros para evitar tela branca)
+    const [userProfile, setUserProfile] = useState({});
+    const [stats, setStats] = useState({ pontos: 0, ranking: 0, agua_poupada: 0 });
+    const [leaderboard, setLeaderboard] = useState([]);
+    
+    // Modal
+    const [visibleDialog, setVisibleDialog] = useState(false);
+    const [newNickname, setNewNickname] = useState('');
+    const [savingNick, setSavingNick] = useState(false);
 
-      if (!authToken || !userDataString) return;
-      
-      const user = JSON.parse(userDataString);
+    // Função de busca de dados
+    const fetchData = useCallback(async () => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            if (!token) return; 
 
-      if (!user.residencia_id) return;
+            const headers = { Authorization: `Bearer ${token}` };
 
-      const headers = { 'Authorization': `Bearer ${authToken}` };
-      const residenciaEndpoint = user.residencia_type === 'apartamento' ? 'apartamentos' : 'casas';
-      const consumoUrl = `${API_URL}/${residenciaEndpoint}/${user.residencia_id}/consumo-total`;
+            const [profileRes, statsRes, rankRes] = await Promise.all([
+                axios.get(`${API_URL}/profile`, { headers }).catch(() => ({ data: {} })), // Evita crash se falhar
+                axios.get(`${API_URL}/me/stats`, { headers }).catch(() => ({ data: { pontos: 0 } })),
+                axios.get(`${API_URL}/leaderboard`, { headers }).catch(() => ({ data: [] }))
+            ]);
 
-      const [consumoResponse, metasResponse, dicaResponse] = await Promise.all([
-        axios.get(consumoUrl, { headers }),
-        axios.get(`${API_URL}/metas`, { headers }),
-        axios.get(`${API_URL}/dica`, { headers }),
-      ]);
-      
-      const consumoResult = consumoResponse.data;
-      if (consumoResult) {
-        setConsumptionData({
-          todayConsumption: Number(consumoResult.consumoHoje) || 0,
-          yesterdayConsumption: Number(consumoResult.consumoOntem) || 0, 
-          comparison: Number(consumoResult.comparacaoPorcentagem) || 0,
-        });
-      }
+            // Define com fallback de segurança (||)
+            setUserProfile(profileRes.data || {});
+            setStats(statsRes.data || { pontos: 0, ranking: 0, agua_poupada: 0 });
+            setLeaderboard(rankRes.data || []);
 
-      const metas = metasResponse.data?.docs || [];
-      const metaPrincipal = metas.find(m => m.is_principal);
-      
-      if (metaPrincipal) {
-        setDailyGoal(parseFloat(metaPrincipal.limite_consumo));
-      } else if (metas.length > 0) {
-        setDailyGoal(parseFloat(metas[0].limite_consumo));
-      } else {
-        setDailyGoal(200);
-      }
-      
-      if (dicaResponse.data?.dica) {
-        setDicaDoPingo(dicaResponse.data.dica);
-      }
+        } catch (error) {
+            console.error("Erro ao carregar Home:", error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    }, []);
 
-    } catch (err) {
-      console.error("Erro Dashboard:", err);
-    } finally {
-      if (!isSilent) setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadDashboardData(false);
-
-    const intervalId = setInterval(() => {
-        loadDashboardData(true);
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [loadDashboardData]);
-
-  const percentageUsed = useMemo(() => {
-      if(dailyGoal <= 0) return 0;
-      return (consumptionData.todayConsumption / dailyGoal) * 100;
-  }, [consumptionData.todayConsumption, dailyGoal]);
-
-  const statusColor = percentageUsed > 100 ? '#FF3B30' : percentageUsed > 75 ? '#FF9500' : '#34C759';
-  const statusIcon = percentageUsed > 100 ? 'alert-circle' : percentageUsed > 75 ? 'water-alert' : 'leaf';
-  
-  const getNivelConsumo = () => {
-      if (percentageUsed > 100) return "Crítico";
-      if (percentageUsed > 80) return "Alto";
-      if (percentageUsed > 50) return "Moderado";
-      return "Econômico";
-  };
-
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+    useFocusEffect(
+        useCallback(() => {
+            fetchData();
+        }, [fetchData])
     );
-  }
 
-  return (
-    <PaperProvider>
-      <ScrollView 
-        style={styles.container} 
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        
-        <MotiView 
-            from={{ scale: 0.95, opacity: 0 }} 
-            animate={{ scale: 1, opacity: 1 }} 
-            transition={{ type: 'spring' }}
-            style={styles.heroContainer}
-        >
-            <LinearGradient
-                colors={percentageUsed > 100 ? ['#FF3B30', '#FF9500'] : ['#0061ff', '#60efff']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.heroCard}
-            >
-                <View style={styles.heroHeader}>
-                    <View style={styles.heroIconBox}>
-                        <MaterialCommunityIcons name="water" size={24} color="#FFF" />
-                    </View>
-                    <View style={styles.heroTag}>
-                        <Text style={styles.heroTagText}>{percentageUsed.toFixed(0)}% da Meta</Text>
-                    </View>
-                </View>
+    const onRefresh = () => {
+        setRefreshing(true);
+        fetchData();
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    };
 
-                <View style={styles.heroContent}>
-                    <Text style={styles.heroLabel}>Consumo Hoje</Text>
-                    <View style={{flexDirection: 'row', alignItems: 'baseline'}}>
-                        <Text style={styles.heroValue}>{consumptionData.todayConsumption.toFixed(0)}</Text>
-                        <Text style={styles.heroUnit}>Litros</Text>
-                    </View>
-                </View>
-                
-                <View style={styles.progressBarContainer}>
-                    <View style={[styles.progressBarFill, { width: `${Math.min(percentageUsed, 100)}%`, backgroundColor: '#FFF' }]} />
-                </View>
-                
-                <Text style={styles.heroFooter}>Meta: {dailyGoal} L</Text>
-            </LinearGradient>
-        </MotiView>
-
-        <View style={styles.gridContainer}>
+    const handleSaveNickname = async () => {
+        if (!newNickname.trim()) return;
+        setSavingNick(true);
+        try {
+            const token = await AsyncStorage.getItem('token');
+            await axios.put(`${API_URL}/me`, { nickname: newNickname }, { headers: { Authorization: `Bearer ${token}` } });
             
-            <MotiView from={{ translateX: -20, opacity: 0 }} animate={{ translateX: 0, opacity: 1 }} transition={{ delay: 100 }} style={styles.gridItem}>
-                <Surface style={styles.statCard} elevation={2}>
-                    <View style={[styles.iconCircle, { backgroundColor: '#E3F2FD' }]}>
-                        <MaterialCommunityIcons name="history" size={22} color="#0A84FF" />
+            setVisibleDialog(false);
+            onRefresh(); // Atualiza a tela
+            Alert.alert("Sucesso", "Apelido criado com sucesso!");
+        } catch (error) {
+            Alert.alert("Erro", "Não foi possível salvar.");
+        } finally {
+            setSavingNick(false);
+        }
+    };
+
+    // Cálculos de Progresso
+    const currentPoints = stats.pontos || 0;
+    const level = getLevelInfo(currentPoints);
+    const range = level.next - level.prev;
+    const currentProgress = currentPoints - level.prev;
+    const progressPercent = range > 0 ? Math.min(Math.max(currentProgress / range, 0), 1) : 0;
+
+    // Tratamento seguro do nome
+    const displayName = userProfile?.nickname || (userProfile?.name ? userProfile.name.split(' ')[0] : 'Vizinho');
+
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={THEME.primary} />
+                <Text style={{ marginTop: 10, color: THEME.subtext }}>Carregando dados...</Text>
+            </View>
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            {/* Header com Gradiente */}
+            <LinearGradient colors={[THEME.primary, '#F2F2F7']} style={styles.headerBackground} />
+
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />}
+            >
+                {/* Cabeçalho */}
+                <MotiView from={{ opacity: 0, translateY: -20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing' }}>
+                    <View style={styles.headerRow}>
+                        <View>
+                            <Text style={styles.pageTitle}>Olá, {displayName}</Text>
+                            <Text style={styles.pageSubtitle}>
+                                {userProfile?.nickname ? 'Rumo ao topo do ranking!' : 'Vamos economizar hoje?'}
+                            </Text>
+                        </View>
+                        <Avatar.Icon size={48} icon="water" style={{ backgroundColor: 'white' }} color={THEME.primary} />
                     </View>
-                    <Text style={styles.statLabel}>Ontem</Text>
-                    <Text style={styles.statValue}>{consumptionData.yesterdayConsumption.toFixed(0)} L</Text>
-                    
-                    <View style={styles.trendContainer}>
-                        <MaterialCommunityIcons 
-                            name={consumptionData.comparison > 0 ? "arrow-up" : "arrow-down"} 
-                            size={16} 
-                            color={consumptionData.comparison > 0 ? '#FF3B30' : '#34C759'} 
+                </MotiView>
+
+                {/* Card de Pontuação */}
+                <MotiView from={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 100 }}>
+                    <Surface style={styles.scoreCard} elevation={4}>
+                        <LinearGradient
+                            colors={['#2c3e50', '#4ca1af']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.gradientContent}
+                        >
+                            <View style={styles.scoreHeader}>
+                                <View>
+                                    <View style={{flexDirection:'row', alignItems:'center', gap: 5}}>
+                                        <MaterialCommunityIcons name={level.icon} size={16} color={level.color} />
+                                        <Text style={[styles.levelLabel, { color: level.color }]}>{level.title}</Text>
+                                    </View>
+                                    <Text style={styles.pointsValue}>{currentPoints} <Text style={{fontSize:16, fontWeight:'400', color:'#ccc'}}>pts</Text></Text>
+                                </View>
+
+                                {!userProfile?.nickname ? (
+                                    <Button 
+                                        mode="contained" 
+                                        buttonColor={THEME.gold} 
+                                        textColor="#333" 
+                                        labelStyle={{fontSize:11, fontWeight:'bold'}}
+                                        onPress={() => setVisibleDialog(true)}
+                                    >
+                                        Criar Apelido
+                                    </Button>
+                                ) : (
+                                    <View style={styles.rankBadge}>
+                                        <MaterialCommunityIcons name="trophy" size={24} color={THEME.gold} />
+                                        <Text style={styles.rankBadgeText}>{stats.ranking}º</Text>
+                                    </View>
+                                )}
+                            </View>
+                            
+                            <View style={styles.divider} />
+                            
+                            <View style={styles.progressContainer}>
+                                <View style={{flexDirection:'row', justifyContent:'space-between', marginBottom: 5}}>
+                                    <Text style={styles.progText}>Próximo Nível</Text>
+                                    <Text style={styles.progText}>{level.next} pts</Text>
+                                </View>
+                                <ProgressBar progress={progressPercent} color={level.color} style={styles.progressBar} />
+                            </View>
+                        </LinearGradient>
+                    </Surface>
+                </MotiView>
+
+                {/* Ranking Top 5 */}
+                <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ delay: 200 }}>
+                    <Text style={styles.sectionHeader}>Ranking da Comunidade 🏆</Text>
+                    <Surface style={styles.listCard} elevation={2}>
+                        {leaderboard && leaderboard.length === 0 ? (
+                            <Text style={styles.emptyText}>Ainda sem competidores.</Text>
+                        ) : (
+                            leaderboard.map((item, index) => (
+                                <View key={index}>
+                                    <View style={styles.rankRow}>
+                                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                            <Text style={[
+                                                styles.rankPos,
+                                                index === 0 && {color: THEME.gold, fontSize: 18},
+                                                index === 1 && {color: THEME.silver, fontSize: 16},
+                                                index === 2 && {color: THEME.bronze, fontSize: 16},
+                                            ]}>{item.posicao}º</Text>
+                                            
+                                            <Text style={[
+                                                styles.rankName,
+                                                item.nickname === userProfile?.nickname && {fontWeight: 'bold', color: THEME.primary}
+                                            ]}>
+                                                {item.nickname} {item.nickname === userProfile?.nickname && '(Você)'}
+                                            </Text>
+                                        </View>
+                                        <Text style={styles.rankPoints}>{item.pontos}</Text>
+                                    </View>
+                                    {index < leaderboard.length - 1 && <Divider />}
+                                </View>
+                            ))
+                        )}
+                    </Surface>
+                </MotiView>
+
+                {/* Acesso Rápido */}
+                <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ delay: 300 }}>
+                    <Text style={styles.sectionHeader}>Acesso Rápido</Text>
+                    <View style={styles.shortcutGrid}>
+                        <ShortcutItem 
+                            icon="chart-bar" color="#1976D2" bg="#E3F2FD" label="Relatórios" 
+                            onPress={() => navigation.navigate('Relatorios')} 
                         />
-                        <Text style={[styles.statSub, { color: consumptionData.comparison > 0 ? '#FF3B30' : '#34C759' }]}>
-                            {Math.abs(consumptionData.comparison).toFixed(0)}%
+                        <ShortcutItem 
+                            icon="target" color="#388E3C" bg="#E8F5E9" label="Metas" 
+                            onPress={() => navigation.navigate('Metas')} 
+                        />
+                         <ShortcutItem 
+                            icon="account" color="#F57C00" bg="#FFF3E0" label="Perfil" 
+                            onPress={() => navigation.navigate('Perfil')} 
+                        />
+                    </View>
+                </MotiView>
+
+                <View style={{ height: 40 }} />
+            </ScrollView>
+
+            <Portal>
+                <Dialog visible={visibleDialog} onDismiss={() => setVisibleDialog(false)} style={{borderRadius: 16}}>
+                    <Dialog.Title>Escolha seu Apelido 🥸</Dialog.Title>
+                    <Dialog.Content>
+                        <Text style={{marginBottom: 10, color: THEME.subtext}}>
+                            Para competir no ranking sem expor seu nome, escolha um apelido criativo.
                         </Text>
-                    </View>
-                </Surface>
-            </MotiView>
-
-            <MotiView from={{ translateX: 20, opacity: 0 }} animate={{ translateX: 0, opacity: 1 }} transition={{ delay: 200 }} style={styles.gridItem}>
-                <Surface style={styles.statCard} elevation={2}>
-                    <View style={[styles.iconCircle, { backgroundColor: statusColor + '20' }]}>
-                        <MaterialCommunityIcons name={statusIcon} size={22} color={statusColor} />
-                    </View>
-                    <Text style={styles.statLabel}>Nível</Text>
-                    <Text style={[styles.statValue, { color: statusColor, fontSize: 18 }]}>{getNivelConsumo()}</Text>
-                    <Text style={styles.statSub}>Eficiência</Text>
-                </Surface>
-            </MotiView>
+                        <TextInput 
+                            label="Apelido / Nickname" 
+                            value={newNickname} 
+                            onChangeText={setNewNickname} 
+                            mode="outlined" 
+                            activeOutlineColor={THEME.primary}
+                        />
+                    </Dialog.Content>
+                    <Dialog.Actions>
+                        <Button onPress={() => setVisibleDialog(false)} textColor={THEME.subtext}>Cancelar</Button>
+                        <Button onPress={handleSaveNickname} textColor={THEME.primary}>Salvar</Button>
+                    </Dialog.Actions>
+                </Dialog>
+            </Portal>
         </View>
-
-        <MotiView from={{ translateY: 20, opacity: 0 }} animate={{ translateY: 0, opacity: 1 }} transition={{ delay: 300 }}>
-            <Surface style={styles.infoRowCard} elevation={1}>
-                <View style={styles.infoRowLeft}>
-                    <View style={[styles.iconCircle, {backgroundColor: '#F3E5F5', marginRight: 15}]}>
-                        <MaterialCommunityIcons name="target" size={24} color="#9C27B0" />
-                    </View>
-                    <View>
-                        <Text style={styles.infoRowTitle}>Restante</Text>
-                        <Text style={styles.infoRowSubtitle}>Disponível na meta</Text>
-                    </View>
-                </View>
-                <Text style={[styles.infoRowValue, { color: (dailyGoal - consumptionData.todayConsumption) < 0 ? '#FF3B30' : '#9C27B0' }]}>
-                    {Math.max(0, dailyGoal - consumptionData.todayConsumption).toFixed(0)} L
-                </Text>
-            </Surface>
-        </MotiView>
-
-        <MotiView from={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 400 }} style={styles.tipContainer}>
-            <View style={styles.mascotContainer}>
-                <View style={styles.mascotCircle}>
-                    <MaterialCommunityIcons name="water-outline" size={28} color="#FFF" />
-                </View>
-            </View>
-            <View style={styles.tipBubble}>
-                <Text style={styles.tipTitle}>Dica do Dia</Text>
-                <Text style={styles.tipText}>{dicaDoPingo}</Text>
-            </View>
-        </MotiView>
-
-        <View style={{height: 30}} />
-      </ScrollView>
-    </PaperProvider>
-  );
+    );
 }
 
+// Subcomponente de Atalho
+const ShortcutItem = ({ icon, color, bg, label, onPress }) => (
+    <Surface style={styles.shortcutCard} elevation={2}>
+        <TouchableOpacity style={styles.touchableShortcut} onPress={onPress}>
+            <Avatar.Icon size={46} icon={icon} style={{backgroundColor: bg, marginBottom: 8}} color={color} />
+            <Text style={styles.shortcutLabel}>{label}</Text>
+        </TouchableOpacity>
+    </Surface>
+);
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: theme.colors.background,
-  },
-  contentContainer: {
-    padding: 20,
-    paddingTop: 10, 
-    paddingBottom: 40,
-  },
-  heroContainer: {
-    shadowColor: "#0A84FF",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 6,
-    marginBottom: 20,
-  },
-  heroCard: {
-    borderRadius: 24,
-    padding: 20,
-    height: 190,
-    justifyContent: 'space-between',
-  },
-  heroHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  heroIconBox: {
-      backgroundColor: 'rgba(255,255,255,0.2)',
-      borderRadius: 12,
-      padding: 6
-  },
-  heroTag: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  heroTagText: {
-    color: '#FFF',
-    fontWeight: '700',
-    fontSize: 11,
-  },
-  heroContent: {
-    alignItems: 'flex-start',
-    marginTop: 10,
-  },
-  heroLabel: {
-      color: 'rgba(255,255,255,0.85)',
-      fontSize: 14,
-      marginBottom: 0
-  },
-  heroValue: {
-    fontSize: 48,
-    fontWeight: '800',
-    color: '#FFF',
-    letterSpacing: -1,
-  },
-  heroUnit: {
-    fontSize: 18,
-    color: 'rgba(255,255,255,0.9)',
-    fontWeight: '600',
-    marginLeft: 6,
-  },
-  progressBarContainer: {
-    height: 6,
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    borderRadius: 3,
-    marginTop: 15,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  heroFooter: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 11,
-    textAlign: 'right',
-    marginTop: 6,
-  },
-  gridContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  gridItem: {
-    width: '48%',
-  },
-  statCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    padding: 16,
-    alignItems: 'flex-start',
-    height: 130,
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#F0F0F0'
-  },
-  iconCircle: {
-    padding: 8,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  statLabel: {
-    fontSize: 13,
-    color: '#8A8A8E',
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1C1C1E',
-  },
-  statSub: {
-    fontSize: 12,
-    fontWeight: '700',
-    marginLeft: 2
-  },
-  trendContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginTop: 2
-  },
-  infoRowCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#F0F0F0'
-  },
-  infoRowLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  infoRowTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1C1C1E',
-  },
-  infoRowSubtitle: {
-    fontSize: 12,
-    color: '#8A8A8E',
-  },
-  infoRowValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  tipContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginTop: 5,
-  },
-  mascotContainer: {
-    marginRight: 10,
-    marginBottom: 5,
-  },
-  mascotCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#0A84FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#FFF',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  tipBubble: {
-    flex: 1,
-    backgroundColor: '#FFF', 
-    borderRadius: 16,
-    borderBottomLeftRadius: 4,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    elevation: 1
-  },
-  tipTitle: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#0A84FF',
-    marginBottom: 4,
-  },
-  tipText: {
-    fontSize: 13,
-    color: '#333',
-    lineHeight: 18,
-  },
+    container: {
+        flex: 1,
+        backgroundColor: THEME.background,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    headerBackground: {
+        position: 'absolute',
+        top: 0, left: 0, right: 0,
+        height: 140,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+    },
+    scrollContent: {
+        paddingHorizontal: 20,
+        paddingTop: 50,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    pageTitle: {
+        fontSize: 26,
+        fontWeight: 'bold',
+        color: '#FFF',
+    },
+    pageSubtitle: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.9)',
+    },
+
+    // SCORE CARD
+    scoreCard: {
+        borderRadius: 24,
+        marginBottom: 24,
+        overflow: 'hidden',
+    },
+    gradientContent: {
+        padding: 20,
+    },
+    scoreHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+    },
+    levelLabel: {
+        fontWeight: 'bold',
+        fontSize: 12,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+    },
+    pointsValue: {
+        color: '#FFF',
+        fontSize: 36,
+        fontWeight: 'bold',
+        marginTop: 5,
+    },
+    rankBadge: {
+        alignItems: 'center',
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+        borderRadius: 14,
+    },
+    rankBadgeText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        marginTop: 2,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        marginVertical: 15,
+    },
+    progText: {
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: 11,
+        fontWeight: '600'
+    },
+    progressBar: {
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+    },
+
+    // RANKING LIST
+    sectionHeader: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: THEME.text,
+        marginBottom: 12,
+        marginTop: 5,
+    },
+    listCard: {
+        backgroundColor: '#FFF',
+        borderRadius: 20,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        marginBottom: 24,
+    },
+    rankRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 14,
+    },
+    rankPos: {
+        width: 35,
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: THEME.subtext,
+        textAlign: 'center',
+    },
+    rankName: {
+        fontSize: 14,
+        color: THEME.text,
+        marginLeft: 5,
+    },
+    rankPoints: {
+        fontWeight: 'bold',
+        color: THEME.subtext,
+    },
+    emptyText: {
+        padding: 20,
+        textAlign: 'center',
+        color: THEME.subtext
+    },
+
+    // SHORTCUTS
+    shortcutGrid: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 12,
+    },
+    shortcutCard: {
+        flex: 1,
+        borderRadius: 20,
+        backgroundColor: '#FFF',
+    },
+    touchableShortcut: {
+        alignItems: 'center',
+        paddingVertical: 20,
+        paddingHorizontal: 5,
+    },
+    shortcutLabel: {
+        fontWeight: '600',
+        fontSize: 12,
+        color: THEME.text,
+    }
 });

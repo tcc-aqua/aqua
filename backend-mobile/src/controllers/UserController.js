@@ -50,4 +50,16 @@ export default class UserController {
             return reply.status(500).send({ error: 'Erro interno ao buscar dados de consumo.' });
         }
     }
+
+    // Dentro da classe UserController...
+
+    static async getLeaderboard(req, reply) {
+        try {
+            const leaderboard = await UserService.getLeaderboard();
+            return reply.status(200).send(leaderboard);
+        } catch (error) {
+            console.error('Erro leaderboard:', error);
+            return reply.status(500).send({ error: 'Erro ao buscar ranking' });
+        }
+    }
 }

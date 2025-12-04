@@ -41,4 +41,11 @@ export default async function userRoutes(fastify) {
         },
         preHandler: [authMiddleware]
     }, UserController.getConsumoSemanal);
+
+    // Dentro de userRoutes...
+
+    fastify.get('/leaderboard', {
+        schema: { summary: 'Ranking Top 5', tags: ['users'] },
+        preHandler: [authMiddleware]
+    }, UserController.getLeaderboard);
 }
