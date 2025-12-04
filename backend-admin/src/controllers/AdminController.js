@@ -6,7 +6,9 @@ import { updatePasswordDTO } from "../dto/admin/updatePasswordDTO.js";
 export default class AdminController {
 
     static async getAll(req, reply) {
-        const admins = await AdminService.getAllAdmins();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const admins = await AdminService.getAllAdmins(page, limit);
         return reply.status(200).send(admins);
     }
 

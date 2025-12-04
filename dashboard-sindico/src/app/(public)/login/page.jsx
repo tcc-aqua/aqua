@@ -66,7 +66,8 @@ const LoginFormContent = () => {
   };
 
   return (
-    <div className="relative w-full max-w-sm sm:max-w-md group overflow-hidden rounded-xl bg-card p-8 shadow-2xl transition-all duration-300 hover:shadow-primary/50 dark:hover:shadow-primary/20 border border-border/50 mx-auto">
+   <div className="relative w-full max-w-sm sm:max-w-md mx-auto p-8 bg-background rounded-xl">
+
       <div className="absolute inset-0 z-0 opacity-0 transition duration-300 ">
         <div className="absolute inset-0 bg-primary/20 dark:bg-primary/5 blur-xl"></div>
         <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-background/50 opacity-40 transition duration-300 group-hover:opacity-80 rounded-xl animate-spin-slow"></div>
@@ -135,15 +136,7 @@ const LoginFormContent = () => {
           </form>
         </Form>
 
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          Esqueceu sua senha?{" "}
-          <a
-            href="/forgot-password"
-            className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
-          >
-            Recuperar
-          </a>
-        </p>
+   
       </div>
     </div>
   );
