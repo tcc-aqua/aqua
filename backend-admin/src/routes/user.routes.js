@@ -123,8 +123,7 @@ export default async function userRoutes(fastify) {
                 summary: 'Inativando o usuário',
                 tags: ['usuários'],
                 description: "Inativando o usuário pelo id no sistema",
-            },
-            preHandler: autenticarAdmin,
+            }
         }, UserController.deactivate);
 
     fastify.patch('/:id/ativar',
@@ -133,8 +132,7 @@ export default async function userRoutes(fastify) {
                 summary: "Ativando o usuário",
                 tags: ['usuários'],
                 description: "Ativando o usuário pelo ID no sistema",
-            },
-            preHandler: autenticarAdmin,
+            }
         }, UserController.ativar);
 
     fastify.patch('/:id/sindico',
@@ -143,8 +141,7 @@ export default async function userRoutes(fastify) {
                 summary: "Tornando um usuário comum em sindico",
                 tags: ['usuários'],
                 description: "Atribuindo como sindico",
-            },
-            preHandler: autenticarAdmin,
+            }
         }, UserController.sindico);
 
     fastify.get('/novos-moradores',

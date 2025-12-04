@@ -82,24 +82,20 @@ export default class UserController {
     }
 
     static async deactivate(req, reply) {
-        const { id } = req.params;
-        const adminId = req.admin.id;
-        const user = await UserService.deactivateUser(id, adminId);
-        return reply.status(200).send(user);
+        const { id } = (req.params);
+        const user = await UserService.deactivateUser(id);
+        return reply.status(200).send(user)
     }
-
 
     static async ativar(req, reply) {
         const { id } = (req.params);
-        const adminId = req.admin.id;
-        const user = await UserService.ativarUser(id, adminId);
+        const user = await UserService.ativarUser(id);
         return reply.status(200).send(user)
     }
 
     static async sindico(req, reply) {
         const { id } = req.params;
-        const adminId = req.admin.id;
-        const user = await UserService.setarSindico(id, adminId);
+        const user = await UserService.setarSindico(id);
         return reply.status(200).send(user);
     }
 
