@@ -29,7 +29,7 @@ export default function Header() {
       const userId = decoded.id || decoded.user_id;
 
       // Buscar dados do admin no backend
-      fetch(`${backendURL}/api/admins/${userId}`, {
+      fetch(`${backendURL}/api/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
@@ -94,17 +94,7 @@ export default function Header() {
             href="/configuracoes"
             className="flex items-center space-x-3 pl-5 cursor-pointer group"
           >
-            <div className="relative">
-              <img
-                src={userInfo.image}
-                alt="Avatar"
-                className="w-10 h-10 rounded-full object-cover border shadow-sm group-hover:scale-105 transition-transform"
-              />
-              <div
-                className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-card"
-                title="Online"
-              />
-            </div>
+          
 
             {!isMobile && (
               <div className="leading-tight group-hover:opacity-80 transition-opacity">
