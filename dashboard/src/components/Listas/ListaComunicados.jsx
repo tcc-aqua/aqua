@@ -62,7 +62,7 @@ export default function ComunicadosDashboard() {
 
   const cardsData = [
     {
-      title: "Total de Comunicados",
+      title: "Comunicados",
       value: comunicadoStats.total,
       icon: Bell,
       iconColor: "text-accent",
@@ -87,7 +87,7 @@ export default function ComunicadosDashboard() {
       borderColor: "border-b-green-600",
     },
     {
-      title: "Para Administradores",
+      title: "Para Admin",
       value: comunicadoStats.administradores,
       icon: Shield,
       iconColor: "text-purple-700",
@@ -214,7 +214,7 @@ export default function ComunicadosDashboard() {
                     <TooltipContent>Excluir</TooltipContent>
                   </Tooltip>
 
-                  <Tooltip>
+                  {/* <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         size="icon"
@@ -229,7 +229,7 @@ export default function ComunicadosDashboard() {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>{c.lido ? "Lido" : "Marcar como lido"}</TooltipContent>
-                  </Tooltip>
+                  </Tooltip> */}
                 </div>
               </div>
             ))}

@@ -156,7 +156,7 @@ export default function CasasDashboard() {
       borderColor: " border-b-sky-700 "
     },
     {
-      title: "Total de Moradores",
+      title: "Moradores",
       value: casas.reduce((acc, c) => acc + (Number(c.numero_moradores) || 0), 0),
       icon: User,
       bg: "bg-card",

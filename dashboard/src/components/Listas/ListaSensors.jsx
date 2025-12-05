@@ -164,7 +164,7 @@ const fetchData = async (filters = {}, page = 1, limit = 10) => {
                       <p className="font-bold text-4xl text-foreground">{card.value ?? 0}</p>
                       {card.valueAtivos && (
                         <p className="text-accent text-sm mt-1">
-                          {card.valueAtivos.casas} casas + {card.valueAtivos.apartamentos} apartamentos
+                          {card.valueAtivos.casas} casas + {card.valueAtivos.apartamentos} aptos
                         </p>
                       )}
                       {card.porcentagem && !card.valueAtivos && (
