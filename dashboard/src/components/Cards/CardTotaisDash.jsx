@@ -63,7 +63,7 @@ export default function CardTopDash() {
 
   const cards = [
     {
-      title: "Total de residências",
+      title: "Residências",
       value: userStats.totalResidencias,
       icon: Layers,
       iconColor: "text-accent",

@@ -324,7 +324,7 @@ export default function CondominiosDashboard() {
 
   const cards = [
     {
-      title: "Total de Condomínios",
+      title: "Condomínios",
       value: condominioStats.total,
       valueAtivos: { total: condominioStats.ativos },
       icon: Building,
@@ -332,7 +332,7 @@ export default function CondominiosDashboard() {
       borderColor: "border-b-accent",
     },
     {
-      title: "Apartamentos Totais",
+      title: "Apartamentos ",
       value:
         condominios.reduce((acc, c) => acc + (c.numero_apartamentos || 0), 0) ||
         0,
@@ -372,15 +372,15 @@ export default function CondominiosDashboard() {
         ) ?? 0,
       icon: Crown,
       iconColor: "text-yellow-500",
-      subTitle:
-        condominios.length > 0
-          ? `Média de ${(
-            condominios.reduce(
-              (acc, c) => acc + (c.sindico_nome ? 1 : 0),
-              0
-            ) / condominios.length
-          ).toFixed(0)} por condomínio`
-          : "0",
+      subTitle: "Síndicos cadastrados",
+        // condominios.length > 0
+        //   ? `Média de ${(
+        //     condominios.reduce(
+        //       (acc, c) => acc + (c.sindico_nome ? 1 : 0),
+        //       0
+        //     ) / condominios.length
+        //   ).toFixed(0)} por condomínio`
+        //   : "0",
       borderColor: "border-b-yellow-500",
     },
   ];

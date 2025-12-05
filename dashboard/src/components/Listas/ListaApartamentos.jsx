@@ -150,7 +150,7 @@ export default function ApartamentosDashboard() {
 
   const cards = [
     {
-      title: "Total de Apartamentos",
+      title: "Apartamentos",
       value: apStats.total,
       valueAtivas: apStats.ativas,
       icon: Building,
@@ -158,7 +158,7 @@ export default function ApartamentosDashboard() {
         borderColor:" border-b-orange-300"
     },
     {
-      title: "Total de Moradores",
+      title: "Moradores",
       value: apartamentos.reduce(
         (acc, ap) => acc + (Number(ap.numero_moradores) || 0),
         0
@@ -172,7 +172,7 @@ export default function ApartamentosDashboard() {
               (acc, ap) => acc + (Number(ap.numero_moradores) || 0),
               0
             ) / apartamentos.length
-          ).toFixed(0)} por unidade`
+          ).toFixed(0)} / unidade`
           : "0",
             borderColor:" border-b-sky-500 "
     },

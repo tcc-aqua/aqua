@@ -46,8 +46,8 @@ export default function InputAppearance() {
             <p className="text-sm font-semibold flex items-center gap-2">
               <Layout size={16} /> Sidebar Compacta
             </p>
-            <p className="text-xs text-muted-foreground">
-              Ative para uma barra lateral mais compacta
+            <p className="text-xs text-muted-foreground ">
+              Barra lateral mais compacta
             </p>
           </div>
           <Switch
@@ -68,10 +68,10 @@ export default function InputAppearance() {
         <CardContent className="flex justify-between items-center  md:-mt-3">
           <div className="flex flex-col justify-center">
             <p className="text-sm font-semibold flex items-center gap-2">
-              <Info size={16} /> Mostrar Informações Pessoais
+              <Info size={16} /> Informações Pessoais
             </p>
             <p className="text-xs text-muted-foreground">
-              Ative para exibir suas informações pessoais no perfil
+               Informações pessoais no perfil
             </p>
           </div>
           <Switch
@@ -95,7 +95,7 @@ export default function InputAppearance() {
               <Activity size={16} /> Animações
             </p>
             <p className="text-xs text-muted-foreground">
-              Ative ou desative animações na interface
+              Ative ou desative animações
             </p>
           </div>
           <Switch
