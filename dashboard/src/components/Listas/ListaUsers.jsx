@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Users, UserCheck, UserCog, User, X, Check, Pencil, AlertTriangle, Home, Building, MapPin, Crown, UserCircle2 } from "lucide-react";
+import { Users, UserCheck, User, X, Check,  AlertTriangle, Home, Building, MapPin, Crown, UserCircle2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,

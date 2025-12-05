@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
-import { Building, X, Check, UserStar, AlertTriangle, Crown, Signal, Edit, Pencil } from "lucide-react";
+import { Building, X, Check, UserStar, AlertTriangle, Crown, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -373,14 +373,6 @@ export default function CondominiosDashboard() {
       icon: Crown,
       iconColor: "text-yellow-500",
       subTitle: "Síndicos cadastrados",
-        // condominios.length > 0
-        //   ? `Média de ${(
-        //     condominios.reduce(
-        //       (acc, c) => acc + (c.sindico_nome ? 1 : 0),
-        //       0
-        //     ) / condominios.length
-        //   ).toFixed(0)} por condomínio`
-        //   : "0",
       borderColor: "border-b-yellow-500",
     },
   ];

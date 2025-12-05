@@ -3,7 +3,7 @@
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import InputNotifications from "@/components/Inputs/editProfile/inputConfigNotifications";
+import InputNotifications from "@/components/descartesAqua/inputConfigNotifications";
 import InputAppearance from "@/components/Inputs/editProfile/inputsAppearance";
 
 import AnimationWrapper from "../Layout/Animation/Animation";

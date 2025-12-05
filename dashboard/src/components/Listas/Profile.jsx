@@ -172,7 +172,7 @@ export default function EmployeeProfile() {
     const [user, domain] = email.split("@");
     if (!domain) return "*****";
 
-    // Mantém apenas a primeira e última letra do usuário, no resto vira *
+
     const maskedUser =
       user.length <= 2
         ? user[0] + "*".repeat(Math.max(user.length - 1, 1))

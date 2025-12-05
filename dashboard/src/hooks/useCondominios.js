@@ -47,11 +47,10 @@ export function useCondominios() {
     }
   };
 
-  // Editar condomínio
 const editCondominio = async (id, dados) => {
   setLoading(true);
   try {
-    // Chama a rota correta passando os dados certos
+   
     const res = await api.put(`/condominios/${id}`, dados);
 
     const updated = res?.data || res;
@@ -60,7 +59,7 @@ const editCondominio = async (id, dados) => {
       throw new Error(updated?.error || "Erro ao atualizar");
     }
 
-    // Atualiza no estado pela chave 'id'
+    
     setCondominios((prev) =>
       prev.map((c) => (c.id === id ? { ...c, ...updated } : c))
     );
@@ -73,7 +72,7 @@ const editCondominio = async (id, dados) => {
   }
 };
 
-  // Excluir condomínio
+ 
   const removeCondominio = async (id) => {
     setLoading(true);
     try {

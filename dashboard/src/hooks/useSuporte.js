@@ -11,7 +11,7 @@ export function useSuporte() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // 🔹 Buscar tickets
+ 
 const fetchTickets = useCallback(async () => {
   try {
     setLoading(true);
@@ -41,7 +41,7 @@ const fetchTickets = useCallback(async () => {
 }, []);
 
 
-  // 🔹 Enviar resposta
+ 
   const sendReply = useCallback(async (ticketId, replyMessage) => {
     try {
       if (!replyMessage.trim()) {
@@ -78,7 +78,7 @@ const fetchTickets = useCallback(async () => {
     }
   }, []);
 
-  // 🔹 Deletar ticket
+
   const deleteTicket = useCallback(async (ticketId) => {
     try {
       const token = Cookies.get("token");
@@ -105,7 +105,7 @@ const fetchTickets = useCallback(async () => {
     }
   }, []);
 
-  // 🔹 Marcar ticket como visualizado
+ 
 const markAsViewed = useCallback(async (ticketId) => {
   try {
     const token = Cookies.get("token");

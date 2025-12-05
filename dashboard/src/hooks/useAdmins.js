@@ -9,7 +9,7 @@ export function useAdmins() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // 🔹 Buscar todos os administradores
+
   const fetchAdmins = async () => {
     setLoading(true);
     setError(null);
@@ -24,14 +24,14 @@ export function useAdmins() {
     }
   };
 
-  // 🔹 Criar novo admin
+
 const addAdmin = async (novo) => {
   setLoading(true);
   try {
     const payload = {
       email: novo.email,
       password: novo.password,
-      // role pode ser omitido se o back-end já define "admin" por default
+
     };
 
     const res = await api.post("/admins", payload);
@@ -47,7 +47,7 @@ const addAdmin = async (novo) => {
 };
 
 
-  // 🔹 Atualizar administrador
+
   const editAdmin = async (id, dados) => {
     setLoading(true);
     try {
@@ -65,7 +65,7 @@ const addAdmin = async (novo) => {
     }
   };
 
-  // 🔹 Atualizar senha do admin logado
+
   const updatePassword = async (dados) => {
     setLoading(true);
     try {

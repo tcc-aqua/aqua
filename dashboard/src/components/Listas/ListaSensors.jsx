@@ -5,7 +5,7 @@ import Loading from "../Layout/Loading/page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
-import { Cpu, X, Check, Droplet, XCircle, CheckCircle, AlertTriangle, Signal, MapPin } from "lucide-react";
+import {  X, Check, Droplet, AlertTriangle, Signal, MapPin } from "lucide-react";
 import useToggleConfirm from "@/hooks/useStatus"
 import {
   Dialog,

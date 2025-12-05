@@ -1,5 +1,4 @@
 
-import ProfileCards from "@/components/Cards/SettingsGeral";
 import Header from "@/components/Layout/Header/page";
 import LayoutDashboard from "@/components/Layout/LayoutDashboard/page";
 import EmployeeProfile from "@/components/Listas/Profile";

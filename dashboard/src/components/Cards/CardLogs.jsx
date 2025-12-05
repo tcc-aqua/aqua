@@ -19,7 +19,7 @@ export default function LogsDashboard() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(15);
   const [totalPages, setTotalPages] = useState(1);
-  
+
   const getValorColor = (valor) => {
     if (!valor) return "text-muted-foreground";
 
@@ -54,22 +54,31 @@ export default function LogsDashboard() {
   };
 
 
-  const fetchAll = async () => {
+  const fetchAll = async (filters = {}, page = 1, limit = 10) => {
     try {
       setLoading(true);
+
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters,
+      });
+
       const headers = getTokenHeader();
       if (!headers) return;
 
-      const res = await fetch(`${API_URL}/`, { headers });
+      const res = await fetch(`${API_URL}?${params.toString()}`, { headers });
       const data = await res.json();
 
       setLogs(data.docs || data.logs || []);
+      setTotalPages(data.pages || 1);
     } catch {
       toast.error("Erro ao carregar logs.");
     } finally {
       setLoading(false);
     }
   };
+
 
   const fetchRecentes = async () => {
     try {
@@ -132,32 +141,31 @@ export default function LogsDashboard() {
       setLoading(false);
     }
   };
-const buscarInteligente = async () => {
-  if (!filters.search.trim()) {
-    fetchAll();
-    return;
-  }
+  const buscarInteligente = async () => {
+    if (!filters.search.trim()) {
+      fetchAll();
+      return;
+    }
 
-  try {
-    setLoading(true);
-    const headers = getTokenHeader();
-    if (!headers) return;
+    try {
+      setLoading(true);
+      const headers = getTokenHeader();
+      if (!headers) return;
 
-    const url = `${API_URL}/search?search=${filters.search}`;
-    const res = await fetch(url, { headers });
-    const data = await res.json();
+      const url = `${API_URL}/search?search=${filters.search}`;
+      const res = await fetch(url, { headers });
+      const data = await res.json();
 
-    setLogs(data.docs || data.logs || []);
-  } catch {
-    toast.error("Erro ao realizar busca.");
-  } finally {
-    setLoading(false);
-  }
-};
-
+      setLogs(data.docs || data.logs || []);
+    } catch {
+      toast.error("Erro ao realizar busca.");
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    fetchAll();
- }, [page]);
+    fetchAll(filters, page, limit);
+  }, [page, filters]);
 
   if (loading) return <Loading />;
 
@@ -306,11 +314,13 @@ const buscarInteligente = async () => {
             )}
           </CardContent>
           <Separator />
-           <PaginationDemo
+          <PaginationDemo
             currentPage={page}
             totalPages={totalPages}
-            onPageChange={(p) => setPage(p)}
+            onChangePage={(p) => setPage(p)}
           />
+
+
 
         </Card>
       </AnimationWrapper>
