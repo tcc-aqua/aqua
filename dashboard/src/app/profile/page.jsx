@@ -11,7 +11,7 @@ export default function Profile() {
                 <header className="fixed top-0  right-0 z-40">
                     <Header />
                 </header>
-                <main className="container mx-auto pt-30 ">
+                <main className="container mx-auto  pt-20 md:pt-30 ">
                     <div className="">
                       <EmployeeProfile></EmployeeProfile>
                     </div>

@@ -99,7 +99,7 @@ export default function Header() {
           )}
         </div>
 
-        <div className="flex items-center space-x-3 ml-auto order-2">
+        <div className="flex items-center  ml-auto order-2">
           <ModeToggle />
           {/* <div className="relative">
             <Bell className="h-5 w-5 text-foreground/80 hover:text-primary transition-colors cursor-pointer" />

@@ -172,7 +172,7 @@ export default function ApartamentosDashboard() {
               (acc, ap) => acc + (Number(ap.numero_moradores) || 0),
               0
             ) / apartamentos.length
-          ).toFixed(0)} por unidade`
+          ).toFixed(0)} / unidade`
           : "0",
             borderColor:" border-b-sky-500 "
     },
