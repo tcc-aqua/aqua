@@ -140,7 +140,7 @@ export function Sidebar({ className = "", isCollapsed, setIsCollapsed }) {
           ${isCollapsed ? "w-26" : "w-56"} md:translate-x-0 overflow-hidden ${className}`}
       >
 
-        <div className="flex items-center justify-between p-2 border-sidebar-border bg-sidebar/60 border-b ">
+        <div className="flex items-center justify-between p-2 border-sidebar-border bg-sidebar/60 border-b ml-5">
           {!isCollapsed ? (
             <div className="flex items-center">
               <img src="./logo.svg" className="w-12" />

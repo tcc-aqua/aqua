@@ -73,6 +73,11 @@ export default function CondominiosDashboard() {
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
+  const [sindicoPage, setSindicoPage] = useState(1);
+  const [sindicoLimit] = useState(10);
+  const [sindicoTotalPages, setSindicoTotalPages] = useState(1);
+
+  const [loadingSindicos, setLoadingSindicos] = useState(false);
   const API_URL = "http://localhost:3333/api/condominios";
   const { atribuirSindico, loading: atribuindo } = useAtribuirSindico(API_URL);
 
@@ -180,11 +185,15 @@ export default function CondominiosDashboard() {
 
     const fetchSindicos = async () => {
       try {
-        const res = await fetch("http://localhost:3333/api/users/sindicos");
-        if (!res.ok) throw new Error("Erro ao buscar síndicos");
+        setLoadingSindicos(true);
+
+        const res = await fetch(
+          `http://localhost:3333/api/users/sindicos?page=${sindicoPage}&limit=${sindicoLimit}`
+        );
+
+        if (!res.ok) throw new Error(`Erro ao buscar síndicos (${res.status})`);
 
         const data = await res.json();
-
 
         const lista = Array.isArray(data.docs)
           ? data.docs.map((s) => ({
@@ -194,14 +203,19 @@ export default function CondominiosDashboard() {
           : [];
 
         setSindicos(lista);
-      } catch (err) {
 
-        toast.error(err.message);
+        // atualiza somente os estados da paginação dos síndicos
+        setSindicoTotalPages(data.pages ?? Math.ceil((data.total ?? lista.length) / sindicoLimit));
+      } catch (err) {
+        toast.error(err.message || "Erro ao buscar síndicos");
+      } finally {
+        setLoadingSindicos(false);
       }
     };
 
     fetchSindicos();
-  }, [showSindicoModal]);
+  }, [showSindicoModal, sindicoPage, sindicoLimit]);
+
 
 
   const confirmToggleStatus = (condominio) => {
@@ -433,12 +447,12 @@ export default function CondominiosDashboard() {
           })}
         </section>
 
-      
+
 
         <AnimationWrapper delay={0.3}>
-            <div className="flex justify-end items-center mt-10">
-          <CriarCondominioButton onApply={() => fetchData(filters, page, limit)} />
-        </div>
+          <div className="flex justify-end items-center mt-10">
+            <CriarCondominioButton onApply={() => fetchData(filters, page, limit)} />
+          </div>
 
           <Card className="mx-auto mt-10  hover:border-sky-400 dark:hover:border-sky-950">
             <CardHeader>
@@ -504,7 +518,7 @@ export default function CondominiosDashboard() {
                         <td className="px-4 py-2 text-sm">{condominio.numero_sensores}/300
                           <div className="text-[10px] text-foreground/60">Total de Sensores</div>
                         </td>
-                       
+
                         <td className="text-sm font-semibold px-3 py-4">
                           <span
                             className={`
@@ -703,25 +717,61 @@ export default function CondominiosDashboard() {
               <div className="grid grid-cols-1 gap-4">
                 <div className="bg-muted/40 rounded-xl p-4 border border-border">
                   <p className="text-xs uppercase text-muted-foreground mb-2">Síndico</p>
-                  <Select value={sindicoId} onValueChange={(v) => setSindicoId(v)}>
-                    <SelectTrigger className="w-full bg-background border border-input text-foreground">
-                      <SelectValue placeholder="Escolha um síndico" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sindicos.length > 0 ? (
-                        sindicos.map((s) => (
-                          <SelectItem key={s.id} value={s.id}>
-                            {s.nome}
+
+                  <div className="flex flex-col gap-3">
+                    {/* SELECT */}
+                    <Select value={sindicoId} onValueChange={setSindicoId}>
+                      <SelectTrigger className="w-full bg-background border border-input text-foreground">
+                        <SelectValue placeholder="Escolha um síndico" />
+                      </SelectTrigger>
+
+                      <SelectContent className="max-h-60">
+                        {loadingSindicos ? (
+                          <div className="p-3 text-sm">Carregando...</div>
+                        ) : sindicos.length > 0 ? (
+                          sindicos.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.nome}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="none" disabled>
+                            Nenhum síndico encontrado
                           </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="none" disabled>
-                          Nenhum síndico encontrado
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
+                        )}
+                      </SelectContent>
+                    </Select>
+
+                    {/* PAGINAÇÃO ESTÉTICA */}
+                    <div className="flex items-center justify-between mt-1">
+                      <button
+                        onClick={() => setSindicoPage((p) => Math.max(1, p - 1))}
+                        disabled={sindicoPage <= 1 || loadingSindicos}
+                        className="px-3 py-1 text-xs rounded-md 
+          border border-border bg-background hover:bg-accent
+          disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        ← Anterior
+                      </button>
+
+                      <span className="text-xs text-muted-foreground">
+                        Página <strong>{sindicoPage}</strong> de <strong>{sindicoTotalPages || 1}</strong>
+                      </span>
+
+                      <button
+                        onClick={() => setSindicoPage((p) => Math.min(sindicoTotalPages || p, p + 1))}
+                        disabled={sindicoPage >= (sindicoTotalPages || 1) || loadingSindicos}
+                        className="px-3 py-1 text-xs rounded-md 
+          border border-border bg-background hover:bg-accent
+          disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Próxima →
+                      </button>
+                    </div>
+                  </div>
                 </div>
+
+
 
                 <div className="bg-muted/40 rounded-xl p-4 border border-border">
                   <p className="text-xs uppercase text-muted-foreground mb-2">Condomínio</p>
