@@ -9,29 +9,13 @@ export default class MoradoresController {
     static async info(req, reply) {
         try {
             const sindico_id = req.user.id;
-
-            const sindico = await User.findByPk(sindico_id, {
-                attributes: ['id', 'role', 'type', 'status', 'residencia_id', 'responsavel_id']
-            });
-
-            if (!sindico) {
-                return reply.status(404).send({ message: "Síndico não encontrado." });
-            }
-            const condominio_id = await (async () => {
-                if (sindico.residencia_id) {
-                    const userInView = await getUsersRegistrados.getAllUsersRegistrados(1, 1, sindico_id);
-                    if (userInView?.docs?.length > 0) return userInView.docs[0].condominio_id;
-                }
-                const anyUser = await getUsersRegistrados.getAllUsersRegistrados(1, 1, sindico_id);
-                if (anyUser?.docs?.length > 0) return anyUser.docs[0].condominio_id;
-
-                return null;
-            })();
+            const condominio_id = req.user.condominio_id;
 
             if (!condominio_id) {
                 return reply.status(404).send({ message: "Condomínio não encontrado para o síndico." });
             }
 
+            // Pegando informações paginadas de usuários
             const page = Number(req.query.page) || 1;
             const limit = Number(req.query.limit) || 10;
 
@@ -48,6 +32,7 @@ export default class MoradoresController {
                 users_inativos,
                 users_with_alert
             });
+
         } catch (error) {
             console.error("Erro ao buscar informações dos moradores:", error);
             return reply.status(500).send({ message: "Erro interno do servidor." });

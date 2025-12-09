@@ -10,17 +10,17 @@ export default async function authRoutes(fastify) {
                 description: 'Rota para adentrar ao sistema'
             }
         }, Login);
-    fastify.get('/me',
-        {
-            schema: {
-                summary: 'Get de informações do user logado',
-                tags: ['autenticação'],
-                description: 'Puxar informações do usuário logado'
-            },
-            preHandler: autenticarSindico
+   fastify.get('/me',
+    {
+        schema: {
+            summary: 'Get de informações do user logado',
+            tags: ['autenticação'],
+            description: 'Puxar informações do usuário logado'
         },
-        getMe);
-        
+        preHandler: verifyToken
+    },
+    getMe
+);
     fastify.post('/logout', {
         schema: {
             summary: 'Logout de conta administrador',

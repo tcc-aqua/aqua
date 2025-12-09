@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-dotenv.config({ path: resolve("..", ".env") }); 
+dotenv.config({ path: resolve("..", ".env") });
 import { resolve } from "path";
 
 import app from "./app.js"; // note o 'server' exportado
@@ -17,11 +17,13 @@ const criaSindico = async () => {
             cpf: '111.121.111-11',
             email: 'paiva@gmail.com',
             type: 'condominio',
-            password: 'paiva123', 
+            password: 'paiva123',
             residencia_type: 'apartamento',
             role: 'sindico',
-          });
-    
+            condominio_id: 1 
+        });
+
+
         console.log('Sindico criado automaticamente!');
     } else {
         console.log('Sindico já existe.');
@@ -31,15 +33,15 @@ const criaSindico = async () => {
 const start = async () => {
     try {
         console.log("URL DO REDIS:", process.env.REDIS_URL);
-        await connectDB();               
-        await criaSindico();     
-        
-               await app.listen({
-                   host: '0.0.0.0',
-                   port: PORT
-               });
-       
-               console.log(`HTTP Server rodando na porta ${PORT}`);
+        await connectDB();
+        await criaSindico();
+
+        await app.listen({
+            host: '0.0.0.0',
+            port: PORT
+        });
+
+        console.log(`HTTP Server rodando na porta ${PORT}`);
     } catch (error) {
         console.error(' Erro ao iniciar servidor:', error);
         process.exit(1);

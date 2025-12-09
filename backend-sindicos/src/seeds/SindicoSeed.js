@@ -13,10 +13,12 @@ const seedSindico = async () => {
         cpf: '111.121.111-11',
         email: 'paiva@gmail.com',
         type: 'condominio',
-        password: 'paiva123', 
+        password: 'paiva123',
         residencia_type: 'apartamento',
         role: 'sindico',
+        condominio_id: 1
       });
+
 
       console.log('Sindico criado com sucesso!');
     } else {
