@@ -2,7 +2,7 @@ import UserStatusService from "../services/relatorios/getComparacaoUsuarios.js";
 import UserAlertService from "../services/relatorios/getConsumoAlto.js";
 import UserConsumoMedio from "../services/relatorios/getConsumoMensal.js";
 import MediaMoradores from "../services/relatorios/getMediaMoradores.js";
-import QtdApartamentos from "../services/relatorios/getQtdApartamentos.js";
+import QtdApartamentosService from "../services/relatorios/getQtdApartamentos.js";
 import StatusSensores from "../services/relatorios/getStatusSensores.js";
 import GetVazamentos from "../services/relatorios/getVazamento.js";
 
@@ -28,7 +28,7 @@ export default class RelatorioController {
 
     static async getNumeroApartamentos(req, reply) {
         const sindicoId = req.user.id;
-        const numeroApartamentos = await QtdApartamentos.getNumeroApartamentos(sindicoId);
+        const numeroApartamentos = await QtdApartamentosService.qtdApartamentos(sindicoId);
 
         return reply.status(200).send({ numero_apartamentos: numeroApartamentos });
     }

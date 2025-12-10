@@ -2,3 +2,5 @@
 {"level":30,"time":1765323136673,"pid":10651,"hostname":"pop-os","msg":"Server listening at http://192.168.18.11:3334"}
 {"level":30,"time":1765323138003,"pid":10651,"hostname":"pop-os","reqId":"req-1","req":{"method":"POST","url":"/api/auth/register","host":"localhost:3334","remoteAddress":"127.0.0.1","remotePort":47074},"msg":"incoming request"}
 {"level":30,"time":1765323138133,"pid":10651,"hostname":"pop-os","reqId":"req-1","res":{"statusCode":201},"responseTime":129.3098989999853,"msg":"request completed"}
+{"level":30,"time":1765323597232,"pid":10987,"hostname":"pop-os","msg":"Server listening at http://127.0.0.1:3334"}
+{"level":30,"time":1765323597232,"pid":10987,"hostname":"pop-os","msg":"Server listening at http://192.168.18.11:3334"}

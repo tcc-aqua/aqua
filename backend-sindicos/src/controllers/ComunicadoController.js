@@ -6,6 +6,8 @@ import getComunicadosService from "../services/comunicados/getComunicado.js";
 import getTotalComunicados from "../services/comunicados/getTotalComunicados.js";
 import Comunicados from "../models/Comunicados.js";
 import CountComunicadosRecebidosService from "../services/comunicados/getComunicadosRecebidos.js";
+import editComunicadoService from "../services/comunicados/editComunicado.js";
+import deleteComunicadoService from "../services/comunicados/deleteComunicado.js";
 
 export default class ComunicadosController {
     static async getAllComunicados(req, reply) {
@@ -88,5 +90,28 @@ export default class ComunicadosController {
         return reply.status(200).send({
             total_recebidos: total
         });
+    }
+
+    static async editComunicado(req, reply) {
+        const { id } = req.params;
+        const { title, subject, addressee } = req.body;
+        const sindico_id = req.user.id;
+
+        const comunicado = await editComunicadoService.updateComunicado({
+            id,
+            title,
+            subject,
+            addressee,
+            sindico_id
+        });
+        return reply.status(200).send(comunicado);
+    }
+
+    static async deleteComunicado(req, reply) {
+        const { id } = req.params;
+        const sindico_id = req.user.id;
+
+        const result = await deleteComunicadoService.removeComunicado({ id, sindico_id });
+        return reply.status(200).send(result);
     }
 }

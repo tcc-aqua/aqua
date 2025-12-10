@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { User, Home, Building, Crown, Check, X, Loader2 } from "lucide-react"; 
+import { User, Home, Building, Crown, Check, X, Loader2 } from "lucide-react";
 import { PaginationDemo } from "@/components/pagination";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { api } from "@/lib/api"; 
+import { api } from "@/lib/api";
 
 const getResidenciaAddress = (user) => {
     if (user.user_type === "condominio") {
@@ -30,64 +30,68 @@ const getFullAddress = (user) => {
 
 export default function UsersTableOnly() {
     const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true); 
-    const [error, setError] = useState(null); 
-    
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const limit = 10; 
-    
+    const limit = 10;
+
     useEffect(() => {
         const fetchUsers = async () => {
-            setLoading(true); 
-            setError(null); 
-            
+            setLoading(true);
+            setError(null);
+
             try {
                 const path = `/moradores?page=${currentPage}&limit=${limit}`;
                 const response = await api.get(path);
-                
-                if (response && !response.error) {
-                    const data = response.users || response; 
-                    
-                    setUsers(data.docs || data.data || []); 
-                    setTotalPages(data.pages || 1); 
-                } else if (response && response.error) {
-                    setError(response.message || "Erro ao buscar usuários.");
-                } else {
-                    setError("Resposta inesperada da API.");
+
+                const usersData = response.data?.users || response?.users;
+
+                if (!usersData) {
+                    setError("Não foi possível obter os usuários.");
+                    setUsers([]);
+                    setTotalPages(1);
+                    return;
                 }
+
+                setUsers(usersData.docs || []);
+                setTotalPages(usersData.pages || 1);
+
             } catch (err) {
                 console.error("Erro na busca de usuários:", err);
                 setError("Falha ao se comunicar com o servidor.");
             } finally {
-                setLoading(false); 
+                setLoading(false);
             }
         };
 
         fetchUsers();
-    }, [currentPage]); 
-    
+    }, [currentPage]);
+
+
+
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
             setCurrentPage(newPage);
         }
     };
-    
+
     const exportCSV = () => {
         const headers = ["Nome", "Email", "CPF", "Residência", "Tipo", "Função", "Status", "Endereço completo"];
         const rows = users.map(u => [
             u.user_name,
             u.user_email,
             u.user_cpf,
-            getResidenciaItem(u), 
+            getResidenciaItem(u),
             u.user_type,
             u.user_role,
             u.user_status,
-            getFullAddress(u) 
+            getFullAddress(u)
         ]);
 
-        let csvContent = "data:text/csv;charset=utf-8," 
-            + headers.join(",") + "\n" 
+        let csvContent = "data:text/csv;charset=utf-8,"
+            + headers.join(",") + "\n"
             + rows.map(r => r.join(",")).join("\n");
 
         const encodedUri = encodeURI(csvContent);
@@ -106,11 +110,11 @@ export default function UsersTableOnly() {
             u.user_name,
             u.user_email,
             u.user_cpf,
-            getResidenciaItem(u), 
+            getResidenciaItem(u),
             u.user_type,
             u.user_role,
             u.user_status,
-            getFullAddress(u) 
+            getFullAddress(u)
         ]);
 
         autoTable(doc, {
@@ -124,7 +128,7 @@ export default function UsersTableOnly() {
 
         doc.save("usuarios.pdf");
     };
-    
+
     return (
         <Card className="mx-auto mt-10 hover:border-sky-400 dark:hover:border-sky-950">
             <CardHeader className="flex flex-row justify-between items-center">
@@ -176,7 +180,7 @@ export default function UsersTableOnly() {
                                             </div>
                                         </td>
 
-                                        
+
 
                                         <td className="text-sm">
                                             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-white font-semibold uppercase ${user.user_type === "casa" ? "bg-sky-700" : "bg-purple-400"}`}>
@@ -203,7 +207,12 @@ export default function UsersTableOnly() {
                                 ))}
                             </tbody>
                         </table>
-                        <PaginationDemo currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                        <PaginationDemo
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                        />
+
                     </>
                 )}
             </CardContent>

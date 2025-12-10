@@ -1,21 +1,22 @@
-import CondominioView from "../../models/CondominioView.js";
+import Apartamento from "../../models/Apartamento.js";
+import Condominio from "../../models/Condominio.js";
 
-export default class QtdApartamentos {
-  static async getNumeroApartamentos(sindico_id) {
+export default class QtdApartamentosService {
+  static async qtdApartamentos(sindico_id) {
     try {
-      if (!sindico_id) return 0;
-
-      // Buscar o condomínio onde o usuário é síndico
-      const condominio = await CondominioView.findOne({
-        where: { sindico_id }, // coluna correta na view
-        attributes: ["numero_apartamentos"],
-      });
-
+      const condominio = await Condominio.findOne({ where: { sindico_id } });
       if (!condominio) return 0;
 
-      return condominio.numero_apartamentos || 0;
+      const totalAtivos = await Apartamento.count({
+        where: {
+          condominio_id: condominio.id, 
+        }
+      });
+
+      return totalAtivos;
+
     } catch (error) {
-      console.error("Erro ao buscar número de apartamentos:", error);
+      console.error("Erro ao contar apartamentos:", error);
       throw error;
     }
   }
