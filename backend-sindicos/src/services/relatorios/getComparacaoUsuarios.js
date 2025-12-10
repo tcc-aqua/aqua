@@ -1,4 +1,4 @@
-import { Op, fn, col } from "sequelize";
+import { Op } from "sequelize";
 import User from "../../models/User.js";
 import Apartamento from "../../models/Apartamento.js";
 import Condominio from "../../models/Condominio.js";
@@ -16,11 +16,11 @@ export default class UserStatusService {
 
       const apartamentos = await Apartamento.findAll({
         where: { condominio_id: condominioIds },
-        attributes: ["responsavel_id"],
+        attributes: ["id"],
       });
 
-      const usuarioIds = apartamentos.map(a => a.responsavel_id).filter(Boolean);
-      if (!usuarioIds.length) return {};
+      const apartamentoIds = apartamentos.map(a => a.id);
+      if (!apartamentoIds.length) return {};
 
       const resultado = {};
       const diasDaSemana = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"];
@@ -32,23 +32,33 @@ export default class UserStatusService {
         const proximoDia = new Date(dia);
         proximoDia.setDate(dia.getDate() + 1);
 
-        const ativos = await User.count({
+        // Contar usuários que tiveram status alterado nesse dia
+        const ativosAlterados = await User.count({
           where: {
-            id: usuarioIds,
+            residencia_id: apartamentoIds,
+            residencia_type: "apartamento",
             status: "ativo",
-            criado_em: { [Op.lte]: proximoDia },
+            atualizado_em: {
+              [Op.between]: [dia, proximoDia],
+            },
           },
         });
 
-        const inativos = await User.count({
+        const inativosAlterados = await User.count({
           where: {
-            id: usuarioIds,
+            residencia_id: apartamentoIds,
+            residencia_type: "apartamento",
             status: "inativo",
-            criado_em: { [Op.lte]: proximoDia },
+            atualizado_em: {
+              [Op.between]: [dia, proximoDia],
+            },
           },
         });
 
-        resultado[diasDaSemana[i]] = { ativos, inativos };
+        resultado[diasDaSemana[i]] = {
+          ativosAlterados,
+          inativosAlterados,
+        };
       }
 
       return resultado;
