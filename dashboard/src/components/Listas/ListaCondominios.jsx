@@ -739,17 +739,13 @@ export default function CondominiosDashboard() {
                             Nenhum síndico encontrado
                           </SelectItem>
                         )}
-                      </SelectContent>
-                    </Select>
-
-                    {/* PAGINAÇÃO ESTÉTICA */}
-                    <div className="flex items-center justify-between mt-1">
+                         <div className="flex items-center justify-between mt-1">
                       <button
                         onClick={() => setSindicoPage((p) => Math.max(1, p - 1))}
                         disabled={sindicoPage <= 1 || loadingSindicos}
                         className="px-3 py-1 text-xs rounded-md 
-          border border-border bg-background hover:bg-accent
-          disabled:opacity-40 disabled:cursor-not-allowed"
+                           border border-border bg-background hover:bg-accent
+                                disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         ← Anterior
                       </button>
@@ -762,12 +758,17 @@ export default function CondominiosDashboard() {
                         onClick={() => setSindicoPage((p) => Math.min(sindicoTotalPages || p, p + 1))}
                         disabled={sindicoPage >= (sindicoTotalPages || 1) || loadingSindicos}
                         className="px-3 py-1 text-xs rounded-md 
-          border border-border bg-background hover:bg-accent
-          disabled:opacity-40 disabled:cursor-not-allowed"
+                           border border-border bg-background hover:bg-accent
+                         disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         Próxima →
                       </button>
                     </div>
+                      </SelectContent>
+                    </Select>
+
+                    
+                   
                   </div>
                 </div>
 
