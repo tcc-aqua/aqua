@@ -19,12 +19,12 @@ import {
 } from "@/components/ui/chart";
 
 const chartData = [
-  { month: "Janeiro", vazamentos: 4, consumo_alto: 12 },
-  { month: "Fevereiro", vazamentos: 2, consumo_alto: 9 },
-  { month: "Março", vazamentos: 6, consumo_alto: 14 },
-  { month: "Abril", vazamentos: 3, consumo_alto: 10 },
-  { month: "Maio", vazamentos: 5, consumo_alto: 13 },
-  { month: "Junho", vazamentos: 7, consumo_alto: 15 },
+  { month: "julho", vazamentos: 4, consumo_alto: 12 },
+  { month: "agosto", vazamentos: 2, consumo_alto: 9 },
+  { month: "setembro", vazamentos: 6, consumo_alto: 14 },
+  { month: "outubro", vazamentos: 3, consumo_alto: 10 },
+  { month: "Novembro", vazamentos: 3, consumo_alto: 5 },
+  { month: "Dezembro", vazamentos: 1, consumo_alto: 1 },
 ];
 
 const chartConfig = {

@@ -48,7 +48,7 @@ export default function CardsPrincipal() {
 
     {
         title: "Consumo Total",
-        value: `${info.consumoTotal ?? 0} L`,
+        value: `300L`,
         icon: Droplet,
         iconColor: "text-sky-500",
       }

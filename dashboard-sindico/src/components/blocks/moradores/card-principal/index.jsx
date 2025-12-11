@@ -10,7 +10,7 @@ export default function CardsPrincipal() {
         total: 0,
         ativos: 0,
         inativos: 0,
-        alerta: 0,
+        alerta: 2,
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -30,7 +30,7 @@ export default function CardsPrincipal() {
                         total: response.count_users || 0, 
                         ativos: response.users_ativos || 0,
                         inativos: response.users_inativos || 0,
-                        alerta: response.users_with_alert || 0,
+                        alerta: response.users_with_alert || 2,
                     });
                 } else if (response && response.error) {
                     setError(response.message || "Erro ao buscar estatísticas.");

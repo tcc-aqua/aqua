@@ -47,10 +47,10 @@ export default function CardsRelatorio() {
   }, []);
 
   const cardsData = [
-    { title: "Consumo Alto", value: stats.consumoAlto, icon: Home, iconColor: "text-blue-500" },
+    { title: "Consumo Alto", value: 1, icon: Home, iconColor: "text-blue-500" },
     { title: "Média Mensal", value: stats.consumoMedio, icon: Cpu, iconColor: "text-emerald-500" },
     { title: "Apartamentos", value: stats.apartamentos, icon: Users, iconColor: "text-purple-500" },
-    { title: "Alertas de Vazamento", value: stats.vazamentos, icon: Droplet, iconColor: "text-red-500" }
+    { title: "Alertas de Vazamento", value: 1, icon: Droplet, iconColor: "text-red-500" }
   ];
 
   if (loading) {
